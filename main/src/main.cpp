@@ -49,24 +49,7 @@ int main(int, char**) {
 
 #ifdef _WIN32
 		// Show error overlay if socket startup failed (Windows only)
-		if (startupRet != NO_ERROR) {
-			// Window flags to make sure the window is fixed and immobile
-			int flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav
-				| ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
-
-			// Get main viewport
-			const ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImVec2 workPos = viewport->WorkPos;
-
-			// Window configuration
-			int padding = 10;
-			ImGui::SetNextWindowBgAlpha(0.5f);
-			ImGui::SetNextWindowPos({ workPos.x + padding, workPos.y + padding }, ImGuiCond_Always);
-			ImGui::SetNextWindowViewport(viewport->ID);
-
-			if (ImGui::Begin("Error", nullptr, flags)) ImGui::Text("Winsock startup failed with error %d", startupRet);
-			ImGui::End();
-		}
+		if (startupRet != NO_ERROR) ImGui::Overlay({ 10, 10 }, "Winsock startup failed with error %d", startupRet);
 #endif
 
 		// "New Connection" window
@@ -83,7 +66,7 @@ int main(int, char**) {
 		// Update all client windows
 		for (size_t i = 0; i < connections.size(); i++) {
 			if (connections[i]->open) connections[i]->update(); // Window is open, update it
-			else connections.erase(connections.begin() + i); // Window is closed, it from vector
+			else connections.erase(connections.begin() + i); // Window is closed, remove it from vector
 		}
 
 		renderWindow();

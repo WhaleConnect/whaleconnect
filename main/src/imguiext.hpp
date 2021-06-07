@@ -54,4 +54,38 @@ namespace ImGui {
 	/// Adapted from imgui_demo.cpp.
 	/// </remarks>
 	void HelpMarker(const char* desc);
+
+	/// <summary>
+	/// Create a semi-transparent, fixed overlay on the application window.
+	/// </summary>
+	/// <typeparam name="...Args">Any parameters to format into the text</typeparam>
+	/// <param name="location">An ImVec2 specifying the coordinates (from top-left corner) to put the overlay</param>
+	/// <param name="text">The string to display in the overlay, accepts format specifiers</param>
+	/// <param name="...args">Any parameters to format into the text</param>
+	/// <remarks>
+	/// Adapted from imgui_demo.cpp.
+	/// </remarks>
+	template<class... Args>
+	void Overlay(ImVec2 location, const char* text, Args... args);
+}
+
+template<class... Args>
+void ImGui::Overlay(ImVec2 location, const char* text, Args... args) {
+	// Window flags to make the overlay be fixed, immobile, and have no decoration
+	int flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav
+		| ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
+
+	// Get main viewport
+	const ImGuiViewport* viewport = GetMainViewport();
+	ImVec2 workPos = viewport->WorkPos;
+
+	// Window configuration
+	SetNextWindowBgAlpha(0.5f);
+	SetNextWindowPos({ workPos.x + location.x, workPos.y + location.y }, ImGuiCond_Always);
+	SetNextWindowViewport(viewport->ID);
+
+	// Draw the window - we're passing the text as the window name (which doesn't show). This function will work as long
+	// as every call has a different text value.
+	if (Begin(text, nullptr, flags)) Text(text, args...);
+	End();
 }
