@@ -1,0 +1,207 @@
+#!/usr/bin/perl
+
+#  unihex2png - program to turn a GNU Unifont hex glyph page of 256 code
+#               points into a PNG file
+#
+#  Synopsis: unihex2png [-i in_file.hex] [-o out_file.png]
+#
+#
+#  Author: Paul Hardy, unifoundry <at> unifoundry.com, December 2007
+#
+#  Perl conversion: Andrew Miller, August 2013
+#
+#
+#   Copyright (C) 2007-2008 Paul Hardy
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+use Getopt::Long;
+use GD;
+
+$result = GetOptions (
+	"help|?",
+	"input|i=s" => \$input,
+	"output|o=s" => \$output,
+	"page|p=s" => \$page,
+	"rows|r=i" => \$charheight
+);
+
+if ($opt_help) {
+	print << "END" or die ("Cannot print to stdout.\n");
+
+Turn a GNU Unifont hex glyph page of 256 code points into a PNG file
+
+Syntax:
+
+   unihex2png -i <Input_File> [-o <Output_File>] [-p <Page>] [-r <Rows>]
+
+   -i, --input      the input hex file (read from STDIN if not specified)
+   -o, --output     the output PNG file
+   -p, --page       the Unicode page to convert - valid values are
+                    0 to 10FF (default is 0)
+   -r, --rows       the height of the output glyphs in pixel rows -
+                    valid values are 16, 24 and 32 (default is 16)
+   -?, --help       display this help and exit
+
+
+Example:
+
+   unihex2png -i unifont.hex -o u83.png -p 83
+
+END
+	exit ()
+}
+
+#if (not $input) {
+#	die ("No input file specified\n")
+#}
+
+if (not $output) {
+	die ("No output file specified\n")
+}
+
+if (not $page) {
+	$page = 0
+}
+
+$pagenum = hex ($page);
+
+if ($pagenum > 0x10FF) {
+	die ("Invalid page\n");
+}
+
+$charxoffset = 4;
+$gridxoffset = 48;
+$gridyoffset = 32;
+
+if (not $charheight) {
+	$charheight = 16;
+}
+
+if ($charheight == 16) {
+	$charyoffset = 7;
+	$boxsize = 32;
+	$xmax = 2;
+	$ymax = 1;
+	$charmaxwidth = 6;
+} elsif ($charheight == 24) {
+	$charyoffset = 4;
+	$boxsize = 32;
+	$xmax = 2;
+	$ymax = 2;
+	$charmaxwidth = 6;
+} elsif ($charheight == 32) {
+	$charyoffset = 4;
+	$boxsize = 40;
+	$xmax = 3;
+	$ymax = 3;
+	$charmaxwidth = 8;
+} else {
+	die ("Invalid height\n");
+}
+
+# Create box and set as tile pattern
+
+$box = new GD::Image ($boxsize, $boxsize);
+
+$black = $box->colorAllocate (0, 0, 0);
+$white = $box->colorAllocate (255, 255, 255);
+
+$box->filledRectangle (1, 1, $boxsize - 1, $boxsize - 1, $white);
+
+# Draw dots at 8 pixel boundaries
+ for ($count = 0; $count <= $xmax; $count++) {
+	$box->setPixel (($count * 8) + $charxoffset + 1, 0, $white);
+	$box->setPixel (($count * 8) + $charxoffset + 8, 0, $white);
+}
+
+for ($count = 0; $count <= $ymax; $count++) {
+	$box->setPixel (0, ($count * 8) + $charyoffset + 1, $white);
+	$box->setPixel (0, ($count * 8) + $charyoffset + 8, $white);
+}
+
+# Draw grid
+
+$im = new GD::Image ($boxsize * 16 + $gridxoffset, $boxsize * 16 + $gridyoffset);
+
+$black = $im->colorAllocate (0, 0, 0);
+$white = $im->colorAllocate (255, 255, 255);
+
+$im->fill (0, 0, $white);
+
+for ($xcount = 0; $xcount <= 16; $xcount++) {
+	for ($ycount = 0; $ycount <= 16; $ycount++) {
+		$im->copy ($box, $xcount * $boxsize + $gridxoffset - 1, $ycount * $boxsize + $gridyoffset - 1, 0, 0, $boxsize, $boxsize);
+	}
+}
+
+# Print plane
+$im->string (gdLargeFont, 8, 9, sprintf ('U+%02X', $pagenum >> 8), $black);
+
+# Print row headers
+for ($count = 0; $count <= 15; $count++) {
+	$im->string (gdLargeFont, 32, ($count * $boxsize) + (($boxsize - 16) / 2) + $gridyoffset, sprintf ('%X', $count), $black);
+}
+
+# Print column headers
+for ($count = 0; $count <= 15; $count++) {
+	$im->string (gdLargeFont, ($count * $boxsize) + (($boxsize - 24) / 2) + $gridxoffset, 9, sprintf ('%03X', (($pagenum & 0xFF) << 4) + $count), $black);
+}
+
+if ($input) {
+	open (HEXFILE, "$input") or die ('Cannot open hex file for input.\n');
+} else {
+   *HEXFILE = *STDIN;
+}
+
+while (<HEXFILE>) {
+	chomp;
+	@data = split (':', $_);
+	$codepoint = hex ($data[0]);
+
+	# Calculate if codepoint is within page
+	if ($codepoint >> 8 == $pagenum) {
+		$char = $data[1];
+
+		# Calculate character width, column and row
+		$charwidth = length ($char) / $charheight;
+		
+		if ($charwidth <= $charmaxwidth) {
+			$col = ($codepoint >> 4) & 0xF;
+			$row = $codepoint & 0xF;
+
+			for ($j = 0; $j < $charheight; $j++) {
+				# Get character row
+				$r = hex (substr ($char, $j * $charwidth, $charwidth));
+
+				# Draw character
+				for ($i = 0; $i < $charwidth * 4; $i++) {
+					if ($r & 1 << $i) {
+						$im->setPixel (($col * $boxsize) + ($charwidth * 4 - $i) + $charxoffset + $gridxoffset - 1, ($row * $boxsize) + $j + $charyoffset + $gridyoffset, $black);
+					}
+				}
+			}
+		}
+	}
+}
+# Only close input file handler if it isn't STDIN.
+if ($input) {
+	close HEXFILE or die ("Cannot properly close input file.\n");
+}
+
+# Save image
+open (PICTURE, ">$output") or die ("Cannot save image.\n");
+binmode PICTURE;
+print PICTURE $im->png or die ("Cannot write to picture file.\n");
+close PICTURE or die ("Cannot properly close output file.\n");

@@ -1,0 +1,231 @@
+@comment TROFF INPUT: .TH UNIHEXROTATE 1 "2019 Feb 23"
+
+@node unihexrotate
+@section unihexrotate
+@c DEBUG: print_menu("@section")
+
+@menu
+* unihexrotate NAME::
+* unihexrotate SYNOPSIS::
+* unihexrotate DESCRIPTION::
+* unihexrotate OPTIONS::
+* unihexrotate EXAMPLES::
+* unihexrotate FILES::
+* unihexrotate SEE ALSO::
+* unihexrotate AUTHOR::
+* unihexrotate LICENSE::
+* unihexrotate BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unihexrotate NAME
+@subsection unihexrotate NAME
+@c DEBUG: print_menu("unihexrotate NAME")
+
+unihexrotate @minus{} rotate Unifont hex glyphs in quarter turn increments
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unihexrotate SYNOPSIS
+@subsection unihexrotate SYNOPSIS
+@c DEBUG: print_menu("unihexrotate SYNOPSIS")
+
+@b{unihexrotate }[@minus{}n @i{quarter-turns}] [@i{input-font.hex}] > @i{output-font.hex}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unihexrotate DESCRIPTION
+@subsection unihexrotate DESCRIPTION
+@c DEBUG: print_menu("unihexrotate DESCRIPTION")
+
+@comment TROFF INPUT: .B unihexrotate
+@b{unihexrotate}
+reads a GNU Unifont .hex format file named on the command line,
+or from stdin if no filename is given.  If a number of quarter turns
+is specified, it rotates each glyph clockwise by that number of
+quarter turns, or counterclockwise if the number is negative.
+The resulting modified .hex file is written to stdout.
+The format of a .hex file is described in the @b{unifont}(5) man page.
+@comment TROFF INPUT: .PP
+
+If the number of quarter turns is not specified,
+@comment TROFF INPUT: .B unihexrotate
+@b{unihexrotate}
+will rotate each glyph by a default value of one quarter turn
+(i.e., 90 degrees) clockwise.
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .B unihexrotate
+@b{unihexrotate}
+only supports Unifont .hex files with glyphs that are 8 columns
+and 16 columns wide.  If an 8-column glyph is rotated, it is
+first centered within a 16-column glyph so the rotation will be
+performed on a 16-by-16 pixel glyph.  One additional use of
+this program is that a glyph can be converted from 8\~columns
+wide to 16\~columns wide by specifying a rotation of 0\~quarter turns.
+@comment TROFF INPUT: .SH OPTIONS
+
+@node unihexrotate OPTIONS
+@subsection unihexrotate OPTIONS
+@c DEBUG: print_menu("unihexrotate OPTIONS")
+
+@comment TROFF INPUT: .TP 6
+@comment TROFF INPUT: .BR \-n
+
+@c ---------------------------------------------------------------------
+@table @code
+@item @b{@minus{}n}
+Specify an integer number of quarter turn clockwise rotations
+to perform, typically as "@minus{}n\~0" through "@minus{}n\~3" (alternatively
+as "@minus{}n=0" through "@minus{}n=3") for rotations of 0, 90, 180, or 270
+degrees, respectively.  Negative values will perform
+counterclockwise rotations by the specified number of
+quarter turns.
+@comment TROFF INPUT: .SH EXAMPLES
+
+@end table
+
+@c ---------------------------------------------------------------------
+
+@node unihexrotate EXAMPLES
+@subsection unihexrotate EXAMPLES
+@c DEBUG: print_menu("unihexrotate EXAMPLES")
+
+This example extracts the Mongolian glyphs in the
+"unifont-base.hex" file (located in the "font/plane00" directory)
+and pipes them to @b{unihexrotate} to rotate by the default
+amount of one quarter turn clockwise (i.e., by 90 degrees).
+The basic Mongolian glyphs are in the Unicode range U+1800 through U+18AF.
+The original glyphs in "unifont-base.hex" are drawn for horizontal
+rendering (as per the Unicode Standard).  The output rotated
+glyphs are suitable for rendering Mongolian in its traditional
+vertical form.  Because no filename is specified to @b{unihexrotate}
+in this example, its input is taken from stdin.
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .RS
+
+@c ---------------------------------------------------------------------
+@quotation
+grep "^18[0-A]" unifont-base.hex | @b{unihexrotate} > vertical.hex
+@comment TROFF INPUT: .RE
+
+@end quotation
+
+@c ---------------------------------------------------------------------
+@comment TROFF INPUT: .PP
+
+The next example reverses the rotation performed above, by one
+quarter turn counterclockwise.  In this example, the input filename
+"vertical.hex" is specified.
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .RS
+
+@c ---------------------------------------------------------------------
+@quotation
+@b{unihexrotate} @minus{}n @minus{}1 vertical.hex > horizontal.hex
+@comment TROFF INPUT: .RE
+
+@end quotation
+
+@c ---------------------------------------------------------------------
+@comment TROFF INPUT: .SH FILES
+
+@node unihexrotate FILES
+@subsection unihexrotate FILES
+@c DEBUG: print_menu("unihexrotate FILES")
+
+Unifont .hex format input and output files.
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unihexrotate SEE ALSO
+@subsection unihexrotate SEE ALSO
+@c DEBUG: print_menu("unihexrotate SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unihexrotate AUTHOR
+@subsection unihexrotate AUTHOR
+@c DEBUG: print_menu("unihexrotate AUTHOR")
+
+@comment TROFF INPUT: .B unihexrotate
+@b{unihexrotate}
+was written by David Corbett.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unihexrotate LICENSE
+@subsection unihexrotate LICENSE
+@c DEBUG: print_menu("unihexrotate LICENSE")
+
+@comment TROFF INPUT: .B unihexrotate
+@b{unihexrotate}
+is Copyright @copyright{} 2019 David Corbett.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unihexrotate BUGS
+@subsection unihexrotate BUGS
+@c DEBUG: print_menu("unihexrotate BUGS")
+
+No known bugs exist.

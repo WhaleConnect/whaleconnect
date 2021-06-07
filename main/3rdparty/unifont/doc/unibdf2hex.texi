@@ -1,0 +1,145 @@
+@comment TROFF INPUT: .TH UNIBDF2HEX 1 "2013 Jul 07"
+
+@node unibdf2hex
+@section unibdf2hex
+@c DEBUG: print_menu("@section")
+
+@menu
+* unibdf2hex NAME::
+* unibdf2hex SYNOPSIS::
+* unibdf2hex DESCRIPTION::
+* unibdf2hex FILES::
+* unibdf2hex SEE ALSO::
+* unibdf2hex AUTHOR::
+* unibdf2hex LICENSE::
+* unibdf2hex BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unibdf2hex NAME
+@subsection unibdf2hex NAME
+@c DEBUG: print_menu("unibdf2hex NAME")
+
+unibdf2hex @minus{} Convert BDF font glyphs into Unifont .hex glyphs
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unibdf2hex SYNOPSIS
+@subsection unibdf2hex SYNOPSIS
+@c DEBUG: print_menu("unibdf2hex SYNOPSIS")
+
+@b{unibdf2hex }< @i{input-font.bdf }> @i{output-font.hex}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unibdf2hex DESCRIPTION
+@subsection unibdf2hex DESCRIPTION
+@c DEBUG: print_menu("unibdf2hex DESCRIPTION")
+
+@comment TROFF INPUT: .B unibdf2hex
+@b{unibdf2hex}
+reads a BDF font file, extracting selected code points and printing
+them on stdout in Unifont .hex format.  This program was used to
+extract CJK ideographs from the 16x16 version of Wen Quan Yi's BDF
+font.  Currently the program is hard-coded to only extract those
+code points that comprise the "wqy.hex" source font file used to
+build "unifont.hex" but this source code could easily be modified.
+@comment TROFF INPUT: .SH FILES
+
+@node unibdf2hex FILES
+@subsection unibdf2hex FILES
+@c DEBUG: print_menu("unibdf2hex FILES")
+
+*.hex GNU Unifont font files
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unibdf2hex SEE ALSO
+@subsection unibdf2hex SEE ALSO
+@c DEBUG: print_menu("unibdf2hex SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unibdf2hex AUTHOR
+@subsection unibdf2hex AUTHOR
+@c DEBUG: print_menu("unibdf2hex AUTHOR")
+
+@comment TROFF INPUT: .B unibdf2hex
+@b{unibdf2hex}
+was written by Paul Hardy.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unibdf2hex LICENSE
+@subsection unibdf2hex LICENSE
+@c DEBUG: print_menu("unibdf2hex LICENSE")
+
+@comment TROFF INPUT: .B unibdf2hex
+@b{unibdf2hex}
+is Copyright @copyright{} 2008 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unibdf2hex BUGS
+@subsection unibdf2hex BUGS
+@c DEBUG: print_menu("unibdf2hex BUGS")
+
+No known bugs exist.

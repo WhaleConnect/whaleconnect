@@ -1,0 +1,13 @@
+Note on izmg16-plane02.hex
+----------------------------
+The file "izmg16-plane02.hex" contains glyphs from the public
+domain Izumi BDF font, downloadable at
+
+     http://unifoundry.com/japanese/index.html
+
+That BDF font contains glyphs for the JIS X 0213:2004 Japanese
+standard, and adds 303 Unicode Plane 2 glyphs to the base Unifont
+file to produce the Japanese version, unifont_jp.
+
+
+Paul Hardy, 2019

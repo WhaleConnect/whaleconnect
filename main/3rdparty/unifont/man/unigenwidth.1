@@ -1,0 +1,66 @@
+.TH UNIGENWIDTH 1 "2013 Sep 10"
+.SH NAME
+unigenwidth \- Generate C code for POSIX wcwidth and wcswidth functions
+.SH SYNOPSIS
+\fBunigenwidth \fIunifont.hex combining.txt \fP> \fIwccode.c\fP
+.SH DESCRIPTION
+.B unigenwidth
+reads a collection of glyphs in Unifont's .hex format,
+then reads a list of combining characters as a hexadecimal list.
+From these two files, it produces C code to implement the POSIX
+.BR wcwidth(3)
+and
+.BR wcswidth(3)
+functions.  The format of these definitions is based upon
+POSIX 1003.1-2008 System Interfaces, pages 2251 and 2241, respectively.
+.SH EXAMPLE
+.PP
+Sample usage:
+.PP
+.RS
+unigenwidth unifont.hex combining.txt > wccode.c
+.RE
+.SH FILES
+*.hex files for Unifont glyph data; combining.txt for combining code points.
+.SH SEE ALSO
+.BR bdfimplode(1),
+.BR hex2bdf(1),
+.BR hex2sfd(1),
+.BR hexbraille(1),
+.BR hexdraw(1),
+.BR hexkinya(1),
+.BR hexmerge(1),
+.BR johab2ucs2(1),
+.BR unibdf2hex(1),
+.BR unibmp2hex(1),
+.BR unibmpbump(1),
+.BR unicoverage(1),
+.BR unidup(1),
+.BR unifont(5),
+.BR unifont-viewer(1),
+.BR unifont1per(1),
+.BR unifontchojung(1),
+.BR unifontksx(1),
+.BR unifontpic(1),
+.BR unigencircles(1),
+.BR unihex2bmp(1),
+.BR unihex2png(1),
+.BR unihexfill(1),
+.BR unihexgen(1),
+.BR unihexrotate(1),
+.BR unipagecount(1),
+.BR unipng2hex(1)
+.SH AUTHOR
+.B unigenwidth
+was written by Paul Hardy.
+.SH LICENSE
+.B unigenwidth
+is Copyright \(co 2013 Paul Hardy.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input files.

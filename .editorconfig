@@ -1,0 +1,31 @@
+## Top-most EditorConfig file
+root = true
+
+## All source files
+[*]
+# Indentation
+indent_size = 4
+
+# Basic file properties
+charset = utf-8
+
+# Extra whitespace
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+## Everything except Python files
+[!*.py]
+end_of_line = crlf
+indent_style = tab
+
+## Python files
+[*.py]
+end_of_line = lf
+indent_style = space
+
+## App source files
+[main/{src,loader}/*]
+# Set guidelines length for source files (120-char limit)
+# Requires Visual Studio Extension "Editor Guidelines":
+# https://marketplace.visualstudio.com/items?itemName=PaulHarrington.EditorGuidelines
+guidelines = 120 1px solid A0A9A9A9

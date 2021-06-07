@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+#
+# Copyright (C) 1998, 2013 Roman Czyborra
+#
+# LICENSE:
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
+#  
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#    GNU General Public License for more details.
+#  
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+while (<>)
+{
+	$G{$1}=$2 if /^(....):(.+)\n/;
+}
+
+for (sort keys %G)
+{
+	print "$_:$G{$_}\n" or die ("Cannot print to stdout.\n");
+}
+
+# hexmerge taipei16.hex cns-2-16.hex jisksp16.hex jiskan16.hex
+# hanglm16.hex gb16fs.hex ethiopic.hex etl | tee select

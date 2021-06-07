@@ -1,0 +1,70 @@
+.TH UNICOVERAGE 1 "2007 Dec 31"
+.SH NAME
+unicoverage \- Print coverage of each Unicode Script
+.SH SYNOPSIS
+\fBunicoverage \fP[\-i\fIinput-file\fP] [\-o\fIoutput-file\fP]
+.SH DESCRIPTION
+.B unicoverage
+reads a GNU Unifont .hex font and uses data in
+.B coverage.dat
+(which must reside in the current directory).  The output is
+the percent coverage of each script listed in the coverage.dat
+file.  The Unicode code points in the input .hex file must be
+in ascending order.
+.SH OPTIONS
+.TP 12
+\fB\-i\fP
+Specify the input file. The default is STDIN.
+.TP
+\fB\-o\fP
+Specify the output file. The default is STDOUT.
+.SH EXAMPLE
+Sample usage:
+.PP
+.RS
+unicoverage < unifont.hex >coverage.txt
+.RE
+.SH FILES
+coverage.dat, *.hex GNU Unifont files.
+.SH SEE ALSO
+.BR bdfimplode(1),
+.BR hex2bdf(1),
+.BR hex2sfd(1),
+.BR hexbraille(1),
+.BR hexdraw(1),
+.BR hexkinya(1),
+.BR hexmerge(1),
+.BR johab2ucs2(1),
+.BR unibdf2hex(1),
+.BR unibmp2hex(1),
+.BR unibmpbump(1),
+.BR unidup(1),
+.BR unifont(5),
+.BR unifont-viewer(1),
+.BR unifont1per(1),
+.BR unifontchojung(1),
+.BR unifontksx(1),
+.BR unifontpic(1),
+.BR unigencircles(1),
+.BR unigenwidth(1),
+.BR unihex2bmp(1),
+.BR unihex2png(1),
+.BR unihexfill(1),
+.BR unihexgen(1),
+.BR unihexrotate(1),
+.BR unipagecount(1),
+.BR unipng2hex(1)
+.SH AUTHOR
+.B unicoverage
+was written by Paul Hardy.
+.SH LICENSE
+.B unicoverage
+is Copyright \(co 2007, 2008 Paul Hardy.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input files.

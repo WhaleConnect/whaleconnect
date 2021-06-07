@@ -1,0 +1,53 @@
+
+This hangul/ directory contains the files from which to build the
+Unifont source file hangul-syllables.hex.
+
+Precompiled versions of the input files hangul-base.hex and hangul-base.bdf,
+and the final output file hangul-syllables.hex, are in the precompiled/
+subdirectory.
+
+The hangul-syllables.hex file is the same file that appears in the
+"font/plane00" directory.
+
+To build hangul-syllables.hex from the input files, simply type
+
+     make
+
+in this directory.  Note that the Unifont binary programs must be installed
+in your binary path (e.g., /usr/local/bin).  This make file performs the
+following actions:
+
+   - Creates the file hangul-base.hex, initialized with a blank
+     code point 0x0000 (a double-width row of zeroes)
+
+   - Appends the files contained in hanbase-00.bmp, hanbase-01.bmp,
+     and hanbase-02.bmp, converting them into .hex format with unibmp2hex
+
+   - Converts the resulting hangul-base.hex file into hangul-base.bdf
+     (the glyphs in BDF font format) using hex2bdf -- this is a special
+     Johab BDF base font suitable for Korean software that uses Johab fonts
+
+   - Use johab2ucs2 to convert this BDF font file into hangul-syllables.hex
+
+   - Output bitmapped renderings of the Unicode Hangul Syllables block,
+     placing .bmp files in the syllables/ subdirectory
+
+   - Create ksx-syllables.hex by feeding unifont-base.hex to unifontksx
+
+   - Output bitmapped renderings of the KS X 1001:1992 subset of 2,350
+     syllables, placing .bmp files in the ksx-syllables/ subdirectory
+
+   - Create chojung-syllables.hex by feeding unifont-base.hex to unifontchojung
+
+   - Output bitmapped renderings of the subset of syllables that do not
+     have final consonants, placing .bmp files in the chojung-syllables/
+     subdirectory
+
+To remove files created during a build, type
+
+     make clean
+
+or
+
+     make distclean
+

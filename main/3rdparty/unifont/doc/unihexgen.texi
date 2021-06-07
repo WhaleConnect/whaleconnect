@@ -1,0 +1,190 @@
+@comment TROFF INPUT: .TH UNIHEXGEN 1 "2013 Sep 03"
+
+@node unihexgen
+@section unihexgen
+@c DEBUG: print_menu("@section")
+
+@menu
+* unihexgen NAME::
+* unihexgen SYNOPSIS::
+* unihexgen DESCRIPTION::
+* unihexgen OPTIONS::
+* unihexgen FILES::
+* unihexgen EXAMPLE::
+* unihexgen SEE ALSO::
+* unihexgen AUTHOR::
+* unihexgen LICENSE::
+* unihexgen BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unihexgen NAME
+@subsection unihexgen NAME
+@c DEBUG: print_menu("unihexgen NAME")
+
+unihexgen @minus{} Generate Unifont 4- or 6-digit hexadecimal glyphs
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unihexgen SYNOPSIS
+@subsection unihexgen SYNOPSIS
+@c DEBUG: print_menu("unihexgen SYNOPSIS")
+
+
+@comment WARNING: unihexgen.1:5:%%new font I started without closing previous font B
+
+@b{unihexgen }@i{startpoint endpoint}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unihexgen DESCRIPTION
+@subsection unihexgen DESCRIPTION
+@c DEBUG: print_menu("unihexgen DESCRIPTION")
+
+@comment TROFF INPUT: .B unihexgen
+@b{unihexgen}
+produces unifont.hex entries in the Unicode code point range
+@comment TROFF INPUT: .I startpoint
+@i{startpoint}
+to
+@comment TROFF INPUT: .I endpoint
+@i{endpoint}
+(specified as the two command-line arguments).
+Output is to STDOUT.  If a codepoint is less than or equal to
+"FFFF" (i.e., 0xFFFF), a four-digit hexadecimal number is encoded
+within the corresponding Unifont glyph as two digits on each of
+two rows.  Otherwise, a six-digit hexadecimal number is encoded as
+three digits on each of two rows.
+@comment TROFF INPUT: .SH OPTIONS
+
+@node unihexgen OPTIONS
+@subsection unihexgen OPTIONS
+@c DEBUG: print_menu("unihexgen OPTIONS")
+
+There are no options.
+@comment TROFF INPUT: .SH FILES
+
+@node unihexgen FILES
+@subsection unihexgen FILES
+@c DEBUG: print_menu("unihexgen FILES")
+
+*.hex as output.
+@comment TROFF INPUT: .SH EXAMPLE
+
+@node unihexgen EXAMPLE
+@subsection unihexgen EXAMPLE
+@c DEBUG: print_menu("unihexgen EXAMPLE")
+
+To generate the Private Use Area glyphs in the Unicode range
+U+E000..U+F8FF, invoke unihexgen with these arguments:
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .RS
+
+@c ---------------------------------------------------------------------
+@quotation
+@comment TROFF INPUT: .B unihexgen
+@b{unihexgen}
+e000 f8ff
+@comment TROFF INPUT: .RE
+
+@end quotation
+
+@c ---------------------------------------------------------------------
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unihexgen SEE ALSO
+@subsection unihexgen SEE ALSO
+@c DEBUG: print_menu("unihexgen SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unihexgen AUTHOR
+@subsection unihexgen AUTHOR
+@c DEBUG: print_menu("unihexgen AUTHOR")
+
+@comment TROFF INPUT: .B unihexgen
+@b{unihexgen}
+was written by Paul Hardy.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unihexgen LICENSE
+@subsection unihexgen LICENSE
+@c DEBUG: print_menu("unihexgen LICENSE")
+
+@comment TROFF INPUT: .B unihexgen
+@b{unihexgen}
+is Copyright @copyright{} 2013 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unihexgen BUGS
+@subsection unihexgen BUGS
+@c DEBUG: print_menu("unihexgen BUGS")
+
+No known real bugs exist, except that this software does not perform
+extensive error checking on its command-line arguments.  If they're not
+in the format of the original bitmapped output from
+@comment TROFF INPUT: .B unihexgen,
+@b{unihexgen,}
+all bets are off.

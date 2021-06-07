@@ -1,0 +1,185 @@
+; This file contains unassigned blocks of 16 code points
+; in Plane 1 of the Unicode Standard where no script
+; is yet assigned to those ranges.
+;
+; Start of Plane 1
+; Linear B Syllabary
+; Linear B Ideograms
+; Aegean Numbers
+; Ancient Greek Numbers
+; Ancient Symbols
+; Phaistos Disc
+010200 01027F
+; Lycian
+; Carian
+; Coptic Epact Numbers
+; Old Italic
+; Gothic
+; Old Permic
+; Ugaritic
+; Old Persian
+0103E0 0103FF
+; Deseret
+; Shavian
+; Osmanya
+; Osage
+; Elbasan
+; Caucasian Albanian
+010570 0105FF
+; Linear A
+010780 0107FF
+; Cypriot Syllabary
+; Imperial Aramaic
+; Palmyrene
+; Nabataean
+0108B0 0108DF
+; Hatran
+; Phoenecian
+; Lydian
+010940 01097F
+; Meroitic Hieroglyphs
+; Meroitic Cursive
+; Kharoshthi
+; Old South Arabian
+; Old North Arabian
+010AA0 010ABF
+; Manichaean
+; Avestan
+; Inscriptional Parthian
+; Inscriptional Pahlavi
+; Psalter Pahlavi
+010BB0 010BFF
+; Old Turkic
+010C50 010C7F
+; Old Hungarian
+; Hanifi Rohingya
+010D40 010E5F
+; Rumi Numeral Symbols
+; Yezidi
+010EC0 010EFF 
+; Old Sogdian
+; Sogdian
+010F70 010FAF
+; Chorasmian
+; Elymaic
+; Brahmi
+; Kaithi
+; Sora Sompeng
+; Chakma
+; Mahajani
+; Sharada
+; Sinhala Archaic Numbers
+; Khojki
+011250 01127F
+; Multani
+; Khudawadi
+; Grantha
+011380 0113FF
+; Newa
+; Tirhuta
+0114E0 01157F
+; Siddham
+; Modi
+; Mongolian Supplement
+; Takri
+0116D0 0116FF
+; Ahom
+011740 0117FF
+; Dogra
+011850 01189F
+; Warang Citi
+; Dives Akuru
+011960 01199F
+; Nandinagari
+; Zanabazar Square
+; Soyombo
+011AB0 011ABF
+; Pau Cin Hau
+011B00 011AFF
+; Bhaiksuki
+' Marchen
+011CC0 011CFF
+; Masaram Gondi
+; Gunjala Gondi
+011DB0 011EDF
+; Makasar
+011F00 011FAF
+; Lisu Supplement
+; Tamil Supplement
+; Cuneiform
+; Cuneiform Numbers and Punctuation
+; Early Dynastic Cuneiform
+012550 012FFF
+; Egyptian Hieroglyphs
+; Egyptian Hieroglyph Format Controls
+013440 0143FF
+; Anatolian Hieroglyphs
+014680 0167FF
+; Bamum Supplement
+; Mro
+016A70 016ACF
+; Bassa Vah
+; Pahawh Hmong
+016B90 016E3F
+; Medefaidrin
+016EA0 016EFF
+; Miao
+016FA0 016FDF
+; Ideographic Symbols and Punctuation
+; Tangut
+; Tangut Components
+; Small Khitan Script
+; Tangut Supplement
+018D80 01AFFF
+; Kana Supplement
+; Kana Extended - A
+; Small Kana Extension
+; Nushu
+01B300 01BBFF
+; Duployan
+; Shorthand Format Controls
+01BCB0 01CFFF
+; Byzantine Musical Symbols
+; Musical Symbols
+; Ancient Greek Musical Notation
+01D250 01D2DF
+; Mayan Numerals
+; Tai Xuan Jing Symbols
+; Counting Rod Numerals
+01D380 01D3FF
+; Mathematical Alphanumeric Symbols
+; Sutton SignWriting
+01DAB0 01DFFF
+; Glagolitic Supplement
+01E030 01E0FF
+; Nyiakeng Puachue Hmong
+01E150 01E2BF
+; Wancho
+01E300 01E7FF
+; Mende Kikakui
+01E8E0 01E8FF
+; Adlam
+01E960 01EC6F
+; Indic Siyaq Numbers
+01ECC0 01ECFF
+; Ottoman Siyaq Numbers
+01ED50 01EDFF
+; Arabic Mathematical Alphabetic Symbols
+01EF00 01EFFF
+; Mahjong Tiles
+; Domino Tiles
+; Playing Cards
+; Enclosed Alphanumeric Supplement
+; Enclosed Ideographic Supplement
+; Miscellaneous Symbols and Pictographs
+; Emoticons
+; Ornamental Dingbats
+; Transport and Map Symbols
+; Alchemical Symbols
+; Geometric Shapes Extended
+; Supplemental Arrows - C
+; Supplemental Symbols and Pictographs
+; Chess Symbols
+; Symbols and Pictographs Extended-A
+; Symbols for Legacy Computing
+01FC00 01FFFD

@@ -1,0 +1,108 @@
+{
+    //"editor.formatOnType": true,
+    "[python]": {
+        "editor.rulers": [
+            79
+        ]
+    },
+    "[c]": {
+        "editor.rulers": [
+            120
+        ]
+    },
+    "[cpp]": {
+        "editor.rulers": [
+            120
+        ]
+    },
+    "C_Cpp.default.cStandard": "c17",
+    "C_Cpp.default.cppStandard": "c++20",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/main/3rdparty"
+    ],
+    "cmake.configureOnOpen": true,
+    "cmake.configureOnEdit": true,
+    "cmake.sourceDirectory": "${workspaceFolder}/main",
+    "cmake.buildDirectory": "${workspaceFolder}/main/build",
+    "cmake.debugConfig": {
+        "cwd": "${workspaceFolder}/main"
+    },
+    "files.associations": {
+        "algorithm": "cpp",
+        "atomic": "cpp",
+        "bit": "cpp",
+        "cctype": "cpp",
+        "chrono": "cpp",
+        "clocale": "cpp",
+        "cmath": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "csignal": "cpp",
+        "cstddef": "cpp",
+        "cstdint": "cpp",
+        "cstdio": "cpp",
+        "cstdlib": "cpp",
+        "cstring": "cpp",
+        "ctime": "cpp",
+        "cwchar": "cpp",
+        "deque": "cpp",
+        "exception": "cpp",
+        "fstream": "cpp",
+        "initializer_list": "cpp",
+        "iomanip": "cpp",
+        "ios": "cpp",
+        "iosfwd": "cpp",
+        "istream": "cpp",
+        "iterator": "cpp",
+        "limits": "cpp",
+        "memory": "cpp",
+        "new": "cpp",
+        "ostream": "cpp",
+        "ratio": "cpp",
+        "sstream": "cpp",
+        "stdexcept": "cpp",
+        "stop_token": "cpp",
+        "streambuf": "cpp",
+        "string": "cpp",
+        "system_error": "cpp",
+        "thread": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "typeinfo": "cpp",
+        "utility": "cpp",
+        "vector": "cpp",
+        "xfacet": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp",
+        "xlocinfo": "cpp",
+        "xlocmon": "cpp",
+        "xlocnum": "cpp",
+        "xloctime": "cpp",
+        "xmemory": "cpp",
+        "xstddef": "cpp",
+        "xstring": "cpp",
+        "xtr1common": "cpp",
+        "xutility": "cpp",
+        "cstdarg": "cpp",
+        "cwctype": "cpp",
+        "array": "cpp",
+        "*.tcc": "cpp",
+        "unordered_map": "cpp",
+        "functional": "cpp",
+        "memory_resource": "cpp",
+        "numeric": "cpp",
+        "optional": "cpp",
+        "random": "cpp",
+        "string_view": "cpp",
+        "iostream": "cpp",
+        "cinttypes": "cpp",
+        "charconv": "cpp",
+        "format": "cpp",
+        "forward_list": "cpp",
+        "locale": "cpp",
+        "map": "cpp",
+        "xlocbuf": "cpp",
+        "xlocmes": "cpp",
+        "xtree": "cpp"
+    }
+}

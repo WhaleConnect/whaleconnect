@@ -1,0 +1,115 @@
+.TH UNIBMPBUMP 1 "2019 Mar 2"
+.SH NAME
+unibmpbump \- adjust a .bmp image for unibmp2hex processing
+.SH SYNOPSIS
+\fBunibmpbump \fP[\-i\fIinput-file.bmp\fP] [\-o\fIoutput-file.bmp\fP] [\-v|\-\-verbose] [\-V|\-\-version]
+.SH DESCRIPTION
+.B unibmpbump
+reads a Microsoft Bitmap Graphics (".bmp") graphics image file and,
+if it appears to be in a known format, converts it for processing
+by \fBunibmp2hex\fP(1).
+.PP
+.B unibmpbump
+supports the following Device Independent Bitmap (DIB) header
+byte lengths for input image files:
+.RS
+.TP 6
+12
+The BITMAPCOREHEADER format.  This was the original Microsoft
+Windows header format.  It has not been encoutered, and was
+added only as a subset of the formats that appear below.
+.TP
+40
+The BITMAPINFOHEADER format.  This is the format that most
+graphics creation programs support, and is the header format
+that \fBunibmp2hex\fP expects.
+.TP
+108
+The BITMAPV4HEADER format.  This is the format that the
+Image Magick \fBconvert\fP program creates when converting
+a PNG image to a BMP image using the "\-monochrome" option.
+.TP
+124
+The BITMAPV5HEADER format.  This is the format that the
+Image Magick \fBconvert\fP program creates when converting
+a PNG image to a BMP image without the "\-monochrome" option;
+\fBconvert\fP will encode the image as a "grayscale" image,
+but with only two colors: black and white.
+.RE
+.PP
+.B unibmpbump
+is able to read files created by \fBunihex2png\fP that were subsequently
+saved as BMP files, for example by the \fBconvert\fP(1) program,
+which is part of the Image Magick package.  Images created by
+\fBunihex2png\fP(1) are 544 rows high by 560 columns wide.
+Images created by \fBunihex2bmp\fP(1) are 544 rows high by 576
+columns wide.  Thus, if the input Bitmap Graphics file is
+544 by 560 pixels, \fBunibmpbump\fP assumes that the file was
+originally a Portable Network Graphics (".png") file created
+by \fBunihex2png\fP and realigns the glyphs so they are
+positioned as \fBunibmp2hex\fP expects.
+.SH OPTIONS
+.TP 6
+.BR \-i
+Specify an input Bitmaps Graphics (".bmp") file.
+If no input file is specified, input is taken from stdin.
+The input file must be either 544 rows by 560 columns (for a
+file created by \fBunihex2png\fP originally) or
+544 rows by 576 columns (for a file created by \fBunihex2bmp\fP
+originally).
+.TP
+.BR \-o
+Specify an output Bitmaps Graphics (".bmp") file.
+If no output file is specified, output is sent to stdout.
+The output file will be 544 rows high by 576 columns wide
+with a 40 byte Device Independent Bitmap (DIB) header,
+which is the format that \fBunibmp2hex\fP expects.
+.TP
+.BR \-v ", " \-\-verbose
+Verbose output.  Print information about the input file on stderr.
+.TP
+.BR \-V ", " \-\-version
+Print the version of \fBunibmpbump\fP and exit.
+.SH FILES
+Bitmap Graphics (".bmp") input and output files.
+.SH SEE ALSO
+.BR bdfimplode(1),
+.BR hex2bdf(1),
+.BR hex2sfd(1),
+.BR hexbraille(1),
+.BR hexdraw(1),
+.BR hexkinya(1),
+.BR hexmerge(1),
+.BR johab2ucs2(1),
+.BR unibdf2hex(1),
+.BR unibmp2hex(1),
+.BR unicoverage(1),
+.BR unidup(1),
+.BR unifont(5),
+.BR unifont-viewer(1),
+.BR unifont1per(1),
+.BR unifontchojung(1),
+.BR unifontksx(1),
+.BR unifontpic(1),
+.BR unigencircles(1),
+.BR unigenwidth(1),
+.BR unihex2bmp(1),
+.BR unihex2png(1),
+.BR unihexfill(1),
+.BR unihexgen(1),
+.BR unihexrotate(1),
+.BR unipagecount(1),
+.BR unipng2hex(1)
+.SH AUTHOR
+.B unibmpbump
+was written by Paul Hardy.
+.SH LICENSE
+.B unibmpbump
+is Copyright \(co 2019 Paul Hardy.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+No known bugs exist.

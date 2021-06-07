@@ -1,0 +1,464 @@
+#!/usr/bin/perl
+#
+#  hexkinya - generate Kinya syllables for Plane 15 CSUR range.
+#
+#  Author: Andrew Miller, 2014
+#
+#  LICENSE:
+#
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 2 of the License, or
+#     (at your option) any later version.
+#
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+use strict;
+use warnings;
+use Wx;
+
+package Unifont;
+
+use GD qw (:DEFAULT :cmp);
+
+sub LoadHexFile {
+	my ($input) = @_;
+	my %hexlist = ();
+
+	open (HEXFILE, "$input") or die ("Cannot open hex file for input\n");
+
+	while (<HEXFILE>) {
+		chomp;
+		my @data = split (':', $_);
+
+		my $codepoint = hex ($data[0]);
+		my $char = $data[1];
+#		my $display_width = $codepoint > 0xFFFF ? 6 : 4;
+		# Use 6-digit codepoint for all glyphs for now
+		my $display_width = 6;
+
+		$hexlist{sprintf ("%0*X", $display_width, $codepoint)} = $char;
+	}
+
+	return %hexlist;
+}
+
+sub Hex2PNG {
+	my ($hexlist_ref, $pagenum, $charheight) = @_;
+	my %hexlist = %$hexlist_ref;
+
+	if ($pagenum > 0x10FF) {
+		die ("Invalid page.\n");
+	}
+
+	my $charxoffset = 4;
+	my $gridxoffset = 48;
+	my $gridyoffset = 32;
+	my ($charyoffset, $boxsize, $xmax, $ymax, $charmaxwidth);
+
+	if (not $charheight) {
+		$charheight = 16;
+	}
+
+	if ($charheight == 16) {
+		$charyoffset = 7;
+		$boxsize = 32;
+		$xmax = 2;
+		$ymax = 1;
+		$charmaxwidth = 6;
+	} elsif ($charheight == 24) {
+		$charyoffset = 4;
+		$boxsize = 32;
+		$xmax = 2;
+		$ymax = 2;
+		$charmaxwidth = 6;
+	} elsif ($charheight == 32) {
+		$charyoffset = 4;
+		$boxsize = 40;
+		$xmax = 3;
+		$ymax = 3;
+		$charmaxwidth = 8;
+	} else {
+		die ("Invalid height.\n");
+	}
+
+	# Create box and set as tile pattern
+
+	my $box = new GD::Image ($boxsize, $boxsize);
+
+	my $black = $box->colorAllocate (0, 0, 0);
+	my $white = $box->colorAllocate (255, 255, 255);
+
+	$box->filledRectangle (1, 1, $boxsize - 1, $boxsize - 1, $white);
+
+	# Draw dots at 8 pixel boundaries
+	 for (my $count = 0; $count <= $xmax; $count++) {
+		$box->setPixel (($count * 8) + $charxoffset + 1, 0, $white);
+		$box->setPixel (($count * 8) + $charxoffset + 8, 0, $white);
+	}
+
+	for (my $count = 0; $count <= $ymax; $count++) {
+		$box->setPixel (0, ($count * 8) + $charyoffset + 1, $white);
+		$box->setPixel (0, ($count * 8) + $charyoffset + 8, $white);
+	}
+
+	# Draw grid
+
+	my $im = new GD::Image ($boxsize * 16 + $gridxoffset, $boxsize * 16 + $gridyoffset);
+
+	$black = $im->colorAllocate (0, 0, 0);
+	$white = $im->colorAllocate (255, 255, 255);
+
+	$im->fill (0, 0, $white);
+
+	for (my $xcount = 0; $xcount <= 16; $xcount++) {
+		for (my $ycount = 0; $ycount <= 16; $ycount++) {
+			$im->copy ($box, $xcount * $boxsize + $gridxoffset - 1, $ycount * $boxsize + $gridyoffset - 1, 0, 0, $boxsize, $boxsize);
+		}
+	}
+
+	# Print plane
+	$im->string (gdLargeFont, 8, 9, sprintf ('U+%02X', $pagenum >> 8), $black);
+
+	# Print row headers
+	for (my $count = 0; $count <= 15; $count++) {
+		$im->string (gdLargeFont, 32, ($count * $boxsize) + (($boxsize - 16) / 2) + $gridyoffset, sprintf ('%X', $count), $black);
+	}
+
+	# Print column headers
+	for (my $count = 0; $count <= 15; $count++) {
+		$im->string (gdLargeFont, ($count * $boxsize) + (($boxsize - 24) / 2) + $gridxoffset, 9, sprintf ('%03X', (($pagenum & 0xFF) << 4) + $count), $black);
+	}
+
+	while ((my $codepoint, my $char) = each %hexlist) {
+		if ($codepoint and $codepoint =~ m/^[0-9A-F]{4,6}$/) {
+			my $cp = hex ($codepoint);
+
+			# Calculate if codepoint is within page
+			if ($cp >> 8 == $pagenum) {
+				# Calculate character width, column and row
+				my $charwidth = length ($char) / $charheight;
+
+				if ($charwidth <= $charmaxwidth) {
+					my $col = ($cp >> 4) & 0xF;
+					my $row = $cp & 0xF;
+
+					for (my $j = 0; $j < $charheight; $j++) {
+						# Get character row
+						my $r = hex (substr ($char, $j * $charwidth, $charwidth));
+
+						# Draw character
+						for (my $i = 0; $i < $charwidth * 4; $i++) {
+							if ($r & 1 << $i) {
+								$im->setPixel (($col * $boxsize) + ($charwidth * 4 - $i) + $charxoffset + $gridxoffset - 1, ($row * $boxsize) + $j + $charyoffset + $gridyoffset, $black);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return $im;
+}
+
+package UnifontViewer;
+
+use base qw (Wx::App);
+use Wx qw (wxMINIMIZE_BOX wxSYSTEM_MENU wxCAPTION wxCLOSE_BOX wxCLIP_CHILDREN);
+
+sub OnInit {
+	my $self  = shift;
+	my $frame = UnifontViewerFrame->new (
+		undef,
+		-1,
+		'Unifont Viewer',
+		[-1, -1],
+		[-1, -1],
+		wxMINIMIZE_BOX | wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN
+	);
+
+	$frame->Show (1);
+	$self->SetTopWindow ($frame);
+
+	return 1;
+}
+
+package ImagePanel;
+
+use base qw (Wx::Panel);
+use fields qw (memdc);
+use Wx qw (wxCOPY);
+use Wx::Event qw (EVT_PAINT);
+
+sub new {
+	my $class = shift;
+	my $self  = $class->SUPER::new (@_);
+
+	$self->{memdc} = Wx::MemoryDC->new ();
+
+	EVT_PAINT($self, \&OnPaint);
+
+	return $self;
+}
+
+sub clear {
+	my $self = shift;
+
+	$self->{memdc}->Clear ();
+	$self->Refresh ();
+}
+
+sub load {
+	my ($self, $filename) = @_;
+
+	my $file = IO::File->new ($filename, 'r');
+	binmode $file;
+	my $handler = Wx::PNGHandler->new ();
+	my $image = Wx::Image->new ();
+	my $bitmap;
+	$handler->LoadFile ($image, $file);
+	$bitmap = Wx::Bitmap->new ($image);
+
+	if ($bitmap->Ok ()) {
+		$self->{memdc}->SelectObject ($bitmap);
+		$self->Refresh ();
+	}
+}
+
+sub load_gd {
+	my ($self, $gd) = @_;
+	my $png = $gd->png;
+
+	open my $fh, '<', \$png or die ("Cannot create PNG file for viewing.\n");
+	my $handler = Wx::PNGHandler->new ();
+	my $image = Wx::Image->new ();
+	my $bitmap;
+	$handler->LoadFile ($image, $fh);
+	close $fh or die ("Cannot properly close output file.\n");
+	$bitmap = Wx::Bitmap->new ($image);
+
+	if ($bitmap->Ok ()) {
+		$self->{memdc}->SelectObject ($bitmap);
+		$self->Refresh ();
+	}
+}
+
+sub OnPaint {
+	my ($self, $event) = @_;
+	my $size = $self->GetClientSize ();
+
+	my $dcPaint = Wx::PaintDC->new ($self);
+	$dcPaint->Blit (0, 0, $size->x, $size->y, $self->{memdc}, 0, 0, wxCOPY, 0);
+}
+
+package UnifontViewerFrame;
+
+use base qw (Wx::Frame);
+use fields qw (filename hexlist charheight listbox imagepanel);
+use Wx::Event qw (EVT_MENU EVT_LISTBOX);
+use Wx qw (wxBORDER_SIMPLE wxID_OPEN wxID_SAVE wxID_EXIT wxID_OK wxHORIZONTAL wxEXPAND wxALL wxLB_SORT wxFD_OPEN wxFD_SAVE wxFD_FILE_MUST_EXIST wxFD_CHANGE_DIR);
+
+our @id = (0 .. 100);
+
+sub new {
+	my $class = shift;
+	my $self  = $class->SUPER::new (@_);
+	$self->{filename} = '';
+	$self->{charheight} = 16;
+
+	my $boxsizer = Wx::BoxSizer->new (wxHORIZONTAL);
+
+	$self->{listbox} = Wx::ListBox->new (
+		$self,
+		-1,
+		[-1, -1],
+		[64, -1],
+		[],
+		wxLB_SORT
+	);
+
+	$self->{imagepanel} = ImagePanel->new (
+		$self,
+		-1,
+		[-1, -1],
+		[-1, -1],
+		wxBORDER_SIMPLE
+	);
+
+	SetCharHeight ($self, $self->{charheight});
+
+	$boxsizer->Add (
+		$self->{listbox},
+		0,
+		wxEXPAND | wxALL,
+		0
+	);
+
+	$boxsizer->Add (
+		$self->{imagepanel},
+		0,
+		wxALL,
+		1
+	);
+
+	EVT_LISTBOX ($self->{listbox}, -1, sub {
+		my $selection = $self->{listbox}->GetStringSelection ();
+		SetPage ($self, $selection);
+	});
+
+	my $menubar = Wx::MenuBar->new ();
+	my $menu = Wx::Menu->new ();
+
+	$menu->Append (wxID_OPEN, "O&pen...\tCtrl+O");
+	$menu->Append (wxID_SAVE, "S&ave As...\tCtrl+S");
+	$menu->AppendSeparator ();
+	$menu->AppendRadioItem ($id[0], "Glyph Height 16");
+	$menu->AppendRadioItem ($id[1], "Glyph Height 24");
+	$menu->AppendRadioItem ($id[2], "Glyph Height 32");
+	$menu->AppendSeparator ();
+	$menu->Append (wxID_EXIT, "E&xit\tCtrl+X");
+	$menubar->Append ($menu, 'File');
+
+	$self->SetMenuBar ($menubar);
+
+	EVT_MENU ($self, wxID_OPEN, \&OpenFile);
+	EVT_MENU ($self, wxID_SAVE, \&SaveFile);
+	EVT_MENU ($self, $id[0], sub {SetCharHeight ($self, 16)});
+	EVT_MENU ($self, $id[1], sub {SetCharHeight ($self, 24)});
+	EVT_MENU ($self, $id[2], sub {SetCharHeight ($self, 32)});
+	EVT_MENU ($self, wxID_EXIT, sub {$_[0]->Close (1)});
+
+	$self->SetSizerAndFit ($boxsizer);
+
+	return $self;
+}
+
+sub OpenFile {
+	my ($self, $event) = @_;
+
+	my $dlg = Wx::FileDialog->new (
+		$self,
+		'Open File',
+		'',
+		'',
+		'Hex files (*.hex)|*.hex',
+		wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_CHANGE_DIR
+	);
+
+	if ($dlg->ShowModal == wxID_OK) {
+		$self->{imagepanel}->clear ();
+
+		my %pages = ();
+
+		$self->{filename} = $dlg->GetPath ();
+		$self->SetTitle ("Unifont Viewer - " . $dlg->GetFilename ());
+
+		open HEXFILE, "<$self->{filename}" || die "Cannot open $self->{filename}.\n";
+
+		while (<HEXFILE>) {
+			chomp;
+			my ($codepoint, $char) = (split (':', $_));
+			# For now, list page numbers as 4 digits even for Plane 0 for sorting
+			if (length ($codepoint) == 4) {
+				$codepoint = "00" . $codepoint;
+			}
+
+			if ($codepoint and $codepoint =~ m/^[0-9A-F]{4,6}$/) {
+				if (!($char eq '00542A542A542A542A542A542A542A00' || $char eq 'FFB9C5EDD5D5D5D5D5D5D5D5EDB991FF')) {
+					my $page = substr ($codepoint, 0, -2);
+					$pages{$page} = 1;
+				}
+			}
+		}
+
+		$self->{listbox}->Clear ();
+		for (keys %pages) {
+			$self->{listbox}->Append ($_, hex ($_));
+		}
+
+		my %hexlist = Unifont::LoadHexFile ($self->{filename});
+		$self->{hexlist} = \%hexlist;
+
+		$self->{listbox}->Select (0);
+		my $selection = $self->{listbox}->GetStringSelection ();
+		SetPage ($self, $selection);
+	};
+}
+
+sub SaveFile {
+	my ($self, $event) = @_;
+
+	my $selection = $self->{listbox}->GetStringSelection ();
+
+	if ($selection) {
+		my $dlg = Wx::FileDialog->new (
+			$self,
+			'Save File',
+			'',
+			"$selection.png",
+			'PNG files (*.png)|*.png',
+			wxFD_SAVE
+		);
+
+		if ($dlg->ShowModal == wxID_OK) {
+			my $im = Unifont::Hex2PNG ($self->{hexlist}, hex ($selection), $self->{charheight});
+
+			my $filename = $dlg->GetPath ();
+
+			$self->{imagepanel}->load_gd ($im);
+
+			open (PICTURE, ">$filename") or die ("Cannot save image.\n");
+			binmode PICTURE;
+			print PICTURE $im->png or die;
+			close PICTURE or die ("Cannot properly close output file.\n");
+		}
+	}
+}
+
+sub SetPage {
+	my ($self, $selection) = @_;
+
+	if ($selection) {
+		my $im = Unifont::Hex2PNG ($self->{hexlist}, hex ($selection), $self->{charheight});
+		$self->{imagepanel}->load_gd ($im);
+	} else {
+		$self->{imagepanel}->clear ();
+	}
+}
+
+sub SetCharHeight {
+	my ($self, $charheight) = @_;
+	my ($x, $y);
+	my $selection = $self->{listbox}->GetStringSelection ();
+
+	$self->{charheight} = $charheight;
+
+	if ($charheight == 16 || $charheight == 24) {
+		$x = 562;
+		$y = 544;
+	} elsif ($charheight == 32) {
+		$x = 688;
+		$y = 672;
+	}
+
+	$self->{imagepanel}->SetMinSize ([-1, -1]);
+	$self->{imagepanel}->SetClientSize ($x, $y);
+	$self->{imagepanel}->SetMinSize ($self->{imagepanel}->GetSize ());
+	$self->Fit ();
+
+	SetPage ($self, $selection);
+}
+
+package main;
+
+my ($app) = UnifontViewer->new ();
+
+$app->MainLoop ();

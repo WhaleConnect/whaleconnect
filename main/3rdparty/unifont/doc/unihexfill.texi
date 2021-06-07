@@ -1,0 +1,196 @@
+@comment TROFF INPUT: .TH UNIHEXFILL 1 "2014 Jun 30"
+
+@node unihexfill
+@section unihexfill
+@c DEBUG: print_menu("@section")
+
+@menu
+* unihexfill NAME::
+* unihexfill SYNOPSIS::
+* unihexfill DESCRIPTION::
+* unihexfill OPTIONS::
+* unihexfill FILES::
+* unihexfill EXAMPLE::
+* unihexfill SEE ALSO::
+* unihexfill AUTHOR::
+* unihexfill LICENSE::
+* unihexfill BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unihexfill NAME
+@subsection unihexfill NAME
+@c DEBUG: print_menu("unihexfill NAME")
+
+unihexfill @minus{} Generate range of Unifont 4- or 6-digit hexadecimal glyphs
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unihexfill SYNOPSIS
+@subsection unihexfill SYNOPSIS
+@c DEBUG: print_menu("unihexfill SYNOPSIS")
+
+@b{unihexfill }< @i{unassigned-ranges.txt }> @i{filler-glyphs.hex}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unihexfill DESCRIPTION
+@subsection unihexfill DESCRIPTION
+@c DEBUG: print_menu("unihexfill DESCRIPTION")
+
+@comment TROFF INPUT: .B unihexfill
+@b{unihexfill}
+is a shell script that reads a list of code point ranges from STDIN
+and produces filler glyphs of 4- or 6-digit code points on STDOUT.
+@comment TROFF INPUT: .P
+@comment .P
+The format of the input file is a combination of comment lines,
+single code points on a line, and start/stop pairs of code points on
+a line separated by a space.  Comment lines start with a semicolon (';')
+by convention.  Start and stop code points are strings of hexadecimal
+digits, by convention either four or six digits.
+@comment TROFF INPUT: .P
+@comment .P
+@comment TROFF INPUT: .B unihexfill
+@b{unihexfill}
+invokes
+@comment TROFF INPUT: .B unihexgen
+@b{unihexgen}
+for each non-comment line in its input file.  If a codepoint is less than
+or equal to "FFFF" (i.e., 0xFFFF), a four-digit hexadecimal number is encoded
+within the corresponding Unifont glyph as two digits on each of
+two rows.  Otherwise, a six-digit hexadecimal number is encoded as
+three digits on each of two rows.
+@comment TROFF INPUT: .SH OPTIONS
+
+@node unihexfill OPTIONS
+@subsection unihexfill OPTIONS
+@c DEBUG: print_menu("unihexfill OPTIONS")
+
+There are no options.
+@comment TROFF INPUT: .SH FILES
+
+@node unihexfill FILES
+@subsection unihexfill FILES
+@c DEBUG: print_menu("unihexfill FILES")
+
+*.txt as input; *.hex as output.
+@comment TROFF INPUT: .SH EXAMPLE
+
+@node unihexfill EXAMPLE
+@subsection unihexfill EXAMPLE
+@c DEBUG: print_menu("unihexfill EXAMPLE")
+
+In the Unifont source package, the file font/plane01/Makefile generates
+Unicode Plane 1 hexadecimal filler glyphs of unassigned code points within
+assigned scripts with this single-line command:
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .RS
+
+@c ---------------------------------------------------------------------
+@quotation
+@comment TROFF INPUT: .B ../../bin/unihexfill
+@b{../../bin/unihexfill}
+< unassigned@minus{}ranges.txt > unassigned.hex
+@comment TROFF INPUT: .RE
+
+@end quotation
+
+@c ---------------------------------------------------------------------
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unihexfill SEE ALSO
+@subsection unihexfill SEE ALSO
+@c DEBUG: print_menu("unihexfill SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unihexfill AUTHOR
+@subsection unihexfill AUTHOR
+@c DEBUG: print_menu("unihexfill AUTHOR")
+
+@comment TROFF INPUT: .B unihexfill
+@b{unihexfill}
+was written by Paul Hardy.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unihexfill LICENSE
+@subsection unihexfill LICENSE
+@c DEBUG: print_menu("unihexfill LICENSE")
+
+@comment TROFF INPUT: .B unihexfill
+@b{unihexfill}
+is Copyright @copyright{} 2014 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unihexfill BUGS
+@subsection unihexfill BUGS
+@c DEBUG: print_menu("unihexfill BUGS")
+
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input file.  Any line that appears to
+begin with a hexadecimal digit is fed to
+@comment TROFF INPUT: .B unihexgen.
+@b{unihexgen.}

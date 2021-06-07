@@ -1,0 +1,145 @@
+@comment TROFF INPUT: .TH HEX2SFD 1 "2008 Jul 06"
+
+@node hex2sfd
+@section hex2sfd
+@c DEBUG: print_menu("@section")
+
+@menu
+* hex2sfd NAME::
+* hex2sfd SYNOPSIS::
+* hex2sfd DESCRIPTION::
+* hex2sfd FILES::
+* hex2sfd SEE ALSO::
+* hex2sfd AUTHOR::
+* hex2sfd LICENSE::
+* hex2sfd BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node hex2sfd NAME
+@subsection hex2sfd NAME
+@c DEBUG: print_menu("hex2sfd NAME")
+
+hex2sfd @minus{} Convert a GNU Unifont .hex file into a FontForge .sfd format
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node hex2sfd SYNOPSIS
+@subsection hex2sfd SYNOPSIS
+@c DEBUG: print_menu("hex2sfd SYNOPSIS")
+
+@b{hex2sfd }< @i{input-font.hex }> @i{output-font.sfd}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node hex2sfd DESCRIPTION
+@subsection hex2sfd DESCRIPTION
+@c DEBUG: print_menu("hex2sfd DESCRIPTION")
+
+@comment TROFF INPUT: .B hex2sfd
+@b{hex2sfd}
+reads a GNU Unifont .hex file from STDIN and writes an outline font
+representation in FontForge Spline Font Database (.sfd) format.
+The resulting .sfd file can then be converted by FontForge into
+a TrueType .ttf font.
+@comment TROFF INPUT: .SH FILES
+
+@node hex2sfd FILES
+@subsection hex2sfd FILES
+@c DEBUG: print_menu("hex2sfd FILES")
+
+GNU Unifont .hex font files for input, FontForge .sfd font files for output
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node hex2sfd SEE ALSO
+@subsection hex2sfd SEE ALSO
+@c DEBUG: print_menu("hex2sfd SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node hex2sfd AUTHOR
+@subsection hex2sfd AUTHOR
+@c DEBUG: print_menu("hex2sfd AUTHOR")
+
+@comment TROFF INPUT: .B hex2sfd
+@b{hex2sfd}
+was written by Luis Alejandro Gonzalez Miranda in 2005,
+with modifications by Paul Hardy in 2008.
+@comment TROFF INPUT: .SH LICENSE
+
+@node hex2sfd LICENSE
+@subsection hex2sfd LICENSE
+@c DEBUG: print_menu("hex2sfd LICENSE")
+
+@comment TROFF INPUT: .B hex2sfd
+@b{hex2sfd}
+is Copyright @copyright{} 2005 Luis Alejandro Gonzalez Miranda,
+@copyright{} 2008 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node hex2sfd BUGS
+@subsection hex2sfd BUGS
+@c DEBUG: print_menu("hex2sfd BUGS")
+
+No known bugs exist.

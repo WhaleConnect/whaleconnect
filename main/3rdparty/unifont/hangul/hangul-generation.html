@@ -1,0 +1,1052 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+  <title>Generating Hangul Syllables</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="GNU Unifont free software utilities">
+  <meta name="keywords" content="Unicode, tutorial, Unifont, GNU, software, programs, utilities, font, characters, glyphs">
+  <link rel="stylesheet" type="text/css" href="hangul-generation_files/unifoundry.css">
+</head>
+<body bgcolor="#ffffcc" text="#000000">
+<div class="container">
+
+  <div class="header">
+    <h1 class="header" align="center">Uni<i>foundry</i>.com</h1>
+    <h2 class="header" align="center">Generating Hangul Syllables (U+AC00..U+D7A3)</h2>
+  </div>
+  <div class="left">
+    <br>
+    <a class="button" href="http://unifoundry.com/index.html">Home</a><br>
+    <a class="button" href="http://unifoundry.com/unifont.html">GNU Unifont</a><br>
+    <a class="button" href="http://unifoundry.com/unicode-utilities.html">Unicode Utilities</a><br>
+    <a class="button" href="http://unifoundry.com/unicode-tutorial.html">Unicode Tutorial</a><br>
+    <a class="button" href="http://unifoundry.com/hangul/index.html">Hangul Fonts</a><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<b>Syllables</b><br>
+    <a class="button" href="http://www.unifoundry.com/pub">Downloads</a>
+  </div>
+  <div class="content">
+    <h3>Overview</h3>
+      <p>
+        Hangul is the syllabic writing system used by Koreans to write
+        the Korean language.  Syllables are written with an initial
+        consonant, a middle vowel or dipthong, and optionally one or two
+        final consonants.  This web page assumes that you already have
+        basic familiarity with Hangul and are interested in creating
+        a Hangul Syllables font.  The bulk of this page describes how
+        the Hanterm Johab glyph arrangement has been used to generate
+        Unicode's Hangul Syllables.  The ideas behind arrangement of
+        the Hanterm Johab fonts will hopefully save others who are
+        looking to create their own Hangul font a great deal of time.
+      </p>
+      <p>
+        For each syllable, the modern Korean alphabet
+        uses 19 possible initial consonants, 21 possible vowels and
+        dipthongs, and 26 possible final single or double consonants
+        or no final consonant.
+        Therefore, the modern Hangul alphabet allows writing up to
+        19 × 21 × 27 = 11,172 unique syllables.
+      </p>
+      <p>
+        Drawing 11,172 separate glyphs would be a daunting task.
+        Fortunately, the regular nature of Hangul syllable formation
+        allows creation of the entire Hangul Syllables block from
+        a few variations of each character.
+      </p>
+    <h3>Motivation</h3>
+      <p>
+        I could not find a set of Hangul Syllables that was licensed
+        under the GNU GPL unencumbered by any other restrictions, and so
+        embarked on creating an entirely new set from scratch.
+      </p>
+      <p>
+        Most work on bitmapped Hangul fonts was done more than
+        ten years before I began this effort.  The world has
+        for the most part moved on to TrueType fonts, and I
+        could not find  documentation in English about
+        the earlier formats anywhere on the web.
+        So along with creating a new set of Hangul Syllables,
+        I wrote this web page to document my findings for
+        the benefit of others.
+      </p>
+    <h3>Johab Fonts</h3>
+      <p>
+        "Johab" fonts refer to the Korean font standard KS C-5601-1992,
+        later renamed to KS X 1001:1992, which supports encoding
+        all possible syllables that are in modern use, as well as
+        encoding historical characters separately.  This character
+        set is assigned to Microsoft Windows Code Page 1361.
+        "Wansung" refers to the earlier KS C-5601-1987 standard
+        (assigned to Microsoft Windows Code Page 949).
+      </p>
+      <p>
+        I've encountered two main Hangul font encodings of variations
+        of the component characters that form syllables.  Hanterm
+        supports both of them.
+        For one of them, there was a Perl script that Jungsik Shin
+        wrote for the Unifont effort.  It was easy to follow, and
+        I had already modified it so I was familiar with it.
+        For the other font encoding, commonly referred to as
+        Johab 8/4/4, I could only find one Python script that was
+        a translation of an earlier Perl script (which I could not
+        find).  Although Hanterm handles both of those encodings,
+        Hanterm is a much larger program than these two scripts and
+        so is a lot more difficult to follow.
+      </p>
+    <h3>Johab Base Font for Unifont</h3>
+      <p>
+        The system for arranging variations of Hangul letters into
+        syllables that Unifont has used from its beginning is taken from
+        the Hanterm Johab font encoding structure described in this section.
+        This font encoding uses:
+      </p>
+      <ul>
+        <li>1 blank filler glyph, at position 0 in the font</li>
+        <li>10 variations for each initial consonant, at 0x001..0x126</li>
+        <li>3 or 4 variations for each vowel or dipthong, at 0x127..0x194</li>
+        <li>4 variations for each final consonant, at 0x195..0x210</li>
+      </ul>
+      <p>
+        This comes out to a little more than 500 glyphs, which is a lot
+        easier to draw than over 11,000.  There's a small catch with this
+        encoding, though: some ancient letters are thrown in for
+        rendering of ancient Hangul words.  You don't need these to
+        generate the Unicode Hangul Syllalbes block, so you can draw them
+        or omit them as you please.  For completeness, I drew them in the
+        Johab-type font I created.
+      </p>
+      <p>
+        A picture is worth a thousand words, so let's start by taking
+        a look at the Korean alphabet.  These tables show the ordering in
+        the Johab fonts used by Hanterm, including the ancient characters.
+        Note that the modern characters appear in the same relative order
+        as in the Unicode U+1100..U+11FF Hangul code block,
+        but the ancient characters are not in the same relative order as
+        in Unicode.  Also, there are a lot of ancient characters in the
+        Unicode U+1100..U+11FF block that do not appear in the Johab-type
+        font.
+      </p>
+      <center>
+        <table cellpadding="10">
+          <tbody><tr>
+            <td>
+              <table border="1" cellpadding="2">
+                <tbody><tr><th colspan="4">Initial Consonants</th></tr>
+                <tr><th>Order</th><th>Glyph</th><th>Unicode</th><th>Font Range</th></tr>
+                <tr><td align="center"> 1</td><td align="center">ᄀ</td><td align="left">U+1100</td><td>0x001..0x00A</td></tr>
+                <tr><td align="center"> 2</td><td align="center">ᄁ</td><td align="left">U+1101</td><td>0x00B..0x014</td></tr>
+                <tr><td align="center"> 3</td><td align="center">ᄂ</td><td align="left">U+1102</td><td>0x015..0x01E</td></tr>
+                <tr><td align="center"> 4</td><td align="center">ᄃ</td><td align="left">U+1103</td><td>0x01F..0x028</td></tr>
+                <tr><td align="center"> 5</td><td align="center">ᄄ</td><td align="left">U+1104</td><td>0x029..0x032</td></tr>
+                <tr><td align="center"> 6</td><td align="center">ᄅ</td><td align="left">U+1105</td><td>0x033..0x03C</td></tr>
+                <tr><td align="center"> 7</td><td align="center">ᄆ</td><td align="left">U+1106</td><td>0x03D..0x046</td></tr>
+                <tr><td align="center"> 8</td><td align="center">ᄇ</td><td align="left">U+1107</td><td>0x047..0x051</td></tr>
+                <tr><td align="center"> 9</td><td align="center">ᄈ</td><td align="left">U+1108</td><td>0x052..0x05A</td></tr>
+                <tr><td align="center">10</td><td align="center">ᄉ</td><td align="left">U+1109</td><td>0x05B..0x064</td></tr>
+                <tr><td align="center">11</td><td align="center">ᄊ</td><td align="left">U+110A</td><td>0x065..0x06E</td></tr>
+                <tr><td align="center">12</td><td align="center">ᄋ</td><td align="left">U+110B</td><td>0x06F..0x078</td></tr>
+                <tr><td align="center">13</td><td align="center">ᄌ</td><td align="left">U+110C</td><td>0x079..0x082</td></tr>
+                <tr><td align="center">14</td><td align="center">ᄍ</td><td align="left">U+110D</td><td>0x083..0x08C</td></tr>
+                <tr><td align="center">15</td><td align="center">ᄎ</td><td align="left">U+110E</td><td>0x08D..0x096</td></tr>
+                <tr><td align="center">16</td><td align="center">ᄏ</td><td align="left">U+110F</td><td>0x097..0x0A0</td></tr>
+                <tr><td align="center">17</td><td align="center">ᄐ</td><td align="left">U+1110</td><td>0x0A1..0x0AA</td></tr>
+                <tr><td align="center">18</td><td align="center">ᄑ</td><td align="left">U+1111</td><td>0x0AB..0x0B4</td></tr>
+                <tr><td align="center">19</td><td align="center">ᄒ</td><td align="left">U+1112</td><td>0x0B5..0x0BE</td></tr>
+                <tr><td colspan="4" align="center"><b>Ancient</b></td></tr>
+                <tr><td align="center">20</td><td align="center">ᄫ</td><td align="left">U+112B</td><td>0x0BF..0x0C8</td></tr>
+                <tr><td align="center">21</td><td align="center">ᄞ</td><td align="left">U+111E</td><td>0x0C9..0x0D2</td></tr>
+                <tr><td align="center">22</td><td align="center">ᄭ</td><td align="left">U+112D</td><td>0x0D3..0x0DC</td></tr>
+                <tr><td align="center">23</td><td align="center">ᄠ</td><td align="left">U+1120</td><td>0x0DD..0x0E6</td></tr>
+                <tr><td align="center">24</td><td align="center">ᄯ</td><td align="left">U+112F</td><td>0x0E7..0x0F0</td></tr>
+                <tr><td align="center">25</td><td align="center">ᄲ</td><td align="left">U+1132</td><td>0x0F1..0x0FA</td></tr>
+                <tr><td align="center">26</td><td align="center">ᄡ</td><td align="left">U+1121</td><td>0x0FB..0x104</td></tr>
+                <tr><td align="center">27</td><td align="center">ᅀ</td><td align="left">U+1140</td><td>0x105..0x10E</td></tr>
+                <tr><td align="center">28</td><td align="center">ᅌ</td><td align="left">U+114C</td><td>0x10F..0x118</td></tr>
+                <tr><td align="center">29</td><td align="center">ᄧ</td><td align="left">U+1127</td><td>0x119..0x122</td></tr>
+                <tr><td align="center">30</td><td align="center">ᄶ</td><td align="left">U+1136</td><td>0x123..0x12C</td></tr>
+                <tr><td align="center">31</td><td align="center">ᅙ</td><td align="left">U+1159</td><td>0x12D..0x136</td></tr>
+              </tbody></table>
+            </td>
+            <td>
+              <table border="1" cellpadding="2">
+                <tbody><tr><th colspan="4">Vowels &amp; Dipthongs</th></tr>
+                <tr><th>Order</th><th>Glyph</th><th>Unicode</th><th>Font Range</th></tr>
+                <tr><td align="center"> 1</td><td align="center">ᅡ</td><td align="left">U+1161</td><td>0x137..0x139</td></tr>
+                <tr><td align="center"> 2</td><td align="center">ᅢ</td><td align="left">U+1162</td><td>0x13A..0x13C</td></tr>
+                <tr><td align="center"> 3</td><td align="center">ᅣ</td><td align="left">U+1163</td><td>0x13D..0x13F</td></tr>
+                <tr><td align="center"> 4</td><td align="center">ᅤ</td><td align="left">U+1164</td><td>0x140..0x142</td></tr>
+                <tr><td align="center"> 5</td><td align="center">ᅥ</td><td align="left">U+1165</td><td>0x143..0x145</td></tr>
+                <tr><td align="center"> 6</td><td align="center">ᅦ</td><td align="left">U+1166</td><td>0x146..0x148</td></tr>
+                <tr><td align="center"> 7</td><td align="center">ᅧ</td><td align="left">U+1167</td><td>0x149..0x14B</td></tr>
+                <tr><td align="center"> 8</td><td align="center">ᅨ</td><td align="left">U+1168</td><td>0x14C..0x14E</td></tr>
+                <tr><td align="center"> 9</td><td align="center">ᅩ</td><td align="left">U+1169</td><td>0x14F..0x152</td></tr>
+                <tr><td align="center">10</td><td align="center">ᅪ</td><td align="left">U+116A</td><td>0x153..0x156</td></tr>
+                <tr><td align="center">11</td><td align="center">ᅫ</td><td align="left">U+116B</td><td>0x157..0x15A</td></tr>
+                <tr><td align="center">12</td><td align="center">ᅬ</td><td align="left">U+116C</td><td>0x15B..0x15E</td></tr>
+                <tr><td align="center">13</td><td align="center">ᅭ</td><td align="left">U+116D</td><td>0x15F..0x162</td></tr>
+                <tr><td align="center">14</td><td align="center">ᅮ</td><td align="left">U+116E</td><td>0x163..0x165</td></tr>
+                <tr><td align="center">15</td><td align="center">ᅯ</td><td align="left">U+116F</td><td>0x166..0x168</td></tr>
+                <tr><td align="center">16</td><td align="center">ᅰ</td><td align="left">U+1170</td><td>0x169..0x16B</td></tr>
+                <tr><td align="center">17</td><td align="center">ᅱ</td><td align="left">U+1171</td><td>0x16C..0x16E</td></tr>
+                <tr><td align="center">18</td><td align="center">ᅲ</td><td align="left">U+1172</td><td>0x16F..0x171</td></tr>
+                <tr><td align="center">19</td><td align="center">ᅳ</td><td align="left">U+1173</td><td>0x172..0x175</td></tr>
+                <tr><td align="center">20</td><td align="center">ᅴ</td><td align="left">U+1174</td><td>0x176..0x179</td></tr>
+                <tr><td align="center">21</td><td align="center">ᅵ</td><td align="left">U+1175</td><td>0x17A..0x17C</td></tr>
+                <tr><td colspan="4" align="center"><b>Ancient</b></td></tr>
+                <tr><td align="center">22</td><td align="center">ᅹ</td><td align="left">U+1179</td><td>0x17A..0x17F</td></tr>
+                <tr><td align="center">23</td><td align="center">ᆅ</td><td align="left">U+1185</td><td>0x180..0x182</td></tr>
+                <tr><td align="center">24</td><td align="center">ᆈ</td><td align="left">U+1188</td><td>0x183..0x185</td></tr>
+                <tr><td align="center">25</td><td align="center">ᆑ</td><td align="left">U+1191</td><td>0x186..0x188</td></tr>
+                <tr><td align="center">26</td><td align="center">ᆒ</td><td align="left">U+1192</td><td>0x189..0x18B</td></tr>
+                <tr><td align="center">27</td><td align="center">ᆔ</td><td align="left">U+1194</td><td>0x18C..0x18E</td></tr>
+                <tr><td align="center">28</td><td align="center">ᆞ</td><td align="left">U+119E</td><td>0x18F..0x191</td></tr>
+                <tr><td align="center">29</td><td align="center">ᆡ</td><td align="left">U+11A1</td><td>0x192..0x194</td></tr>
+                <tr><td colspan="4">&nbsp;</td></tr>
+                <tr><td colspan="4">&nbsp;</td></tr>
+              </tbody></table>
+            </td>
+            <td>
+              <table border="1" cellpadding="2">
+                <tbody><tr><th colspan="4">Final Consonants</th></tr>
+                <tr><th>Order</th><th>Glyph</th><th>Unicode</th><th>Font Range</th></tr>
+                <tr><td align="center"> 1</td><td align="center">ᆨ</td><td align="left">U+11A8</td><td>0x195..0x198</td></tr>
+                <tr><td align="center"> 2</td><td align="center">ᆩ</td><td align="left">U+11A9</td><td>0x199..0x19C</td></tr>
+                <tr><td align="center"> 3</td><td align="center">ᆪ</td><td align="left">U+11AA</td><td>0x19D..0x1A0</td></tr>
+                <tr><td align="center"> 4</td><td align="center">ᆫ</td><td align="left">U+11AB</td><td>0x1A1..0x1A4</td></tr>
+                <tr><td align="center"> 5</td><td align="center">ᆬ</td><td align="left">U+11AC</td><td>0x1A5..0x1A8</td></tr>
+                <tr><td align="center"> 6</td><td align="center">ᆭ</td><td align="left">U+11AD</td><td>0x1A9..0x1AC</td></tr>
+                <tr><td align="center"> 7</td><td align="center">ᆮ</td><td align="left">U+11AE</td><td>0x1AD..0x1B0</td></tr>
+                <tr><td align="center"> 8</td><td align="center">ᆯ</td><td align="left">U+11AF</td><td>0x1B1..0x1B4</td></tr>
+                <tr><td align="center"> 9</td><td align="center">ᆰ</td><td align="left">U+11B0</td><td>0x1B5..0x1B8</td></tr>
+                <tr><td align="center">10</td><td align="center">ᆱ</td><td align="left">U+11B1</td><td>0x1B9..0x1BC</td></tr>
+                <tr><td align="center">11</td><td align="center">ᆲ</td><td align="left">U+11B2</td><td>0x1BD..0x1C0</td></tr>
+                <tr><td align="center">12</td><td align="center">ᆳ</td><td align="left">U+11B3</td><td>0x1C1..0x1C4</td></tr>
+                <tr><td align="center">13</td><td align="center">ᆴ</td><td align="left">U+11B4</td><td>0x1C5..0x1C8</td></tr>
+                <tr><td align="center">14</td><td align="center">ᆵ</td><td align="left">U+11B5</td><td>0x1C9..0x1CC</td></tr>
+                <tr><td align="center">15</td><td align="center">ᆶ</td><td align="left">U+11B6</td><td>0x1CD..0x1D0</td></tr>
+                <tr><td align="center">16</td><td align="center">ᆷ</td><td align="left">U+11B7</td><td>0x1D1..0x1D4</td></tr>
+                <tr><td align="center">17</td><td align="center">ᆸ</td><td align="left">U+11B8</td><td>0x1D5..0x1D8</td></tr>
+                <tr><td align="center">18</td><td align="center">ᆹ</td><td align="left">U+11B9</td><td>0x1D9..0x1DC</td></tr>
+                <tr><td align="center">19</td><td align="center">ᆺ</td><td align="left">U+11BA</td><td>0x1DD..0x1E0</td></tr>
+                <tr><td align="center">20</td><td align="center">ᆻ</td><td align="left">U+11BB</td><td>0x1E1..0x1E4</td></tr>
+                <tr><td align="center">21</td><td align="center">ᆼ</td><td align="left">U+11BC</td><td>0x1E5..0x1E8</td></tr>
+                <tr><td align="center">22</td><td align="center">ᆽ</td><td align="left">U+11BD</td><td>0x1E9..0x1EC</td></tr>
+                <tr><td align="center">23</td><td align="center">ᆾ</td><td align="left">U+11BE</td><td>0x1ED..0x1F0</td></tr>
+                <tr><td align="center">24</td><td align="center">ᆿ</td><td align="left">U+11BF</td><td>0x1F1..0x1F4</td></tr>
+                <tr><td align="center">25</td><td align="center">ᇀ</td><td align="left">U+11C0</td><td>0x1F5..0x1F8</td></tr>
+                <tr><td align="center">26</td><td align="center">ᇁ</td><td align="left">U+11C1</td><td>0x1F9..0x1FC</td></tr>
+                <tr><td align="center">27</td><td align="center">ᇂ</td><td align="left">U+11C2</td><td>0x1FD..0x200</td></tr>
+                <tr><td colspan="4" align="center"><b>Ancient</b></td></tr>
+                <tr><td align="center">28</td><td align="center">ᇙ</td><td align="left">U+11D9</td><td>0x201..0x204</td></tr>
+                <tr><td align="center">29</td><td align="center">ᇚ</td><td align="left">U+11DA</td><td>0x205..0x208</td></tr>
+                <tr><td align="center">30</td><td align="center">ᇹ</td><td align="left">U+11F9</td><td>0x209..0x20C</td></tr>
+                <tr><td align="center">31</td><td align="center">ᇰ</td><td align="left">U+11F0</td><td>0x20D..0x210</td></tr>
+              </tbody></table>
+            </td>
+          </tr>
+        </tbody></table>
+      </center>
+    <h3>Letter Variations</h3>
+      <p>
+        Having several variations of each letter is the key to
+        producing good-looking Hangul Syllables from a smaller
+        set of glyphs.  Jungshik Shin's johab2ucs2 Perl script
+        picks the correct variation for each combination of
+        initial consonant, vowel, and optional final consonant
+        to construct the syllables.  This is accomplished using
+        a number of tables in the Perl script.
+      </p>
+      <p>
+        The comments in johab2ucs2 are in ASCII, with the letter
+        names spelled out.  What follows below is an explanation
+        actually showing the Hangul letters.
+      </p>
+      <p>
+        Initial consonants (choseong) each have 10 variations.
+        The first 5 are used without a final consonant (C+V) so they are
+        taller, and the last 5 are used with a final consonant (C+V+C′).
+        The particular variation depends upon the vowel following the initial
+        consonant.  Here's a table showing the initial consonant variation that
+        applies for each vowel:
+      </p>
+      <table border="2" cellpadding="5" align="center">
+        <tbody><tr>
+          <th colspan="2" align="center">Syllable</th>
+        </tr>
+        <tr>
+          <th align="center">C+V</th>
+          <th align="center">C+V+C′</th>
+          <th align="center">With Modern</th>
+          <th align="center">With Ancient</th>
+          <th align="center">Examples</th>
+        </tr>
+        <tr>
+          <td align="center">1</td><td align="center">6</td>
+          <td>
+            ᅡ, ᅢ, ᅣ, ᅤ, ᅥ,
+            ᅦ, ᅧ, ᅨ, ᅵ
+          </td>
+          <td></td>
+          <td>가, 각, 간, 나, 낛, 난</td>
+        </tr>
+         <tr>
+          <td align="center">2</td><td align="center">7</td>
+          <td>ᅩ, ᅭ, ᅳ</td>
+          <td>ᆞ</td>
+          <td>고, 곡, 곤, 노, 녻, 논</td>
+        </tr>
+         <tr>
+          <td align="center">3</td><td align="center">8</td>
+          <td>ᅮ, ᅲ</td>
+          <td></td>
+          <td>규, 귝, 균, 뉴, 뉷, 뉸</td>
+        </tr>
+         <tr>
+          <td align="center">4</td><td align="center">9</td>
+          <td>ᅪ, ᅫ, ᅬ, ᅴ</td>
+          <td>ᅹ, ᆅ, ᆈ, ᆡ</td>
+          <td>과, 곽, 관, 놔, 놗, 놘</td>
+        </tr>
+         <tr>
+          <td align="center">5</td><td align="center">10</td>
+          <td>ᅯ, ᅰ, ᅱ</td>
+          <td>ᆑ, ᆒ, ᆔ</td>
+          <td>궤, 궥, 궨, 눼, 눿, 뉀</td>
+        </tr>
+      </tbody></table>
+      <p>
+        If you wish to draw your own Hangul Syllables block and use
+        this set of variations, as you look through the glyphs consider
+        the nine general patterns generated by taking the three possible
+        vowel placements (only on the right, only in the middle, and both
+        on the right and in the middle) times the three possible final
+        consonant placements (no final consonant, one final consonant, and
+        two final consonants next to each other).  After this, get into
+        more case-specific details.  Vowels with 3 variations treat
+        the final consonant ᆫ (N, nieun) as a special case.
+      </p>
+      <p>
+        Examples of all these cases appear in the "Examples" column in the
+        table of initial consonants above.  From these examples, you can
+        deduce a few things:
+      </p>
+      <ul>
+        <li>
+          If there's no final consonant, the initial consonant and the
+          vowel or dipthong that follows can be taller.  The initial
+          consonant variations 1–5 are therefore taller than
+          variations 6–10.
+        </li>
+        <li>
+          If the initial consonant is ᄀ (G, or kiyeok), it is
+          drawn with a curve when a vowel mark is not underneath it,
+          but with more of a short, straight line when a vowel mark is drawn
+          underneath it.  Although not shown in the examples, the same is
+          true of initial ᄏ (K, or khieukh, the aspirated G).
+          The initial consonant variations 1 and 6 for ᄀ and
+          ᄏ have an extended curve that other variations of these
+          two initial consonants do not have.
+        </li>
+        <li>
+          If the initial consonant is ᄀ (G, or kiyeok) and it is
+          followed with a vowel underneath that has an upward stroke,
+          the stroke can extend further upward than for initial consonants
+          such as ᆫ because of the open space underneath
+          ᄀ.  Although not shown in the examples, the same is
+          true of initial ᄏ (K, or khieukh, the aspirated G).
+          The initial consonant variations 2, 4, 7, and 9 for
+          ᄀ and ᄏ allow a different appearance as a result.
+        </li>
+        <li>
+          If the final consonant is ᆫ (N, or nieun), any vowel
+          appearing on the right-hand side of the syllable can be drawn
+          longer so it extends into the open space above the
+          ᆫ.  This does not affect the initial consonant's
+          appearance, but it does affect the vowel's appearance,
+          as we shall see next.
+        </li>
+      </ul>
+      <p>
+        Each vowel or dipthong has 3 or 4 variations.  If there are just
+        3 variations, they are applied as follows:
+      </p>
+      <table border="2" cellpadding="5" align="center">
+        <tbody><tr>
+          <th>Variation</th><th>When Used</th><th>Appearance</th>
+        </tr>
+        <tr>
+          <td align="center">1</td>
+          <td>No final consonant.</td>
+          <td>Taller than default.</td>
+        </tr>
+        <tr>
+          <td align="center">2</td>
+          <td>Final consonant isn't ᆫ.</td>
+          <td>Default size.</td>
+        </tr>
+        <tr>
+          <td align="center">3</td>
+          <td>Final consonant is ᆫ.</td>
+          <td>Right-hand side can extend further down.</td>
+        </tr>
+      </tbody></table>
+      <p>
+        Modern vowels or dipthongs that contain
+        ᅩ, ᅭ, or ᅳ each have 4 variations.
+        The full set is:
+        ᅩ, ᅪ, ᅫ, ᅬ, ᅭ,
+        ᅳ, and ᅴ.  These vowels have variations
+        based on whether the initial consonant is
+        ᄀ, ᄏ, or something else, and whether
+        or not there is a final consonant in the syllable.
+        All other vowels and dipthongs, including the ancient ones,
+        only have 3 variations each.
+        If a vowel or dipthong has 4 variations,
+        they are applied as follows:
+      </p>
+      <table border="2" cellpadding="5" align="center">
+        <tbody><tr>
+          <th>Variation</th><th>When Used</th><th>Appearance</th>
+        </tr>
+        <tr>
+          <td align="center">1</td>
+          <td>Initial consonant is ᄀ or ᄏ; no final consonant</td>
+          <td>Taller than default with vertical stroke extending upward more.</td>
+        </tr>
+        <tr>
+          <td align="center">2</td>
+          <td>Initial consonant isn't ᄀ or ᄏ; no final consonant</td>
+          <td>Default stroke underneath but taller.</td>
+        </tr>
+        <tr>
+          <td align="center">3</td>
+          <td>Initial consonant is ᄀ or ᄏ with final consonant</td>
+          <td>Default size but longer vertical stroke underneath.</td>
+        </tr>
+        <tr>
+          <td align="center">4</td>
+          <td>Initial consonant isn't ᄀ or ᄏ with final consonant</td>
+          <td>Default size.</td>
+        </tr>
+      </tbody></table>
+      <p>
+        Lastly, each final consonant has 4 variations, depending on the vowel
+        or dipthong that precedes it:
+      </p>
+      <table border="2" cellpadding="5" align="center">
+        <tbody><tr>
+          <th>Variation</th><th>With Modern</th><th>With Ancient</th>
+        </tr>
+        <tr>
+          <td align="center">1</td>
+          <td>
+            Filler, ᅡ, ᅣ, ᅪ, ᅫ, ᅬ,
+            ᅴ
+          </td>
+          <td>ᅹ, ᆅ, ᆈ, ᆡ</td>
+        </tr>
+        <tr>
+          <td align="center">2</td>
+          <td>ᅥ, ᅧ, ᅯ, ᅰ, ᅱ, ᅵ</td>
+          <td>ᆑ, ᆒ, ᆔ</td>
+        </tr>
+        <tr>
+          <td align="center">3</td>
+          <td>ᅢ, ᅤ, ᅦ, ᅨ</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td align="center">4</td>
+          <td>ᅩ, ᅭ, ᅮ, ᅲ, ᅳ</td>
+          <td>ᆞ</td>
+        </tr>
+      </tbody></table>
+      <p>
+        There is no "Filler" combination in the Hangul Syllalbes block,
+        where a syllable can contain an initial consonant and a final
+        consonant, but no vowel.  The "Filler" entry is included just
+        to explain that case with this type of Johab font in general.
+        As for the appearance of other final consonant variations based
+        upon the preceding vowels, they should be drawn so that a
+        balance is achieved between the top half and left half of a
+        syllable, and between the left half and right half of a syllable.
+      </p>
+      <p>
+        Here are the three bitmap files showing the glyphs from which
+        the Hangul Syllables Unicode block is generated:
+      </p>
+      <center>
+        <table>
+          <tbody><tr>
+            <td align="center"><b>hanbase-00.bmp:</b></td>
+          </tr>
+          <tr>
+            <td>
+              <img src="hangul-generation_files/hanbase-00.bmp" alt="Hangul base glyphs, first bitmap" height="544" width="576">
+            </td>
+          </tr>
+          <tr>
+            <td align="center"><b>hanbase-01.bmp:</b></td>
+          </tr>
+          <tr>
+            <td>
+              <img src="hangul-generation_files/hanbase-01.bmp" alt="Hangul base glyphs, second bitmap" height="544" width="576">
+            </td>
+          </tr>
+          <tr>
+            <td align="center"><b>hanbase-02.bmp:</b></td>
+          </tr>
+          <tr>
+            <td>
+              <img src="hangul-generation_files/hanbase-02.bmp" alt="Hangul base glyphs, third bitmap" height="544" width="576">
+            </td>
+          </tr>
+        </tbody></table>
+      </center>
+      <p>
+        To modify the font, I recommend the following general steps:
+      </p>
+      <ol>
+        <li>
+          Have an idea of the grid you will use.  For example, you might
+          want all syllables centered in a grid, or left-justified, or you
+          might want to guarantee that there is a perimeter of one or more
+          blank pixels on the outer edges of each syllable.
+        </li>
+        <li>
+          Start drawing from the bottom up, with the final consonants.
+          Consider the minimum vertical space you will need to draw
+          ᄅ (rieul) and similar final consonants.  Use that
+          minimum height as your starting point to generate a first set
+          of all final consonants.
+        </li>
+        <li>
+          Combine these in your grid with various vowel combinations,
+          so that the result looks balanced:
+          <ul>
+            <li>Vowels only on the right</li>
+            <li>Vowels only in the middle</li>
+            <li>Vowels on the right and in the middle</li>
+          </ul>
+        </li>
+        <li>
+          Finally, draw the initial consonants to fit in the space
+          that remains.
+        </li>
+      </ol>
+      <p>
+        Be prepared to go through numerous iterations of adjustment
+        to get the syllables to the stage where you are satisfied.
+        If you're after perfection, you could then hand-tune each of
+        the 11,172 resulting Hangul Syllables glyphs.
+      </p>
+    <h3>Generating the Syllables</h3>
+      <p>
+        Equipped with your carefully drawn and cross-checked Johab font,
+        you can superimpose an initial consonant, vowel, and optional
+        final consonant to construct all of the Hangul Syllables.
+        Here's the basic algorithm:
+      </p>
+      <pre>         code_point = U+AC00 /* Starting point of Hangul Syllables */
+         for all (19 modern initial consonants) {
+             for all (21 modern vowels) {
+                 for all (28 filler and modern final consonants) {
+                     superimpose the 2 or 3 components
+                     output the glyph for this code point
+                     increment code_point by 1
+                 }
+             }
+         }
+      </pre>
+      <p>
+        That algorithm, in a nutshell, is what johab2ucs2 does.
+        This will generate 19 × 21 × 28 = 11,172 syllables,
+        in the order in which they appear in the Unicode Standard.
+        The table below shows the starting Unicode code point of each
+        initial consonant in the Hangul Syllables block.
+      </p>
+      <table border="2" cellpadding="2" align="center">
+        <tbody><tr><th align="center">Initial<br>Consonant</th><th align="center">Start</th></tr>
+        <tr><td align="center">ᄀ</td><td>U+AC00</td></tr>
+        <tr><td align="center">ᄁ</td><td>U+AE4C</td></tr>
+        <tr><td align="center">ᄂ</td><td>U+B098</td></tr>
+        <tr><td align="center">ᄃ</td><td>U+B2E4</td></tr>
+        <tr><td align="center">ᄄ</td><td>U+B530</td></tr>
+        <tr><td align="center">ᄅ</td><td>U+B77C</td></tr>
+        <tr><td align="center">ᄆ</td><td>U+B9C8</td></tr>
+        <tr><td align="center">ᄇ</td><td>U+BC14</td></tr>
+        <tr><td align="center">ᄈ</td><td>U+BE60</td></tr>
+        <tr><td align="center">ᄉ</td><td>U+C0AC</td></tr>
+        <tr><td align="center">ᄊ</td><td>U+C2F8</td></tr>
+        <tr><td align="center">ᄋ</td><td>U+C544</td></tr>
+        <tr><td align="center">ᄌ</td><td>U+C790</td></tr>
+        <tr><td align="center">ᄍ</td><td>U+C9DC</td></tr>
+        <tr><td align="center">ᄎ</td><td>U+CC28</td></tr>
+        <tr><td align="center">ᄏ</td><td>U+CE74</td></tr>
+        <tr><td align="center">ᄐ</td><td>U+D0C0</td></tr>
+        <tr><td align="center">ᄑ</td><td>U+D30C</td></tr>
+        <tr><td align="center">ᄒ</td><td>U+D558</td></tr>
+      </tbody></table>
+    <h3>Hangul Syllables Tools</h3>
+      <p>
+        The following link is a gzipped tarball containing the files
+        that I used to generate the Hangul Syllables block:
+        <a href="http://www.unifoundry.com/hangul.tar.gz">
+        http://www.unifoundry.com/hangul.tar.gz</a>.
+        You'll also need to install Perl and the main Unifont programs
+        unibmp2hex and hex2bdf before building the syllables.
+        The files in this tar file are:
+      </p>
+      <ul>
+        <li>
+          <b>hangul-generation.html:</b> This web page, as documentation.
+        </li>
+        <li>
+          <b>hanbase-00.bmp, hanbase-01.bmp,</b> and <b>hanbase-02.bmp:</b>
+          These are the bitmap graphics files of the individual glyphs
+          that I drew.  These get superimposed upon each other to form
+          the Hangul Syllables.
+        </li>
+        <li>
+          <b>johab2ucs2:</b> to be on the safe side, the exact version of the
+          johab2ucs2 Perl script that I used to generate the Hangul Syllables.
+          Note that the Unifont distribution also contains a copy of
+          this script.
+        </li>
+        <li>
+          <b>unifontksx:</b> Perl script to read a Unifont .hex file, extract
+          the 2,350 pre-formed Hangul syllables defined in KS X 1001, and
+          generate glyphs with unihex2bmp (part of the Unifont distribution
+          on this site).
+        </li>
+        <li>
+          <b>Makefile:</b> the "make" file.  Type "make" to make the output
+          .hex font files and bitmapped images of syllables.  Type
+          "make clean" to remove these files.  Typing "make" will create:
+          <ul>
+            <li>
+              <b>hangul-base.hex:</b> a Unifont .hex style encoding of the
+              base glyphs that will form the Hangul Syllables block.
+              This is created with unibmp2hex, part of the Unifont
+              distribution on this site.
+            </li>
+            <li>
+              <b>hangul-base.bdf:</b> a BDF font file with the same font
+              structure that Hanterm uses for Hangul syllables, which
+              johab2ucs2 reads to generate all 11,172 syllables.
+              This is created using hex2bdf, part of the Unifont
+              distribution on this site.
+            </li>
+            <li>
+              <b>hangul-syllables.hex:</b> the set of 11,172 Unicode Hangul
+              Syllables in the block starting at U+AC00.  This is
+              created by johab2ucs2, which uses hangul-base.bdf as
+              its input.
+            </li>
+            <li>
+              <b>ksx-syllables.hex:</b> an extraction of hangul-syllables.hex,
+              created by unifontksx, which only contains the subset
+              of Unifont Hangul Syllables that appear in the
+              Republic of Korea's KS X 1001 standard (and the earlier
+              KS C 5601 standard).
+            </li>
+            <li>
+              <b>johab2ucs2.1, unifontksx.1:</b> The man pages for
+              the Perl scripts.
+            </li>
+          </ul>
+        </li>
+        <li>
+          <b>syllables:</b> directory that will contain all 11,172 glyphs in the
+          Unifont Hangul Syllables block.
+        </li>
+        <li>
+          <b>ksx-syllables:</b> directory that will contain the subset
+          of Unifont Hangul Syllables that appear in the
+          Republic of Korea's KS X 1001 standard (and the earlier
+          KS C 5601 standard).
+        </li>
+      </ul>
+      <p>
+        To create the Hangul Syllables as both a Unifont ".hex" file
+        and a "./syllables/" directory of bitmap representations of
+        each of the 11,172 syllables:
+      </p>
+      <ol>
+        <li>Install the Unifont programs in your path.</li>
+        <li>Untar the files in hangul.tar.gz.</li>
+        <li>cd into the "hangul" directory.</li>
+        <li>
+          Run "make".  This will generate the files
+          "hangul-base.hex" and then "hangul-base.bdf" from the
+          "hanbase-??.bmp" files, and then generate the files
+          "syllables/hangul-AC.bmp" through "syllables/hangul-D7.bmp"
+          from "hangul-syllables.hex".  Finally, this will populate
+          the "ksx-syllables/" directory with bitmapped glyphs from
+          the complete Unifont set that comprise the 2,350 syllables
+          defined in KS X 1001.
+         </li>
+      </ol>
+      <p>
+        You can inspect the generated bitmap files, modify the
+        "hanbase-??.bmp" files to your heart's content to see how
+        variations carry through to the final syllables,
+        and so on.  If you make any improvements, please forward
+        them to me so I can incorporate them into a later version.
+        I haven't spent much time on the ancient letters because
+        my focus was on generating Hangul Syllables from scratch,
+        so there's probably room for improvement at least with them.
+      </p>
+    <h3>License</h3>
+      <p>
+        The files in the hangul.tar.gz archive are
+        distributed under the GNU Public License version 2, or
+        (at your option) a later version, with the exception
+        that embedding the fonts in a document does not in itself
+        constitute a violation of the license agreement.
+      </p>
+    <h3>Other Variation Schemes</h3>
+      <p>
+        What was described above is only one possible scheme for
+        drawing variations to combine into whole syllables.  I&nbsp;used
+        it because I had already worked with it.  In the end, I haven't found
+        a better scheme, though better schemes are certainly possible.
+        One other font scheme that deserves mention because of its popularity
+        is the Johab 8/4/4 encoding, discussed in the following section.
+      </p>
+    <h3>Johab 8/4/4 Font Layout</h3>
+      <p>
+        Johab 8/4/4 fonts store variations in transposed order compared to the
+        Johab version described above.  For example, all 20 of the first variation
+        of initial consonants are stored in sequence, then all 20 of the
+        second variation of initial consonants in sequence, etc.
+        Each type of variation sequence (initial consonant, vowel, and
+        final consonant) begins with a Filler (blank) glyph.  Therefore,
+        each variation sequence has one more entry than letters in the
+        modern Hangul alphabet.  Presumably this is to allow rendering
+        an individual letter such as a vowel by itself with no initial
+        or final consonant.
+      </p>
+      <p>
+        Johab 8/4/4 fonts have a fixed number of variations for each
+        letter of the modern Hangul alphabet (no ancient letters are
+        included):
+      </p>
+      <ul>
+        <li>Each initial consonant has 8 variations;</li>
+        <li>Each vowel has 4 variations;</li>
+        <li>Each final consonant has 4 variations.</li>
+      </ul>
+      <p>
+        This scheme has one aesthetic drawback compared to that used
+        by johab2ucs2: there is no separate vowel form for vertically-drawn
+        vowels when combined with final consonant ᆫ to allow the
+        vowel to extend down further into the space occupied by
+        ᆫ.  For example, the syllable 간 looks more filled out
+        and pleasing to the eye if the vowel, ᅡ, extends down below
+        the top half of the syllable.
+      </p>
+      <p>
+        The glyph layout by code point in Johab 8/4/4 fonts are:
+      </p>
+      <ul>
+        <li>
+          <b>0..159: Initial Consonants</b>
+          [(Filler + 19 consonants) × 8 variations].<br>
+          This is formed as 8 repetitions of the sequence: Filler,
+          ᄀ, ᄁ, ᄂ, ᄃ,
+          ᄄ, ᄅ, ᄆ, ᄇ,
+          ᄈ, ᄉ, ᄊ, ᄋ,
+          ᄌ, ᄍ, ᄎ, ᄏ,
+          ᄐ, ᄑ, ᄒ.  Thus,
+          for example, the 8 variations of
+          ᄀ appear at decimal font locations
+          1, 21, 41, 61, 81, 101, 121, and 141.
+        </li>
+        <li>
+          <b>160..247: Vowels</b>
+          [(Filler + 21 vowels) × 4 variations].<br>
+          This is formed as 4 repetitions of the sequence: Filler,
+          ᅡ, ᅢ, ᅣ, ᅤ,
+          ᅥ, ᅦ, ᅧ, ᅨ,
+          ᅩ, ᅪ, ᅫ, ᅬ,
+          ᅭ, ᅮ, ᅯ, ᅰ,
+          ᅱ, ᅲ, ᅳ, ᅴ,
+          ᅵ.  Thus,
+          for example, the 4 variations of
+          ᅡ appear at decimal font locations
+          161, 183, 205, and 227.
+        </li>
+        <li>
+          <b>248..359: Final Consonants</b>
+          [(Filler + 27 consonants) × 4 variations].<br>
+          This is formed as 4 repetitions of the sequence: Filler,
+          ᆨ, ᆩ, ᆪ, ᆫ,
+          ᆬ, ᆭ, ᆮ, ᆯ,
+          ᆰ, ᆱ, ᆲ, ᆳ,
+          ᆴ, ᆵ, ᆶ, ᆷ
+          ᆸ, ᆹ, ᆺ, ᆻ,
+          ᆼ, ᆽ, ᆾ, ᆿ,
+          ᇀ, ᇁ, ᇂ. Thus,
+          for example, the 4 variations of
+          ᆨ appear at decimal font locations
+          249, 277, 305, and 333.
+        </li>
+      </ul>
+      <p>
+        I found one Python script on the net (jo844touni.py)
+        that returned the Hangul
+        component glyphs (initial consonant, vowel, and final consonant)
+        for each code point in the Unicode Hangul Syllables block.
+        What follows is a description based upon reverse-engineering that
+        Python script, and looking at existing "johab844-" fonts for
+        verification.
+      </p>
+      <p>
+        The initial consonant variations are based upon the vowel that follows,
+        and whether or not there is a final consonant.  Like the Johab font
+        structure described previously, there are 5 variations when there is
+        no final consonant.  Unlike that Johab font structure, there are only
+        3 variations instead of 5 when there <i>is</i> a final consonant.
+      </p>
+      <table border="2" cellpadding="5" align="center">
+        <tbody><tr><th colspan="3" align="center">Johab 8/4/4 Initial Consonants</th></tr>
+        <tr>
+          <th>Variation</th>
+          <th align="center">Combining Vowels</th>
+          <th>+ Final<br>Consonant?</th>
+        </tr>
+        <tr>
+          <td align="center">1</td>
+          <td>
+            Filler, ᅡ, ᅢ, ᅣ, ᅤ, ᅥ,
+            ᅦ, ᅧ, ᅨ, ᅵ
+          </td>
+          <td align="center">No</td>
+        </tr>
+        <tr>
+          <td align="center">2</td>
+          <td>ᅩ, ᅭ, ᅳ</td>
+          <td align="center">No</td>
+        </tr>
+        <tr>
+          <td align="center">3</td>
+          <td>ᅮ, ᅲ</td>
+          <td align="center">No</td>
+        </tr>
+        <tr>
+          <td align="center">4</td>
+          <td>ᅪ, ᅫ, ᅬ, ᅴ</td>
+          <td align="center">No</td>
+        </tr>
+        <tr>
+          <td align="center">5</td>
+          <td>ᅯ, ᅰ, ᅱ</td>
+          <td align="center">No</td>
+        </tr>
+        <tr>
+          <td align="center">6</td>
+          <td>
+            Filler, ᅡ, ᅢ, ᅣ, ᅤ, ᅥ,
+            ᅦ, ᅧ, ᅨ, ᅵ
+          </td>
+          <td align="center">Yes</td>
+        </tr>
+        <tr>
+          <td align="center">7</td>
+          <td>ᅩ, ᅭ, ᅮ, ᅲ, ᅳ</td>
+          <td align="center">Yes</td>
+        </tr>
+        <tr>
+          <td align="center">8</td>
+          <td>
+            ᅪ, ᅫ, ᅬ, ᅯ, ᅰ, ᅱ, ᅴ
+          </td>
+          <td align="center">Yes</td>
+        </tr>
+      </tbody></table>
+      <p>
+        Like the previous Johab font structure, vowels can have 4 variations based
+        upon whether or not the initial consonant is ᄀ or ᄏ, and
+        whether or not there is a final consonant.  Unlike the previous Johab font
+        structure, there is no separate variation for the case where the final
+        consonant is ᆫ (N, nieun).
+      </p>
+      <table border="2" cellpadding="5" align="center">
+        <tbody><tr><th colspan="3" align="center">Johab 8/4/4 Vowels</th></tr>
+        <tr><th>Variation</th><th align="center">Initial Consonant =<br>Filler, ᄀ, or ᄏ?</th><th>+ Final<br>Consonant?</th></tr>
+        <tr><td align="center">1</td><td align="center">Yes</td><td align="center">No </td></tr>
+        <tr><td align="center">2</td><td align="center">No </td><td align="center">No </td></tr>
+        <tr><td align="center">3</td><td align="center">Yes</td><td align="center">Yes</td></tr>
+        <tr><td align="center">4</td><td align="center">No </td><td align="center">Yes</td></tr>
+      </tbody></table>
+      <p>
+        Also similar to the previous Johab font structure, final consonants each
+        have 4 variations:
+      </p>
+      <table border="2" cellpadding="5" align="center">
+        <tbody><tr><th colspan="2" align="center">Johab 8/4/4 Final Consonants</th></tr>
+        <tr><th>Variation</th><th align="center">Combining Vowels</th></tr>
+        <tr><td align="center">1</td><td>Filler, ᅡ, ᅣ, ᅪ</td></tr>
+        <tr><td align="center">2</td><td>ᅥ, ᅧ, ᅬ, ᅯ, ᅱ, ᅴ, ᅵ</td></tr>
+        <tr><td align="center">3</td><td>ᅢ, ᅤ, ᅦ, ᅨ, ᅫ, ᅰ</td></tr>
+        <tr><td align="center">4</td><td>ᅩ, ᅭ, ᅮ, ᅲ, ᅳ</td></tr>
+      </tbody></table>
+    <h3>Seeking Perfection</h3>
+      <p>
+        As a final thought, someone seeking perfection in
+        rendering Hangul Syllables could use one of these
+        encoding methods, or a method of their own design,
+        to produce a block of Hangul Syllables as a starting
+        point.  From there, each syllable glyph could be
+        hand-tailored as desired.
+      </p>
+      <p>
+        With the current johab2ucs2 algorithm, there are
+        just two cases for drawing every possible vowel plus
+        every possible final consonant: the case where the
+        initial consonant is ᄀ or ᄏ, and the
+        default case (for all other initial consonants).
+        Therefore if you get the spacing worked out with
+        all the syllables formed using the intial consonant
+        ᄀ and, say, the final consonant ᄅ or
+        ᄎ, everything else should fall into place.
+        That is not what I did at first — I made some
+        false starts — but if I were to do it over
+        that is the path I would take.
+      </p>
+      <p>
+        There are 19 modern vowels and 27 final consonants
+        plus a filler (when there is no final consonant),
+        which requires drawing 19 × 28 = 588 glyphs for
+        every possible combination of modern vowel and
+        final consonant (or filler).  To allow a separate
+        form when the initial consonant is ᄀ or
+        ᄏ, you'd need twice that number, or 1176 glyphs.
+        Yet by starting with the Johab font structure that
+        johab2ucs2 supports, these can be auto-generated
+        in bulk and then hand-tuned after generation.
+      </p>
+      <p>
+        Along with 10 variations for each of the initial
+        19 modern consonants, this approach requires a
+        total of 1176 + 190 = 1366 glyphs.
+        That's significantly more than the current
+        Johab scheme of 190 + 70 + 108 = 368 modern glyphs,
+        but it would allow finer adjustment and balance.
+        In fact, it could potentially save total
+        development time because it would reduce the
+        number of iterations to achieve a desired look.
+      </p>
+    <h3>Korean Standard KS X 1001:1992</h3>
+      <p>
+        The Hangul Syllables block contains every possible
+        combination of modern initial consonants, vowels,
+        and optional final consonants.  In practice, only
+        about one fourth of these syllables are common in
+        modern-day Korean.  Focus could be placed on these
+        more common modern syllables.
+      </p>
+      <p>
+        One list of such common modern Hangul syllables
+        appears in KS X 1001:1992, which defines 2,350 Hangul
+        syllables as "rows" 16 through 40 of the standard,
+        each with 94 Hangul syllables.  This division into
+        sets of 94 glyphs is patterned after the ISO 2022
+        standard.  In ISO 2022, characters are divided into blocks
+        of seven bits, or 2<sup>7</sup> = 128 code points.
+        The first 32 code points are
+        reserved for control codes.  The next code point
+        is the space character, and code point 127 is the
+        delete character.  In a seven-bit block of code points,
+        this leaves 128 - 32 (control codes) - 1 (space) - 1 (delete)
+        = 94 available code points.  There is a mapping from
+        KS X 1001 to ISO 2022 following this ordering.  For more
+        on this, consult the ISO 2022 standard.
+      </p>
+      <p>
+        The syllables that comprise KS X 1001:1992 are shown
+        below, organized into "rows" 16 through 40, with each
+        row containing 94 syllables:
+      </p>
+      <table border="2" cellpadding="5" align="center">
+        <tbody><tr><th align="center">KS X<br>1001:1992<br>Row</th>
+            <th align="center">Syllables</th></tr>
+         <tr><td align="center">16</td>
+           <td width="752">가각간갇갈갉갊감갑값갓갔강갖갗같갚갛개객갠갤갬갭갯갰갱갸갹갼걀걋걍걔걘걜거걱건걷걸걺검겁것겄겅겆겉겊겋게겐겔겜겝겟겠겡겨격겪견겯결겸겹겻겼경곁계곈곌곕곗고곡곤곧골곪곬곯곰곱곳공곶과곽관괄괆</td></tr>
+         <tr><td align="center">17</td>
+           <td width="752">괌괍괏광괘괜괠괩괬괭괴괵괸괼굄굅굇굉교굔굘굡굣구국군굳굴굵굶굻굼굽굿궁궂궈궉권궐궜궝궤궷귀귁귄귈귐귑귓규균귤그극근귿글긁금급긋긍긔기긱긴긷길긺김깁깃깅깆깊까깍깎깐깔깖깜깝깟깠깡깥깨깩깬깰깸</td></tr>
+         <tr><td align="center">18</td>
+           <td width="752">깹깻깼깽꺄꺅꺌꺼꺽꺾껀껄껌껍껏껐껑께껙껜껨껫껭껴껸껼꼇꼈꼍꼐꼬꼭꼰꼲꼴꼼꼽꼿꽁꽂꽃꽈꽉꽐꽜꽝꽤꽥꽹꾀꾄꾈꾐꾑꾕꾜꾸꾹꾼꿀꿇꿈꿉꿋꿍꿎꿔꿜꿨꿩꿰꿱꿴꿸뀀뀁뀄뀌뀐뀔뀜뀝뀨끄끅끈끊끌끎끓끔끕끗끙</td></tr>
+         <tr><td align="center">19</td>
+           <td width="752">끝끼끽낀낄낌낍낏낑나낙낚난낟날낡낢남납낫났낭낮낯낱낳내낵낸낼냄냅냇냈냉냐냑냔냘냠냥너넉넋넌널넒넓넘넙넛넜넝넣네넥넨넬넴넵넷넸넹녀녁년녈념녑녔녕녘녜녠노녹논놀놂놈놉놋농높놓놔놘놜놨뇌뇐뇔뇜뇝</td></tr>
+         <tr><td align="center">20</td>
+           <td width="752">뇟뇨뇩뇬뇰뇹뇻뇽누눅눈눋눌눔눕눗눙눠눴눼뉘뉜뉠뉨뉩뉴뉵뉼늄늅늉느늑는늘늙늚늠늡늣능늦늪늬늰늴니닉닌닐닒님닙닛닝닢다닥닦단닫달닭닮닯닳담답닷닸당닺닻닿대댁댄댈댐댑댓댔댕댜더덕덖던덛덜덞덟덤덥</td></tr>
+         <tr><td align="center">21</td>
+           <td width="752">덧덩덫덮데덱덴델뎀뎁뎃뎄뎅뎌뎐뎔뎠뎡뎨뎬도독돈돋돌돎돐돔돕돗동돛돝돠돤돨돼됐되된될됨됩됫됴두둑둔둘둠둡둣둥둬뒀뒈뒝뒤뒨뒬뒵뒷뒹듀듄듈듐듕드득든듣들듦듬듭듯등듸디딕딘딛딜딤딥딧딨딩딪따딱딴딸</td></tr>
+         <tr><td align="center">22</td>
+           <td width="752">땀땁땃땄땅땋때땍땐땔땜땝땟땠땡떠떡떤떨떪떫떰떱떳떴떵떻떼떽뗀뗄뗌뗍뗏뗐뗑뗘뗬또똑똔똘똥똬똴뙈뙤뙨뚜뚝뚠뚤뚫뚬뚱뛔뛰뛴뛸뜀뜁뜅뜨뜩뜬뜯뜰뜸뜹뜻띄띈띌띔띕띠띤띨띰띱띳띵라락란랄람랍랏랐랑랒랖랗</td></tr>
+         <tr><td align="center">23</td>
+           <td width="752">래랙랜랠램랩랫랬랭랴략랸럇량러럭런럴럼럽럿렀렁렇레렉렌렐렘렙렛렝려력련렬렴렵렷렸령례롄롑롓로록론롤롬롭롯롱롸롼뢍뢨뢰뢴뢸룀룁룃룅료룐룔룝룟룡루룩룬룰룸룹룻룽뤄뤘뤠뤼뤽륀륄륌륏륑류륙륜률륨륩</td></tr>
+         <tr><td align="center">24</td>
+           <td width="752">륫륭르륵른를름릅릇릉릊릍릎리릭린릴림립릿링마막만많맏말맑맒맘맙맛망맞맡맣매맥맨맬맴맵맷맸맹맺먀먁먈먕머먹먼멀멂멈멉멋멍멎멓메멕멘멜멤멥멧멨멩며멱면멸몃몄명몇몌모목몫몬몰몲몸몹못몽뫄뫈뫘뫙뫼</td></tr>
+         <tr><td align="center">25</td>
+           <td width="752">묀묄묍묏묑묘묜묠묩묫무묵묶문묻물묽묾뭄뭅뭇뭉뭍뭏뭐뭔뭘뭡뭣뭬뮈뮌뮐뮤뮨뮬뮴뮷므믄믈믐믓미믹민믿밀밂밈밉밋밌밍및밑바박밖밗반받발밝밞밟밤밥밧방밭배백밴밸뱀뱁뱃뱄뱅뱉뱌뱍뱐뱝버벅번벋벌벎범법벗</td></tr>
+         <tr><td align="center">26</td>
+           <td width="752">벙벚베벡벤벧벨벰벱벳벴벵벼벽변별볍볏볐병볕볘볜보복볶본볼봄봅봇봉봐봔봤봬뵀뵈뵉뵌뵐뵘뵙뵤뵨부북분붇불붉붊붐붑붓붕붙붚붜붤붰붸뷔뷕뷘뷜뷩뷰뷴뷸븀븃븅브븍븐블븜븝븟비빅빈빌빎빔빕빗빙빚빛빠빡빤</td></tr>
+         <tr><td align="center">27</td>
+           <td width="752">빨빪빰빱빳빴빵빻빼빽뺀뺄뺌뺍뺏뺐뺑뺘뺙뺨뻐뻑뻔뻗뻘뻠뻣뻤뻥뻬뼁뼈뼉뼘뼙뼛뼜뼝뽀뽁뽄뽈뽐뽑뽕뾔뾰뿅뿌뿍뿐뿔뿜뿟뿡쀼쁑쁘쁜쁠쁨쁩삐삑삔삘삠삡삣삥사삭삯산삳살삵삶삼삽삿샀상샅새색샌샐샘샙샛샜생샤</td></tr>
+         <tr><td align="center">28</td>
+           <td width="752">샥샨샬샴샵샷샹섀섄섈섐섕서석섞섟선섣설섦섧섬섭섯섰성섶세섹센셀셈셉셋셌셍셔셕션셜셤셥셧셨셩셰셴셸솅소속솎손솔솖솜솝솟송솥솨솩솬솰솽쇄쇈쇌쇔쇗쇘쇠쇤쇨쇰쇱쇳쇼쇽숀숄숌숍숏숑수숙순숟술숨숩숫숭</td></tr>
+         <tr><td align="center">29</td>
+           <td width="752">숯숱숲숴쉈쉐쉑쉔쉘쉠쉥쉬쉭쉰쉴쉼쉽쉿슁슈슉슐슘슛슝스슥슨슬슭슴습슷승시식신싣실싫심십싯싱싶싸싹싻싼쌀쌈쌉쌌쌍쌓쌔쌕쌘쌜쌤쌥쌨쌩썅써썩썬썰썲썸썹썼썽쎄쎈쎌쏀쏘쏙쏜쏟쏠쏢쏨쏩쏭쏴쏵쏸쐈쐐쐤쐬쐰</td></tr>
+         <tr><td align="center">30</td>
+           <td width="752">쐴쐼쐽쑈쑤쑥쑨쑬쑴쑵쑹쒀쒔쒜쒸쒼쓩쓰쓱쓴쓸쓺쓿씀씁씌씐씔씜씨씩씬씰씸씹씻씽아악안앉않알앍앎앓암압앗았앙앝앞애액앤앨앰앱앳앴앵야약얀얄얇얌얍얏양얕얗얘얜얠얩어억언얹얻얼얽얾엄업없엇었엉엊엌엎</td></tr>
+         <tr><td align="center">31</td>
+           <td width="752">에엑엔엘엠엡엣엥여역엮연열엶엷염엽엾엿였영옅옆옇예옌옐옘옙옛옜오옥온올옭옮옰옳옴옵옷옹옻와왁완왈왐왑왓왔왕왜왝왠왬왯왱외왹왼욀욈욉욋욍요욕욘욜욤욥욧용우욱운울욹욺움웁웃웅워웍원월웜웝웠웡웨</td></tr>
+         <tr><td align="center">32</td>
+           <td width="752">웩웬웰웸웹웽위윅윈윌윔윕윗윙유육윤율윰윱윳융윷으윽은을읊음읍읏응읒읓읔읕읖읗의읜읠읨읫이익인일읽읾잃임입잇있잉잊잎자작잔잖잗잘잚잠잡잣잤장잦재잭잰잴잼잽잿쟀쟁쟈쟉쟌쟎쟐쟘쟝쟤쟨쟬저적전절젊</td></tr>
+         <tr><td align="center">33</td>
+           <td width="752">점접젓정젖제젝젠젤젬젭젯젱져젼졀졈졉졌졍졔조족존졸졺좀좁좃종좆좇좋좌좍좔좝좟좡좨좼좽죄죈죌죔죕죗죙죠죡죤죵주죽준줄줅줆줌줍줏중줘줬줴쥐쥑쥔쥘쥠쥡쥣쥬쥰쥴쥼즈즉즌즐즘즙즛증지직진짇질짊짐집짓</td></tr>
+         <tr><td align="center">34</td>
+           <td width="752">징짖짙짚짜짝짠짢짤짧짬짭짯짰짱째짹짼쨀쨈쨉쨋쨌쨍쨔쨘쨩쩌쩍쩐쩔쩜쩝쩟쩠쩡쩨쩽쪄쪘쪼쪽쫀쫄쫌쫍쫏쫑쫓쫘쫙쫠쫬쫴쬈쬐쬔쬘쬠쬡쭁쭈쭉쭌쭐쭘쭙쭝쭤쭸쭹쮜쮸쯔쯤쯧쯩찌찍찐찔찜찝찡찢찧차착찬찮찰참찹찻</td></tr>
+         <tr><td align="center">35</td>
+           <td width="752">찼창찾채책챈챌챔챕챗챘챙챠챤챦챨챰챵처척천철첨첩첫첬청체첵첸첼쳄쳅쳇쳉쳐쳔쳤쳬쳰촁초촉촌촐촘촙촛총촤촨촬촹최쵠쵤쵬쵭쵯쵱쵸춈추축춘출춤춥춧충춰췄췌췐취췬췰췸췹췻췽츄츈츌츔츙츠측츤츨츰츱츳층</td></tr>
+         <tr><td align="center">36</td>
+           <td width="752">치칙친칟칠칡침칩칫칭카칵칸칼캄캅캇캉캐캑캔캘캠캡캣캤캥캬캭컁커컥컨컫컬컴컵컷컸컹케켁켄켈켐켑켓켕켜켠켤켬켭켯켰켱켸코콕콘콜콤콥콧콩콰콱콴콸쾀쾅쾌쾡쾨쾰쿄쿠쿡쿤쿨쿰쿱쿳쿵쿼퀀퀄퀑퀘퀭퀴퀵퀸퀼</td></tr>
+         <tr><td align="center">37</td>
+           <td width="752">큄큅큇큉큐큔큘큠크큭큰클큼큽킁키킥킨킬킴킵킷킹타탁탄탈탉탐탑탓탔탕태택탠탤탬탭탯탰탱탸턍터턱턴털턺텀텁텃텄텅테텍텐텔템텝텟텡텨텬텼톄톈토톡톤톨톰톱톳통톺톼퇀퇘퇴퇸툇툉툐투툭툰툴툼툽툿퉁퉈퉜</td></tr>
+         <tr><td align="center">38</td>
+           <td width="752">퉤튀튁튄튈튐튑튕튜튠튤튬튱트특튼튿틀틂틈틉틋틔틘틜틤틥티틱틴틸팀팁팃팅파팍팎판팔팖팜팝팟팠팡팥패팩팬팰팸팹팻팼팽퍄퍅퍼퍽펀펄펌펍펏펐펑페펙펜펠펨펩펫펭펴편펼폄폅폈평폐폘폡폣포폭폰폴폼폽폿퐁</td></tr>
+         <tr><td align="center">39</td>
+           <td width="752">퐈퐝푀푄표푠푤푭푯푸푹푼푿풀풂품풉풋풍풔풩퓌퓐퓔퓜퓟퓨퓬퓰퓸퓻퓽프픈플픔픕픗피픽핀필핌핍핏핑하학한할핥함합핫항해핵핸핼햄햅햇했행햐향허헉헌헐헒험헙헛헝헤헥헨헬헴헵헷헹혀혁현혈혐협혓혔형혜혠</td></tr>
+         <tr><td align="center">40</td>
+           <td width="752">혤혭호혹혼홀홅홈홉홋홍홑화확환활홧황홰홱홴횃횅회획횐횔횝횟횡효횬횰횹횻후훅훈훌훑훔훗훙훠훤훨훰훵훼훽휀휄휑휘휙휜휠휨휩휫휭휴휵휸휼흄흇흉흐흑흔흖흗흘흙흠흡흣흥흩희흰흴흼흽힁히힉힌힐힘힙힛힝</td></tr>
+      </tbody></table>
+      <p>
+        If tradeoffs were necessary (and they will be), a font designer could
+        give preference to the list of 2,350 glyphs above that are the most common
+        in daily use.
+      </p>
+    <h3>In Conclusion</h3>
+      <p>
+        This web page has information I wish I had at my fingertips when
+        first setting out to create a Hangul Syllables block from scratch.
+        It describes paths I will probably take in the future if I do
+        more work on Hangul fonts.  If you intend to design a Hangul font,
+        this description of base font structures hopefully will give you
+        useful ideas in Hangul font glyph organization.  If you have
+        suggestions for improving the content of this web page, please
+        let me know.
+      </p>
+      <p>
+        Lastly, if you want to improve the Hangul Syllables in Unifont,
+        this page describes the organization of the Hangul base glyphs
+        that generated Unifont's Hangul Syllables block.  You are more
+        than welcome to improve on those glyphs.  Thanks!
+      </p>
+  </div>
+  <div class="footer">
+    Uni<i>foundry</i>.com
+  </div>
+</div>
+
+</body></html>

@@ -1,0 +1,39 @@
+
+This directory contains the following files:
+
+     codepage-437.hex         Glyphs for monospaced Code Page 437.
+
+     mongolian-vertical.hex   Vertical Mongolian glyphs.  These
+                              were the original form in Unicode
+                              and hence in Unifont.  The current
+                              Unifont glyphs rotate these glyphs
+                              by 90 degrees.
+
+     phags-pa-vertical.hex    Vertical Phags-Pa glyphs.  These
+                              were the original form in Unicode
+                              and hence in Unifont.  The current
+                              Unifont glyphs rotate these glyphs
+                              by 90 degrees.
+
+     quad-width.hex           Quadruple width Chinese glyphs,
+                              U+9FD8..U+9FE9.  This range covered
+                              the ideographs that Russian Orthodox
+                              missionaries created to transliterate
+                              Church Slavonic into Chinese.  These
+                              quadruple-width glyphs  were the
+                              original Unifont versions before
+                              being replaced by double-width versions.
+                              They are the first such quadruple-width
+                              glyphs to appear in Unifont, and so
+                              could be useful for experimentation.
+
+     reiwa-vertical.hex       Vertical form of Reiwa Era glyph.
+
+     uni0009-orig.hex         Original Unifont Devanagari and
+                              Bengali glyphs, which were drawn
+                              before Unifont handled combining
+                              characters.  The new Devanagari
+                              and Bengali glyphs have consonants
+                              that are narrower to fit better
+                              with combining vowel marks.
+

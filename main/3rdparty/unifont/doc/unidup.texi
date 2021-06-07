@@ -1,0 +1,145 @@
+@comment TROFF INPUT: .TH UNIDUP 1 "2007 Dec 31"
+
+@node unidup
+@section unidup
+@c DEBUG: print_menu("@section")
+
+@menu
+* unidup NAME::
+* unidup SYNOPSIS::
+* unidup DESCRIPTION::
+* unidup FILES::
+* unidup SEE ALSO::
+* unidup AUTHOR::
+* unidup LICENSE::
+* unidup BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unidup NAME
+@subsection unidup NAME
+@c DEBUG: print_menu("unidup NAME")
+
+unidup @minus{} Scan through a sorted .hex file and report duplicate code points
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unidup SYNOPSIS
+@subsection unidup SYNOPSIS
+@c DEBUG: print_menu("unidup SYNOPSIS")
+
+@b{unidup }[@i{input-font.hex}]
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unidup DESCRIPTION
+@subsection unidup DESCRIPTION
+@c DEBUG: print_menu("unidup DESCRIPTION")
+
+@comment TROFF INPUT: .B unidup
+@b{unidup}
+reads a sorted GNU Unifont .hex file (sorted with the Unix
+@comment TROFF INPUT: .B sort
+@b{sort}
+utility) and prints notification of any duplicate code points on stdout.
+The input file can be specified on the command line.  If no file is
+specified, input will be read from STDIN until end of file.
+@comment TROFF INPUT: .SH FILES
+
+@node unidup FILES
+@subsection unidup FILES
+@c DEBUG: print_menu("unidup FILES")
+
+*.hex GNU Unifont font files
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unidup SEE ALSO
+@subsection unidup SEE ALSO
+@c DEBUG: print_menu("unidup SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unidup AUTHOR
+@subsection unidup AUTHOR
+@c DEBUG: print_menu("unidup AUTHOR")
+
+@comment TROFF INPUT: .B unidup
+@b{unidup}
+was written by Paul Hardy.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unidup LICENSE
+@subsection unidup LICENSE
+@c DEBUG: print_menu("unidup LICENSE")
+
+@comment TROFF INPUT: .B unidup
+@b{unidup}
+is Copyright @copyright{} 2007, 2013 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unidup BUGS
+@subsection unidup BUGS
+@c DEBUG: print_menu("unidup BUGS")
+
+No known bugs exist.

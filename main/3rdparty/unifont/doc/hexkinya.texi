@@ -1,0 +1,147 @@
+@comment TROFF INPUT: .TH HEXKINYA 1 "2014 Feb 01"
+
+@node hexkinya
+@section hexkinya
+@c DEBUG: print_menu("@section")
+
+@menu
+* hexkinya NAME::
+* hexkinya SYNOPSIS::
+* hexkinya DESCRIPTION::
+* hexkinya FILES::
+* hexkinya SEE ALSO::
+* hexkinya AUTHOR::
+* hexkinya LICENSE::
+* hexkinya BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node hexkinya NAME
+@subsection hexkinya NAME
+@c DEBUG: print_menu("hexkinya NAME")
+
+hexkinya @minus{} Create the Private Use Area Kinya syllables
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node hexkinya SYNOPSIS
+@subsection hexkinya SYNOPSIS
+@c DEBUG: print_menu("hexkinya SYNOPSIS")
+
+@b{hexkinya }> plane15.hex
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node hexkinya DESCRIPTION
+@subsection hexkinya DESCRIPTION
+@c DEBUG: print_menu("hexkinya DESCRIPTION")
+
+@comment TROFF INPUT: .B hexkinya
+@b{hexkinya}
+contains pre-defined initial, middle, and final Kinya alphabet glyphs
+to form syllables.  The output is the Kinya Syllables Private Use Area
+block of the ConScript Unicode Registry (CSUR).  The output range is
+U+0F0000 through U+0FDE6F, inclusive.
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .I Note that Plane 15 also contains Pikto glyphs, which follow after Kinya.
+@i{Note that Plane 15 also contains Pikto glyphs, which follow after Kinya.}
+@comment TROFF INPUT: .SH FILES
+
+@node hexkinya FILES
+@subsection hexkinya FILES
+@c DEBUG: print_menu("hexkinya FILES")
+
+None.
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node hexkinya SEE ALSO
+@subsection hexkinya SEE ALSO
+@c DEBUG: print_menu("hexkinya SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node hexkinya AUTHOR
+@subsection hexkinya AUTHOR
+@c DEBUG: print_menu("hexkinya AUTHOR")
+
+@comment TROFF INPUT: .B hexkinya
+@b{hexkinya}
+was written by Andrew Miller.
+@comment TROFF INPUT: .SH LICENSE
+
+@node hexkinya LICENSE
+@subsection hexkinya LICENSE
+@c DEBUG: print_menu("hexkinya LICENSE")
+
+@comment TROFF INPUT: .B hexkinya
+@b{hexkinya}
+is Copyright @copyright{} 2014 by Andrew Miller.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node hexkinya BUGS
+@subsection hexkinya BUGS
+@c DEBUG: print_menu("hexkinya BUGS")
+
+No known bugs exist.

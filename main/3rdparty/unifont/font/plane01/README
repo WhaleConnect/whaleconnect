@@ -1,0 +1,52 @@
+How to modify files in this directory
+-------------------------------------
+
+noscript-ranges.txt:
+   Update the hexadecimal ranges in the file as new scripts are added.
+   Comment lines begin with a ';', so it is convenient to put the name
+   of each script in order on a line starting with ';'.
+
+unassigned-ranges.txt:
+   For each script, update the hexadecimal code points that are unassigned.
+   While noscript-ranges.txt have hexadecimal ranges where no script is
+   assigned, unassigned-ranges.txt has hexadecimal ranges that are unassigned
+   in a defined Unicode script.
+
+plane01-combining.txt:
+   List each hexadecimal code point that is a combining character, one
+   code point per line.
+
+plane01-nonprinting.hex:
+   Add any new Unicode code points that represent non-printing glyphs.
+
+plane01.hex:
+   Add any new printing glyphs.  Do this after modifying all the files
+   mentioned above, to simplify the task of detecting duplicates.
+
+DO NOT MODIFY noscript.hex or plane01-unassigned.hex, because they are
+generated from the files mentioned above.  Also for the same reason,
+do not modify the file all/plane01-all.hex if it happens to exist;
+it too is auto-generated from the "make" command.
+
+Typing "make" will:
+   - Read unassigned-ranges.txt and generate 6-digit hexadecimal glyphs
+     in the file plane01-unassigned.hex for each code point referred to
+     in unassigned-ranges.txt.
+   - Read noscript-ranges.txt and generate 6-digit hexadecimal glyphs
+     in the file noscript.hex.
+   - Sort *.hex files, creating the final file all/plane01-all.hex.
+
+Then run
+
+     sort *.hex | unidup
+
+and
+
+     unidup < all/plane01-all.hex
+
+to make sure there are no duplicates.  If there are, remove them.  This
+is most likely to happen where a new script is added and those code points
+were not removed from noscript-ranges.txt.
+
+
+-- Paul Hardy, 2016

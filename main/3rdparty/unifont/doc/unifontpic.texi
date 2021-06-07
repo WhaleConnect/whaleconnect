@@ -1,0 +1,245 @@
+@comment TROFF INPUT: .TH UNIFONTPIC 1 "2013 Sep 07"
+
+@node unifontpic
+@section unifontpic
+@c DEBUG: print_menu("@section")
+
+@menu
+* unifontpic NAME::
+* unifontpic SYNOPSIS::
+* unifontpic DESCRIPTION::
+* unifontpic OPTIONS::
+* unifontpic EXAMPLES::
+* unifontpic FILES::
+* unifontpic SEE ALSO::
+* unifontpic AUTHOR::
+* unifontpic LICENSE::
+* unifontpic BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unifontpic NAME
+@subsection unifontpic NAME
+@c DEBUG: print_menu("unifontpic NAME")
+
+unifontpic @minus{} Convert GNU Unifont .hex input to a bitmap image of the whole font
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unifontpic SYNOPSIS
+@subsection unifontpic SYNOPSIS
+@c DEBUG: print_menu("unifontpic SYNOPSIS")
+
+@b{unifontpic }[@minus{}d@i{nnn}] [@minus{}l] [@minus{}t] [@minus{}P@i{plane}] < @i{input-font.hex }> @i{output-font.bmp}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unifontpic DESCRIPTION
+@subsection unifontpic DESCRIPTION
+@c DEBUG: print_menu("unifontpic DESCRIPTION")
+
+@comment TROFF INPUT: .B unifontpic
+@b{unifontpic}
+reads a GNU Unifont .hex file from STDIN and writes a two dimensional
+rendering for each glyph to STDOUT.
+The output displays an entire Unicode plane of 65,536 glyphs
+as one large graphic image, showing a grid of 256 glyphs by 256 glyphs
+as the default, or (at your option) a long version of
+16 glyphs across by 4,096 glyphs down.
+@comment TROFF INPUT: .PP
+
+Input can be one or more files in Unifont .hex format.  They don't
+have to be sorted, as
+@comment TROFF INPUT: .B unifontpic
+@b{unifontpic}
+will populate the entire glyph array of 65,536 code points before
+writing its output.  The input glyph code points should all be
+unique, as feeding in duplicate code points will produce unpredictable
+results.  Use
+@comment TROFF INPUT: .B unidup (1)
+@b{unidup (1)}
+on a sorted input of .hex files to guarantee no code point
+duplication.
+@comment TROFF INPUT: .SH OPTIONS
+
+@node unifontpic OPTIONS
+@subsection unifontpic OPTIONS
+@c DEBUG: print_menu("unifontpic OPTIONS")
+
+@comment TROFF INPUT: .TP 6
+@comment TROFF INPUT: .BR \-d
+
+@c ---------------------------------------------------------------------
+@table @code
+@item @b{@minus{}d}
+Specify a Dots per Inch (DPI) resolution of
+@comment TROFF INPUT: .I nnn.
+@i{nnn.}
+For example, specifying @minus{}d120 will encode the bitmap graphics file
+output as having a resolution of 120 DPI.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-l
+
+@item @b{@minus{}l}
+Produce a long chart, 16 glyphs wide by 4,096 glyphs tall.
+The default is a wide chart, 256 glyphs wide by 256 glyphs tall.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-t
+
+@item @b{@minus{}t}
+Use tiny numbers for the row and column code point labels.  Tiny
+numbers are on a 4 by 5 pixel grid.  Only tiny code point labels
+appear on the long chart variant; this option only has effect
+for wide charts (the default, of 256 by 256 glyphs).  If this option
+is not specified for the default 256-by-256 grid, row and column
+code point labels are taken from Unifont's glyphs for `0' to `9'
+and `A' to `F'.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-P
+
+@item @b{@minus{}P}
+Print a chart for Unicode plane number @i{plane}.
+The default is Plane@tie{}0, the Unicode Basic Multilingual Plane (BMP).
+The range of Unicode plane range is 0 through 17, inclusive.
+The plane number is printed on the chart title line.
+@comment TROFF INPUT: .SH EXAMPLES
+
+@end table
+
+@c ---------------------------------------------------------------------
+
+@node unifontpic EXAMPLES
+@subsection unifontpic EXAMPLES
+@c DEBUG: print_menu("unifontpic EXAMPLES")
+
+Sample usage:
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .RS
+
+@c ---------------------------------------------------------------------
+@quotation
+cat *.hex | unifontpic @minus{}d120 > unifontpic.bmp
+@comment TROFF INPUT: .RE
+
+@end quotation
+
+@c ---------------------------------------------------------------------
+@comment TROFF INPUT: .PP
+
+To generate a bitmap that shows combining circles, from the
+@comment TROFF INPUT: .B font/
+@b{font/}
+subdirectory:
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .RS
+
+@c ---------------------------------------------------------------------
+@quotation
+sort plane00/*.hex | unigencircles ttfsrc/combining.txt |
+unifontpic @minus{}d120 >unifontpic.bmp
+@comment TROFF INPUT: .RE
+
+@end quotation
+
+@c ---------------------------------------------------------------------
+@comment TROFF INPUT: .SH FILES
+
+@node unifontpic FILES
+@subsection unifontpic FILES
+@c DEBUG: print_menu("unifontpic FILES")
+
+*.hex GNU Unifont font files
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unifontpic SEE ALSO
+@subsection unifontpic SEE ALSO
+@c DEBUG: print_menu("unifontpic SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unifontpic AUTHOR
+@subsection unifontpic AUTHOR
+@c DEBUG: print_menu("unifontpic AUTHOR")
+
+@comment TROFF INPUT: .B unifontpic
+@b{unifontpic}
+was written by Paul Hardy.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unifontpic LICENSE
+@subsection unifontpic LICENSE
+@c DEBUG: print_menu("unifontpic LICENSE")
+
+@comment TROFF INPUT: .B unifontpic
+@b{unifontpic}
+is Copyright @copyright{} 2013 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unifontpic BUGS
+@subsection unifontpic BUGS
+@c DEBUG: print_menu("unifontpic BUGS")
+
+No known bugs exist.

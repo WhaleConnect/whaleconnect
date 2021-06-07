@@ -1,0 +1,96 @@
+.TH UNIHEX2BMP 1 "2007 Dec 31"
+.SH NAME
+unihex2bmp \- GNU Unifont .hex file to bitmap graphics file converter
+.SH SYNOPSIS
+\fBunihex2bmp \fP[\-p\fIhexpage\fP] [\-i\fIinput_file.hex\fP] [\-o\fIoutput_file.bmp\fP] [\-f] [\-w]
+.SH DESCRIPTION
+.B unihex2bmp
+reads a GNU Unifont .hex file Unicode page of 256 code points
+and converts the page into a Microsoft Windows Bitmap (.bmp) or
+Wireless Bitmap (.wbmp) file.  The bitmap file displays the glyphs
+of a Unicode block of 256 code points in a 32 by 32 pixel grid.
+The glyphs themselves must be 16 rows high, and 8, 16, 24, or 31
+(encoded as 32) columns wide. The default page is 0; that is, the
+range U+0000 through U+00FF.
+.PP
+The bitmap can be printed.  It can also be edited with a bitmap editor.
+An edited bitmap can then be re-converted into a GNU Unifont .hex file
+with the
+.B unibmp2hex
+command.
+.SH OPTIONS
+.TP 6
+.BR \-p
+Extract page
+.I hexpage
+from the .hex file.  The default is Page 0 (Unicode range
+U+0000 through U+00FF).  Note that "page" is not a standard
+Unicode term.  It refers to an output bitmap graphics page of
+16 by 16 code points.
+.TP
+.BR \-i
+Specify the input file. The default is STDIN.
+.TP
+.BR \-o
+Specify the output file. The default is STDOUT.
+.TP
+.BR \-f
+"Flip" (transpose) the grid, swapping rows and columns
+from the Unicode standard orientation.
+.TP
+.BR \-w
+Produce a Wireless Bitmap format file instead of a Microsoft Windows
+Bitmap file.
+.SH EXAMPLE
+Sample usage:
+.PP
+.RS
+unihex2bmp \-imy_input_file.hex \-omy_output_file.bmp
+.RE
+.SH FILES
+*.hex GNU Unifont font files
+.SH SEE ALSO
+.BR bdfimplode(1),
+.BR hex2bdf(1),
+.BR hex2sfd(1),
+.BR hexbraille(1),
+.BR hexdraw(1),
+.BR hexkinya(1),
+.BR hexmerge(1),
+.BR johab2ucs2(1),
+.BR unibdf2hex(1),
+.BR unibmp2hex(1),
+.BR unibmpbump(1),
+.BR unicoverage(1),
+.BR unidup(1),
+.BR unifont(5),
+.BR unifont-viewer(1),
+.BR unifont1per(1),
+.BR unifontchojung(1),
+.BR unifontksx(1),
+.BR unifontpic(1),
+.BR unigencircles(1),
+.BR unigenwidth(1),
+.BR unihex2png(1),
+.BR unihexfill(1),
+.BR unihexgen(1),
+.BR unihexrotate(1),
+.BR unipagecount(1),
+.BR unipng2hex(1)
+.SH AUTHOR
+.B unihex2bmp
+was written by Paul Hardy.
+.SH LICENSE
+.B unihex2bmp
+is Copyright \(co 2007 Paul Hardy.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input files.  If they're not in the
+format of the original GNU Unifont .hex file, all bets are off.
+Lines can be terminated either with line feed, or
+carriage return plus line feed.

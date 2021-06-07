@@ -1,0 +1,246 @@
+.TH UNIFONT 5 "2020 Jul 03"
+.SH NAME
+Unifont \- a bitmapped font with full Unicode Plane 0 (BMP) coverage
+.SH SYNOPSIS
+\fBunifont.hex\fP
+.SH DESCRIPTION
+.B Unifont
+is a bitmapped font with glyphs described in a plain text file, generically
+referred to as
+.B unifont.hex
+herein.
+This man page describes the format of three related files:
+.B unifont.hex, masks.hex,
+and
+.B combining.txt.
+All three of these files start with a Unicode code point as a hexadecimal
+string, with code points appearing in ascending order.
+.PP
+A
+.B unifont.hex
+file consists of single-line entries for each Unicode code point.
+Each line contains the code point, a colon (':') field separator,
+and the glyph bitmap.
+.B The glyphs in a unifont.hex format file must appear in ascending
+.B Unicode code point order.
+.PP
+This file can be converted into a BDF font using the
+\fBhex2bdf\fP(1)
+program, and into a TrueType font using
+\fBfontforge\fP(1)
+(which is not part of this package).
+The BDF font can also be converted into a PCF font using
+\fBbdftopcf\fP(1)
+(which is also not part of this package).
+.PP
+.B The first field
+.RS
+The first field is the Unicode code point in hexadecimal, ranging from
+"0000" through "10FFFF", inclusive.  This corresponds to the Unicode
+code points U+0000 through U+10FFFF, respectively.
+.RE
+.PP
+.B The second field
+.RS
+The second field is the glyph's bitmap string.  This is a series of
+hexadecimal digits.  Currently Unifont encodes two glyph sizes:
+8 pixels wide by 16 pixels tall (single-width), and
+16 pixels wide by 16 pixels tall (double-width).
+A third format of 32 pixels wide (drawn as 31 pixels plus a pixel
+on the right that is always blank) by 16 pixels tall (quadruple-width)
+is also available, but only for experimental use.
+.LP
+As each hexadecimal digit can encode four bits, one pixel row of a glyph
+is either two hexadecimal digits long (single-width) or four hexadecimal
+digits long (double-width).  The glyphs are 16 pixels tall, so
+a single-width glyph is (2)(16) = 32 hexadecimal digits long and
+a double-width glyph is (4)(16) = 64 hexadecimal digits long.
+.RE
+.PP
+Previous versions of this package supplied a file named
+.B masks.hex.
+This file followed the same format as
+.B unifont.hex
+with a first field that was a Unicode code point in hexadecimal,
+followed by a colon (':') field separator,
+followed by a second field that was a hexadecimal string representing
+a glyph bitmap.  Code points were in ascending order.  The glyph bitmaps
+were bitmaps that would be exclusive-ored with the glyph in
+.B unifont.hex
+that had the same code point.
+The original
+.B unifont.hex
+contained combining circles as depicted in
+.I The Unicode Standard.
+When Paul Hardy got combining characters to display properly in the
+TrueType version, it became desirable to remove these combining circles
+for proper display with
+.B unifont.ttf.
+The program
+\fBuniunmask\fP(1)
+will read such a
+.B masks.hex
+file, read a
+.B unifont.hex
+format file, and apply the exclusive-or masks in
+.B masks.hex
+to
+.B unifont.hex.
+The output is another file in
+.B unifont.hex
+format with the masked-off bits (\fIi.e.,\fP combining circles) removed.
+.PP
+Because the operation is an exclusive-or,
+.B masks.hex
+could also be used to turn on pixels in selective glyphs, for example
+to add combining circles to selective glyphs that do not show them.
+However, the program
+\fBunigencircles\fP(1)
+can do this without a separate
+.B masks.hex
+file.  Thus
+.B masks.hex
+is no longer supplied with this package.
+\fBuniunmask\fP(1)
+remains part of this distribution in case someone might find creating a custom
+.B masks.hex
+file useful for another purpose.
+.PP
+The TrueType version of the font,
+.B unifont.ttf,
+and the
+\fBunigencircles\fP(1)
+utility both read a file
+.B combining.txt.
+This file appears in the directory
+.B font/ttfsrc.
+The
+.B combining.txt
+file is a list of code points as hexadecimal strings, one per line in
+ascending order, of Unicode code points that show combining circles in
+.I The Unicode Standard.
+Any glyph with its code point listed in
+.B combining.txt
+will have zero width in
+.B unifont.ttf.
+.SH UTILITIES
+Roman Czyborra, the font's creator, originally wrote two Perl scripts
+as utilities:
+\fBbdfimplode\fP(1)
+and
+\fBhexdraw\fP(1).
+.PP
+The
+\fBbdfimplode\fP(1)
+Perl script reads in a font in BDF format and generates a font output in
+.B unifont.hex
+format.
+.PP
+The
+\fBhexdraw\fP(1)
+Perl script might appear somewhat magical.  It can read a file in
+.B unifont.hex
+format and generate a text file with each glyph appearing
+as a grid of characters in an 8 by 16 or 16 by 16 grid:
+a '\-' character indicates a corresponding white pixel, and
+a '#' character indicates a corresponding black pixel.  These pixel
+grids are indented with a single tab character.  The first line of
+each glyph first shows the code point for the glyph, followed
+by a colon (':').  The 16 lines that graphically represent each glyph
+are followed by one blank line.  This text file can then be modified
+with any text editor.  The magical part about
+\fBhexdraw\fP(1)
+is that it will read in
+this text file, detect that it is in this converted format, and produce
+as output a second file in Unifont's .hex format.  Thus
+\fBhexdraw\fP(1)
+automagically provides round-trip coverage between an original font file in
+.B unifont.hex
+format and an intermediate text graphics format for editing.
+.PP
+Utilities introduced after those first two convert a file in
+.B unifont.hex
+format to and from bitmapped
+graphics (".bmp") files.  The
+\fBunihex2bmp\fP(1)
+program converts a file in
+.B unifont.hex
+format into a .bmp format file,
+for editing with a graphics editor.  The
+\fBunibmp2hex\fP(1)
+program performs the reverse conversion, from a bitmapped graphics format
+back to a file in
+.B unifont.hex
+format.
+.PP
+\fBhexdraw\fP(1), \fBunihex2bmp\fP(1),
+and
+\fBunibmp2hex\fP(1)
+are the central programs that handle conversion of a
+.B unifont.hex
+file to and from two-dimensional glyph representations for visual editing.
+See the
+.B doc/unifont.info
+texinfo file included in the source package for more information on these and
+other utilities to customize
+.B unifont.hex
+format files.  Also consult the man pages for the utilities listed below.
+.SH FILES
+The following files are part of the Unifont source distribution:
+.TP 15
+.B font/plane*/*.hex
+GNU Unifont font files
+.TP 15
+.B LICENSE
+The Unifont license
+.TP 15
+.B README
+Instructions on building Unifont
+.TP 15
+.B doc/unifont.info
+Tutorial in texinfo format on customizing Unifont
+.SH SEE ALSO
+\fBbdfimplode\fP(1),
+\fBhex2bdf\fP(1),
+\fBhex2sfd\fP(1),
+\fBhexbraille\fP(1),
+\fBhexdraw\fP(1),
+\fBhexkinya\fP(1),
+\fBhexmerge\fP(1),
+\fBjohab2ucs2\fP(1),
+\fBunibdf2hex\fP(1),
+\fBunibmp2hex\fP(1),
+\fBunibmpbump\fP(1),
+\fBunicoverage\fP(1),
+\fBunidup\fP(1),
+\fBunifont-viewer\fP(1),
+\fBunifont1per\fP(1),
+\fBunifontchojung\fP(1),
+\fBunifontksx\fP(1),
+\fBunifontpic\fP(1),
+\fBunigencircles\fP(1),
+\fBunigenwidth\fP(1),
+\fBunihex2bmp\fP(1),
+\fBunihex2png\fP(1),
+\fBunihexfill\fP(1),
+\fBunihexgen\fP(1),
+\fBunihexrotate\fP(1),
+\fBunipagecount\fP(1),
+\fBunipng2hex\fP(1)
+.SH AUTHOR
+The
+.B unifont.hex
+format was created by Roman Czyborra, who drew the original set of glyphs.
+.SH LICENSE
+.B unifont
+is Copyright \(co 1998 Roman Czyborra, with portions Copyright \(co 2007\(en2013
+Paul Hardy, Copyright \(co 2004\(en2013 Qianqian Fang, and others.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+The format is very straightforward and no real bugs exist.  However,
+Unifont's original BDF font format does not support Unicode's combining
+characters (accents, etc.); only the TrueType version of Unifont does.

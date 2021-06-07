@@ -1,0 +1,237 @@
+@comment TROFF INPUT: .TH UNIPNG2HEX 1 "2013 Nov 09"
+
+@node unipng2hex
+@section unipng2hex
+@c DEBUG: print_menu("@section")
+
+@menu
+* unipng2hex NAME::
+* unipng2hex SYNOPSIS::
+* unipng2hex DESCRIPTION::
+* unipng2hex OPTIONS::
+* unipng2hex EXAMPLE::
+* unipng2hex FILES::
+* unipng2hex SEE ALSO::
+* unipng2hex AUTHOR::
+* unipng2hex LICENSE::
+* unipng2hex BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unipng2hex NAME
+@subsection unipng2hex NAME
+@c DEBUG: print_menu("unipng2hex NAME")
+
+unipng2hex @minus{} Portable Network Graphics to GNU Unifont .hex file converter
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unipng2hex SYNOPSIS
+@subsection unipng2hex SYNOPSIS
+@c DEBUG: print_menu("unipng2hex SYNOPSIS")
+
+@b{unipng2hex }@minus{}i @i{input@t{_}file.png }[@minus{}o @i{output@t{_}file.hex}] [@minus{}w @i{width}]
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unipng2hex DESCRIPTION
+@subsection unipng2hex DESCRIPTION
+@c DEBUG: print_menu("unipng2hex DESCRIPTION")
+
+@comment TROFF INPUT: .B unipng2hex
+@b{unipng2hex}
+reads a PNG file produced by
+@comment TROFF INPUT: .B unihex2png
+@b{unihex2png}
+before or after editing, and converts it back into a Unifont .hex format
+file.  The PNG file contains a block of 256 Unicode code points
+arranged in a 16 by 16 grid.  Each code point appears in a 32 by 32 or a 40
+by 40 pixel grid.  Characters are either 16, 24 or 32 pixel rows high,
+depending on the "@minus{}r" parameter specified by
+@comment TROFF INPUT: .B unihex2png.
+@b{unihex2png.}
+They can be 8, 16, 24, or 32 pixel columns wide (widths of 32 are only
+supported for 32 pixel row tall characters).
+@comment TROFF INPUT: .SH OPTIONS
+
+@node unipng2hex OPTIONS
+@subsection unipng2hex OPTIONS
+@c DEBUG: print_menu("unipng2hex OPTIONS")
+
+@comment TROFF INPUT: .TP 6
+@comment TROFF INPUT: .BR \-i
+
+@c ---------------------------------------------------------------------
+@table @code
+@item @b{@minus{}i}
+Specify the input file.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-o
+
+@item @b{@minus{}o}
+Specify the output file.  If omitted, a file in the Unifont .hex format
+is written to STDOUT.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-w
+
+@item @b{@minus{}w}
+Specify the minimum width of the output glyphs.  Valid values are 16, 24,
+ and 32.  The default is no minimum width.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-h
+
+@item @b{@minus{}h}
+Print a help message of options and exit.
+@comment TROFF INPUT: .SH EXAMPLE
+
+@end table
+
+@c ---------------------------------------------------------------------
+
+@node unipng2hex EXAMPLE
+@subsection unipng2hex EXAMPLE
+@c DEBUG: print_menu("unipng2hex EXAMPLE")
+
+Sample usage:
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .RS
+
+@c ---------------------------------------------------------------------
+@quotation
+unipng2hex @minus{}i my@t{_}input@t{_}file.png @minus{}o my@t{_}output@t{_}file.hex
+@comment TROFF INPUT: .RE
+
+@end quotation
+
+@c ---------------------------------------------------------------------
+@comment TROFF INPUT: .SH FILES
+
+@node unipng2hex FILES
+@subsection unipng2hex FILES
+@c DEBUG: print_menu("unipng2hex FILES")
+
+*.png graphics files
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unipng2hex SEE ALSO
+@subsection unipng2hex SEE ALSO
+@c DEBUG: print_menu("unipng2hex SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1)
+@b{unipagecount(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unipng2hex AUTHOR
+@subsection unipng2hex AUTHOR
+@c DEBUG: print_menu("unipng2hex AUTHOR")
+
+@comment TROFF INPUT: .B unipng2hex
+@b{unipng2hex}
+was written by Andrew Miller, starting by converting Paul Hardy's
+@comment TROFF INPUT: .B unibmp2hex
+@b{unibmp2hex}
+C program to Perl.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unipng2hex LICENSE
+@subsection unipng2hex LICENSE
+@c DEBUG: print_menu("unipng2hex LICENSE")
+
+@comment TROFF INPUT: .B unipng2hex
+@b{unipng2hex}
+is Copyright @copyright{} 2007, 2008 Paul Hardy, @copyright{} 2013 Andrew Miller.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unipng2hex BUGS
+@subsection unipng2hex BUGS
+@c DEBUG: print_menu("unipng2hex BUGS")
+
+No known real bugs exist, but the optional pixel rows parameter is not
+yet supported by all other Unifont utilities.  Use of glyphs taller than
+the default of 16 pixels is considered experimental.  Currently
+@comment TROFF INPUT: .B unihex2png, unipng2hex, hexdraw,
+@b{unihex2png, unipng2hex, hexdraw,}
+and
+@comment TROFF INPUT: .B hex2bdf
+@b{hex2bdf}
+tentatively support glyphs that are 16, 24, and 32 pixels tall.
+@comment TROFF INPUT: .PP
+
+Also, this software does not perform extensive error checking on its
+input files.  If they're not in the format of the original PNG output from
+@comment TROFF INPUT: .B unihex2png,
+@b{unihex2png,}
+all bets are off.
+@comment TROFF INPUT: .PP
+
+If the output file is for a "page" containing space code points and the
+PNG file squares for those code points are not empty,
+@comment TROFF INPUT: .B unipng2hex
+@b{unipng2hex}
+preserves the graphics as they are drawn.
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .B unipng2hex
+@b{unipng2hex}
+is designed to work with black and white pixels; do not use other
+colors.

@@ -1,0 +1,81 @@
+.TH UNIHEXFILL 1 "2014 Jun 30"
+.SH NAME
+unihexfill \- Generate range of Unifont 4- or 6-digit hexadecimal glyphs
+.SH SYNOPSIS
+\fBunihexfill \fP< \fIunassigned-ranges.txt \fP> \fIfiller-glyphs.hex\fP
+.SH DESCRIPTION
+.B unihexfill
+is a shell script that reads a list of code point ranges from STDIN
+and produces filler glyphs of 4- or 6-digit code points on STDOUT.
+.P
+The format of the input file is a combination of comment lines,
+single code points on a line, and start/stop pairs of code points on
+a line separated by a space.  Comment lines start with a semicolon (';')
+by convention.  Start and stop code points are strings of hexadecimal
+digits, by convention either four or six digits.
+.P
+.B unihexfill
+invokes
+.B unihexgen
+for each non-comment line in its input file.  If a codepoint is less than
+or equal to "FFFF" (i.e., 0xFFFF), a four-digit hexadecimal number is encoded
+within the corresponding Unifont glyph as two digits on each of
+two rows.  Otherwise, a six-digit hexadecimal number is encoded as
+three digits on each of two rows.
+.SH OPTIONS
+There are no options.
+.SH FILES
+*.txt as input; *.hex as output.
+.SH EXAMPLE
+In the Unifont source package, the file font/plane01/Makefile generates
+Unicode Plane 1 hexadecimal filler glyphs of unassigned code points within
+assigned scripts with this single-line command:
+.PP
+.RS
+.B ../../bin/unihexfill
+< unassigned\-ranges.txt > unassigned.hex
+.RE
+.SH SEE ALSO
+.BR bdfimplode(1),
+.BR hex2bdf(1),
+.BR hex2sfd(1),
+.BR hexbraille(1),
+.BR hexdraw(1),
+.BR hexkinya(1),
+.BR hexmerge(1),
+.BR johab2ucs2(1),
+.BR unibdf2hex(1),
+.BR unibmp2hex(1),
+.BR unibmpbump(1),
+.BR unicoverage(1),
+.BR unidup(1),
+.BR unifont(5),
+.BR unifont-viewer(1),
+.BR unifont1per(1),
+.BR unifontchojung(1),
+.BR unifontksx(1),
+.BR unifontpic(1),
+.BR unigencircles(1),
+.BR unigenwidth(1),
+.BR unihex2bmp(1),
+.BR unihex2png(1),
+.BR unihexgen(1),
+.BR unihexrotate(1),
+.BR unipagecount(1),
+.BR unipng2hex(1)
+.SH AUTHOR
+.B unihexfill
+was written by Paul Hardy.
+.SH LICENSE
+.B unihexfill
+is Copyright \(co 2014 Paul Hardy.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input file.  Any line that appears to
+begin with a hexadecimal digit is fed to
+.B unihexgen.

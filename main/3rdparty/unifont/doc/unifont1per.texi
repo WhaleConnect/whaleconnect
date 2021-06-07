@@ -1,0 +1,171 @@
+@comment TROFF INPUT: .TH UNIFONT1PER 1 "2017 Jun 11"
+
+@node unifont1per
+@section unifont1per
+@c DEBUG: print_menu("@section")
+
+@menu
+* unifont1per NAME::
+* unifont1per SYNOPSIS::
+* unifont1per DESCRIPTION::
+* unifont1per OPTIONS::
+* unifont1per FILES::
+* unifont1per SEE ALSO::
+* unifont1per AUTHOR::
+* unifont1per LICENSE::
+* unifont1per BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unifont1per NAME
+@subsection unifont1per NAME
+@c DEBUG: print_menu("unifont1per NAME")
+
+unifont1per @minus{} Create BMP glyph files from GNU Unifont .hex file
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unifont1per SYNOPSIS
+@subsection unifont1per SYNOPSIS
+@c DEBUG: print_menu("unifont1per SYNOPSIS")
+
+@b{unifont1per }< @i{input@t{_}file.hex}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unifont1per DESCRIPTION
+@subsection unifont1per DESCRIPTION
+@c DEBUG: print_menu("unifont1per DESCRIPTION")
+
+@comment TROFF INPUT: .B unifont1per
+@b{unifont1per}
+reads a GNU Unifont .hex file and for each code point in the file,
+creates an output Bitmapped Graphics (".bmp") file in the current directory.
+The filename for each output file is "U+@i{codepoint}.bmp", where
+@i{codepoint} is the Unicode codepoint for the glyph.
+@comment TROFF INPUT: .PP
+
+Each glyph entry in a Unifont .hex file is expected to be 16 rows tall,
+and can be 8, 16, 24, or 32 pixels wide.  The glyph sizes in output files
+are determined on a glyph-by-glyph basis.
+@comment TROFF INPUT: .PP
+
+This program can be of use in extracting individual glyphs to display
+in a document or on a web page.
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .B WARNING!
+@b{WARNING!}
+This program generates one output file per code point that appears
+in the input stream.  If you feed this program a file with 1000 code points,
+it will generate 1000 files in your current directory.
+@comment TROFF INPUT: .SH OPTIONS
+
+@node unifont1per OPTIONS
+@subsection unifont1per OPTIONS
+@c DEBUG: print_menu("unifont1per OPTIONS")
+
+None.
+@comment TROFF INPUT: .SH FILES
+
+@node unifont1per FILES
+@subsection unifont1per FILES
+@c DEBUG: print_menu("unifont1per FILES")
+
+*.hex GNU Unifont font files, read from standard input
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unifont1per SEE ALSO
+@subsection unifont1per SEE ALSO
+@c DEBUG: print_menu("unifont1per SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unifont1per AUTHOR
+@subsection unifont1per AUTHOR
+@c DEBUG: print_menu("unifont1per AUTHOR")
+
+@comment TROFF INPUT: .B unifont1per
+@b{unifont1per}
+was written by Paul Hardy.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unifont1per LICENSE
+@subsection unifont1per LICENSE
+@c DEBUG: print_menu("unifont1per LICENSE")
+
+@comment TROFF INPUT: .B unifont1per
+@b{unifont1per}
+is Copyright @copyright{} 2017 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unifont1per BUGS
+@subsection unifont1per BUGS
+@c DEBUG: print_menu("unifont1per BUGS")
+
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input files.  If they're not in the
+format of the original GNU Unifont .hex file, all bets are off.
+Lines can be terminated either with line feed, or
+carriage return plus line feed.

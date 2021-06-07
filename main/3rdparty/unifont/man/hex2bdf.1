@@ -1,0 +1,84 @@
+.TH HEX2BDF 1 "2008 Jul 06"
+.SH NAME
+hex2bdf \- Convert a GNU Unifont .hex file into a BDF font
+.SH SYNOPSIS
+\fBhex2bdf \fP[\fIoptions\fP] < \fIinput-font.hex \fP> \fIoutput-font.bdf\fP
+.SH DESCRIPTION
+.B hex2bdf
+reads a sorted GNU Unifont .hex file (sorted with the Unix
+.B sort
+utility) from STDIN and writes a BDF version of the font
+to STDOUT.
+.SH OPTIONS
+.TP 12
+\fB\-f\fP "font-name"
+Specify the target font name.  If omitted, the default
+font name "Unifont" is assigned.
+.TP
+\fB\-v\fP "font-version"
+Specify the target font version.  If omitted, the default
+version "1.0" is assigned.
+.TP
+\fB\-c\fP "font-copyright"
+Specify the target font copyright information.  The default
+is the null string.
+.TP
+\fB\-r \fIpixel-rows\fR
+Specify how many pixel rows tall a glyph is.  The default
+is the traditional Unifont 16 rows of pixels.  This is an
+addition to support
+.B unihex2png(1)
+and
+.B unipng2hex(1),
+which allow designing glyphs that are 16, 24, or 32
+pixel rows tall.
+.SH EXAMPLE
+Sample usage:
+.PP
+.RS
+hex2bdf \-f "Unifont" \-c "(C) 2013..." unifont.hex > unifont.bdf
+.RE
+.SH FILES
+*.hex GNU Unifont font files
+.SH SEE ALSO
+.BR bdfimplode(1),
+.BR hex2sfd(1),
+.BR hexbraille(1),
+.BR hexdraw(1),
+.BR hexkinya(1),
+.BR hexmerge(1),
+.BR johab2ucs2(1),
+.BR unibdf2hex(1),
+.BR unibmp2hex(1),
+.BR unibmpbump(1),
+.BR unicoverage(1),
+.BR unidup(1),
+.BR unifont(5),
+.BR unifont-viewer(1),
+.BR unifont1per(1),
+.BR unifontchojung(1),
+.BR unifontksx(1),
+.BR unifontpic(1),
+.BR unigencircles(1),
+.BR unigenwidth(1),
+.BR unihex2bmp(1),
+.BR unihex2png(1),
+.BR unihexfill(1),
+.BR unihexgen(1),
+.BR unihexrotate(1),
+.BR unipagecount(1),
+.BR unipng2hex(1)
+.SH AUTHOR
+.B hex2bdf
+was written by Roman Czyborra.
+.SH LICENSE
+.B hex2bdf
+is Copyright \(co 1998 Roman Czyborra.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+No known bugs exist.  Support for glyph heights other than 16 pixels is
+brand new and has not been extensively tested.

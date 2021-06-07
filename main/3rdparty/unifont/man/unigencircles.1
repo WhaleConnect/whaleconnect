@@ -1,0 +1,76 @@
+.TH UNIGENCIRCLES 1 "2013 Sep 28"
+.SH NAME
+unigencircles \- Add dashed combining circles to a unifont.hex file
+.SH SYNOPSIS
+\fBunigencircles \fIcombining.txt nonprinting.hex \fR< \fIunifont.hex \fP> \fIunifont-circles.hex\fP
+.SH DESCRIPTION
+.B unigencircles
+reads a unifont.hex file from STDIN, adds dashed combining
+circles to the hex strings for code points listed in "combining.txt"
+but not listed in "nonprinting.hex", and writes the revised set of glyphs
+in unifont.hex format to STDOUT.  The resulting combining character glyphs
+show the dashed combining circles that appear in The Unicode Standard
+code charts.
+.PP
+For each code point listed in the "combining.txt" file but not listed
+in the "nonprinting.hex" file,
+.B unigencircles
+will superimpose a single-width dashed circle in glyphs that are
+single-width (i.e., their hex glyph strings are 32 characters long)
+and will superimpose a double-width dashed circle in glyphs that
+are double-width (i.e., their hex glyph strings are 64 characters long).
+.SH EXAMPLE
+.PP
+.RS
+unigencircles combining.txt nonprinting.hex < unifont.hex > unifont\-circles.hex
+.RE
+.SH FILES
+*.hex files for Unifont glyph data
+.PP
+.B font/ttfsrc/combining.txt
+for combining code points
+.PP
+.B font/plane00/nonprinting.hex
+for non-printing code points
+.SH SEE ALSO
+.BR bdfimplode(1),
+.BR hex2bdf(1),
+.BR hex2sfd(1),
+.BR hexbraille(1),
+.BR hexdraw(1),
+.BR hexkinya(1),
+.BR hexmerge(1),
+.BR johab2ucs2(1),
+.BR unibdf2hex(1),
+.BR unibmp2hex(1),
+.BR unibmpbump(1),
+.BR unicoverage(1),
+.BR unidup(1),
+.BR unifont(5),
+.BR unifont-viewer(1),
+.BR unifont1per(1),
+.BR unifontchojung(1),
+.BR unifontksx(1),
+.BR unifontpic(1),
+.BR unigenwidth(1),
+.BR unihex2bmp(1),
+.BR unihex2png(1),
+.BR unihexfill(1),
+.BR unihexgen(1),
+.BR unihexrotate(1),
+.BR unipagecount(1),
+.BR unipng2hex(1)
+.SH AUTHOR
+.B unigencircles
+was written by Paul Hardy.
+.SH LICENSE
+.B unigencircles
+is Copyright \(co 2013 Paul Hardy.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input files.

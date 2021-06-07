@@ -1,0 +1,245 @@
+@comment TROFF INPUT: .TH UNIBMPBUMP 1 "2019 Mar 2"
+
+@node unibmpbump
+@section unibmpbump
+@c DEBUG: print_menu("@section")
+
+@menu
+* unibmpbump NAME::
+* unibmpbump SYNOPSIS::
+* unibmpbump DESCRIPTION::
+* unibmpbump OPTIONS::
+* unibmpbump FILES::
+* unibmpbump SEE ALSO::
+* unibmpbump AUTHOR::
+* unibmpbump LICENSE::
+* unibmpbump BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unibmpbump NAME
+@subsection unibmpbump NAME
+@c DEBUG: print_menu("unibmpbump NAME")
+
+unibmpbump @minus{} adjust a .bmp image for unibmp2hex processing
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unibmpbump SYNOPSIS
+@subsection unibmpbump SYNOPSIS
+@c DEBUG: print_menu("unibmpbump SYNOPSIS")
+
+@b{unibmpbump }[@minus{}i@i{input-file.bmp}] [@minus{}o@i{output-file.bmp}] [@minus{}v|@minus{}@minus{}verbose] [@minus{}V|@minus{}@minus{}version]
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unibmpbump DESCRIPTION
+@subsection unibmpbump DESCRIPTION
+@c DEBUG: print_menu("unibmpbump DESCRIPTION")
+
+@comment TROFF INPUT: .B unibmpbump
+@b{unibmpbump}
+reads a Microsoft Bitmap Graphics (".bmp") graphics image file and,
+if it appears to be in a known format, converts it for processing
+by @b{unibmp2hex}(1).
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .B unibmpbump
+@b{unibmpbump}
+supports the following Device Independent Bitmap (DIB) header
+byte lengths for input image files:
+@comment TROFF INPUT: .RS
+
+@c ---------------------------------------------------------------------
+@quotation
+@comment TROFF INPUT: .TP 6
+
+@c ---------------------------------------------------------------------
+@table @code
+@item 12
+The BITMAPCOREHEADER format.  This was the original Microsoft
+Windows header format.  It has not been encoutered, and was
+added only as a subset of the formats that appear below.
+@comment TROFF INPUT: .TP
+
+@item 40
+The BITMAPINFOHEADER format.  This is the format that most
+graphics creation programs support, and is the header format
+that @b{unibmp2hex} expects.
+@comment TROFF INPUT: .TP
+
+@item 108
+The BITMAPV4HEADER format.  This is the format that the
+Image Magick @b{convert} program creates when converting
+a PNG image to a BMP image using the "@minus{}monochrome" option.
+@comment TROFF INPUT: .TP
+
+@item 124
+The BITMAPV5HEADER format.  This is the format that the
+Image Magick @b{convert} program creates when converting
+a PNG image to a BMP image without the "@minus{}monochrome" option;
+@b{convert} will encode the image as a "grayscale" image,
+but with only two colors: black and white.
+@comment TROFF INPUT: .RE
+
+@end table
+
+@c ---------------------------------------------------------------------
+
+@end quotation
+
+@c ---------------------------------------------------------------------
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .B unibmpbump
+@b{unibmpbump}
+is able to read files created by @b{unihex2png} that were subsequently
+saved as BMP files, for example by the @b{convert}(1) program,
+which is part of the Image Magick package.  Images created by
+@b{unihex2png}(1) are 544 rows high by 560 columns wide.
+Images created by @b{unihex2bmp}(1) are 544 rows high by 576
+columns wide.  Thus, if the input Bitmap Graphics file is
+544 by 560 pixels, @b{unibmpbump} assumes that the file was
+originally a Portable Network Graphics (".png") file created
+by @b{unihex2png} and realigns the glyphs so they are
+positioned as @b{unibmp2hex} expects.
+@comment TROFF INPUT: .SH OPTIONS
+
+@node unibmpbump OPTIONS
+@subsection unibmpbump OPTIONS
+@c DEBUG: print_menu("unibmpbump OPTIONS")
+
+@comment TROFF INPUT: .TP 6
+@comment TROFF INPUT: .BR \-i
+
+@c ---------------------------------------------------------------------
+@table @code
+@item @b{@minus{}i}
+Specify an input Bitmaps Graphics (".bmp") file.
+If no input file is specified, input is taken from stdin.
+The input file must be either 544 rows by 560 columns (for a
+file created by @b{unihex2png} originally) or
+544 rows by 576 columns (for a file created by @b{unihex2bmp}
+originally).
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-o
+
+@item @b{@minus{}o}
+Specify an output Bitmaps Graphics (".bmp") file.
+If no output file is specified, output is sent to stdout.
+The output file will be 544 rows high by 576 columns wide
+with a 40 byte Device Independent Bitmap (DIB) header,
+which is the format that @b{unibmp2hex} expects.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-v ", " \-\-verbose
+
+@item @b{@minus{}v}@r{, }@b{@minus{}@minus{}verbose}
+Verbose output.  Print information about the input file on stderr.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-V ", " \-\-version
+
+@item @b{@minus{}V}@r{, }@b{@minus{}@minus{}version}
+Print the version of @b{unibmpbump} and exit.
+@comment TROFF INPUT: .SH FILES
+
+@end table
+
+@c ---------------------------------------------------------------------
+
+@node unibmpbump FILES
+@subsection unibmpbump FILES
+@c DEBUG: print_menu("unibmpbump FILES")
+
+Bitmap Graphics (".bmp") input and output files.
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unibmpbump SEE ALSO
+@subsection unibmpbump SEE ALSO
+@c DEBUG: print_menu("unibmpbump SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unibmpbump AUTHOR
+@subsection unibmpbump AUTHOR
+@c DEBUG: print_menu("unibmpbump AUTHOR")
+
+@comment TROFF INPUT: .B unibmpbump
+@b{unibmpbump}
+was written by Paul Hardy.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unibmpbump LICENSE
+@subsection unibmpbump LICENSE
+@c DEBUG: print_menu("unibmpbump LICENSE")
+
+@comment TROFF INPUT: .B unibmpbump
+@b{unibmpbump}
+is Copyright @copyright{} 2019 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unibmpbump BUGS
+@subsection unibmpbump BUGS
+@c DEBUG: print_menu("unibmpbump BUGS")
+
+No known bugs exist.

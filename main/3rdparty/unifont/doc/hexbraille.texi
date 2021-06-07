@@ -1,0 +1,142 @@
+@comment TROFF INPUT: .TH HEXBRAILLE 1 "2008 Jul 06"
+
+@node hexbraille
+@section hexbraille
+@c DEBUG: print_menu("@section")
+
+@menu
+* hexbraille NAME::
+* hexbraille SYNOPSIS::
+* hexbraille DESCRIPTION::
+* hexbraille FILES::
+* hexbraille SEE ALSO::
+* hexbraille AUTHOR::
+* hexbraille LICENSE::
+* hexbraille BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node hexbraille NAME
+@subsection hexbraille NAME
+@c DEBUG: print_menu("hexbraille NAME")
+
+hexbraille @minus{} Algorithmically generate the Unicode Braille range (U+28xx)
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node hexbraille SYNOPSIS
+@subsection hexbraille SYNOPSIS
+@c DEBUG: print_menu("hexbraille SYNOPSIS")
+
+@b{hexbraille }> @i{output-font.hex}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node hexbraille DESCRIPTION
+@subsection hexbraille DESCRIPTION
+@c DEBUG: print_menu("hexbraille DESCRIPTION")
+
+@comment TROFF INPUT: .B hexbraille
+@b{hexbraille}
+generates a GNU Unifont .hex format file (written on stdout) containing
+the Braille dot patterns in the Unicode range U+2800..U+28FF.
+@comment TROFF INPUT: .SH FILES
+
+@node hexbraille FILES
+@subsection hexbraille FILES
+@c DEBUG: print_menu("hexbraille FILES")
+
+braille.hex output font files
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node hexbraille SEE ALSO
+@subsection hexbraille SEE ALSO
+@c DEBUG: print_menu("hexbraille SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node hexbraille AUTHOR
+@subsection hexbraille AUTHOR
+@c DEBUG: print_menu("hexbraille AUTHOR")
+
+@comment TROFF INPUT: .B hexbraille
+@b{hexbraille}
+was written by Roman Czyborra, who named this script "braille.pl".
+In 2003, Roman incorporated a bug fix from Dominique at unruh.de.
+@comment TROFF INPUT: .SH LICENSE
+
+@node hexbraille LICENSE
+@subsection hexbraille LICENSE
+@c DEBUG: print_menu("hexbraille LICENSE")
+
+@comment TROFF INPUT: .B hexbraille
+@b{hexbraille}
+is Copyright @copyright{} 1998 Roman Czyborra.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node hexbraille BUGS
+@subsection hexbraille BUGS
+@c DEBUG: print_menu("hexbraille BUGS")
+
+No known bugs exist.

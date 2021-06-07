@@ -1,0 +1,1111 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename unifont.info
+@settitle Unifont
+@c %**end of header
+
+@paragraphindent none
+
+@copying
+This manual describes Unifont, a bitmap-based font covering the Unicode
+Basic Multilingual Plane and beyond, along with Unifont's utility programs.
+
+Copyright @copyright{} 2008--2019 Paul Hardy
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover Texts and no Back-Cover Texts.
+@end quotation
+
+@end copying
+
+@dircategory Fonts
+
+@direntry
+* Unifont: (unifont).  A bitmap-based font covering the Unicode BMP.
+@end direntry
+
+@titlepage
+
+@title Unifont
+@author Paul Hardy
+@page
+@vskip 0pt plus 1filll
+
+@insertcopying
+
+@end titlepage
+
+@contents
+
+
+@node Top, Introduction, (dir), (dir)
+
+@menu
+* Introduction:: General overview.
+* Tutorial:: Tutorial on Unifont utilities and Unifont modification.
+* Reference:: Detailed description of each Unifont utility.
+@end menu
+
+
+@node Introduction, Tutorial, Top, Top
+@chapter Introduction
+
+
+This document describes the process of using the GNU Unifont utilities
+to create a font.  The steps described in the "Using Graphical Tools"
+section in the "Tutorial" chapter are more or less the steps that
+I (Paul Hardy) followed to add thousands of glyphs to GNU Unifont,
+except that I didn't have the luxury of just typing @code{make}
+to make a new font while adding those glyphs in the beginning.
+
+I streamlined the font build process after I was done drawing the
+Unicode 5.1 glyphs.
+
+If you have questions, please email
+@code{unifoundry@@unifoundry.com}.
+You can check for the latest Unifont news at
+@code{http://savannah.gnu.org/projects/unifont} and
+@code{http://unifoundry.com}.
+You can also submit a bug report through the
+@code{http://savannah.gnu.org/projects/unifont} page.
+
+DISCLAIMER: Donald Knuth warned in his Metafont book that if someone
+started designing type, they would never again be able to look at
+a page of text normally and just read its content.  There is a
+point of no return beyond which a serious font designer begins
+looking at how individual letters in a font on a page are drawn,
+and how they might be improved.  Be warned!
+
+
+--- Paul Hardy (@code{unifoundry@@unifoundry.com})  2008, 2013
+
+
+@node Tutorial, Reference, Introduction, Top
+@chapter Tutorial
+
+This chapter provides a step-by-step tutorial on using the Unifont
+utility programs to modify a font in the GNU Unifont format.
+
+@menu
+* Unicode:: Brief Overview of The Unicode Standard.
+* Unifont Structure:: The format of Unifont files.
+* Hex File Format:: The @code{unifont.hex} file format.
+* Using Graphical Tools:: The Unifont graphical utilities.
+* Using Hexdraw:: The Unifont ASCII utility for text editors.
+* Checking Coverage:: Checking Unicode Basic Multilingual Plane coverage.
+* Custom Builds:: Customizing the composition of a Unifont derivative.
+* One Glyph per File:: Using @code{unifont1per}
+* Viewing a Unifont File Interactively:: Using @code{unifont-viewer}
+* Seeing the Big Picture (Literally!):: Creating a Unifont poster.
+* Combining Circles:: Glyphs with zero width.
+* Installing Fonts on GNU/Linux:: font installation on Unix/Linux.
+* Creating a Brand New Font:: advice on adding a new Unicode script.
+* Updates to Unicode:: modifying Unifont for Unicode updates.
+@end menu
+
+@node Unicode, Unifont Structure, Tutorial, Tutorial
+@section Unicode
+
+
+Unicode is an international standard to encode all the world's
+scripts with one universal scheme.  Unicode is the default encoding
+for web pages and is gaining popularity in many other applications.
+To learn more about Unicode, look at code charts, and see the
+latest developments, check out
+
+@example
+http://unicode.org
+@end example
+
+Unifont follows the Unicode encoding scheme.  Unicode
+defines the numeric value of a character, but does not define
+one particular font.  There can be (and are) many fonts that
+support a subset of Unicode characters.
+
+In 1998, Roman Czyborra observed that there was still no font,
+free or commercial, with complete Unicode coverage.  He envisioned
+a low-quality bitmapped font as an easy way to produce a font
+that covered much of the Unicode standard.
+
+
+@node Unifont Structure, Hex File Format, Unicode, Tutorial
+@section Unifont Structure
+
+
+GNU Unifont is a bitmapped pixel font, which is also converted
+to an outline TrueType font.  Roman Czyborra began this font
+in 1998 with a goal of having one glyph rendered for each visible
+character in the Unicode Basic Multilingual Plane (Plane 0, the
+first 65,536 characters).  His original writing on this is at
+@code{http://czyborra.com/unifont/}.
+
+(Note that the term "character" is used very loosely here for
+simplicity; the Unicode Standard has a stricter definition
+of what constitutes a character.)
+
+The font is dual-width.  Each character is 16 pixels tall, and
+either 8 or 16 pixels wide.  The characters are stored in a
+unique .hex file format invented by Roman Czyborra as a convenient
+way of giving each character exactly a one line specification.
+Conversion between this .hex format and BDF font format is trivial.
+
+Glyphs can actually be 8, 16, 24, or 32 pixels wide, but this
+extended capability should be considered experimental.  Prior to
+the release of Unicode 10.0.0, hooks were put in place in some of
+the Unifont utilities to allow for the possibility of future fonts
+to represent complex glyphs such as Cuneiform.  Unicode 10.0.0
+created a need for quadruple-width glyphs (31 pixels wide, encoded
+as 32 pixels wide) for some historic Chinese ideographs assigned to
+the BMP; that currently is the only place glyphs other than single-
+or double-width are used.  As a result, those Unifont utilities that
+support quadruple-width glyphs have updated descriptions in the
+reference section of this document.
+
+
+@node Hex File Format, Using Graphical Tools, Unifont Structure, Tutorial
+@section Hex File Format
+
+
+By convention, files containing the Unifont native font format
+have the extension ".hex".  Their format is extremely simple, consisting
+of two fields separated with a colon (":") and ending with a newline.
+
+The first field is the Unicode code point, in hexadecimal.  For all
+Plane 0 code points, this is a four digit hexadecimal number.  Hexadecimal
+digits are (in order) 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E,
+and F.  The Unicode Standard uses a hexadecimal number to assign
+each character a location.  These locations are called "code points"
+and their range is 0 through 10FFFF, inclusive.
+
+The range 0000 through FFFF, inclusive, is called the Basic Multilingual
+Plane (BMP), or Plane 0.  This plane contains glyphs for most of
+the world's modern writing scripts.
+
+Unifont utilities support glyphs across the entire Unicode range.
+The current distribution includes glyphs for Unicode's Plane 0,
+Plane 1 (the Supplemental Multilingual Plane, or SMP), and others.
+Coverage of the SMP is only partial.
+
+The first field in a @code{.hex} file should be either four digits long
+for the Basic Multilingual Plane, or six digits long for higher Unicode
+planes, following the convention of the Unicode Standard.
+
+The second field is a string of hexadecimal digits.  There are 32
+digits for a character that is 8 pixels wide, and 64 digits for a
+character that is 16 pixels wide.
+
+The good news is you don't have to worry about these long digit
+strings.  Roman Czyborra wrote a utility, @code{hexdraw}, to convert
+.hex fonts to a form that can be edited with a plain text editor,
+then converted back into .hex format.
+
+Paul Hardy wrote two utilities to do the same thing except with
+bitmapped graphics images for editing with a graphics editor:
+@code{unihex2bmp} converts a block of 256 characters into a graphics
+file, and @code{unibmp2hex} converts such a graphics file back into
+.hex format.  These bitmaps display the 256 characters in a block
+arranged in a 16 by 16 character grid.  The graphics editor must
+maintain the image as a monochrome (black and white) file, with
+one bit per pixel.  After conversion from a .bmp file back to
+a .hex file, the next step is conversion to a BDF font file.  A BDF
+file can only encode a pixel being on or off (i.e., black or white
+only with no intermediate shades of gray).
+
+Andrew Miller later converted @code{unihex2bmp} and @code{unibmp2hex}
+to Perl, transforming them into
+@code{unihex2png} and @code{unipng2hex}, respectively.  These programs
+convert Unifont .hex files to and from Portable Network Graphics files.
+
+The @code{unihex2png},@code{unipng2hex}, and @code{hexdraw} programs handle
+the full Unicode code point range of 0x000000 through 0x10FFFF.  The
+@code{unihex2bmp} and @code{unibmp2hex} programs support the full
+32-bit unsigned integer range of 0x00000000 through 0xFFFFFFFF, but
+have not been tested extensively beyond the Unicode upper limit of
+0x10FFFF.  The range of the C programs might be truncated in the future
+to only cover to 0x10FFFF, the limit of the Unicode code point space.
+
+
+@node Using Graphical Tools, Using Hexdraw, Hex File Format, Tutorial
+@section Using Graphical Tools
+
+
+Let's look at an example.  Suppose you want to modify the Coptic letters
+in the range U+2C80..U+2CFF ("U+" is Unicode shorthand).  These
+letters are in the upper half of the block U+2C00..U+2CFF.  The
+Unicode utilities in this package refer to this as "page" 2C.
+("Page" is not a Unicode term --- it is just a term unique to this
+package to refer to a block of 256 code points/characters).
+
+The steps to follow will be:
+
+@enumerate
+@item
+Convert .hex version of the page 2C range as a 16 by 16
+bitmapped grid.
+
+@item
+Modify the bitmap in any graphics editor, being careful
+to re-save it as a Windows Bitmap (.bmp) or Wireless
+Bitmap file when finished.
+
+@item
+Convert the modified bitmap back into a .hex font file.
+
+@item
+Merge the results with the original @code{unifont.hex} file
+(or whatever its name might be).
+
+@item
+Run @code{unidup} on the resulting file to guard against
+duplicate character definitions.
+
+@item
+Create the new bitmapped version of the font.
+
+@item
+Check the compiled font for duplicates.
+
+@item
+If there are duplicates, remove them and go back to Step 5.
+
+@item
+Create the new TrueType version or other versions of the font.
+
+@end enumerate
+
+If the script has combining characters (such as accent glyphs),
+also add their code points to the proper @code{*combining.txt} file
+in the directory for the corresponding Unicode plane.  That way,
+when the font is converted to TrueType those glyphs will have zero
+space.  For a script with combining characters, all glyphs that can
+appear with combining characters must have the same width so that
+the combining characters will be properly positioned.
+
+@strong{Step 1:} Convert the .hex range into a bitmap grid.
+Assuming our font file is named @code{unifont.hex}, type
+
+@example
+unihex2bmp -p2C < unifont.hex > uni2C.bmp
+@end example
+
+@strong{Step 2:} Modify @code{uni2C.bmp} with your favorite graphics editor.
+Note that whatever graphics editor you use must preserve the
+file as a black and white bitmap (monochrome), with one bit
+per pixel.  During editing, you can draw guidelines outside
+the actual 16x16 font pixel area; they will be ignored when
+converting back into .hex format.  You can also erase the
+grid borders between code points on purpose or by accident,
+and it will have no effect on the generated .hex file.  Just
+don't erase the code point numbers on the outer edges of
+the grid.  The conversion from .bmp back to .hex only looks
+at the "U+0000" in the upper left-hand corner of the bitmap graphic
+and other code point numbers, and at each code point's
+16x16 pixel area inside its 32x32 pixel grid area.  Every other
+artifact in the final graphics file outside these areas is ignored.
+
+If a new version of Unicode adds glyphs to a page that were
+previously unassigned, be sure to remove the newly-assigned
+code points from the @code{unassigned.hex} file because the code
+point is no longer unassigned.
+
+@strong{Step 3:} Convert the edited .bmp file back into .hex format:
+
+@example
+unibmp2hex < uni2C.bmp > uni2C.hex
+@end example
+
+@noindent
+Note that the conversion from a bitmap image to a .hex file
+can't distinguish between a legitimate single- or double-width
+space character and a code point that does not have an assigned
+value.  Therefore, space glyphs are separately contained in the
+@code{spaces.hex} file.
+
+@strong{Step 4:} Merge the results with the original @code{unifont.hex} file.
+This requires several sub-steps:
+
+@itemize
+@item
+Edit the original @code{unifont.hex} file and delete the
+lines that begin with "2C".
+
+@item
+Insert the @code{uni2C.hex} file into @code{unifont.hex}, either with
+a text editor such as @code{emacs} or @code{vi}, or with a GNU/Linux
+command such as:
+       
+@example
+sort uni2C.hex unifont.hex > new-unifont.hex
+@end example
+
+This second option (using @code{sort}) is preferred, because
+@code{unidup} (in Step 5) might miss duplicate code points
+if your final result isn't in proper order.
+
+@end itemize
+
+
+@strong{Step 5:} Make sure there are no duplicates with @code{unidup}:
+
+@example
+unidup < unifont.hex
+@end example
+
+@noindent
+or
+
+@example
+unidup < new-unifont.hex
+@end example
+
+@noindent
+depending on the name of your final font file.  If there
+is no output, your modified font contains no duplicates.
+
+This editing is best done on an input .hex file, such as
+@code{unifont-base.hex}.
+
+@strong{Step 6:} Create the new bitmapped version of the font.  In the
+@code{font/} directory, type
+
+@example
+make hex
+@end example
+
+@strong{Step 7:} Check the compiled font for duplicates.  Change to the
+@code{font/compiled/} directory and run
+
+@example
+unidup < mynewfontfile.hex
+@end example
+
+@noindent
+for whatever font file you created.
+
+@strong{Step 8:} If there are duplicates, remove them in the @code{font/}
+directory and go back to Step 5.
+
+@strong{Step 9:} Create the new TrueType version of the font and all other
+bitmapped versions.  From the @code{font/} directory, type
+
+@example
+make distclean && make
+@end example
+
+@noindent
+Then be prepared to wait a long time unless you are using
+a computer with plenty of RAM and CPU horsepower.  Your
+computer should have at least 256 Megabytes of virtual
+memory (RAM), and at least 250 Megabytes of free disk space.
+
+To only create a BDF font, in the @code{font/} directory just type
+
+@example
+make bdf
+@end example
+
+To only create a BDF and PCF font, in the @code{font/} directory type
+
+@example
+make pcf
+@end example
+
+Creating a BDF font is the first step in creating a PCF font
+(not counting generating the compiled master ".hex" input file).
+BDF fonts can be created just with the tools in this package.
+PCF fonts are created by running @code{bdftopcf} on the BDF font.
+TrueType fonts require FontForge.
+
+The Unifont package also includes two programs
+for working with Portable Network Graphics (PNG) files instead
+of BMP files.  These utilities are @code{unihex2png} and
+@code{unipng2hex}.  They work in a similar manner to the corresponding
+programs @code{unihex2bmp} and @code{unibmp2hex}, respectively.
+
+To use @code{unihex2png} instead of @code{unihex2bmp}, continuing
+the example of the Coptic script in the U+2Cxx range, type:
+
+@example
+unihex2png -p 2C -i unifont.hex -o uni2C.png
+@end example
+
+Note that with @code{unihex2bmp} specifying input and output files
+is optional, while with @code{unihex2png} at least the PNG filename
+must be specified explicitly.  More specifically, @code{unihex2png}
+will read a .hex file format input from STDIN if no "-i" argument
+is specified, but the name of the binary PNG file must always be
+specified with the "-o" option.
+
+Then edit the resulting PNG file to your heart's content.  When done,
+convert the file back into a @code{unifont.hex} format file.  In
+this example, type:
+
+@example
+unipng2hex -i uni2C.png -o uni2C.hex
+@end example
+
+Similar to @code{unihex2png}, the binary PNG file must be specified
+with "-i" but the .hex format file will be written to STDOUT if the
+"-o" option is omitted.
+
+Finally, merge  your changes in with your main .hex font file as
+described previously in this section.
+
+
+@node Using Hexdraw, Checking Coverage, Using Graphical Tools, Tutorial
+@section Using Hexdraw
+
+
+Roman Czyborra's original utility to edit glyphs is the @code{hexdraw}
+Perl script.  Using the same script as in the previous chapter, Coptic,
+here are the steps for modifying @code{unifont.hex} using @code{hexdraw}.
+
+First, realize that Unifont has tens of thousands of glyphs
+(characters, using the term character loosely).  In this example,
+out of the tens of thousands of glyphs, we want to modify the range
+U+2C80..U+2CFF (only 128 glyphs).
+
+The range U+2C80..U+2CFF could be extracted from @code{unifont.hex} by
+using the @code{egrep} utility to look for lines beginning with "2C8"
+through "2CF", or that range could be isolated by copying @code{unifont.hex}
+into another file, and deleting all lines except the desired range.
+
+The following steps will probably minimize typographical errors,
+but they aren't the only way.
+
+@enumerate
+@item
+"Grep" the desired block of 256 glyphs (using the @code{grep} utility)
+and convert this into a text representation for editing.
+
+@item
+Edit the block with a text editor, such as @code{emacs} or @code{vi}.
+
+@item
+Convert the edited text file back into .hex format.
+
+@item
+Delete the edited block range from the original font file.
+
+@item
+Merge the two .hex files into one file.
+
+@item
+Check for duplicates with @code{unidup}.
+
+@item
+Generate new fonts as described in the "Using Graphical Tools" section above.
+
+@end enumerate
+
+@strong{Step 1:} Extract the desired block with @code{grep}:
+
+@example
+grep "^2C" unifont.hex | hexdraw > uni2C.txt
+@end example
+
+@strong{Step 2:} Edit @code{uni2C.txt} with a text editor.
+
+@strong{Step 3:} Convert the text file back into .hex format:
+
+@example
+hexdraw < uni2C.txt > uni2C.hex
+@end example
+
+@strong{Step 4:} Delete the lines in the original @code{unifont.hex}
+file that begin with "2C".
+
+@strong{Step 5:} Merge the two files:
+
+@example
+sort unifont.hex uni2C.hex > new-unifont.hex
+@end example
+
+@noindent
+or use Roman's @code{hexmerge} utility:
+
+@example
+hexmerge unifont.hex uni2C.hex > new-unifont.hex
+@end example
+
+@strong{Step 6:} Check for duplicates:
+
+@example
+unidup < new-unifont.hex
+@end example
+
+@noindent
+Of course, remove any reported duplicates.
+
+@strong{Step 7:} Build the font as in the "Using Graphical Tools" section
+above.  This can be as simple as typing
+
+@example
+make
+@end example
+
+@noindent
+in the @code{font/} directory.
+
+I (Paul Hardy) had only used @code{hexdraw} in the very beginning of my
+work on Unifont.  Once I got my graphics programs working,
+I ignored it for months.  Then I wanted to go through all of the
+Yi Syllables and Yi Radicals --- over 1000 glyphs --- to fine-tune
+their horizontal alignment after I drew them.  @code{hexdraw} turned out
+to be the perfect tool for this.  By printing hyphens ("-") as
+place holders where a pixel is off, it allowed me to verify space
+to the left and right of each character.  I later used @code{hexdraw}
+for similar fine-tuning of spacing on Hangul and other glyphs.
+It is ideal for the task.
+
+
+@node Checking Coverage, Custom Builds, Using Hexdraw, Tutorial
+@section Checking Coverage
+
+
+There should never be duplicates in a .hex file.  If there are, remove
+them before the .hex font is turned into a BDF or other font file.  The
+recommendations above include making liberal use of @code{unidup} to avoid
+such a situation.
+
+The @code{unipagecount} program will print a hexadecimal number of code
+points that have coverage within each 256 code point block.  The
+hexadecimal number will therefore range from 0 (no coverage) to
+100 (= 256 decimal; full coverage).  If a number is ever more than
+100 hexadecimal, there's an extra character (glyph) for that page.
+
+To further look at the coverage within just one 256 code point
+page (using page 2C, containing Coptic, as our example) use
+
+@example
+unipagecount -p2C < unifont.hex
+@end example
+
+Note that the "page number" can use upper- or lower-case letters:
+@code{-p2C} or @code{-p2c} will both work.  That will print a 16 x 16 grid
+of U+2C00..U+2CFF.  Of course, without placeholder glyphs for the
+unassigned code points from @code{unassigned.hex} in the U+2C00..U+2CFF
+range, unipagecount can give a lower number than the true coverage.
+
+Using the @code{-l} flag with @code{unipagecount} will produce an HTML
+table with links to corresponding graphics images.  You can get
+an idea of how this works in the @code{font/compiled/} directory after
+running @code{make}; the @code{index.html} file in that directory will have
+a table with links to the 256 glyph maps in the @code{font/compiled/bmp/}
+subdirectory.
+
+With @code{unipagecount}, the background color of the cells will range from
+red (for 0% complete in that 256 code point block) to orange
+(a little coverage) to yellow (more coverage) to green
+(complete coverage).  If a cell looks light red or pink,
+the corresponding code page probably has duplicate characters.
+Verify that with
+
+@example
+sort unifont.hex | unidup
+@end example
+
+@noindent
+(substituting the name of your .hex file for @code{unifont.hex}).
+
+To see the coverage of each Unicode script, copy the file
+@code{font/coverage.dat} into the same directory as the
+@code{unifont.hex} file you're examining.  Then run
+
+@example
+unicoverage < unifont.hex > coverage.out
+@end example
+
+This will give you all the scripts within the Unicode Basic
+Multilingual Plane, in order, with a percentage (0.0% through
+100.0%) of each script's coverage.  Note that to get the true
+coverage of assigned code points, you'll have to merge @code{unassigned.hex}
+with the rest of @code{unifont.hex} if not done by default in your setup.
+
+Using the .hex files in @code{font/plane00/}, you can create a font with
+all available glyphs with
+
+@example
+sort font/plane00/*.hex >unifont-whole.hex
+@end example
+
+@noindent
+and run @code{unicoverage} using the resulting @code{unifont-whole.hex} file.
+
+
+@node Custom Builds, One Glyph per File, Checking Coverage, Tutorial
+@section Custom Builds
+
+
+The font can be built from within the @code{font/} directory by simply typing
+
+@example
+make
+@end example
+
+@noindent
+From the top-level directory (one level above the @code{font/} directory),
+typing
+
+@example
+make BUILDFONT=1
+@end example
+
+@noindent
+will also build the font.  The font is not built by default by typing
+@code{make} from the top-level directory, because a pre-built version
+already exists in the @code{font/precompiled/} directory.  Font files
+are architecture-independent, so the only reason to build the font is
+if you modify its composition.
+
+By default, source glyphs are read from the @code{font/plane00/} directory.
+Glyphs for unassigned code points are built into the font by default,
+but glyphs for Private Use Area code points are not built into the font.
+
+All of the .hex file names can be replaced selectively on the
+@code{make} command line to override their default values.
+Their locations are relative to the @code{font/} directory.
+The list of component hex file variables is:
+
+@quotation
+@multitable @columnfractions 0.16 0.84
+
+@item @code{UNIFONTBASE}
+@tab The bulk of Unifont scripts
+
+@item @code{CJK}
+@tab Most of the CJK Ideographs
+
+@item @code{CUSTOM00}
+@tab Hand-drawn quadruple-length Plane 0 glyphs
+
+@item @code{HANGUL}
+@tab Hangul Syllables block
+
+@item @code{SPACES}
+@tab Space glyphs, single- and double-width
+
+@item @code{UNASSIGNED}
+@tab Glyphs for unassigned code points
+
+@item @code{PUA}
+@tab Glyphs for the Private Use Area
+
+@end multitable
+@end quotation
+
+So, for example, to build a font that includes four-digit hexadecimal
+code point glyphs (as white digits on a black background) for the
+Private Use Area, type
+
+@example
+make PUA="plane00/pua.hex"
+@end example
+
+@noindent
+because those glyphs reside in the @code{font/plane00/pua.hex} file.
+
+To build a font that includes your own special PUA glyphs, type
+
+@example
+make PUA="my-cool-PUA.hex"
+@end example
+
+@noindent
+or whatever the name of your PUA glyph .hex file is named.
+
+To create a build that includes the supplied PUA glyphs but not the
+unassigned code point glyphs, type
+
+@example
+make PUA="plane00/pua.hex" UNASSIGNED=""
+@end example
+
+If you create a custom font build of your own in one gigantic file,
+you can build with just this file by declaring all the ordinary files
+to be null:
+
+@example
+make UNIFONTBASE="mycustomfont.hex" \ @*
+CJK="" HANGUL="" UNASSIGNED="" PUA=""
+@end example
+
+Note that this command did not include an override for the glyphs for spaces
+contained in the @code{font/plane00/spaces.hex} file; that is, the variable
+SPACES was not redefined on the command line.  You could also pass the
+argument SPACES="", but just be aware that those spaces glyphs are in
+a separate file for a reason.  When graphical (".bmp") glyph files are
+converted back into hex string (".hex") format, the @code{unibmp2hex} utility
+doesn't know if a blank glyph area is a space glyph or not, so it doesn't
+encode anything.  The @code{font/plane00/spaces.hex} file contains glyphs that
+are strings of 0s, with length depending on whether the space is nominally
+a single- or double-width space.  (Unifont does not distinguish between
+finer spacing used in traditional typesetting, such as a thin space, en space,
+em space, or quad space; all spaces are either 8 pixels wide or 16 pixels
+wide.)
+
+
+@node One Glyph per File, Viewing a Unifont File Interactively, Custom Builds, Tutorial
+@section One Glyph per File
+
+The @code{unifont1per} program will read a Unifont ".hex" file from
+standard input and create bitmap output files, one file per Unicode
+code point in the ".hex" file.  This can be useful if you want to
+include single glyphs as graphic objects for illustration in a document
+or web page.  Output files have names of the form "U+<codepoint>.bmp",
+where "<codepoint>" is the Unicode code point of the glyph.
+
+Note that if you feed @code{unifont1per} a huge file of glyph hexadecimal
+strings, you will get a directory loaded with individual ".bmp" files,
+so use your judgment!
+
+
+@node Viewing a Unifont File Interactively, Seeing the Big Picture (Literally!), One Glyph per File, Tutorial
+@section Viewing a Unifont File Interactively
+
+The @code{unifont-viewer} Perl script uses the @code{wxWidgets} Perl library
+to present a dynamic graphical representation of a Unifont hex file.
+This is a convenient way to scan quickly through a complete Unifont hex file.
+It is ideal for scanning through a Unifont hex source file after you have made
+changes.
+
+Use @code{unifont-viewer} to open any Unifont hex file, whether in the Basic
+Multilingual Plane up to the maximum Unicode code point of U+10FFFF.  The font
+is displayed graphically in sections of 16-by-16 glyph grids (256 glyphs---a
+"page" in Unifont lingo).  The page numbers (the upper portion of the
+hexadecimal code point range) appear in a list along the left-hand side.
+Only page ranges that are present in the Unifont hex file are listed.
+
+When @code{unifont-viewer} loads a hex file, it begins by displaying the first
+"page" range in that file.
+
+
+@node Seeing the Big Picture (Literally!), Combining Circles, Viewing a Unifont File Interactively, Tutorial
+@section Seeing the Big Picture (Literally!)
+
+
+The GNU Unifont 6.3 release introduced a new program, @code{unifontpic}.
+This produces a chart of all the Basic Multilingual Plane glyphs in
+Unifont.  By default the chart is arranged as a 256-by-256 glyph
+table.  Specifying the @code{-l} option produces a chart that is
+16 glyphs wide by 4,096 glyphs long.  See unifontpic(1) for more
+information.
+
+The "long" version, created with @code{unifontpic -l}, only produces
+16 glyphs per row.  This is more useful for scrolling through on
+a computer screen.
+
+GIMP, the GNU Image Manipulation Program, will properly display
+the resulting long .bmp file (at least under GNOME), but not all
+graphics utilities can.  The output file is over 65,536 pixel rows tall,
+which causes problems with some graphics programs.
+
+To generate a chart with all your glyphs in one giant @code{unifont.hex}
+file, type the command
+
+@example
+unifontpic < unifont.hex > unifont.bmp
+@end example
+
+@noindent
+The output is a monochrome Bitmap Graphics Format (.bmp) file.
+If you prefer PNG files, use your favorite graphics program or
+conversion program to convert the BMP file to a PNG file.
+
+This utility is especially useful if you're customizing the font,
+for example if adding your own Private Use Area glyphs.
+
+Single-width and double-width glyphs are reproduced in this bitmap
+file at the correct aspect ratio.  Triple-width and quadruple-width
+glyphs will be compressed 50% in the horizontal dimension to fit within
+a 16-by-16 pixel glyph cell.
+
+The default 256-by-256 code point chart will render satisfactorily
+on a sheet of paper approximately 3 feet by 3 feet (1 meter by 1 meter)
+at 120 dots per inch.  Thus the square format is suitable for printing.
+
+
+@node Combining Circles, Installing Fonts on GNU/Linux, Seeing the Big Picture (Literally!), Tutorial
+@section Combining Circles
+
+
+The earliest versions of Unifont (before the 5.1 release) used glyphs
+that showed dashed circles for combining characters.  This is how the
+glyphs appear in The Unicode Standard code charts.  In version 5.1,
+Paul Hardy was able to get combining characters to appear superimposed
+correctly in the TrueType version of the font.  (There are no plans
+to try to get combining characters to work in a BDF or PCF version
+owing to the limitations of those bitmapped font formats.)
+
+With combining characters working in the TrueType font, Paul Hardy created
+variations of Unifont with and without combining circles, the idea being
+that the version without combining circles would be used to create the
+TrueType font.  The variation with combining circles was kept for reference.
+
+Unifont Version 6.2 simplified the build to produce only one font variation,
+without combining circles.
+
+Unifont Version 6.3 introduced a new utility, @code{unigencircles},
+to superimpose combining circles over glyphs with code points in
+a @code{combining.txt} file.
+
+The latest Unifont release contains a parallel set of font files
+named @code{unifont_sample.*}.  These "Unifont Sample" font files
+contain glyphs with combining circles where appropriate.  The
+"Unifont Sample" font is therefore not intended for general-purpose
+writing, but only for illustrating each individual glyph as represented
+in The Unicode Standard.
+
+To run @code{unigencircles}, start with the file
+@code{font/ttfsrc/combining.txt} and type a command of this form:
+
+@example
+unigencircles combining.txt < unifont.hex > unifont-circles.hex
+@end example
+
+@noindent
+where @code{unifont.hex} is a single file containing all the glyphs you
+wish to render.  You could create such a file from the @code{font/}
+directory with the command
+
+@example
+sort plane00/*.hex >unifont.hex
+@end example
+
+Because the output is another .hex file, you can use all Unifont
+utilities with this resulting file just as you would with the .hex files
+in @code{font/plane00/}.
+
+If you want to build a font from this generated @code{unifont.hex} file,
+you could type
+
+@example
+make UNIFONTBASE="unifont-circles.hex" CJK="" HANGUL="" \ @*
+UNASSIGNED="" PUA=""
+@end example
+
+@noindent
+as discussed above.  In this case, if you included
+@code{font/plane00/spaces.hex} in the @code{unifont.hex} input file,
+you should also set SPACES="" on the command line so that you only
+read in your final custom @code{unifont-circles.hex} file.
+
+
+@node Installing Fonts on GNU/Linux, Creating a Brand New Font, Combining Circles, Tutorial
+@section Installing Fonts on GNU/Linux
+
+
+The original standard font format of Unifont was a BDF font.  The newer
+PCF font format loads much faster when a program begins, and so is preferable
+for installations using the X Window System and similar environments.
+
+Compress PCF fonts using
+
+@example
+gzip -9 fontname.pcf
+@end example
+
+Copy the resulting @code{fontname.pcf.gz} file to
+@code{/usr/share/fonts/X11/misc/} or place in a
+local font directory if your windowing software supports that (for
+example, @code{~/.fonts/}).
+
+Copy TrueType fonts to @code{/usr/share/fonts/truetype/} uncompressed or place
+in your local font directory.  Note: on some versions of Unix, such as
+Solaris, the name of the TrueType directory might be TrueType and
+might be under @code{/usr/share/fonts/X11/} --- examine the system fonts
+directories, then modify the font @code{make install} rule accordingly.
+
+On most flavors of GNU/Linux with the latest @code{xset} utility (including
+the latest Debian and Red Hat releases), the following command should
+allow you to start using the font immediately:
+
+@example
+xset fp rehash
+@end example
+
+The safest way to make sure the system knows about the new fonts will
+be to restart the X Window System or even reboot.
+
+
+@node Creating a Brand New Font, Updates to Unicode, Installing Fonts on GNU/Linux, Tutorial
+@section Creating a Brand New Font
+
+
+The original tools will only produce glyphs that are 16 pixels tall, and
+either 8 or 16 pixels wide.  The utilities @code{unihex2png},
+@code{unipng2hex}, @code{hexdraw}, and @code{hex2bdf} now also support
+glyph heights of 24 and 32 pixels, and glyph widths of 8, 16, 24, and 32
+pixels, but this is not fully tested.  PNG glyphs that are 32 pixels wide
+are only supported if the glyphs are also 32 pixels tall.  These dimensions
+are available for experimental use.  See the respective sections for each
+of these programs in the Reference chapter of this document, or their
+respective man pages.
+
+To create a brand new font (or even to add a new script to Unifont
+in the future), plan out the basic dimensions of the characters:
+
+@itemize
+
+@item
+How far above the lowest pixel will the baseline appear
+(in other words, how many rows are necessary for descenders
+such as in the glyphs for `g', `q', and `y')?
+
+@item
+How many pixels must be empty on top and bottom for accents
+(in other words, what will the height of capital letters be)?
+
+@item
+Must glyphs be centered, left-aligned, or right-aligned?
+
+@item
+For a Latin font, what will the "x-height" be (the height of
+a lower-case "x" and related letters, such as "n" and "r")?
+
+@end itemize
+
+Consistent capital heights, x-heights, descender depths, and centering
+will produce a better looking font.  Look over the entire script and
+plan out a template grid that is consistent for the entire script.
+Then use that template for each glyph you draw for the script.
+
+Unifont characters for the most part leave the left-most or right-most
+column of pixels blank if possible (consistent within each script) for
+left-to-right scripts.  Centering is done around the fourth pixel (if
+a glyph is eight pixels wide) or around the eighth pixel (if a glyph is
+16 pixels wide).
+
+Experimenting and (above all) having fun with these utilities is
+the best way to learn.
+
+
+@node Updates to Unicode, , Creating a Brand New Font, Tutorial
+@section Updates to Unicode
+
+
+If a currently unassigned code point is assigned to a character
+in the future, the font can be updated as follows:
+
+@enumerate
+
+@item
+Delete the code point's entry from @code{font/plane00/unassigned.hex},
+as that code point will no longer be unassigned.
+
+@item
+Determine which existing .hex file should contain the
+newly defined character (examine the files to see
+which one contains other glyphs in the script.
+
+@itemize
+
+@item
+@code{unifont-base.hex} contains most scripts
+
+@item
+@code{wqy.hex} contains most CJK ideographs; its name pays homage
+to the Wen Quan Yi font, the source of almost all of its glyphs
+
+@item
+@code{hangul-syllables.hex} contains the Hangul Syllables block
+(U+AC00..U+D7A3); this should never have new code points added as
+it covers the fixed range of the Unicode Hangul Syllables block
+
+@item
+@code{spaces.hex} contains the list of single- and double-width spaces
+
+@end itemize
+
+If in doubt (for example, if a new script is added to
+Unicode and you're not sure which .hex file to augment),
+add the new glyphs to @code{unifont-base.hex}.
+
+@item
+Update the appropriate .hex file.
+
+@item
+Consider if @code{font/coverage.dat} has to be updated.
+Follow its existing format to insert a new script,
+being sure to change any previously unassigned ranges
+before or after the newly added script.
+
+@item
+Make a new .hex version of the font, and verify that
+you didn't introduce any duplicates.
+
+@item
+Run @code{unipagecount} and/or @code{unicoverage} as described
+previously to verify that you have not mistakenly deleted
+any existing characters.
+
+@end enumerate
+
+Enjoy!
+
+
+@node Reference, , Tutorial, Top
+@chapter Reference
+
+@menu
+* bdfimplode::
+* hex2bdf::
+* hex2sfd::
+* hexbraille::
+* hexdraw::
+* hexkinya::
+* hexmerge::
+* johab2ucs2::
+* unibdf2hex::
+* unibmp2hex::
+* unibmpbump::
+* unicoverage::
+* unidup::
+* unifont-viewer::
+* unifont1per::
+* unifontchojung::
+* unifontksx::
+* unifontpic::
+* unigencircles::
+* unigenwidth::
+* unihex2bmp::
+* unihex2png::
+* unihexfill::
+* unihexgen::
+* unihexrotate::
+* unipagecount::
+* unipng2hex::
+@end menu
+
+@include bdfimplode.texi
+@include hex2bdf.texi
+@include hex2sfd.texi
+@include hexbraille.texi
+@include hexdraw.texi
+@include hexkinya.texi
+@include hexmerge.texi
+@include johab2ucs2.texi
+@include unibdf2hex.texi
+@include unibmp2hex.texi
+@include unibmpbump.texi
+@include unicoverage.texi
+@include unidup.texi
+@include unifont-viewer.texi
+@include unifont1per.texi
+@include unifontchojung.texi
+@include unifontksx.texi
+@include unifontpic.texi
+@include unigencircles.texi
+@include unigenwidth.texi
+@include unihex2bmp.texi
+@include unihex2png.texi
+@include unihexfill.texi
+@include unihexgen.texi
+@include unihexrotate.texi
+@include unipagecount.texi
+@include unipng2hex.texi
+
+@bye

@@ -1,0 +1,72 @@
+.TH UNIFONT1PER 1 "2017 Jun 11"
+.SH NAME
+unifont1per \- Create BMP glyph files from GNU Unifont .hex file
+.SH SYNOPSIS
+\fBunifont1per \fP< \fIinput_file.hex\fP
+.SH DESCRIPTION
+.B unifont1per
+reads a GNU Unifont .hex file and for each code point in the file,
+creates an output Bitmapped Graphics (".bmp") file in the current directory.
+The filename for each output file is "U+\fIcodepoint\fP.bmp", where
+\fIcodepoint\fP is the Unicode codepoint for the glyph.
+.PP
+Each glyph entry in a Unifont .hex file is expected to be 16 rows tall,
+and can be 8, 16, 24, or 32 pixels wide.  The glyph sizes in output files
+are determined on a glyph-by-glyph basis.
+.PP
+This program can be of use in extracting individual glyphs to display
+in a document or on a web page.
+.PP
+.B WARNING!
+This program generates one output file per code point that appears
+in the input stream.  If you feed this program a file with 1000 code points,
+it will generate 1000 files in your current directory.
+.SH OPTIONS
+None.
+.SH FILES
+*.hex GNU Unifont font files, read from standard input
+.SH SEE ALSO
+.BR bdfimplode(1),
+.BR hex2bdf(1),
+.BR hex2sfd(1),
+.BR hexbraille(1),
+.BR hexdraw(1),
+.BR hexkinya(1),
+.BR hexmerge(1),
+.BR johab2ucs2(1),
+.BR unibdf2hex(1),
+.BR unibmp2hex(1),
+.BR unibmpbump(1),
+.BR unicoverage(1),
+.BR unidup(1),
+.BR unifont(5),
+.BR unifont-viewer(1),
+.BR unifontchojung(1),
+.BR unifontksx(1),
+.BR unifontpic(1),
+.BR unigencircles(1),
+.BR unigenwidth(1),
+.BR unihex2bmp(1),
+.BR unihex2png(1),
+.BR unihexfill(1),
+.BR unihexgen(1),
+.BR unihexrotate(1),
+.BR unipagecount(1),
+.BR unipng2hex(1)
+.SH AUTHOR
+.B unifont1per
+was written by Paul Hardy.
+.SH LICENSE
+.B unifont1per
+is Copyright \(co 2017 Paul Hardy.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input files.  If they're not in the
+format of the original GNU Unifont .hex file, all bets are off.
+Lines can be terminated either with line feed, or
+carriage return plus line feed.

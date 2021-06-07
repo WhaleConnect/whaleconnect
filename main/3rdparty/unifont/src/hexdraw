@@ -1,0 +1,58 @@
+#!/usr/bin/perl -p
+#
+# Copyright (C) 1998, 2013 Roman Czyborra
+#
+# LICENSE:
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
+#  
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#    GNU General Public License for more details.
+#  
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+use Getopt::Long;
+
+sub unpack { 
+	local ($_) = @_;
+	$_ = unpack ("B*", pack ("H*", $_));
+	$width=length($_)/$charheight;
+	s/(.{$width})/\t$1\n/g;
+	y/01/-#/;
+	$_;
+};
+
+sub pack { 
+	local ($_) = @_; 
+	y/-#/01/;
+	$_= unpack ("H*", pack ("B*", $_));
+	y/a-f/A-F/;
+	$_;
+}
+
+$result = GetOptions (
+	"height|h=i" => \$charheight
+);
+
+if (not $charheight) {
+	$charheight = 16;
+} elsif (!($charheight == 16 || $charheight == 24 || $charheight == 32)) {
+	die ("Invalid height\n");
+}
+
+s/([0-9A-F]{256})/&unpack($1)/ie ||
+s/([0-9A-F]{192})/&unpack($1)/ie ||
+s/([0-9A-F]{144})/&unpack($1)/ie ||
+s/([0-9A-F]{128})/&unpack($1)/ie ||
+s/([0-9A-F]{96})/&unpack($1)/ie ||
+s/([0-9A-F]{64})/&unpack($1)/ie ||
+s/([0-9A-F]{48})/&unpack($1)/ie ||
+s/([0-9A-F]{32})/&unpack($1)/ie ||
+s/\t([-#]+)\n/&pack($1)/e;

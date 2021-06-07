@@ -1,0 +1,101 @@
+.TH UNIHEXROTATE 1 "2019 Feb 23"
+.SH NAME
+unihexrotate \- rotate Unifont hex glyphs in quarter turn increments
+.SH SYNOPSIS
+\fBunihexrotate \fP[\-n \fIquarter-turns\fP] [\fIinput-font.hex\fP] > \fIoutput-font.hex\fP
+.SH DESCRIPTION
+.B unihexrotate
+reads a GNU Unifont .hex format file named on the command line,
+or from stdin if no filename is given.  If a number of quarter turns
+is specified, it rotates each glyph clockwise by that number of
+quarter turns, or counterclockwise if the number is negative.
+The resulting modified .hex file is written to stdout.
+The format of a .hex file is described in the \fBunifont\fP(5) man page.
+.PP
+If the number of quarter turns is not specified,
+.B unihexrotate
+will rotate each glyph by a default value of one quarter turn
+(i.e., 90 degrees) clockwise.
+.PP
+.B unihexrotate
+only supports Unifont .hex files with glyphs that are 8 columns
+and 16 columns wide.  If an 8-column glyph is rotated, it is
+first centered within a 16-column glyph so the rotation will be
+performed on a 16-by-16 pixel glyph.  One additional use of
+this program is that a glyph can be converted from 8\~columns
+wide to 16\~columns wide by specifying a rotation of 0\~quarter turns.
+.SH OPTIONS
+.TP 6
+.BR \-n
+Specify an integer number of quarter turn clockwise rotations
+to perform, typically as "\-n\~0" through "\-n\~3" (alternatively
+as "\-n=0" through "\-n=3") for rotations of 0, 90, 180, or 270
+degrees, respectively.  Negative values will perform
+counterclockwise rotations by the specified number of
+quarter turns.
+.SH EXAMPLES
+This example extracts the Mongolian glyphs in the
+"unifont-base.hex" file (located in the "font/plane00" directory)
+and pipes them to \fBunihexrotate\fP to rotate by the default
+amount of one quarter turn clockwise (i.e., by 90 degrees).
+The basic Mongolian glyphs are in the Unicode range U+1800 through U+18AF.
+The original glyphs in "unifont-base.hex" are drawn for horizontal
+rendering (as per the Unicode Standard).  The output rotated
+glyphs are suitable for rendering Mongolian in its traditional
+vertical form.  Because no filename is specified to \fBunihexrotate\fP
+in this example, its input is taken from stdin.
+.PP
+.RS
+grep "^18[0-A]" unifont-base.hex | \fBunihexrotate\fP > vertical.hex
+.RE
+.PP
+The next example reverses the rotation performed above, by one
+quarter turn counterclockwise.  In this example, the input filename
+"vertical.hex" is specified.
+.PP
+.RS
+\fBunihexrotate\fP \-n \-1 vertical.hex > horizontal.hex
+.RE
+.SH FILES
+Unifont .hex format input and output files.
+.SH SEE ALSO
+.BR bdfimplode(1),
+.BR hex2bdf(1),
+.BR hex2sfd(1),
+.BR hexbraille(1),
+.BR hexdraw(1),
+.BR hexkinya(1),
+.BR hexmerge(1),
+.BR johab2ucs2(1),
+.BR unibdf2hex(1),
+.BR unibmp2hex(1),
+.BR unibmpbump(1),
+.BR unicoverage(1),
+.BR unidup(1),
+.BR unifont(5),
+.BR unifont-viewer(1),
+.BR unifont1per(1),
+.BR unifontchojung(1),
+.BR unifontksx(1),
+.BR unifontpic(1),
+.BR unigencircles(1),
+.BR unigenwidth(1),
+.BR unihex2bmp(1),
+.BR unihex2png(1),
+.BR unihexfill(1),
+.BR unihexgen(1),
+.BR unipagecount(1),
+.BR unipng2hex(1)
+.SH AUTHOR
+.B unihexrotate
+was written by David Corbett.
+.SH LICENSE
+.B unihexrotate
+is Copyright \(co 2019 David Corbett.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+No known bugs exist.

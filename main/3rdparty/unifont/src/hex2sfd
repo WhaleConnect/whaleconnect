@@ -1,0 +1,301 @@
+#!/usr/bin/perl
+#
+# Copyright (C) 2005 Luis Alejandro Gonzalez Miranda
+#
+# hex2sfd created in 2005 by Luis Alejandro Gonzalez Miranda, http://www.lgm.cl
+#
+# LICENSE:
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
+#  
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#    GNU General Public License for more details.
+#  
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+# June 2008: modifications by Paul Hardy for the Unifont 5.1 build.
+#
+# July 2014: modifications by Paul Hardy as follows:
+#
+#   - Updated comments to use Luis' full name and add a link to
+#     the Unifont page on savannah.gnu.org.
+#   - Store combining character code points for the entire Unicode
+#     range, not just for the Basic Multilingual Plane.
+#   - Change "Encoding: UnicodeBmp" by detecting whether the highest
+#     glyph is in the Basic Multilingual Plane or above that; if above,
+#     use "Encoding: Unicode" instead.
+#   - Add explicit definitions for three TrueType code points:
+#     ".notdef", ".null", and "nonmarkingreturn".  These override
+#     the defaults that Fontforge creates.  The ".notdef" and
+#     "nonmarkingreturn" glyphs now have widths of 8 pixels
+#     (512 units in the SFD output file).
+#   - Calculate exact number of glyphs in the font for "BeginChars" entry.
+#   - Convert the pixel outline drawing portion of this script
+#     to a subroutine.
+#   - Add "uni" prefix to StartChar description of Unicode code points.
+#   - Updated comments to use Luis' full name and add a link to
+#
+# 30 June 2017 [Paul Hardy]:
+#    - Modifies combining character positioning to position properly
+#      over preceding glyph in several applications.
+#
+# 8 July 2017 [Paul Hardy]:
+#    - Handles x-offset field added to font/plane*/plane*-combining.txt
+#      files.  This allows handling of special situations such as double
+#      diacritics, which combine with the letter on either side of them.
+#
+# 11 July 2017 [Paul Hardy]:
+#    - Convert number assigned to $max_code_point with hex(), based on
+#      request of Leroy Vargas-Ortiz.
+#    - Scale $xoffset by $pixel for combining characters.
+#
+
+#
+# Read the list of combining characters and the x-axis (horizontal)
+# offset of each one.
+#
+@combining = ();
+@x_origin  = ();
+for ($i = 0; $i < 0x110000; $i++) {
+   push (@combining, 0);
+   push (@x_origin,  0);
+}
+if ($#ARGV < 0) {
+   open (A, "<", "combining.txt") or die ("Cannot open combining.txt.\n");
+}
+else {
+   open (A, "<", $ARGV[0]) or die ("Cannot open specified combining file for input.\n");
+}
+$maxcombining = 0;
+while (<A>) {
+   chomp;
+   ($a, $b) = split (/:/);
+   $codepoint = hex ($a);
+   $combining[ $codepoint ] = 1;
+   $x_origin [ $codepoint ] = $b;
+   if ($codepoint > $maxcombining) {
+      $maxcombining = $codepoint;
+   }
+}
+close (A) or die ("Cannot properly close combining input file.\n");
+
+$nglyphs    = 0;   # number of glyphs in font (none defined yet)
+@codepoints = ();  # code points of hex bitmaps
+@bitmaps    = ();  # the corresponding hex bitmaps
+
+#
+# Add three special characters for TrueType; use these instead of
+# the Fontforge defaults for these three characters.
+#
+push (@codepoints, ".notdef");
+push (@bitmaps,    "0000007E665A5A7A76767E76767E0000");
+$nglyphs++;
+
+push (@codepoints, ".null");
+push (@bitmaps,    "");
+$nglyphs++;
+
+push (@codepoints, "nonmarkingreturn");
+push (@bitmaps,    "00000000000000000000000000000000");
+$nglyphs++;
+
+while(<STDIN>) {
+	chomp;
+	($c,$d) = split (/:/);
+	push (@codepoints, $c);
+	push (@bitmaps,    $d);
+	$nglyphs++;
+}
+$max_code_point = hex ($codepoints[ $nglyphs - 1 ]);
+
+# Encoding tag: Is highest glyph above Plane 0?
+if ($max_code_point > 0xFFFF) {
+   $encoding = "Unicode";
+}
+else {
+   $encoding = "UnicodeBmp";
+}
+
+#
+# Modified by Paul Hardy, July 2008.
+#
+# Make pixel 64 units for greatest scale; floating point numbers in
+# TrueType have 6 fractional bits, so this works out well (2^6 = 64).
+# Also, make size of font a power of 2 (16 * 64) for efficient scaling
+# to any point size in TrueType.  Made bitmask a variable for easy
+# experimenting.
+#
+$pixel   = 64;
+$descent = 2 * $pixel;
+$ascent  = 16 * $pixel - $descent;
+$bitmask = 25;  # round in x (doesn't really work), corner point selected
+
+print << "END" or die ("Cannot print to stdout.\n");
+SplineFontDB: 1.0
+FontName: unifont
+FullName: GNU Unifont
+FamilyName: unifont
+Weight: Medium
+Comments: Created from GNU Unifont
+Comments: with Luis Alejandro Gonzalez Miranda's Perl and FontForge scripts.
+Comments: See http://www.lgm.cl/trabajos/unifont/index.en.html for
+Comments: information on Luis' scripts.  See
+Comments: http://savannah.gnu.org/projects/unifont,
+Comments: http://czyborra.com/unifont, and
+Comments: http://unifoundry.com/unifont.html for information on GNU Unifont.
+Comments: See http://fontforge.sf.net for information on FontForge.
+Version: 1.00
+ItalicAngle: 0
+UnderlinePosition: -100
+UnderlineWidth: 40
+Ascent: $ascent
+Descent: $descent
+NeedsXUIDChange: 1
+XUID: [1021 140 1293607838 5610107]
+FSType: 0
+PfmFamily: 33
+TTFWeight: 500
+TTFWidth: 5
+Panose: 2 0 6 4 0 0 0 0 0 0
+LineGap: 72
+VLineGap: 0
+OS2WinAscent: 0
+OS2WinAOffset: 1
+OS2WinDescent: 0
+OS2WinDOffset: 1
+HheadAscent: 0
+HheadAOffset: 1
+HheadDescent: 0
+HheadDOffset: 1
+ScriptLang: 1
+ 1 latn 1 dflt 
+Encoding: $encoding
+UnicodeInterp: none
+DisplaySize: -24
+AntiAlias: 1
+FitToEm: 1
+WinInfo: 0 50 22
+TeXData: 1 0 0 346030 173015 115343 0 1048576 115343 783286 444596 497025 792723 393216 433062 380633 303038 157286 324010 404750 52429 2506097 1059062 262144
+BeginChars: 65536 $nglyphs
+END
+
+#
+# Print outlines for all glyphs using Fontforge's
+# Spline Font Database (.sfd) format.
+#
+# $count=0;  # number of glyphs created so far.
+
+for ($count = 0; $count < $nglyphs; $count++) {
+	$c = $codepoints[ $count ];
+	$d = $bitmaps[    $count ];
+	outline ($count, $c, $d);
+}
+
+# while (<STDIN>) {
+# 	chomp;
+# 	($c,$d)=split(/:/);
+# 	outline ($count, $c, $d);
+# 	$count++;
+# }
+
+print << "END" or die ("Cannot print to stdout.\n");
+EndChars
+EndSplineFont
+END
+
+exit;
+
+#
+# Print the outlines of a glyph's pixels.
+#
+# Parameters:
+#    - Position in font
+#    - Glyph non-Unicode name or Unicode hexadecimal code point
+#    - Unifont hexadecimal string to render glyph.
+#
+sub outline {
+	my $count = $_[0];
+	my $c     = $_[1];
+	my $d     = $_[2];
+	$width    = length($d)/4;
+	$ptwidth  = $pixel * $width;
+	$xoffset  = 0;
+	if ( $c =~ m/^[0-9A-Fa-f]+$/ ) {
+		$charname = "uni$c";
+		$codepoint = hex ($c);
+		if ($combining[ $codepoint ]) {
+			$xoffset = $x_origin[ $codepoint ] * $pixel;
+			$ptwidth = 0;
+		}
+		$cn = hex ($c);
+	}
+	else {
+		$charname = $c;
+		$cn = -1;
+	}
+        # Changed "Flags: H" to "Flags: HW" to fix spaces - Paul Hardy, 2008
+	print << "END" or die ("Cannot print to stdout.\n");
+StartChar: $charname
+Encoding: $cn $cn $count
+Width: $ptwidth
+Flags: HW
+TeX: 0 0 0 0
+Fore
+END
+
+	# for each line in the glyph
+	for($i=0;$i<16;$i++) {
+		$l=substr($d, $i*$width/4, $width/4);
+		$num=hex($l);
+		$prev=0;  # Start of row; calculate y coordinates.
+		for($j=0; $j<$width; $j++) {
+			$x=$width - 1 - $j;
+			$y=15 - $i;
+			if($num%2) {
+				# point at i, width-1-j
+				if(!$prev) {
+					$x1=$x * $pixel + $pixel + $xoffset;
+					$y1=$y * $pixel - $descent;
+					$x2=$x1 + $pixel + $xoffset;
+					$y2=$y1 + $pixel;
+				}
+				$prev=1;
+			} else {
+				if($prev) {
+					$x2=$x * $pixel + $pixel + $xoffset;
+					print << "END" or die ("Cannot print to stdout.\n");
+$x1 $y1 m $bitmask
+ $x1 $y2 l $bitmask
+ $x2 $y2 l $bitmask
+ $x2 $y1 l $bitmask
+ $x1 $y1 l $bitmask
+END
+				}
+				$prev=0;
+			}
+			$num=int($num/2);
+		}
+		if($prev) {
+			$x2=$xoffset;
+			print << "END" or die ("Cannot print to stdout.\n");
+$x1 $y1 m $bitmask
+ $x1 $y2 l $bitmask
+ $x2 $y2 l $bitmask
+ $x2 $y1 l $bitmask
+ $x1 $y1 l $bitmask
+END
+		}
+	}
+	print << "END" or die ("Cannot print to stdout.\n");
+EndSplineSet
+EndChar
+END
+
+}

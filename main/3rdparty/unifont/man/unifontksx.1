@@ -1,0 +1,57 @@
+.TH UNIFONTKSX 1 "2012 Jan 29"
+.SH NAME
+unifontksx \- Extract Hangul syllables that comprise KS X 1001:1992
+.SH SYNOPSIS
+\fBunifontksx \fP< \fIinput-font.hex \fP> \fIoutput-font.hex\fP
+.SH DESCRIPTION
+.B unifontksx
+reads a Unifont-format .hex font file from STDIN and writes
+a Unifont .hex file containing a subset to STDOUT.
+The subset that is output only contains the 2,350 syllables that comprise
+Korean Standard KS X 1001:1992.  These are extracted from the Unicode
+Hangul Syllables block, U+AC00..U+D7A3.
+This lets a font designer focus on those syllables that are most
+common in modern Hangul usage during font development.
+.SH FILES
+*.bdf font files
+.SH SEE ALSO
+.BR bdfimplode(1),
+.BR hex2bdf(1),
+.BR hex2sfd(1),
+.BR hexbraille(1),
+.BR hexdraw(1),
+.BR hexkinya(1),
+.BR hexmerge(1),
+.BR johab2ucs2(1),
+.BR unibdf2hex(1),
+.BR unibmp2hex(1),
+.BR unibmpbump(1),
+.BR unicoverage(1),
+.BR unidup(1),
+.BR unifont(5),
+.BR unifont-viewer(1),
+.BR unifont1per(1),
+.BR unifontchojung(1),
+.BR unifontpic(1),
+.BR unigencircles(1),
+.BR unigenwidth(1),
+.BR unihex2bmp(1),
+.BR unihex2png(1),
+.BR unihexfill(1),
+.BR unihexgen(1),
+.BR unihexrotate(1),
+.BR unipagecount(1),
+.BR unipng2hex(1)
+.SH AUTHOR
+.B unifontksx
+was written by Paul Hardy.
+.SH LICENSE
+.B unifontksx
+is Copyright \(co 2012 Paul Hardy.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+No known bugs exist.

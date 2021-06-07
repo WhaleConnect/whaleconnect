@@ -1,0 +1,108 @@
+.TH UNIFONTPIC 1 "2013 Sep 07"
+.SH NAME
+unifontpic \- Convert GNU Unifont .hex input to a bitmap image of the whole font
+.SH SYNOPSIS
+\fBunifontpic \fP[\-d\fInnn\fP] [\-l] [\-t] [\-P\fIplane\fP] < \fIinput-font.hex \fP> \fIoutput-font.bmp\fP
+.SH DESCRIPTION
+.B unifontpic
+reads a GNU Unifont .hex file from STDIN and writes a two dimensional
+rendering for each glyph to STDOUT.
+The output displays an entire Unicode plane of 65,536 glyphs
+as one large graphic image, showing a grid of 256 glyphs by 256 glyphs
+as the default, or (at your option) a long version of
+16 glyphs across by 4,096 glyphs down.
+.PP
+Input can be one or more files in Unifont .hex format.  They don't
+have to be sorted, as
+.B unifontpic
+will populate the entire glyph array of 65,536 code points before
+writing its output.  The input glyph code points should all be
+unique, as feeding in duplicate code points will produce unpredictable
+results.  Use
+.B unidup (1)
+on a sorted input of .hex files to guarantee no code point
+duplication.
+.SH OPTIONS
+.TP 6
+.BR \-d
+Specify a Dots per Inch (DPI) resolution of
+.I nnn.
+For example, specifying \-d120 will encode the bitmap graphics file
+output as having a resolution of 120 DPI.
+.TP
+.BR \-l
+Produce a long chart, 16 glyphs wide by 4,096 glyphs tall.
+The default is a wide chart, 256 glyphs wide by 256 glyphs tall.
+.TP
+.BR \-t
+Use tiny numbers for the row and column code point labels.  Tiny
+numbers are on a 4 by 5 pixel grid.  Only tiny code point labels
+appear on the long chart variant; this option only has effect
+for wide charts (the default, of 256 by 256 glyphs).  If this option
+is not specified for the default 256-by-256 grid, row and column
+code point labels are taken from Unifont's glyphs for `0' to `9'
+and `A' to `F'.
+.TP
+.BR \-P
+Print a chart for Unicode plane number \fIplane\fP.
+The default is Plane\ 0, the Unicode Basic Multilingual Plane (BMP).
+The range of Unicode plane range is 0 through 17, inclusive.
+The plane number is printed on the chart title line.
+.SH EXAMPLES
+Sample usage:
+.PP
+.RS
+cat *.hex | unifontpic \-d120 > unifontpic.bmp
+.RE
+.PP
+To generate a bitmap that shows combining circles, from the
+.B font/
+subdirectory:
+.PP
+.RS
+sort plane00/*.hex | unigencircles ttfsrc/combining.txt |
+unifontpic \-d120 >unifontpic.bmp
+.RE
+.SH FILES
+*.hex GNU Unifont font files
+.SH SEE ALSO
+.BR bdfimplode(1),
+.BR hex2bdf(1),
+.BR hex2sfd(1),
+.BR hexbraille(1),
+.BR hexdraw(1),
+.BR hexkinya(1),
+.BR hexmerge(1),
+.BR johab2ucs2(1),
+.BR unibdf2hex(1),
+.BR unibmp2hex(1),
+.BR unibmpbump(1),
+.BR unicoverage(1),
+.BR unidup(1),
+.BR unifont(5),
+.BR unifont-viewer(1),
+.BR unifont1per(1),
+.BR unifontchojung(1),
+.BR unifontksx(1),
+.BR unigencircles(1),
+.BR unigenwidth(1),
+.BR unihex2bmp(1),
+.BR unihex2png(1),
+.BR unihexfill(1),
+.BR unihexgen(1),
+.BR unihexrotate(1),
+.BR unipagecount(1),
+.BR unipng2hex(1)
+.SH AUTHOR
+.B unifontpic
+was written by Paul Hardy.
+.SH LICENSE
+.B unifontpic
+is Copyright \(co 2013 Paul Hardy.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+No known bugs exist.

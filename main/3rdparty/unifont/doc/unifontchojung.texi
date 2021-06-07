@@ -1,0 +1,145 @@
+@comment TROFF INPUT: .TH UNIFONTCHOJUNG 1 "2012 Mar 02"
+
+@node unifontchojung
+@section unifontchojung
+@c DEBUG: print_menu("@section")
+
+@menu
+* unifontchojung NAME::
+* unifontchojung SYNOPSIS::
+* unifontchojung DESCRIPTION::
+* unifontchojung FILES::
+* unifontchojung SEE ALSO::
+* unifontchojung AUTHOR::
+* unifontchojung LICENSE::
+* unifontchojung BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unifontchojung NAME
+@subsection unifontchojung NAME
+@c DEBUG: print_menu("unifontchojung NAME")
+
+unifontchojung @minus{} Extract Hangul syllables that have no final consonant
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unifontchojung SYNOPSIS
+@subsection unifontchojung SYNOPSIS
+@c DEBUG: print_menu("unifontchojung SYNOPSIS")
+
+@b{unifontchojung }< @i{input-font.hex }> @i{output-font.hex}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unifontchojung DESCRIPTION
+@subsection unifontchojung DESCRIPTION
+@c DEBUG: print_menu("unifontchojung DESCRIPTION")
+
+@comment TROFF INPUT: .B unifontchojung
+@b{unifontchojung}
+reads a Unifont-format .hex font file from STDIN and writes
+a Unifont .hex file containing a subset to STDOUT.
+The subset that is output only contains syllables that contain
+an initial consonant (chojung) plus middle vowel (jungseong),
+with no final consonant (jongseong).
+This lets a font designer focus on this subset during font creation.
+@comment TROFF INPUT: .SH FILES
+
+@node unifontchojung FILES
+@subsection unifontchojung FILES
+@c DEBUG: print_menu("unifontchojung FILES")
+
+*.bdf font files
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unifontchojung SEE ALSO
+@subsection unifontchojung SEE ALSO
+@c DEBUG: print_menu("unifontchojung SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unifontchojung AUTHOR
+@subsection unifontchojung AUTHOR
+@c DEBUG: print_menu("unifontchojung AUTHOR")
+
+@comment TROFF INPUT: .B unifontchojung
+@b{unifontchojung}
+was written by Paul Hardy.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unifontchojung LICENSE
+@subsection unifontchojung LICENSE
+@c DEBUG: print_menu("unifontchojung LICENSE")
+
+@comment TROFF INPUT: .B unifontchojung
+@b{unifontchojung}
+is Copyright @copyright{} 2012 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unifontchojung BUGS
+@subsection unifontchojung BUGS
+@c DEBUG: print_menu("unifontchojung BUGS")
+
+No known bugs exist.

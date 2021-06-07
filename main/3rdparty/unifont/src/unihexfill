@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+#  unihexfill - Generate range of Unifont 4- or 6-digit hexadecimal glyphs
+#
+#  Author: Paul Hardy, 2014
+#
+#  LICENSE:
+#
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 2 of the License, or
+#     (at your option) any later version.
+#
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# input is a start, stop range pair
+# output is a list of code points with hexadecimal filler glyphs
+set -e
+grep "^[0-9A-Fa-f]" $1 | \
+   awk 'NF == 1 {print "unihexgen " $1 " " $1;} \
+	NF == 2 {print "unihexgen " $1 " " $2;}' | \
+   /bin/sh -s

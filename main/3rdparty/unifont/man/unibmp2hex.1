@@ -1,0 +1,100 @@
+.TH UNIBMP2HEX 1 "2007 Dec 31"
+.SH NAME
+unibmp2hex \- Bitmap graphics file to GNU Unifont .hex file converter
+.SH SYNOPSIS
+\fBunibmp2hex \fP[\-p\fIhexpage\fP] [\-i\fIinput_file.bmp\fP] [\-o\fIoutput_file.hex\fP] [\-w]
+.SH DESCRIPTION
+.B unibmp2hex
+reads a bitmap produced by
+.B unihex2bmp
+before or after editing, and converts it back into a Unifont .hex format
+file.  The graphics file contains a block of 256 Unicode code points
+arranged in a 16 by 16 grid.  Each code point appears in a 32 by 32
+pixel grid.  Characters are 16 rows high, and 8, 16, or 31 (treated as 32)
+columns wide.
+.PP
+.SH OPTIONS
+.TP 6
+.BR \-p
+Specify that the code points will be assigned to the 256 block space
+.I pagenum
+in the .hex file.  If not specified,
+.B unibmp2hex
+will determine the appropriate block by reading the row and column
+headers.  Note that "page" is not a standard
+Unicode term.  It refers to an output bitmap graphics page of
+16 by 16 code points.
+If
+.I pagenum
+is greater than FF, the block resides above the Unicode Basic
+Multilingual Plane. In that event, the .hex file will contain
+eight digit hexadecimal code points rather than the Unifont
+standard of four hexadecimal code points.
+.TP
+.BR \-i
+Specify the input file. The default is STDIN.
+.TP
+.BR \-o
+Specify the output file. The default is STDOUT.
+.TP
+.BR \-w
+Force all output .hex glyphs to be 16 pixels wide rather than dual
+width (8 or 16 pixels).
+.SH EXAMPLE
+Sample usage:
+.PP
+.RS
+unibmp2hex \-imy_input_file.bmp \-omy_output_file.hex
+.RE
+.SH FILES
+*.bmp or *.wbmp graphics files
+.SH SEE ALSO
+.BR bdfimplode(1),
+.BR hex2bdf(1),
+.BR hex2sfd(1),
+.BR hexbraille(1),
+.BR hexdraw(1),
+.BR hexkinya(1),
+.BR hexmerge(1),
+.BR johab2ucs2(1),
+.BR unibdf2hex(1),
+.BR unibmpbump(1),
+.BR unicoverage(1),
+.BR unidup(1),
+.BR unifont(5),
+.BR unifont-viewer(1),
+.BR unifont1per(1),
+.BR unifontchojung(1),
+.BR unifontksx(1),
+.BR unifontpic(1),
+.BR unigencircles(1),
+.BR unigenwidth(1),
+.BR unihex2bmp(1),
+.BR unihex2png(1),
+.BR unihexfill(1),
+.BR unihexgen(1),
+.BR unihexrotate(1),
+.BR unipagecount(1),
+.BR unipng2hex(1)
+.SH AUTHOR
+.B unibmp2hex
+was written by Paul Hardy.
+.SH LICENSE
+.B unibmp2hex
+is Copyright \(co 2007, 2008 Paul Hardy.
+.PP
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+.SH BUGS
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input files.  If they're not in the
+format of the original bitmapped output from
+.B unihex2bmp,
+all bets are off.
+.PP
+If the output file is for a "page" containing space code points and the
+bitmap file squares for those code points are not empty,
+.B unibmp2hex
+preserves the graphics as they are drawn.

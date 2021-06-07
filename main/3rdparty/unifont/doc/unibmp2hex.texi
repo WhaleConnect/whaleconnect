@@ -1,0 +1,231 @@
+@comment TROFF INPUT: .TH UNIBMP2HEX 1 "2007 Dec 31"
+
+@node unibmp2hex
+@section unibmp2hex
+@c DEBUG: print_menu("@section")
+
+@menu
+* unibmp2hex NAME::
+* unibmp2hex SYNOPSIS::
+* unibmp2hex DESCRIPTION::
+* unibmp2hex OPTIONS::
+* unibmp2hex EXAMPLE::
+* unibmp2hex FILES::
+* unibmp2hex SEE ALSO::
+* unibmp2hex AUTHOR::
+* unibmp2hex LICENSE::
+* unibmp2hex BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unibmp2hex NAME
+@subsection unibmp2hex NAME
+@c DEBUG: print_menu("unibmp2hex NAME")
+
+unibmp2hex @minus{} Bitmap graphics file to GNU Unifont .hex file converter
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unibmp2hex SYNOPSIS
+@subsection unibmp2hex SYNOPSIS
+@c DEBUG: print_menu("unibmp2hex SYNOPSIS")
+
+@b{unibmp2hex }[@minus{}p@i{hexpage}] [@minus{}i@i{input@t{_}file.bmp}] [@minus{}o@i{output@t{_}file.hex}] [@minus{}w]
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unibmp2hex DESCRIPTION
+@subsection unibmp2hex DESCRIPTION
+@c DEBUG: print_menu("unibmp2hex DESCRIPTION")
+
+@comment TROFF INPUT: .B unibmp2hex
+@b{unibmp2hex}
+reads a bitmap produced by
+@comment TROFF INPUT: .B unihex2bmp
+@b{unihex2bmp}
+before or after editing, and converts it back into a Unifont .hex format
+file.  The graphics file contains a block of 256 Unicode code points
+arranged in a 16 by 16 grid.  Each code point appears in a 32 by 32
+pixel grid.  Characters are 16 rows high, and 8, 16, or 31 (treated as 32)
+columns wide.
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .SH OPTIONS
+
+@node unibmp2hex OPTIONS
+@subsection unibmp2hex OPTIONS
+@c DEBUG: print_menu("unibmp2hex OPTIONS")
+
+@comment TROFF INPUT: .TP 6
+@comment TROFF INPUT: .BR \-p
+
+@c ---------------------------------------------------------------------
+@table @code
+@item @b{@minus{}p}
+Specify that the code points will be assigned to the 256 block space
+@comment TROFF INPUT: .I pagenum
+@i{pagenum}
+in the .hex file.  If not specified,
+@comment TROFF INPUT: .B unibmp2hex
+@b{unibmp2hex}
+will determine the appropriate block by reading the row and column
+headers.  Note that "page" is not a standard
+Unicode term.  It refers to an output bitmap graphics page of
+16 by 16 code points.
+If
+@comment TROFF INPUT: .I pagenum
+@i{pagenum}
+is greater than FF, the block resides above the Unicode Basic
+Multilingual Plane. In that event, the .hex file will contain
+eight digit hexadecimal code points rather than the Unifont
+standard of four hexadecimal code points.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-i
+
+@item @b{@minus{}i}
+Specify the input file. The default is STDIN.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-o
+
+@item @b{@minus{}o}
+Specify the output file. The default is STDOUT.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-w
+
+@item @b{@minus{}w}
+Force all output .hex glyphs to be 16 pixels wide rather than dual
+width (8 or 16 pixels).
+@comment TROFF INPUT: .SH EXAMPLE
+
+@end table
+
+@c ---------------------------------------------------------------------
+
+@node unibmp2hex EXAMPLE
+@subsection unibmp2hex EXAMPLE
+@c DEBUG: print_menu("unibmp2hex EXAMPLE")
+
+Sample usage:
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .RS
+
+@c ---------------------------------------------------------------------
+@quotation
+unibmp2hex @minus{}imy@t{_}input@t{_}file.bmp @minus{}omy@t{_}output@t{_}file.hex
+@comment TROFF INPUT: .RE
+
+@end quotation
+
+@c ---------------------------------------------------------------------
+@comment TROFF INPUT: .SH FILES
+
+@node unibmp2hex FILES
+@subsection unibmp2hex FILES
+@c DEBUG: print_menu("unibmp2hex FILES")
+
+*.bmp or *.wbmp graphics files
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unibmp2hex SEE ALSO
+@subsection unibmp2hex SEE ALSO
+@c DEBUG: print_menu("unibmp2hex SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unibmp2hex AUTHOR
+@subsection unibmp2hex AUTHOR
+@c DEBUG: print_menu("unibmp2hex AUTHOR")
+
+@comment TROFF INPUT: .B unibmp2hex
+@b{unibmp2hex}
+was written by Paul Hardy.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unibmp2hex LICENSE
+@subsection unibmp2hex LICENSE
+@c DEBUG: print_menu("unibmp2hex LICENSE")
+
+@comment TROFF INPUT: .B unibmp2hex
+@b{unibmp2hex}
+is Copyright @copyright{} 2007, 2008 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unibmp2hex BUGS
+@subsection unibmp2hex BUGS
+@c DEBUG: print_menu("unibmp2hex BUGS")
+
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input files.  If they're not in the
+format of the original bitmapped output from
+@comment TROFF INPUT: .B unihex2bmp,
+@b{unihex2bmp,}
+all bets are off.
+@comment TROFF INPUT: .PP
+
+If the output file is for a "page" containing space code points and the
+bitmap file squares for those code points are not empty,
+@comment TROFF INPUT: .B unibmp2hex
+@b{unibmp2hex}
+preserves the graphics as they are drawn.

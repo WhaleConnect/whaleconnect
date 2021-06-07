@@ -1,0 +1,189 @@
+@comment TROFF INPUT: .TH UNIPAGECOUNT 1 "2007 Dec 31"
+
+@node unipagecount
+@section unipagecount
+@c DEBUG: print_menu("@section")
+
+@menu
+* unipagecount NAME::
+* unipagecount SYNOPSIS::
+* unipagecount DESCRIPTION::
+* unipagecount OPTIONS::
+* unipagecount FILES::
+* unipagecount SEE ALSO::
+* unipagecount AUTHOR::
+* unipagecount LICENSE::
+* unipagecount BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unipagecount NAME
+@subsection unipagecount NAME
+@c DEBUG: print_menu("unipagecount NAME")
+
+unipagecount @minus{} Count the assigned code points in a GNU Unifont .hex file
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unipagecount SYNOPSIS
+@subsection unipagecount SYNOPSIS
+@c DEBUG: print_menu("unipagecount SYNOPSIS")
+
+@b{unipagecount }[@minus{}P@i{plane}] [@minus{}p@i{pagenum}] [@minus{}h|@minus{}l]
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unipagecount DESCRIPTION
+@subsection unipagecount DESCRIPTION
+@c DEBUG: print_menu("unipagecount DESCRIPTION")
+
+@comment TROFF INPUT: .B unipagecount
+@b{unipagecount}
+reads a GNU Unifont .hex file from STDIN and prints a 16 by 16 grid of the
+number of defined code points in each 256 character block within a Unicode
+plane to STDOUT.  Code points proceed from left to right, then top to bottom.
+In all planes, code points U+*FFFE and U+*FFFF are not expected in the input
+hex file; they are reserved and always counted as being present in a plane.
+@comment TROFF INPUT: .SH OPTIONS
+
+@node unipagecount OPTIONS
+@subsection unipagecount OPTIONS
+@c DEBUG: print_menu("unipagecount OPTIONS")
+
+@comment TROFF INPUT: .TP 6
+@comment TROFF INPUT: .BR \-P
+
+@c ---------------------------------------------------------------------
+@table @code
+@item @b{@minus{}P}
+Select a Unicode plane, from 0 through 16, inclusive.  If not specified,
+@comment TROFF INPUT: .B unipagecount
+@b{unipagecount}
+defaults to Plane 0 (the Basic Multilingual Plane).
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-p
+
+@item @b{@minus{}p}
+Just print information on one 256 code point "page" rather than
+the entire Basic Multilingual Plane.  This prints a 16 by 16 table with
+an asterisk in every code point that has an assigned glyph.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-h
+
+@item @b{@minus{}h}
+Print an HTML table with color-coded cell background colors
+instead of a plain text table.
+@comment TROFF INPUT: .TP
+@comment TROFF INPUT: .BR \-l
+
+@item @b{@minus{}l}
+[The letter "l"]: Print hyperlinks to font bitmaps in the HTML table.
+To create the bitmaps themselves, use the
+@comment TROFF INPUT: .B unihex2bmp
+@b{unihex2bmp}
+program.  The bitmaps are assumed to be in the directory "bmp/".
+@comment TROFF INPUT: .SH FILES
+
+@end table
+
+@c ---------------------------------------------------------------------
+
+@node unipagecount FILES
+@subsection unipagecount FILES
+@c DEBUG: print_menu("unipagecount FILES")
+
+*.hex GNU Unifont font files
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unipagecount SEE ALSO
+@subsection unipagecount SEE ALSO
+@c DEBUG: print_menu("unipagecount SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unipagecount AUTHOR
+@subsection unipagecount AUTHOR
+@c DEBUG: print_menu("unipagecount AUTHOR")
+
+@comment TROFF INPUT: .B unipagecount
+@b{unipagecount}
+was written by Paul Hardy.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unipagecount LICENSE
+@subsection unipagecount LICENSE
+@c DEBUG: print_menu("unipagecount LICENSE")
+
+@comment TROFF INPUT: .B unipagecount
+@b{unipagecount}
+is Copyright @copyright{} 2007, 2014 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unipagecount BUGS
+@subsection unipagecount BUGS
+@c DEBUG: print_menu("unipagecount BUGS")
+
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input files.  If they're not in the
+format of the original GNU Unifont .hex file, all bets are off.

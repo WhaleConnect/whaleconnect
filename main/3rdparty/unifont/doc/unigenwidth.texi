@@ -1,0 +1,175 @@
+@comment TROFF INPUT: .TH UNIGENWIDTH 1 "2013 Sep 10"
+
+@node unigenwidth
+@section unigenwidth
+@c DEBUG: print_menu("@section")
+
+@menu
+* unigenwidth NAME::
+* unigenwidth SYNOPSIS::
+* unigenwidth DESCRIPTION::
+* unigenwidth EXAMPLE::
+* unigenwidth FILES::
+* unigenwidth SEE ALSO::
+* unigenwidth AUTHOR::
+* unigenwidth LICENSE::
+* unigenwidth BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unigenwidth NAME
+@subsection unigenwidth NAME
+@c DEBUG: print_menu("unigenwidth NAME")
+
+unigenwidth @minus{} Generate C code for POSIX wcwidth and wcswidth functions
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unigenwidth SYNOPSIS
+@subsection unigenwidth SYNOPSIS
+@c DEBUG: print_menu("unigenwidth SYNOPSIS")
+
+
+@comment WARNING: unigenwidth.1:5:%%new font I started without closing previous font B
+
+@b{unigenwidth }@i{unifont.hex combining.txt }> @i{wccode.c}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unigenwidth DESCRIPTION
+@subsection unigenwidth DESCRIPTION
+@c DEBUG: print_menu("unigenwidth DESCRIPTION")
+
+@comment TROFF INPUT: .B unigenwidth
+@b{unigenwidth}
+reads a collection of glyphs in Unifont's .hex format,
+then reads a list of combining characters as a hexadecimal list.
+From these two files, it produces C code to implement the POSIX
+@comment TROFF INPUT: .BR wcwidth(3)
+@b{wcwidth(3)}
+and
+@comment TROFF INPUT: .BR wcswidth(3)
+@b{wcswidth(3)}
+functions.  The format of these definitions is based upon
+POSIX 1003.1-2008 System Interfaces, pages 2251 and 2241, respectively.
+@comment TROFF INPUT: .SH EXAMPLE
+
+@node unigenwidth EXAMPLE
+@subsection unigenwidth EXAMPLE
+@c DEBUG: print_menu("unigenwidth EXAMPLE")
+
+@comment TROFF INPUT: .PP
+
+Sample usage:
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .RS
+
+@c ---------------------------------------------------------------------
+@quotation
+unigenwidth unifont.hex combining.txt > wccode.c
+@comment TROFF INPUT: .RE
+
+@end quotation
+
+@c ---------------------------------------------------------------------
+@comment TROFF INPUT: .SH FILES
+
+@node unigenwidth FILES
+@subsection unigenwidth FILES
+@c DEBUG: print_menu("unigenwidth FILES")
+
+*.hex files for Unifont glyph data; combining.txt for combining code points.
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unigenwidth SEE ALSO
+@subsection unigenwidth SEE ALSO
+@c DEBUG: print_menu("unigenwidth SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unigenwidth AUTHOR
+@subsection unigenwidth AUTHOR
+@c DEBUG: print_menu("unigenwidth AUTHOR")
+
+@comment TROFF INPUT: .B unigenwidth
+@b{unigenwidth}
+was written by Paul Hardy.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unigenwidth LICENSE
+@subsection unigenwidth LICENSE
+@c DEBUG: print_menu("unigenwidth LICENSE")
+
+@comment TROFF INPUT: .B unigenwidth
+@b{unigenwidth}
+is Copyright @copyright{} 2013 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unigenwidth BUGS
+@subsection unigenwidth BUGS
+@c DEBUG: print_menu("unigenwidth BUGS")
+
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input files.

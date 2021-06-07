@@ -1,0 +1,188 @@
+@comment TROFF INPUT: .TH UNICOVERAGE 1 "2007 Dec 31"
+
+@node unicoverage
+@section unicoverage
+@c DEBUG: print_menu("@section")
+
+@menu
+* unicoverage NAME::
+* unicoverage SYNOPSIS::
+* unicoverage DESCRIPTION::
+* unicoverage OPTIONS::
+* unicoverage EXAMPLE::
+* unicoverage FILES::
+* unicoverage SEE ALSO::
+* unicoverage AUTHOR::
+* unicoverage LICENSE::
+* unicoverage BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unicoverage NAME
+@subsection unicoverage NAME
+@c DEBUG: print_menu("unicoverage NAME")
+
+unicoverage @minus{} Print coverage of each Unicode Script
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unicoverage SYNOPSIS
+@subsection unicoverage SYNOPSIS
+@c DEBUG: print_menu("unicoverage SYNOPSIS")
+
+@b{unicoverage }[@minus{}i@i{input-file}] [@minus{}o@i{output-file}]
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unicoverage DESCRIPTION
+@subsection unicoverage DESCRIPTION
+@c DEBUG: print_menu("unicoverage DESCRIPTION")
+
+@comment TROFF INPUT: .B unicoverage
+@b{unicoverage}
+reads a GNU Unifont .hex font and uses data in
+@comment TROFF INPUT: .B coverage.dat
+@b{coverage.dat}
+(which must reside in the current directory).  The output is
+the percent coverage of each script listed in the coverage.dat
+file.  The Unicode code points in the input .hex file must be
+in ascending order.
+@comment TROFF INPUT: .SH OPTIONS
+
+@node unicoverage OPTIONS
+@subsection unicoverage OPTIONS
+@c DEBUG: print_menu("unicoverage OPTIONS")
+
+@comment TROFF INPUT: .TP 12
+
+@c ---------------------------------------------------------------------
+@table @code
+@item @b{@minus{}i}
+Specify the input file. The default is STDIN.
+@comment TROFF INPUT: .TP
+
+@item @b{@minus{}o}
+Specify the output file. The default is STDOUT.
+@comment TROFF INPUT: .SH EXAMPLE
+
+@end table
+
+@c ---------------------------------------------------------------------
+
+@node unicoverage EXAMPLE
+@subsection unicoverage EXAMPLE
+@c DEBUG: print_menu("unicoverage EXAMPLE")
+
+Sample usage:
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .RS
+
+@c ---------------------------------------------------------------------
+@quotation
+unicoverage < unifont.hex >coverage.txt
+@comment TROFF INPUT: .RE
+
+@end quotation
+
+@c ---------------------------------------------------------------------
+@comment TROFF INPUT: .SH FILES
+
+@node unicoverage FILES
+@subsection unicoverage FILES
+@c DEBUG: print_menu("unicoverage FILES")
+
+coverage.dat, *.hex GNU Unifont files.
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unicoverage SEE ALSO
+@subsection unicoverage SEE ALSO
+@c DEBUG: print_menu("unicoverage SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unicoverage AUTHOR
+@subsection unicoverage AUTHOR
+@c DEBUG: print_menu("unicoverage AUTHOR")
+
+@comment TROFF INPUT: .B unicoverage
+@b{unicoverage}
+was written by Paul Hardy.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unicoverage LICENSE
+@subsection unicoverage LICENSE
+@c DEBUG: print_menu("unicoverage LICENSE")
+
+@comment TROFF INPUT: .B unicoverage
+@b{unicoverage}
+is Copyright @copyright{} 2007, 2008 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unicoverage BUGS
+@subsection unicoverage BUGS
+@c DEBUG: print_menu("unicoverage BUGS")
+
+No known real bugs exist, except that this software does not perform
+extensive error checking on its input files.

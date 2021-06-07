@@ -1,0 +1,212 @@
+@comment TROFF INPUT: .TH HEX2BDF 1 "2008 Jul 06"
+
+@node hex2bdf
+@section hex2bdf
+@c DEBUG: print_menu("@section")
+
+@menu
+* hex2bdf NAME::
+* hex2bdf SYNOPSIS::
+* hex2bdf DESCRIPTION::
+* hex2bdf OPTIONS::
+* hex2bdf EXAMPLE::
+* hex2bdf FILES::
+* hex2bdf SEE ALSO::
+* hex2bdf AUTHOR::
+* hex2bdf LICENSE::
+* hex2bdf BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node hex2bdf NAME
+@subsection hex2bdf NAME
+@c DEBUG: print_menu("hex2bdf NAME")
+
+hex2bdf @minus{} Convert a GNU Unifont .hex file into a BDF font
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node hex2bdf SYNOPSIS
+@subsection hex2bdf SYNOPSIS
+@c DEBUG: print_menu("hex2bdf SYNOPSIS")
+
+@b{hex2bdf }[@i{options}] < @i{input-font.hex }> @i{output-font.bdf}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node hex2bdf DESCRIPTION
+@subsection hex2bdf DESCRIPTION
+@c DEBUG: print_menu("hex2bdf DESCRIPTION")
+
+@comment TROFF INPUT: .B hex2bdf
+@b{hex2bdf}
+reads a sorted GNU Unifont .hex file (sorted with the Unix
+@comment TROFF INPUT: .B sort
+@b{sort}
+utility) from STDIN and writes a BDF version of the font
+to STDOUT.
+@comment TROFF INPUT: .SH OPTIONS
+
+@node hex2bdf OPTIONS
+@subsection hex2bdf OPTIONS
+@c DEBUG: print_menu("hex2bdf OPTIONS")
+
+@comment TROFF INPUT: .TP 12
+
+@c ---------------------------------------------------------------------
+@table @code
+@item @b{@minus{}f} "font-name"
+Specify the target font name.  If omitted, the default
+font name "Unifont" is assigned.
+@comment TROFF INPUT: .TP
+
+@item @b{@minus{}v} "font-version"
+Specify the target font version.  If omitted, the default
+version "1.0" is assigned.
+@comment TROFF INPUT: .TP
+
+@item @b{@minus{}c} "font-copyright"
+Specify the target font copyright information.  The default
+is the null string.
+@comment TROFF INPUT: .TP
+
+@item 
+@comment WARNING: hex2bdf.1:26:%%new font I started without closing previous font B
+
+
+@comment WARNING: hex2bdf.1:26:%%new font R started without closing previous font I
+
+@b{@minus{}r }@i{pixel-rows}
+Specify how many pixel rows tall a glyph is.  The default
+is the traditional Unifont 16 rows of pixels.  This is an
+addition to support
+@comment TROFF INPUT: .B unihex2png(1)
+@b{unihex2png(1)}
+and
+@comment TROFF INPUT: .B unipng2hex(1),
+@b{unipng2hex(1),}
+which allow designing glyphs that are 16, 24, or 32
+pixel rows tall.
+@comment TROFF INPUT: .SH EXAMPLE
+
+@end table
+
+@c ---------------------------------------------------------------------
+
+@node hex2bdf EXAMPLE
+@subsection hex2bdf EXAMPLE
+@c DEBUG: print_menu("hex2bdf EXAMPLE")
+
+Sample usage:
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .RS
+
+@c ---------------------------------------------------------------------
+@quotation
+hex2bdf @minus{}f "Unifont" @minus{}c "(C) 2013..." unifont.hex > unifont.bdf
+@comment TROFF INPUT: .RE
+
+@end quotation
+
+@c ---------------------------------------------------------------------
+@comment TROFF INPUT: .SH FILES
+
+@node hex2bdf FILES
+@subsection hex2bdf FILES
+@c DEBUG: print_menu("hex2bdf FILES")
+
+*.hex GNU Unifont font files
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node hex2bdf SEE ALSO
+@subsection hex2bdf SEE ALSO
+@c DEBUG: print_menu("hex2bdf SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node hex2bdf AUTHOR
+@subsection hex2bdf AUTHOR
+@c DEBUG: print_menu("hex2bdf AUTHOR")
+
+@comment TROFF INPUT: .B hex2bdf
+@b{hex2bdf}
+was written by Roman Czyborra.
+@comment TROFF INPUT: .SH LICENSE
+
+@node hex2bdf LICENSE
+@subsection hex2bdf LICENSE
+@c DEBUG: print_menu("hex2bdf LICENSE")
+
+@comment TROFF INPUT: .B hex2bdf
+@b{hex2bdf}
+is Copyright @copyright{} 1998 Roman Czyborra.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node hex2bdf BUGS
+@subsection hex2bdf BUGS
+@c DEBUG: print_menu("hex2bdf BUGS")
+
+No known bugs exist.  Support for glyph heights other than 16 pixels is
+brand new and has not been extensively tested.

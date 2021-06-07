@@ -1,0 +1,239 @@
+#!/usr/bin/perl
+
+#  unipng2hex - program to turn a .png glyph matrix into a
+#               GNU Unifont hex glyph set of 256 characters
+#
+#  Synopsis: unipng2hex [-i in_file.png] [-o out_file.hex] [-w]
+#
+#
+#  Author: Paul Hardy, unifoundry <at> unifoundry.com, December 2007
+#
+#  Perl conversion: Andrew Miller, August 2013
+#
+#
+#   Copyright (C) 2007-2008 Paul Hardy
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+use Getopt::Long;
+use GD qw (:DEFAULT :cmp);
+
+$result = GetOptions (
+	"help|?",
+	"input|i=s" => \$input,
+	"output|o=s" => \$output,
+	"width|w=i" => \$minwidth
+);
+
+if ($opt_help) {
+	print << "END" or die ("Cannot print to stdout.\n");
+
+Turn a .png glyph matrix into a GNU Unifont hex glyph set of 256 characters
+
+Syntax:
+
+   unipng2hex -i <Input_File> [-o <Output_File>] [-w <width>]
+
+   -i, --input               the input PNG file
+   -o, --output              the output hex file (write to STDOUT if not
+                             specified)
+   -w, --width               the minimum width of the output glyphs - valid
+                             values are 16, 24 and 32 (default is no minimum
+                             width)
+   -?, --help                display this help and exit
+
+
+Example:
+
+   unipng2hex -i u83.png -o u83.hex
+END
+	exit ()
+}
+
+if (not $input) {
+	die ("No input file specified\n")
+}
+
+#if (not $output) {
+#	die ("No output file specified\n")
+#}
+
+GD::Image->trueColor (1);
+$im = new GD::Image ("$input") or die ("Cannot open image.\n");
+
+if ($im->isTrueColor ()) {
+	$im->trueColorToPalette ();
+}
+
+# Disable transparency if it has been set
+$im->transparent (-1);
+
+$black = $im->colorClosest (0, 0, 0);
+$white = $im->colorClosest (255, 255, 255);
+
+# Exit if black and white are not in the image's palette
+if ($white == -1 || $black == -1) {
+	die ("Invalid image - colors do not match\n");
+} else {
+	($black_red, $black_green, $black_blue) = $im->rgb ($black);
+	($white_red, $white_green, $white_blue) = $im->rgb ($white);
+}
+
+($imagewidth, $imageheight) = $im->getBounds();
+
+$charxoffset = 4;
+$gridxoffset = 48;
+$gridyoffset = 32;
+
+$boxsize = ($imagewidth - $gridxoffset) / 16;
+
+if ($boxsize == 32) {
+	# try to determine if charheight is 16 or 24 by examining grid
+	$pixel = $im->getPixel ($imagewidth - 1, $imageheight - 5);
+
+	if ($im->rgb ($pixel) == ($black_red, $black_green, $black_blue)) {
+		$charyoffset = 7;
+		$charheight = 16;
+		$charmaxwidth = 3;
+	} elsif ($im->rgb ($pixel) == ($white_red, $white_green, $white_blue)) {
+		$charyoffset = 7;
+		$charheight = 16;
+		$charmaxwidth = 3;
+#
+#		Use the settings below for a height of 24 pixels in the future;
+#		for now, hard code glyph height to 16 pixels.
+#		$charyoffset = 4;
+#		$charheight = 24;
+#		$charmaxwidth = 3;
+	} else {
+		die ("Cannot determine font height\n")
+	}
+} elsif ($boxsize == 40) {
+	$charyoffset = 4;
+	$charheight = 32;
+	$charmaxwidth = 4;
+} else {
+	die ("Invalid image - incorrect size\n")
+}
+
+if ($minwidth) {
+	if ($charheight == 16 || $charheight == 24) {
+		if (!($minwidth == 16 || $minwidth == 24)) {
+			die ("invalid width\n");
+		}
+	} elsif ($charheight == 32) {
+		if (!($minwidth == 16 || $minwidth == 24 || $minwidth == 32)) {
+			die ("Invalid width\n");
+		}
+	}
+
+	$minwidth /= 8;
+}
+
+# Build an array of single digit hex character images
+for ($count = 0; $count < 16; $count++) {
+	$digit = new GD::Image (8, 16, 0);
+	$black = $digit->colorAllocate ($black_red, $black_green, $black_blue);
+	$white = $digit->colorAllocate ($white_red, $white_green, $white_blue);
+
+	$digit->fill (0, 0, $white);
+
+	$digit->string (gdLargeFont, 0, 0, sprintf ('%X', $count), $black);
+
+	push (@digits, $digit);
+}
+
+$codepoint = 0;
+
+# Get plane
+for ($d = 0; $d < 2; $d++) {
+	$c = new GD::Image (8, 16);
+	$c->copy ($im, 0, 0, 24 + ($d * 8), 9, 8, 16);
+
+	for ($count = 0; $count < 16; $count++) {
+		if (!($c->compare ($digits[$count]) & GD_CMP_IMAGE)) {
+			$codepoint = ($codepoint << 4) + $count;
+		}
+	}
+}
+
+# Get page
+for ($d = 0; $d < 3; $d++) {
+	$c = new GD::Image (8, 16);
+	$c->copy ($im, 0, 0, (($boxsize - 24) / 2) + $gridxoffset + ($d * 8), 9, 8, 16);
+
+	for ($count = 0; $count < 16; $count++) {
+		if (!($c->compare ($digits[$count]) & GD_CMP_IMAGE)) {
+			$codepoint = ($codepoint << 4) + $count;
+		}
+	}
+}
+
+# Calculate the first codepoint and its display width
+$codepoint = ($codepoint << 4);
+$display_width = $codepoint > 0xFFFF ? 6 : 4;
+
+if ($output) {
+	open (HEXFILE, ">$output") or die ("Cannot save hex file.\n");
+} else {
+	*HEXFILE = *STDOUT;
+}
+binmode HEXFILE;
+
+for ($col = 0; $col < 16; $col++) {
+	for ($row = 0; $row < 16; $row++) {
+		# Calculate glyph width
+		$charwidth = 0;
+
+		for ($count = 0; $count < $charmaxwidth; $count++) {
+			$c = new GD::Image (8, $charheight, 0);
+			$c->copy ($im, 0, 0, ($col * $boxsize) + ($count * 8) + $gridxoffset + $charxoffset, ($row * $boxsize) + $gridyoffset + $charyoffset, 8, $charheight);
+
+			if ($c->colorsTotal > 1 || $c->colorExact ($white_red, $white_green, $white_blue) == -1) {
+				$charwidth = $count + 1
+			}
+		}
+
+		# Force glyphs to minimum width if minwidth is set
+		if ($charwidth < $minwidth) {
+			$charwidth = $minwidth;
+		}
+
+		if ($charwidth != 0) {
+			$char = sprintf ("%0*X:", $display_width, $codepoint);
+
+			# Loop through the glyph and build up its hex representation
+			for ($j = 0; $j < $charheight; $j++) {
+				$line = 0;
+
+				for ($i = 0; $i < $charwidth * 8; $i++) {
+					$bit = $im->getPixel (($col * $boxsize)+ $i + $gridxoffset + $charxoffset, ($row * $boxsize) + $j + $gridyoffset + $charyoffset) == $black ? 1 : 0;
+
+					$line = ($line << 1) + $bit;
+				}
+
+				$char = $char . sprintf ("%0*X", $charwidth * 2, $line);
+			}
+
+			print HEXFILE "$char\n" or die ("Cannot print to hex file.\n");
+		}
+
+		$codepoint += 1;
+	}
+}
+
+# Only close HEXFILE if it isn't mapped to STDOUT.
+if ($output) {
+	close HEXFILE or die ("Cannot properly close hex file.\n");
+}

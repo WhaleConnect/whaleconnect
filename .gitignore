@@ -1,0 +1,13 @@
+# Windows desktop configuration file
+desktop.ini
+
+# Dear ImGui settings file
+imgui.ini
+
+# Visual Studio generated files
+x64/
+.vs/
+*.user
+
+# CMake build output
+build/

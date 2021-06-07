@@ -1,0 +1,182 @@
+
+BUILDING
+--------
+To make the binaries from the top directory, type
+
+     make
+
+This will create the directories "./bin", "./lib", and "./font/compiled".
+
+The compiled programs will be in the "./bin" directory.  The "./lib"
+directory will contain the file wcwidth.c, to provide an implementation
+of the POSIX wcwidth and wcswidth functions.
+
+By default, simply typing "make" does not build the font.  To build the
+font, type
+
+     make BUILDFONT=1
+
+The font will then build, placing files in the "font/compiled/" directory.
+
+The default settings will build Unifont with four-digit hexadecimal
+glyphs appearing for unassigned code points, and with no glyphs for
+Private Use Area code points or non-printing code points.  As an
+example, to override these defaults in this top-level directory type
+
+     make BUILDFONT=1 UNASSIGNED="" PUA="plane00/pua.hex" \
+          NONPRINTING="plane00/nonprinting.hex"
+
+To make certain that no unassigned, PUA, or non-printing glyphs are
+included, type
+
+     make BUILDFONT=1 UNASSIGNED="" PUA="" NONPRINTING=""
+
+You can similarly build Unifont with your own custom PUA glyphs.
+Just specify where the custom PUA file is, relative to the "font/"
+directory.  Note, though, that unifontpic generates its glyph
+diagram from whatever .hex files are in the "font/plane00" directory.
+Therefore, to have custom PUA glyphs be part of this generated
+glyph map, replace "font/plane00/pua.hex" with a custom pua.hex file.
+
+Other useful make variables that can be overridden on the command line
+from the top-level Makefile include:
+
+     DESTDIR   - By default, not set; set to an alternate root location
+                 such as "~/tmproot" if desired, but this directory
+                 must already exist.
+     USRDIR    - Set as typically "usr" or "usr/local" for installation
+     PREFIX    - This is just $(DESTDIR)/$(USRDIR) but can be overridden.
+     PKGDEST   - Destination for package files, by default "usr/share"
+                 so that the README file, this INSTALL file, the ChangeLog
+                 file, etc. will be installed in "/usr/share/unifont".
+     COMPRESS  - Set to non-zero to compress installed man pages
+
+All of the .hex file names can be replaced selectively on the top-level
+"make" command line.  The list of component hex file variables is:
+
+     UNIFONTBASE - The bulk of Unifont scripts
+     CJK         - Most of the CJK Ideographs
+     HANGUL      - Hangul Syllables block
+     NONPRINTING - Glyphs for non-printing characters
+     SPACES      - Space glyphs, single- and double-width
+     UNASSIGNED  - Glyphs for unassigned code points
+     PUA         - Glyphs for the Private Use Area
+
+The files "doc/unifont.info" and "doc/unifont.pdf" are pre-generated
+as part of the distribution.  This is for the convenience of systems
+that do not have texinfo, texi2pdf, and TeX installed.  To rebuild
+these files from scratch (with texinfo, texi2pdf, etc. installed), type
+
+     cd doc
+     make doc
+     make clean
+
+The "make clean" command removes intermediate files that texi2pdf creates.
+
+To install the binaries, man pages, and Unifont, review the
+destination directories in the Makefiles to verify that the files
+will be installed where you want, and then type
+
+     make install
+
+This installs programs in "/usr/bin" or "/usr/local/bin" (depending
+on the USRDIR setting in the top-level Makefile), installs PCF and
+TrueType fonts in the appropriate places, and places the following
+files in "/usr/share/unifont" or "/usr/local/share/unifont" (again
+depending on the USRDIR setting in the top-level Makefile):
+
+     ChangeLog.gz    - license information for this package
+     combining.txt   - list of Unicode Plane 0 combining characters
+     INSTALL.gz      - this INSTALL file
+     NEWS.gz         - the main changes for each version
+     README.gz       - the README file
+     unifont.bmp     - 256-by-256 glyph graphic of Unifont
+     unifont.info.gz - Texinfo tutorial on using the Unifont utilities
+     unifont.txt.gz  - Texinfo tutorial on using the Unifont utilities
+     unifont.hex     - composite Unifont .hex source, used by GRUB1
+     wchardata.c     - implementation of IEEE 1003.1-2008 wcswidth and wcwidth
+
+Typing "make install" will install font files from "font/compiled/"
+if that directory exists; otherwise it will install font files from
+the "font/precompiled/" directory.
+
+To rebuild what is in the "font/precompiled" directory (which you
+ordinarily should never do--there would have to be a very good
+reason), remove its files, modify the DATE and VERSION information
+in the top-level Makefile and in "font/Makefile", then type
+
+     make BUILDFONT=1
+     make precompiled
+
+from the top-level directory or the "font/" subdirectory.
+
+To just make the fonts, charts, etc. within the "font" directory,
+install the "bdftopcf" program and FontForge as well as performing
+a "make install" to install the Unifont binaries.  Then from the
+top-level directory type
+
+     cd font
+     make BUILDFONT=1
+
+The resulting fonts will be in the "./font/compiled" directory, along
+with bitmap renderings of each glyph.  Note that if you've changed
+glyphs, it might not be necessary to specify "BUILDFONT=1" but by
+setting that on the command line, it forces the build whether or not
+any glyphs have changed.
+
+WARNING: Building the TrueType version of GNU Unifont will require
+anywhere from 256 MBytes to 1 GByte of virtual memory, can require
+almost 250 Megabytes of free disk space during the build, and is best
+run on a decent processor (say 1 GHz clock rate or better).
+
+During the TrueType build, FontForge will monopolize your CPU...plan
+accordingly.
+
+There is no reason to build the font from scratch unless you modify
+the .hex font source files (or must satisfy an insatiable curiosity),
+because the "./font/precompiled" directory already contains pre-built
+BDF, PCF, and TrueType fonts.
+
+To create a custom version of the font with combining circles (similar
+to what was done to create the large picture of Unifont), type:
+
+     cd font/ttfsrc
+     sort ../plane00/*.hex | \
+          unigencircles combining.txt ../plane00/nonprinting.hex > unifont.hex
+     make BUILDFONT=1
+
+When "make" is finished, the ttfsrc directory will contain a "unifont.ttf"
+file which includes the dashed combining circles that the unigencircles
+utility added.  Copy this "unifont.ttf" file to a safe location in a different
+directory with a more descriptive name.  This font is named "unifont_sample-*.*"
+in the font distribution.  Then type
+
+     make clean
+
+If you've made a new version of the font, hand-copy the new font file(s)
+to your desired destination.  Otherwise, precompiled PCF and TrueType
+versions of the font will be copied from "./font/precompiled/" into
+"$(DESTDIR)/usr/share/fonts".
+
+After font installation, you might need to restart the X Window System
+for the new fonts to be recognized, but first try the command
+
+     xset fp rehash
+
+in a shell (terminal) window.  If that doesn't work, restart the X
+Window System.
+
+To remove intermediate files, from the top-level directory type
+
+     make clean
+
+To remove all created files and leave the directory in its pre-build
+state, from the top-level directory type
+
+     make distclean
+
+That will remove the "./bin" directory, the "./lib" directory, the
+"./font/compiled" directory, and other intermediate files.  Note that
+this command leaves the files in "./font/precompiled" intact, even
+though a prior "make precompiled" command would have rebuilt those files.
+

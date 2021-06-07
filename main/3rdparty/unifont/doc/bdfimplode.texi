@@ -1,0 +1,147 @@
+@comment TROFF INPUT: .TH BDFIMPLODE 1 "2008 Jul 06"
+
+@node bdfimplode
+@section bdfimplode
+@c DEBUG: print_menu("@section")
+
+@menu
+* bdfimplode NAME::
+* bdfimplode SYNOPSIS::
+* bdfimplode DESCRIPTION::
+* bdfimplode FILES::
+* bdfimplode SEE ALSO::
+* bdfimplode AUTHOR::
+* bdfimplode LICENSE::
+* bdfimplode BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node bdfimplode NAME
+@subsection bdfimplode NAME
+@c DEBUG: print_menu("bdfimplode NAME")
+
+bdfimplode @minus{} Convert a BDF font into GNU Unifont .hex format
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node bdfimplode SYNOPSIS
+@subsection bdfimplode SYNOPSIS
+@c DEBUG: print_menu("bdfimplode SYNOPSIS")
+
+@b{bdfimplode }< @i{input-font.bdf }> @i{output-font.hex}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node bdfimplode DESCRIPTION
+@subsection bdfimplode DESCRIPTION
+@c DEBUG: print_menu("bdfimplode DESCRIPTION")
+
+@comment TROFF INPUT: .B bdfimplode
+@b{bdfimplode}
+reads a BDF font from STDOUT and writes GNU Unifont .hex conversion
+of the font to STDOUT.
+@comment TROFF INPUT: .SH FILES
+
+@node bdfimplode FILES
+@subsection bdfimplode FILES
+@c DEBUG: print_menu("bdfimplode FILES")
+
+*.bdf font files
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node bdfimplode SEE ALSO
+@subsection bdfimplode SEE ALSO
+@c DEBUG: print_menu("bdfimplode SEE ALSO")
+
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node bdfimplode AUTHOR
+@subsection bdfimplode AUTHOR
+@c DEBUG: print_menu("bdfimplode AUTHOR")
+
+@comment TROFF INPUT: .B bdfimplode
+@b{bdfimplode}
+was written by Roman Czyborra.
+@comment TROFF INPUT: .SH LICENSE
+
+@node bdfimplode LICENSE
+@subsection bdfimplode LICENSE
+@c DEBUG: print_menu("bdfimplode LICENSE")
+
+@comment TROFF INPUT: .B bdfimplode
+@b{bdfimplode}
+is Copyright @copyright{} 1998 Roman Czyborra.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node bdfimplode BUGS
+@subsection bdfimplode BUGS
+@c DEBUG: print_menu("bdfimplode BUGS")
+
+@comment TROFF INPUT: .B bdfimplode
+@b{bdfimplode}
+was written to read a BDF file created by the
+@comment TROFF INPUT: .B hex2bdf
+@b{hex2bdf}
+script.  It will not properly handle other BDF files with differing
+bounding boxes.

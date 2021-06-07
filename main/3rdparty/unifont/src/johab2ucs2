@@ -1,0 +1,335 @@
+#!/usr/bin/perl  -w
+#
+# Copyright (C) 1998, 2013 Jungshik Shin, Paul Hardy
+#
+# johab2ucs2.pl 
+# This script(working as filter) converts  Hangul "Johab encoded  fonts"
+# with an unofficial XLFD name "-johab" in BDF format
+# to UCS-2 encoded font in a format defined by
+# Roman Czyborra <roman@czyborra.com> at 
+# http://czyborra.com/unifont/
+#
+# LICENSE:
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 2 of the License, or
+#    (at your option) any later version.
+#  
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#    GNU General Public License for more details.
+#  
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+# 'hanterm304font.tar.gz contains about a dozen of 
+# "Johab-encoded" fonts. The package is available 
+# ftp://ftp.kaist.ac.kr/hangul/terminal/hanterm/hanterm304beta/fonts
+# Please, note that this script only works with  fonts whose 
+# XLFD name ends with 
+#
+#  --16-160-75-75-c-160-johab-1
+# (and whose file name in the package doesn't include 's' or 'sh' preceding
+# '(m|g)16.bdf'. )
+#
+# There are  four of them : 
+#  johabg16.bdf,johabm16.bdf,johabp16.bdf,iyagi16.bdf.  
+#
+# Fonts in the package with other XLFD names
+# (johabs and johabsh) contain glyphs for about 5000 Hanjas and special symbols
+# defined in KS C 5601-1987. 
+
+#  Sep. 29, 1998
+#  Jungshik Shin <jshin@pantheon.yale.edu>
+
+# A more complete routine which not only covers
+# *modern* pre-composed Hangul syllables in UAC00-UD7A3
+# but also supports dynamic rendering of
+# Hangul syllables(medieval as well as modern)
+# using Hangul comibining Jamos  at [U1100-U11FF]
+# was made by Deog-tae Kim <dtkim@calab.kaist.ac.kr
+# to be used in Java font-properties file. 
+# It's available at  http://calab.kaist.ac.kr/~dtkim/java/
+
+# 2 May 2008: changes by Paul Hardy (unifoundry <at> unfoundry.com):
+#
+#    - In tconBase, "459" index corrected to "449".
+#    - Modified subroutine get_ind to always return 0 for final
+#      if no final consonant is in the composite syllable.
+#      Previously it always added $tconMap[$m] to the final
+#      consonant location even if there was no final consonant.
+#    - Index arrays were extended to cover all of Johab encoded
+#      Hangul, even though not all glyphs are used to generate
+#      the Unicode Hangul Syllables range.
+#    - Added comments on the letters in the letter arrays
+
+
+# Conversion routine from Hangul Jamo index to glyph index 
+# of Hangul "Johab-encoded" fonts  as used by 
+# Hangul xterm, hanterm.
+# The following routine is based on Hanterm by Song, Jaekyung
+# available at ftp://ftp.kaist.ac.kr/hangul/terminal/hanterm
+
+# Leading Consonant index values:
+#
+#    Modern Letters:                     Archaic Letters (no Romanization):
+#
+#       0 G  (choseong kiyeok)              19 (choseong kapyeounpieup) 
+#       1 GG (choseong ssangkiyeok)         20 (choseong pieup-kiyeok)
+#       2 N  (choseong nieun)               21 (choseong sios-kiyeok)
+#       3 D  (choseong tikeut)              22 (choseong pieup-tikeut)
+#       4 DD (choseong ssangtikeut)         23 (choseong sios-tikeut)
+#       5 R  (choseong rieul)               24 (choseong sios-pieup)
+#       6 M  (choseong mieum)               25 (choseong pieup-sios)
+#       7 B  (choseong pieup)               26 (choseong pansios)
+#       8 BB (choseong ssangpieup)          27 (choseong yesieung)
+#       9 S  (choseong sios)                28 (choseong pieup-cieuc)
+#      10 SS (choseong ssangsios)           29 (choseong sios-cieuc)
+#      11 ieung (choseong ieung)            30 (choseong yeorinhieuh)
+#      12 J  (choseong cieuc)
+#      13 JJ (choseong ssangcieuc)
+#      14 C  (choseong chieuch)
+#      15 K  (choseong khieukh)
+#      16 T  (choseong thieuth)
+#      17 P  (choseong phieuph)
+#      18 H  (choseong hieuh)
+#
+
+# Middle Letter index values:
+#
+#    Modern Letters:                     Archaic Letters (no Romanization):
+#
+#       0 Filler (blank)                    22 YO-YA   (jungseong yo-ya)
+#       1 A   (jungseong a)                 23 YO-YAE  (jungseong yo-yae)
+#       2 AE  (jungseong ae)                24 YO-I    (jungseong yo-i)
+#       3 YA  (jungseong ya)                25 YU-YEO  (jungseong yu-yeo)
+#       4 YAE (jungseong yae)               26 YU-YE   (jungseong yu-ye)
+#       5 EO  (jungseong eo)                27 YU-I    (jungseong yu-i)
+#       6 E   (jungseong e)                 28 araea   (jungseong araea)
+#       7 YEO (jungseong yeo)               29 araea-i (jungseong araea-i)
+#       8 YE  (jungseong ye)
+#       9 O   (jungseong o)
+#      10 WA  (jungseong wa)
+#      11 WAE (jungseong wae)
+#      12 OE  (jungseong oe)
+#      13 YO  (jungseong yo)
+#      14 U   (jungseong u)
+#      15 WEO (jungseong weo)
+#      16 WE  (jungseong we)
+#      17 WI  (jungseong wi)
+#      18 YU  (jungseong yu)
+#      19 EU  (jungseong eu)
+#      20 YI  (jungseong yi)
+#      21 I   (jungseong i)
+#
+
+# Terminal (Final) Letter index values:
+#
+#    Modern Letters:                     Archaic Letters (no Romanization):
+#
+#       0 Filler (blank)                    28 (jongseong rieul-hieuh)
+#       1 G  (jongseong kiyeok)             29 (jongseong mieum-kiyeok)
+#       2 GG (jongseong ssangkiyeok)        30 (jongseong yeorinhieuh)
+#       3 GS (jongseong kiyeok-sios)        31 (jongseong yesieung)
+#       4 N  (jongseong nieun)
+#       5 NJ (jongseong nieun-cieuc)
+#       6 NH (jongseong niuen-hieuh)
+#       7 D  (jongseong tikeut)
+#       8 L  (jongseong rieul)
+#       9 LG (jongseong rieul-kiyeok)
+#      10 LM (jongseong rieul-mieum)
+#      11 LB (jongseong rieul-pieup)
+#      12 LS (jongseong rieul-sios)
+#      13 LT (jongseong rieul-thieuth)
+#      14 LP (jongseong rieul-phieuph)
+#      15 LH (jongseong rieul-hieuh)
+#      16 M  (jongseong mieum)
+#      17 B  (jongseong pieup)
+#      18 BS (jongseong pieup-sios)
+#      19 S  (jongseong sios)
+#      20 SS (jongseong ssangsios)
+#      21 NG (jongseong ieung)
+#      22 J  (jongseong cieuc)
+#      23 C  (jongseong chieuch)
+#      24 K  (jongseong khieukh)
+#      25 T  (jongseong thieuth)
+#      26 P  (jongseong phieuph)
+#      27 H  (jongseong hieuh)
+#
+
+
+# The base font index for leading consonants
+  @lconBase= (
+          1,  11,  21,  31,  41,  51,  # G, GG, N, D, DD, R
+         61,  71,  81,  91, 101, 111,  # M, B, BB, S, SS, ieung
+        121, 131, 141, 151, 161, 171,  # J, JJ, C, K, T, P
+        181,                           # H -- end of modern set
+        191, 201, 211, 221, 231, 241,  # 
+        251, 261, 271, 281, 291, 301
+  );
+
+  # The base index for vowels
+
+  @vowBase = (
+        0,311,314,317,320,323,   # (Fill), A, AE, YA, YAE, EO
+        326,329,332,335,339,343, # E, YEO, YE, O, WA, WAE
+        347,351,355,358,361,364, # OI, YO, U, WEO, WE, WI
+        367,370,374,378,         # YU, EU, UI, I     -- end of modern set
+        381, 384, 387,           # YO-YA, YO-YAE, YO-YI
+        390, 393, 396,           # YU-YEO, YU-YE, YU-I
+        399, 402                 # araea, araea-i
+  );
+
+  # The base font index for trailing consonants
+
+  @tconBase = (
+        # modern trailing consonants (filler + 27)
+        0,
+        405, 409, 413, 417, 421,  #  G, GG, GS,  N, NJ
+        425, 429, 433, 437, 441,  # NH,  D,  L, LG, LM
+        445, 449, 453, 457, 461,  # LB, LS, LT, LP, LH
+        465, 469, 473, 477, 481,  #  M,  B, BS,  S, SS
+        485, 489, 493, 497, 501,  # NG,  J,  C,  K,  T
+        505, 509,                 #  P,  H     -- end of modern set
+        513, 517, 521, 525
+   );
+
+    # The mapping from vowels to leading consonant type
+    # in absence of trailing consonant
+
+    @lconMap1 = (
+        0,0,0,0,0,0,     # (Fill), A, AE, YA, YAE, EO
+        0,0,0,1,3,3,     # E, YEO, YE, O, WA, WAE
+        3,1,2,4,4,4,     # OI, YO, U, WEO, WE, WI
+        2,1,3,0,         # YU, EU, UI, I    -- end of modern set
+        3,3,3,4,4,4,     # YO-YA, YO-YAE, YO-I, YU-YEO, YU-YE, YU-I
+        1,3              # araea, araea-i
+    );
+
+    # The mapping from vowels to leading consonant type
+    # in presence of trailing consonant
+
+    @lconMap2 = (
+        5,5,5,5,5,5,     #  (Fill), A, AE, YA, YAE, EO
+        5,5,5,6,8,8,     #  E, YEO, YE, O, WA, WAE
+        8,6,7,9,9,9,     #  OI, YO, U, WEO, WE, WI
+        7,6,8,5,         #  YU, EU, UI, I    -- end of modern set
+        8,8,8,9,9,9,     # YO-YA, YO-YAE, YO-I, YU-YEO, YU-YE, YU-I
+        6,8              # araea, araea-i
+    );
+
+    #  vowel type ; 1 = o and its alikes, 0 = others
+
+    @vowType = (
+        0,0,0,0,0,0,
+        0,0,0,1,1,1,
+        1,1,0,0,0,0,
+        0,1,1,0,         # end of modern set
+        1,1,1,0,0,0,1,1
+    );
+
+    #  The mapping from trailing consonants to vowel type
+
+    @tconType = (
+        0, 1, 1, 1, 2, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1,        # end of moder set
+        1, 1, 1, 1
+    );
+
+    #  The mapping from vowels to trailing consonant type
+
+    @tconMap = (
+        0, 0, 2, 0, 2, 1,  # (Fill), A, AE, YA, YAE, EO
+        2, 1, 2, 3, 0, 0,  # E, YEO, YE, O, WA, WAE
+        0, 3, 3, 1, 1, 1,  # OI, YO, U, WEO, WE, WI
+        3, 3, 0, 1,        # YU, EU, UI, I   -- end of modern set
+        0, 0, 0, 1, 1, 1,  # YO-YA, YO-YAE, YO-I, YU-YEO, YU-YE, YU-I
+        3, 0               # araea, araea-i
+    );
+
+
+
+# read in BITMAP patterns for Jamos from JOHAB-encoded BDF font file 
+# thru STDIN
+
+$BITMAP=0;
+while (<>) {
+  if (/^ENCODING\s+(\d+)/) { $i = $1; $jamo[$i]=""; }
+  elsif (/^BITMAP/) { $BITMAP=1; }
+  elsif (/^ENDCHAR/) { $BITMAP=0; 
+  }
+  elsif ($BITMAP) { 
+    y/a-f/A-F/; 
+    s/\n$//; 
+    $jamo[$i] = $jamo[$i] . $_;
+  }
+}
+
+for ( $j=0 ; $j <  11172 ;  $j++ ) {
+
+   $init = int( $j / 21 / 28) ;
+   $medial = int($j / 28 ) % 21+1 ; 
+   $final = $j % 28;
+  
+   printf ("%04X:%64s\n", $j+0xAC00, &compose_hangul($init,$medial,$final)) or die ("Cannot print to stdout.\n");
+
+}
+
+sub compose_hangul
+{
+   local($l,$m,$f) = @_; 
+
+   @l_bit = unpack("a2" x 32, $jamo[&get_ind($l,$m,$f,1)]);
+   @m_bit = unpack("a2" x 32, $jamo[&get_ind($l,$m,$f,2)]);
+   @f_bit = unpack("a2" x 32, $jamo[&get_ind($l,$m,$f,3)]);
+ 
+
+   for ( $i = 0; $i < 32; $i++) {
+      $bit[$i]=sprintf("%02X", 
+         hex($l_bit[$i]) | hex($m_bit[$i]) | hex($f_bit[$i]) ) or die ("Cannot print to stdout.\n");
+   }
+
+   return pack("a2" x 32, @bit );
+
+}
+
+sub get_ind
+{
+  local($l,$m,$f,$wh) = @_;
+
+# ($l = 0 && $l < 19 && $m =0 && $m < 21  && $f =0 && $f < 28) or 
+#   die ("$0: get_ind() : invalid Jamo index\n");
+
+  if ( $wh == 1 ) {  # leading consonant index; no final consonant if $f==0
+    $ind = $lconBase[$l] + 
+           ($f > 0 ?  $lconMap2[$m] : $lconMap1[$m] ) ;
+  } 
+  elsif ( $wh == 2 ) { # medial vowel index
+
+     $ind = $vowBase[$m];
+     if ( $vowType[$m] == 1 ) {
+     # For vowels 'o' and alikes,
+     # Giyeok and Kieuk get special treatment
+         $ind += ( ($l==0 || $l == 15) ? 0 : 1)
+                 + ($f > 0 ? 2 : 0 );
+     }
+     else {
+         $ind+= $tconType[$f];
+     }
+  }
+  else {
+      if ($f == 0) {
+         $ind = 0;
+      }
+      else {
+         $ind = $tconBase[$f] + $tconMap[$m];
+      }
+  }
+  return $ind;
+}

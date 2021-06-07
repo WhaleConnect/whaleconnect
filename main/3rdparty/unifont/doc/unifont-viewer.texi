@@ -1,0 +1,167 @@
+@comment TROFF INPUT: .TH UNIFONT-VIEWER 1 "2014 Jun 01"
+
+@node unifont-viewer
+@section unifont-viewer
+@c DEBUG: print_menu("@section")
+
+@menu
+* unifont-viewer NAME::
+* unifont-viewer SYNOPSIS::
+* unifont-viewer DESCRIPTION::
+* unifont-viewer FILES::
+* unifont-viewer SEE ALSO::
+* unifont-viewer AUTHOR::
+* unifont-viewer LICENSE::
+* unifont-viewer BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node unifont-viewer NAME
+@subsection unifont-viewer NAME
+@c DEBUG: print_menu("unifont-viewer NAME")
+
+unifont@minus{}viewer @minus{} View a .hex font file with a graphical user interface
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node unifont-viewer SYNOPSIS
+@subsection unifont-viewer SYNOPSIS
+@c DEBUG: print_menu("unifont-viewer SYNOPSIS")
+
+@b{unifont@minus{}viewer }&
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node unifont-viewer DESCRIPTION
+@subsection unifont-viewer DESCRIPTION
+@c DEBUG: print_menu("unifont-viewer DESCRIPTION")
+
+@comment TROFF INPUT: .B unifont\-viewer
+@b{unifont@minus{}viewer}
+reads a GNU Unifont .hex file and displays glyphs in blocks of 16 by 16,
+256 glyphs per screen with a graphical user interface.  The .hex file
+is selected by opening it with the
+@comment TROFF INPUT: .B File > Open
+@b{File > Open}
+menu item or by typing Control-O.  After loading a file, a list of "pages" of
+256 glyphs will appear in the left-hand column of the window.  The first
+such page of glyphs in the file will appear in the main window.
+@comment TROFF INPUT: .PP
+
+@comment TROFF INPUT: .B unifont\-viewer
+@b{unifont@minus{}viewer}
+supports glyph heights of 16, 24, and 32 pixels.  The height of a .hex font
+file is selected under the
+@comment TROFF INPUT: .B File
+@b{File}
+menu.  The default selection is
+@comment TROFF INPUT: .B Glyph Height 16.
+@b{Glyph Height 16.}
+@comment TROFF INPUT: .PP
+
+Exit
+@comment TROFF INPUT: .B unifont\-viewer
+@b{unifont@minus{}viewer}
+by selecting
+@comment TROFF INPUT: .B File > Exit
+@b{File > Exit}
+or by typing Control-X.
+@comment TROFF INPUT: .SH FILES
+
+@node unifont-viewer FILES
+@subsection unifont-viewer FILES
+@c DEBUG: print_menu("unifont-viewer FILES")
+
+*.hex GNU Unifont font files
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node unifont-viewer SEE ALSO
+@subsection unifont-viewer SEE ALSO
+@c DEBUG: print_menu("unifont-viewer SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR johab2ucs2(1),
+@b{johab2ucs2(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node unifont-viewer AUTHOR
+@subsection unifont-viewer AUTHOR
+@c DEBUG: print_menu("unifont-viewer AUTHOR")
+
+@comment TROFF INPUT: .B unifont\-viewer
+@b{unifont@minus{}viewer}
+was written by Andrew Miller.
+@comment TROFF INPUT: .SH LICENSE
+
+@node unifont-viewer LICENSE
+@subsection unifont-viewer LICENSE
+@c DEBUG: print_menu("unifont-viewer LICENSE")
+
+@comment TROFF INPUT: .B unifont\-viewer
+@b{unifont@minus{}viewer}
+is Copyright @copyright{} 2014 Andrew Miller.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node unifont-viewer BUGS
+@subsection unifont-viewer BUGS
+@c DEBUG: print_menu("unifont-viewer BUGS")
+
+No known bugs exist.

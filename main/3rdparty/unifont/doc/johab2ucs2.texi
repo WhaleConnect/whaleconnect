@@ -1,0 +1,143 @@
+@comment TROFF INPUT: .TH JOHAB2UCS2 1 "2008 Jul 06"
+
+@node johab2ucs2
+@section johab2ucs2
+@c DEBUG: print_menu("@section")
+
+@menu
+* johab2ucs2 NAME::
+* johab2ucs2 SYNOPSIS::
+* johab2ucs2 DESCRIPTION::
+* johab2ucs2 FILES::
+* johab2ucs2 SEE ALSO::
+* johab2ucs2 AUTHOR::
+* johab2ucs2 LICENSE::
+* johab2ucs2 BUGS::
+
+@end menu
+
+
+@comment TROFF INPUT: .SH NAME
+
+@node johab2ucs2 NAME
+@subsection johab2ucs2 NAME
+@c DEBUG: print_menu("johab2ucs2 NAME")
+
+johab2ucs2 @minus{} Convert a Johab BDF font into GNU Unifont Hangul Syllables
+@comment TROFF INPUT: .SH SYNOPSIS
+
+@node johab2ucs2 SYNOPSIS
+@subsection johab2ucs2 SYNOPSIS
+@c DEBUG: print_menu("johab2ucs2 SYNOPSIS")
+
+@b{johab2ucs2 }< @i{input-font.bdf }> @i{output-font.hex}
+@comment TROFF INPUT: .SH DESCRIPTION
+
+@node johab2ucs2 DESCRIPTION
+@subsection johab2ucs2 DESCRIPTION
+@c DEBUG: print_menu("johab2ucs2 DESCRIPTION")
+
+@comment TROFF INPUT: .B johab2ucs2
+@b{johab2ucs2}
+reads a Johab encoded BDF font (as used in Hanterm) from STDIN and writes
+a GNU Unifont .hex file containing the Unicode Hangul Syllables to STDOUT.
+@comment TROFF INPUT: .SH FILES
+
+@node johab2ucs2 FILES
+@subsection johab2ucs2 FILES
+@c DEBUG: print_menu("johab2ucs2 FILES")
+
+*.bdf font files
+@comment TROFF INPUT: .SH SEE ALSO
+
+@node johab2ucs2 SEE ALSO
+@subsection johab2ucs2 SEE ALSO
+@c DEBUG: print_menu("johab2ucs2 SEE ALSO")
+
+@comment TROFF INPUT: .BR bdfimplode(1),
+@b{bdfimplode(1),}
+@comment TROFF INPUT: .BR hex2bdf(1),
+@b{hex2bdf(1),}
+@comment TROFF INPUT: .BR hex2sfd(1),
+@b{hex2sfd(1),}
+@comment TROFF INPUT: .BR hexbraille(1),
+@b{hexbraille(1),}
+@comment TROFF INPUT: .BR hexdraw(1),
+@b{hexdraw(1),}
+@comment TROFF INPUT: .BR hexkinya(1),
+@b{hexkinya(1),}
+@comment TROFF INPUT: .BR hexmerge(1),
+@b{hexmerge(1),}
+@comment TROFF INPUT: .BR unibdf2hex(1),
+@b{unibdf2hex(1),}
+@comment TROFF INPUT: .BR unibmp2hex(1),
+@b{unibmp2hex(1),}
+@comment TROFF INPUT: .BR unibmpbump(1),
+@b{unibmpbump(1),}
+@comment TROFF INPUT: .BR unicoverage(1),
+@b{unicoverage(1),}
+@comment TROFF INPUT: .BR unidup(1),
+@b{unidup(1),}
+@comment TROFF INPUT: .BR unifont(5),
+@b{unifont(5),}
+@comment TROFF INPUT: .BR unifont-viewer(1),
+@b{unifont-viewer(1),}
+@comment TROFF INPUT: .BR unifont1per(1),
+@b{unifont1per(1),}
+@comment TROFF INPUT: .BR unifontchojung(1),
+@b{unifontchojung(1),}
+@comment TROFF INPUT: .BR unifontksx(1),
+@b{unifontksx(1),}
+@comment TROFF INPUT: .BR unifontpic(1),
+@b{unifontpic(1),}
+@comment TROFF INPUT: .BR unigencircles(1),
+@b{unigencircles(1),}
+@comment TROFF INPUT: .BR unigenwidth(1),
+@b{unigenwidth(1),}
+@comment TROFF INPUT: .BR unihex2bmp(1),
+@b{unihex2bmp(1),}
+@comment TROFF INPUT: .BR unihex2png(1),
+@b{unihex2png(1),}
+@comment TROFF INPUT: .BR unihexfill(1),
+@b{unihexfill(1),}
+@comment TROFF INPUT: .BR unihexgen(1),
+@b{unihexgen(1),}
+@comment TROFF INPUT: .BR unihexrotate(1),
+@b{unihexrotate(1),}
+@comment TROFF INPUT: .BR unipagecount(1),
+@b{unipagecount(1),}
+@comment TROFF INPUT: .BR unipng2hex(1)
+@b{unipng2hex(1)}
+@comment TROFF INPUT: .SH AUTHOR
+
+@node johab2ucs2 AUTHOR
+@subsection johab2ucs2 AUTHOR
+@c DEBUG: print_menu("johab2ucs2 AUTHOR")
+
+@comment TROFF INPUT: .B johab2ucs2
+@b{johab2ucs2}
+was written in 1998 by Jungshik Shin and given to Roman Czyborra.
+Paul Hardy made some modifications and bug fixes in 2008.
+@comment TROFF INPUT: .SH LICENSE
+
+@node johab2ucs2 LICENSE
+@subsection johab2ucs2 LICENSE
+@c DEBUG: print_menu("johab2ucs2 LICENSE")
+
+@comment TROFF INPUT: .B johab2ucs2
+@b{johab2ucs2}
+is Copyright @copyright{} 1998 Jungshik Shin and Roman Czyborra,
+@copyright{} 2008 Paul Hardy.
+@comment TROFF INPUT: .PP
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+@comment TROFF INPUT: .SH BUGS
+
+@node johab2ucs2 BUGS
+@subsection johab2ucs2 BUGS
+@c DEBUG: print_menu("johab2ucs2 BUGS")
+
+No known bugs exist.
