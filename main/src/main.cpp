@@ -15,7 +15,6 @@
 #include "uicomp.hpp"
 #include "util.hpp"
 #include "imguiext.hpp"
-#include "sockets.hpp"
 #include "searchbt.hpp"
 #include "mainhandle.hpp"
 
