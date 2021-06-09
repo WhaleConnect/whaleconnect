@@ -89,26 +89,15 @@ int main(int, char**) {
 /// <param name="type">The type of connection to create</param>
 /// <returns>If the connection window was created (true if created, false if it already exists)</returns>
 bool createNewConnection(const DeviceData& data) {
-	bool isNew = true;
+	// Get the hypothetical ClientWindow title of the DeviceData struct if it were to exist
+	std::string dataTitle = UIHelpers::makeClientWindowTitle(data);
 
-	// Iterate through all open windows, check if the address is in one of the titles
-	for (const auto& i : connections) {
-		// Bluetooth connections use the device's name (e.g. "MyESP32") as a unique identifier,
-		// IP connections (TCP/UDP) use the device's IP address (e.g. 192.168.0.164).
-		const std::string& identifier = (data.type == Bluetooth) ? data.name : data.address;
+	// Iterate through all open windows, check if the title matches
+	for (const auto& i : connections) if (i->title == dataTitle) return false;
 
-		// Check if another window already has this identifier
-		if (i->title.find(identifier) != std::string::npos) {
-			// If this condition is true it means the connection is already open
-			isNew = false;
-			break; // Save some time, don't need to check further
-		}
-	}
-
-	// Create new object only if the connection does not exist
-	if (isNew) connections.push_back(std::make_unique<ClientWindow>(data));
-
-	return isNew;
+	// If this point is reached it means that the title is unique, it is okay to create a new window
+	connections.push_back(std::make_unique<ClientWindow>(data));
+	return true;
 }
 
 /// <summary>

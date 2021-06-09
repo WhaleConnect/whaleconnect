@@ -9,6 +9,18 @@
 #include "util.hpp"
 #include "sockets.hpp"
 
+/// <summary>
+/// Namespace containing helper functions to use with the UI component classes.
+/// </summary>
+namespace UIHelpers {
+	/// <summary>
+	/// Format a DeviceData instance into a string.
+	/// </summary>
+	/// <param name="data">The DeviceData instance to format</param>
+	/// <returns>The formatted string, see this function's declaration for details.</returns>
+	std::string makeClientWindowTitle(const DeviceData& data);
+}
+
 class Console {
 	bool _scrollToEnd = false; // If the console is force-scrolled to the end
 	bool _autoscroll = true; // If console autoscrolls when new data is put

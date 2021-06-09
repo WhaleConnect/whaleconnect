@@ -11,6 +11,18 @@
 #include "util.hpp"
 #include "sockets.hpp"
 
+std::string UIHelpers::makeClientWindowTitle(const DeviceData& data) {
+	// Connection type
+	const char* connectionType = connectionTypesStr[data.type];
+
+	// Bluetooth connections are described using the device's name (e.g. "MyESP32"),
+	// IP connections (TCP/UDP) use the device's IP address (e.g. 192.168.0.178).
+	std::string deviceString = (data.type == Bluetooth) ? data.name : data.address;
+
+	// Format the values into a string and return it
+	return std::format("{} Connection - {} port {}", connectionType, deviceString, data.port);
+}
+
 void Console::update() {
 	// Reserve space at bottom for more elements
 	static const float reservedSpace = -ImGui::GetFrameHeightWithSpacing();
@@ -26,11 +38,11 @@ void Console::update() {
 		// std::string::starts_with() is introduced in C++20.
 		if (i.starts_with("[ERROR]")) {
 			// Error messages in red
-			color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+			color = { 1.0f, 0.4f, 0.4f, 1.0f };
 			hasColor = true;
 		} else if (i.starts_with("[INFO ]")) {
 			// Information in yellow
-			color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f);
+			color = { 1.0f, 0.8f, 0.6f, 1.0f };
 			hasColor = true;
 		}
 
@@ -88,8 +100,7 @@ ClientWindow::ClientWindow(const DeviceData& data) {
 	_sockfd = Sockets::createClientSocket(data);
 
 	// Set title
-	title = std::format("{} Connection - {} port {}", connectionTypesStr[data.type],
-		(data.type == Bluetooth) ? data.name : data.address, data.port);
+	title = UIHelpers::makeClientWindowTitle(data);
 
 	if (_sockfd == INVALID_SOCKET) _output.addText("[ERROR] Socket creation failed.\n"); // Socket invalid
 	else _connected = true; // Socket and connection valid
