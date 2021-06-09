@@ -43,15 +43,14 @@
 
 #define SD_BOTH SHUT_RDWR
 
-// Equivalent typedefs
-typedef sockaddr_rc SOCKADDR_BTH;
-
 // Winsock error status codes
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
 #define NO_ERROR 0
 
-typedef int SOCKET; // Winsock SOCKET equals int on Unix
+// Equivalent typedefs
+typedef sockaddr_rc SOCKADDR_BTH;
+typedef int SOCKET;
 #endif
 
 #include "util.hpp"

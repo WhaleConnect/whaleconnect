@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <format> // std::format() [C++20]
+#include <mutex> // std::mutex
 
 #include <imgui/imgui.h>
 
@@ -87,95 +88,111 @@ ClientWindow::ClientWindow(const DeviceData& data) {
 	_sockfd = Sockets::createClientSocket(data);
 
 	// Set title
-	if (data.type == Bluetooth) title = std::format("Bluetooth Connection - {}", data.name);
-	else title = std::format("{} Connection - {} port {}", connectionTypesStr[data.type], data.address, data.port);
+	title = std::format("{} Connection - {} port {}", connectionTypesStr[data.type],
+		(data.type == Bluetooth) ? data.name : data.address, data.port);
 
-	// Check socket validity
-	if (_sockfd == INVALID_SOCKET) {
-		// Socket invalid
-		_output.addText("[ERROR] Socket creation failed.\n");
-	} else {
-		// Socket and connection valid
-		_output.addText("[INFO ] Socket creation succeeded.\n");
+	if (_sockfd == INVALID_SOCKET) _output.addText("[ERROR] Socket creation failed.\n"); // Socket invalid
+	else _connected = true; // Socket and connection valid
 
-		// Start the receiving background thread
-		_recvThread = std::thread([&] {
-			while (_sockfd != INVALID_SOCKET) {
-				// Read data into buffer
-				std::string recvBuf = "";
-				int ret = Sockets::recvData(_sockfd, recvBuf);
+	// Start the receiving background thread
+	// (If the socket creation failed, `_connected` remains false and the thread simply exits right away.)
+	_recvThread = std::thread([&] {
+		// Read data into buffer as long as the socket is connected
+		while (_connected) {
+			// The `recvNew` flag is used to check if there's new data not yet added to the output. If there is, this
+			// thread will not receive any more until the flag is set back to false by the main thread. This is to
+			// prevent losing data from the main thread not looping fast enough.
+			if (!_recvNew) {
+				// Create a lock_guard to restrict access to the receive buffer
+				std::lock_guard<std::mutex> guard(_recvAccess);
 
-				// Check status code
-				if (ret == SOCKET_ERROR) {
-					// Error, print error message
-					socketErrorHandler();
-					break;
-				} else if (ret == 0) {
-					// Server closed connection
-					_output.forceNextLine();
-					_output.addText("[INFO ] Remote host closed connection.\n");
+				// Receive the data from the socket, keep track of the number of bytes and the incoming string
+				_receivedBytes = Sockets::recvData(_sockfd, _recvBuf);
 
-					// Close the socket and exit the thread
-					closesocket(_sockfd);
-					_sockfd = INVALID_SOCKET;
-					break;
-				} else {
-					// Receiving done successfully, add each line of the buffer into the deque
-					size_t pos = 0;
-					std::string sub = "";
+				// There is now new data:
+				_recvNew = true;
 
-					// Find each newline-delimited substring in the buffer to extract each individual line
-					while ((pos = recvBuf.find('\n')) != std::string::npos) {
-						pos++; // Increment position to include the newline in the substring
-						sub = recvBuf.substr(0, pos); // Get the substring
-						_output.addText(sub); // Add the substring to the output
-						recvBuf.erase(0, pos); // Erase the substring from the buffer
-					}
-
-					// Add the last substring to the output (all other substrings have been erased from the buffer, the
-					// only one left is the one after the last \n, or the whole string if there are no \n's present)
-					_output.addText(recvBuf);
-				}
-
-				// Reset recv buffer
-				recvBuf = "";
+				// -1 (SOCKET_ERROR) and 0 (disconnect) mean that this thread should be closed because the socket
+				// will no longer be able to receive more data.
+				if (_receivedBytes <= 0) break;
 			}
-		});
-	}
+		}
+	});
 }
 
 ClientWindow::~ClientWindow() {
-	if (_sockfd != INVALID_SOCKET) {
+	_closeConnection();
+
+	// Join the receiving thread
+	if (_recvThread.joinable()) _recvThread.join();
+}
+
+void ClientWindow::_closeConnection() {
+	if (_connected) {
+		_connected = false;
+
 		// Shutdown socket to stop recv() in the parallel thread
 		shutdown(_sockfd, SD_BOTH);
 
 		// Close the socket
 		closesocket(_sockfd);
 	}
-
-	// Join the receiving thread
-	if (_recvThread.joinable()) _recvThread.join();
 }
 
-void ClientWindow::socketErrorHandler() {
-	// Get numerical error code and string message
+void ClientWindow::_errHandler() {
+	// Get numeric error code and string message
 	auto [errorCode, errorMsg] = Sockets::getLastErr();
 	if (errorCode == 0) return; // "[ERROR] 0: The operation completed successfully"
 
-	// Socket errors are fatal, close the socket
-	if (_sockfd != INVALID_SOCKET) {
-		closesocket(_sockfd);
-		_sockfd = INVALID_SOCKET;
-	}
+	// Socket errors are fatal
+	_closeConnection();
 
 	// Add error line to console
 	_output.forceNextLine();
 	_output.addText(std::format("[ERROR] {}: {}\n", errorCode, errorMsg));
 }
 
+void ClientWindow::_updateOutput() {
+	// Check status code
+	switch (_receivedBytes) {
+	case SOCKET_ERROR:
+		// Error, print message
+		_errHandler();
+		break;
+	case 0:
+		// Peer closed connection
+		_output.forceNextLine();
+		_output.addText("[INFO ] Remote host closed connection.\n");
+		_closeConnection();
+		break;
+	default:
+		// Receiving done successfully, add each line of the buffer into the vector
+		size_t pos = 0;
+		std::string sub = "";
+
+		// Find each newline-delimited substring in the buffer to extract each individual line
+		while ((pos = _recvBuf.find('\n')) != std::string::npos) {
+			pos++; // Increment position to include the newline in the substring
+			sub = _recvBuf.substr(0, pos); // Get the substring
+			_output.addText(sub); // Add the substring to the output
+			_recvBuf.erase(0, pos); // Erase the substring from the buffer
+		}
+
+		// Add the last substring to the output (all other substrings have been erased from the buffer, the only one
+		// left is the one after the last \n, or the whole string if there are no \n's present)
+		_output.addText(_recvBuf);
+	}
+
+	// Reset recv buffer
+	_recvBuf = "";
+}
+
 void ClientWindow::update() {
 	ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
-	if (!ImGui::Begin(title.c_str(), &open)) goto end;
+	if (!ImGui::Begin(title.c_str(), &open)) {
+		ImGui::End();
+		return;
+	}
 
 	// Send textbox
 	ImGui::SetNextItemWidth(-FLT_MIN); // Make the textbox full width
@@ -184,21 +201,39 @@ void ClientWindow::update() {
 		const char* endings[] = { "", "\n", "\r", "\r\n" };
 
 		// Send data and check if success
-		if (Sockets::sendData(_sockfd, _sendBuf + endings[_currentLineEnding]) == SOCKET_ERROR) socketErrorHandler();
+		if (_connected && (Sockets::sendData(_sockfd, _sendBuf + endings[_currentLE]) == SOCKET_ERROR)) _errHandler();
 
 		_sendBuf = ""; // Blank out input textbox
 		ImGui::SetItemDefaultFocus();
 		ImGui::SetKeyboardFocusHere(-1); // Auto focus on input textbox
 	}
 
+	if (_connected && _recvNew) {
+		// If the socket is connected and there is new data received, try to lock the receiving access mutex:
+		std::unique_lock<std::mutex> lock(_recvAccess, std::try_to_lock);
+
+		if (lock.owns_lock()) {
+			// Add the appropriate text to the output (error, "closed connection" message, or the stuff received)
+			_updateOutput();
+
+			// If the lock was successful, set `_recvNew` to false to indicate the output is up to date.
+			_recvNew = false;
+		}
+	}
+
 	_output.update(); // Draw console output
 
 	// Line ending combobox
 	ImGui::SameLine();
-	ImGui::SetNextItemWidth(150);
-	ImGui::Combo("Line ending", &_currentLineEnding, "None\0Newline\0Carriage return\0Both\0");
+
+	// The code used to calculate where to put the combobox is derived from
+	// https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
+	float comboWidth = 150.0f;
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
+
+	ImGui::SetNextItemWidth(comboWidth);
+	ImGui::Combo("##lineEnding", &_currentLE, "None\0Newline\0Carriage return\0Both\0");
 
 	// End window
-end:
 	ImGui::End();
 }

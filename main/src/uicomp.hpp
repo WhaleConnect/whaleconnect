@@ -4,6 +4,7 @@
 #include <vector> // std::vector
 #include <thread> // std::thread
 #include <atomic> // std::atomic
+#include <mutex>
 
 #include "util.hpp"
 #include "sockets.hpp"
@@ -38,19 +39,31 @@ public:
 
 class ClientWindow {
 	std::atomic<SOCKET> _sockfd = INVALID_SOCKET; // Socket for connections
-
-	// Variables for sending (not declared static and put in update() because a static variable will propagate its
-	// changes across all instances of ClientWindows, which is undesirable)
-	std::string _sendBuf = ""; // Send buffer
-	int _currentLineEnding = 0; // The index of the line ending selected in the combobox
+	std::atomic<bool> _connected = false;
 
 	Console _output; // The output of the window, will hold system messages and data received from the server
+	std::string _sendBuf, _recvBuf; // Buffers
+	int _currentLE = 0; // The index of the line ending selected in the combobox
+
 	std::thread _recvThread; // Thread responsible for receiving data from the server
+	std::mutex _recvAccess; // Mutex to ensure only one thread can access the recv buffer at a time
+	int _receivedBytes = 0; // Number of bytes received from the socket
+	std::atomic<bool> _recvNew = false; // If new data has been received
+
+	/// <summary>
+	/// Shut down and close the internal socket.
+	/// </summary>
+	void _closeConnection();
 
 	/// <summary>
 	/// Print the last socket error encountered by this object, then close the socket.
 	/// </summary>
-	void socketErrorHandler();
+	void _errHandler();
+
+	/// <summary>
+	/// Add text to the output. Called after receiving data from the socket.
+	/// </summary>
+	void _updateOutput();
 
 public:
 	std::string title; // Title of window

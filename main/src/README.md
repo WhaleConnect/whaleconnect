@@ -7,7 +7,7 @@ Each entry below has both a \*.cpp file and an \*.hpp file unless either extensi
 | ------------ | ------------------------- | ------------------------------------------------------------ |
 | `imguiext`   | Dear ImGui Extensions     | Functions to extend and add on to Dear ImGui                 |
 | `main.cpp`   | -                         | Implementation of the entry point and core application logic |
-| `mainhandle` | Main handler              | Main window handling functions (e.g. create/destroy, render) |
+| `mainhandle` | Main Handler              | Main window handling functions (e.g. create/destroy, render) |
 | `searchbt`   | Search Bluetooth          | Bluetooth searching function to discover nearby devices      |
 | `sockets`    | -                         | High-level, cross-platform socket functions                  |
 | `uicomp`     | User Interface Components | Reusable classes to represent frequently-used GUI elements   |

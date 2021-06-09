@@ -12,9 +12,10 @@ std::pair<int, std::string> Sockets::getLastErr() {
 	lastErr = WSAGetLastError();
 
 	// Get the last error's description
-	static char msg[1024];
+	constexpr DWORD msgLen = 1024;
+	static char msg[msgLen];
 	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK, nullptr,
-		lastErr, 0, msg, ARRAY_LEN(msg), nullptr);
+		lastErr, 0, msg, msgLen, nullptr);
 
 	errMsg = msg;
 #else
