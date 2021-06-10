@@ -29,15 +29,21 @@ target_link_libraries(terminal terminalLibs)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	# MSVC options
 	target_compile_options(terminal PRIVATE /W4 /utf-8)
+
+	# Windows - GLFW lib file
+	target_link_libraries(terminal ${PROJECT_SOURCE_DIR}/3rdparty/GLFW/glfw3.lib)
+
+	# This prevents LNK4098 in Debug mode, but causes LNK2001 in Release mode.
+	# This is because the GLFW pre-built binaries were built in Release mode.
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+		target_link_options(terminal PRIVATE /NODEFAULTLIB:msvcrt.lib)
+	endif()
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	# GCC options
 	target_compile_options(terminal PRIVATE -Wall -Wextra)
 endif()
 
-if (WIN32)
-	# Windows - GLFW lib file
-	target_link_libraries(terminal ${PROJECT_SOURCE_DIR}/3rdparty/GLFW/glfw3.lib)
-else()
+if (NOT WIN32)
 	# Unix - GLFW should be installed via your package manager, use PackageConfig to find and configure it.
 	find_package(PkgConfig REQUIRED)
 	pkg_search_module(GLFW REQUIRED glfw3)
