@@ -1,6 +1,7 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <algorithm> // std::replace()
 #include <format> // std::format() [C++20]
 #include <mutex> // std::mutex
 
@@ -18,6 +19,11 @@ std::string UIHelpers::makeClientWindowTitle(const DeviceData& data) {
 	// Bluetooth connections are described using the device's name (e.g. "MyESP32"),
 	// IP connections (TCP/UDP) use the device's IP address (e.g. 192.168.0.178).
 	std::string deviceString = (data.type == Bluetooth) ? data.name : data.address;
+
+	// Newlines may be present in a Bluetooth device name, and if they get into a window's title, anything after the
+	// first one will get cut off (the title bar can only hold one line). Replace them with spaces to keep everything on
+	// one line.
+	std::replace(deviceString.begin(), deviceString.end(), '\n', ' ');
 
 	// Format the values into a string and return it
 	return std::format("{} Connection - {} port {}", connectionType, deviceString, data.port);
