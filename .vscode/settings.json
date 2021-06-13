@@ -20,6 +20,9 @@
     "C_Cpp.default.includePath": [
         "${workspaceFolder}/main/3rdparty"
     ],
+    "todo-tree.filtering.excludeGlobs": [
+        "**/3rdparty"
+    ],
     "cmake.configureOnOpen": true,
     "cmake.configureOnEdit": true,
     "cmake.sourceDirectory": "${workspaceFolder}/main",
