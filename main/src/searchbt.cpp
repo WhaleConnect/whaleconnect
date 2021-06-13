@@ -17,7 +17,21 @@
 #include "sockets.hpp"
 #include "util.hpp"
 
+// How much longer the search time actually is compared to what its duration was set to
+static float searchDurationMultiplier = 1.28f;
+
 #ifdef _WIN32
+/// <summary>
+/// Get a timeout value for a Bluetooth search.
+/// </summary>
+/// <param name="length">The length of the timeout in seconds</param>
+/// <returns>A BLOB instance containing pointers to the timeout in a BTH_QUERY_DEVICE structure</returns>
+static BLOB makeInquiryTimeout(int length) {
+	// Search takes slightly longer so divide the search time value to compensate
+	BTH_QUERY_DEVICE qDev{ .length = static_cast<UCHAR>(length / searchDurationMultiplier) };
+	return { .cbSize = sizeof(BTH_QUERY_DEVICE), .pBlobData = reinterpret_cast<PBYTE>(&qDev) };
+}
+
 /// <summary>
 /// Get the channel of a Bluetooth device.
 /// </summary>
@@ -39,13 +53,17 @@ static uint16_t getSDPChannel(const char* addr) {
 	// Convert the address string to UTF-16
 	MultiByteToWideChar(CP_UTF8, 0, addr, -1, addrWide, stringSize);
 
+	// Timeout for SDP query (1 second since this will be called for each device discovered so best to keep it short)
+	BLOB bthConfig = makeInquiryTimeout(1);
+
 	// Set up the queryset restrictions
 	WSAQUERYSETW wsaQuery{
 		.dwSize = sizeof(WSAQUERYSETW),
 		.lpServiceClassId = const_cast<LPGUID>(&RFCOMM_PROTOCOL_UUID),
 		.dwNameSpace = NS_BTH,
 		.lpszContext = addrWide,
-		.dwNumberOfCsAddrs = 0
+		.dwNumberOfCsAddrs = 0,
+		.lpBlob = &bthConfig
 	};
 
 	// Start the lookup
@@ -58,6 +76,7 @@ static uint16_t getSDPChannel(const char* addr) {
 	LPWSAQUERYSETW results = reinterpret_cast<LPWSAQUERYSETW>(new char[size]);
 	results->dwSize = size;
 	results->dwNameSpace = NS_BTH;
+	results->lpBlob = &bthConfig;
 
 	// Get the channel
 	while (WSALookupServiceNextW(hLookup, flags, &size, results) == NO_ERROR)
@@ -82,12 +101,8 @@ std::pair<int, std::vector<DeviceData>> Sockets::searchBluetoothDevices() {
 	// MAC address of detected device
 	char addrStr[18] = "";
 
-	// Search takes slightly longer so divide the search time value to compensate
-	uint8_t searchLen = static_cast<uint8_t>(Settings::btSearchTime / 1.28);
-
 #ifdef _WIN32
-	BTH_QUERY_DEVICE qDev{ .length = searchLen }; // Timeout in seconds
-	BLOB bthConfig{ .cbSize = sizeof(BTH_QUERY_DEVICE), .pBlobData = reinterpret_cast<PBYTE>(&qDev) };
+	BLOB bthConfig = makeInquiryTimeout(Settings::btSearchTime);
 
 	// Begin Winsock lookup
 	//
@@ -224,6 +239,7 @@ std::pair<int, std::vector<DeviceData>> Sockets::searchBluetoothDevices() {
 	inquiry_info* ii = reinterpret_cast<inquiry_info*>(new char[maxRsp * sizeof(inquiry_info)]);
 
 	// Search for nearby devices
+	int searchLen = static_cast<int>(Settings::btSearchTime / searchDurationMultiplier);
 	int numRsp = hci_inquiry(deviceId, searchLen, maxRsp, nullptr, &ii, flags);
 	if (numRsp < 0) return { errno, ret };
 
