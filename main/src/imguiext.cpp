@@ -13,7 +13,7 @@
 #include "imguiext.hpp"
 
 void ImGui::Text(const std::string& s) {
-	Text(s.c_str());
+	TextUnformatted(s.c_str());
 }
 
 void ImGui::Text(uint16_t i) {
@@ -36,7 +36,9 @@ void ImGui::HelpMarker(const char* desc) {
 	TextDisabled("(?)");
 	if (IsItemHovered()) {
 		BeginTooltip();
-		Text(desc);
+		PushTextWrapPos(GetFontSize() * 35.0f);
+		TextUnformatted(desc);
+		PopTextWrapPos();
 		EndTooltip();
 	}
 }

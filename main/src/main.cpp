@@ -21,7 +21,7 @@
 // Vector of open windows
 std::vector<std::unique_ptr<ClientWindow>> connections;
 
-bool createNewConnection(const DeviceData& data);
+bool openNewConnection(const DeviceData& data);
 void drawIPConnectionTab();
 void drawBTConnectionTab();
 
@@ -88,7 +88,7 @@ int main(int, char**) {
 /// <param name="port">The port number of the remote host</param>
 /// <param name="type">The type of connection to create</param>
 /// <returns>If the connection window was created (true if created, false if it already exists)</returns>
-bool createNewConnection(const DeviceData& data) {
+bool openNewConnection(const DeviceData& data) {
 	// Get the hypothetical ClientWindow title of the DeviceData struct if it were to exist
 	std::string dataTitle = UIHelpers::makeClientWindowTitle(data);
 
@@ -125,7 +125,7 @@ void drawIPConnectionTab() {
 	if (ImGui::RadioButton("UDP", !isTCP)) isTCP = false;
 
 	// Connect button, but make sure the address/port are not empty to continue.
-	if (ImGui::Button("Connect") && !addr.empty()) isNewConnection = createNewConnection({ !isTCP, "", addr, port, 0 });
+	if (ImGui::Button("Connect") && !addr.empty()) isNewConnection = openNewConnection({ !isTCP, "", addr, port, 0 });
 
 	// If the connection exists, show a message
 	if (!isNewConnection) {
@@ -142,7 +142,7 @@ void drawIPConnectionTab() {
 void drawBTConnectionTab() {
 	if (!ImGui::BeginTabItem("Bluetooth RFCOMM")) return;
 
-	static std::atomic<bool> isNewConnection = true;
+	static std::atomic<bool> isNew = true;
 	static std::atomic<bool> searchRunning = false;
 	static std::pair<int, std::vector<DeviceData>> foundDevices{ 0, {} };
 
@@ -151,7 +151,7 @@ void drawBTConnectionTab() {
 		// prevent spawning multiple threads
 		if (!searchRunning) {
 			std::thread([&] {
-				isNewConnection = true; // Hide the "connection is open" message
+				isNew = true; // Hide the "connection is open" message
 				searchRunning = true; // Signal that the search thread is now running
 				foundDevices = Sockets::searchBluetoothDevices(); // Perform search
 				searchRunning = false; // Done searching
@@ -161,6 +161,7 @@ void drawBTConnectionTab() {
 
 	if (searchRunning) {
 		// While the search is running in the background thread, display a text spinner
+		// (from https://github.com/ocornut/imgui/issues/1901#issuecomment-400563921)
 		ImGui::Text("Searching... %c", "|/-\\"[static_cast<int>(ImGui::GetTime() / 0.05f) & 3]);
 	} else {
 		int returnCode = foundDevices.first;
@@ -168,69 +169,42 @@ void drawBTConnectionTab() {
 			// "Display Advanced Info" checkbox to show information about the device
 			static bool displayAdvanced = false;
 			ImGui::Checkbox("Display Advanced Info", &displayAdvanced);
+			ImGui::HelpMarker("Show technical details about a device on hover.");
 
 			// Search succeeded, display all devices found
-			int numCols = (displayAdvanced) ? 3 : 1;
-			if (ImGui::BeginTable("deviceList", numCols, ImGuiTableFlags_Borders | ImGuiTableFlags_BordersInner)) {
-				// Set up table headers
-				ImGui::TableSetupColumn("Device");
+			for (const auto& i : foundDevices.second) {
+				// Check if a connection can be made, look for a valid channel (if it's not 0 it was found successfully)
+				bool canConnect = i.port != 0;
 
-				if (displayAdvanced) {
-					ImGui::TableSetupColumn("Address");
-					ImGui::TableSetupColumn("Channel");
-				}
+				// Display the button
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 5, 5 }); // Larger padding
+				if (ImGui::Button(i.name.c_str(), { -FLT_MIN, 0 })) if (canConnect) isNew = openNewConnection(i);
+				ImGui::PopStyleVar();
 
-				ImGui::TableHeadersRow();
-				ImGui::TableNextColumn();
+				// Display a tooltip
+				if (ImGui::IsItemHovered()) {
+					ImGui::BeginTooltip();
+					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 
-				// Retrieve device list
-				auto deviceList = foundDevices.second;
-
-				// Display the names of the found devices
-				int id = 0;
-				for (const auto& i : deviceList) {
-					ImGui::Text(i.name);
-					ImGui::SameLine();
-
-					if (i.port == 0) {
-						ImGui::Text("\u26A0");
-						if (ImGui::IsItemHovered()) {
-							ImGui::BeginTooltip();
-							ImGui::Text("This device is unreachable.\n\n%s", (displayAdvanced)
-								? "The channel could not be obtained. It may not be advertising an RFCOMM SDP session."
-								: "Enable \"Display Advanced Info\" to see more.");
-							ImGui::EndTooltip();
-						}
+					if (canConnect) {
+						// A connection can be made, show a simple description
+						ImGui::Text("Connect to this device");
 					} else {
-						// Display a button to connect to the device
-						// Each button has the same label ("Connect"), we need to assign a unique id to each one.
-						// The postfix increment operator used below will increment the id, then return the value of the
-						// id before it was incremented.
-						ImGui::PushID(id++);
+						// Can't connect
+						ImGui::Text("Can't connect to this device.");
 
-						// Display the button, attempt to create a new connection if it's clicked
-						if (ImGui::SmallButton("Connect")) isNewConnection = createNewConnection(i);
-
-						// We're done using this id:
-						ImGui::PopID();
+						// Based on if advanced info is enabled, show a description of why a connection can't be made
+						if (displayAdvanced) ImGui::Text("The channel could not be obtained. The device may not be "
+							"advertising an SDP session with the protocol selected.");
+						else ImGui::Text("Enable \"Display Advanced Info\" to see more.");
 					}
+
+					// Show address and channel
+					if (displayAdvanced) ImGui::Text("Address: %s, Channel: %d", i.address.c_str(), i.port);
+
+					ImGui::PopTextWrapPos();
+					ImGui::EndTooltip();
 				}
-
-				ImGui::TableNextColumn();
-
-				// Advanced information
-				if (displayAdvanced) {
-					// Display the addresses of the found devices
-					for (const auto& i : deviceList) ImGui::Text(i.address);
-					ImGui::TableNextColumn();
-
-					// Display the channels of the found devices
-					for (const auto& i : deviceList) ImGui::Text(i.port);
-					ImGui::TableNextColumn();
-				}
-
-				// End table
-				ImGui::EndTable();
 			}
 		} else {
 			// Error occurred
@@ -239,7 +213,7 @@ void drawBTConnectionTab() {
 	}
 
 	// If the connection exists, show a message
-	if (!isNewConnection) {
+	if (!isNew) {
 		ImGui::Separator();
 		ImGui::Text("A connection to this device is already open.");
 	}
