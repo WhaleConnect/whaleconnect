@@ -9,20 +9,18 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/main/build/Debug/terminal.exe",
-            "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/main",
             "environment": [],
-            "console": "externalTerminal"
+            "console": "integratedTerminal"
         },
         {
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/main/build/terminal",
-            "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/main",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

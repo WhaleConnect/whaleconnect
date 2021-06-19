@@ -37,11 +37,17 @@ static void configImGui() {
 	style.Colors[ImGuiCol_WindowBg].w = 1;
 
 	// Load font file
-	ImFontAtlas* fonts = io.Fonts;
-	fonts->AddFontFromFileTTF("3rdparty/unifont/font/precompiled/unifont-13.0.06.ttf", Settings::fontSize);
+	ImFontAtlas& fonts = *io.Fonts;
+
+	// Select glyphs for loading
+	// Include all in Unicode plane 0 except for control characters (U+0000 - U+0019), surrogates (U+D800 - U+DFFF),
+	// private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
+	static const ImWchar ranges[] = { 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
+	static const char* fontFile = "3rdparty/unifont/font/precompiled/unifont-13.0.06.ttf";
+	fonts.AddFontFromFileTTF(fontFile, Settings::fontSize, nullptr, &ranges[0]);
 }
 
-bool initApp(int width, int height, const char* title) {
+bool initApp() {
 	glfwSetErrorCallback([](int error, const char* description) {
 		// Error file for logging GLFW errors
 		std::ofstream file("err.txt", std::ios::app);
@@ -67,7 +73,7 @@ bool initApp(int width, int height, const char* title) {
 #endif
 
 	// Create window
-	window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+	window = glfwCreateWindow(1280, 720, "Network Socket Terminal", nullptr, nullptr);
 	if (window == nullptr) return false;
 
 	glfwMakeContextCurrent(window);

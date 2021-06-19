@@ -12,10 +12,10 @@
 /// </summary>
 namespace ImGui {
 	/// <summary>
-	/// Wrapper function for ImGui::Text() to allow a std::string parameter.
+	/// Wrapper function for ImGui::TextUnformatted() to allow a std::string parameter.
 	/// </summary>
 	/// <param name="s">The string to display</param>
-	void Text(const std::string& s);
+	void TextUnformatted(const std::string& s);
 
 	/// <summary>
 	/// Wrapper function for ImGui::Text() to allow a uint16_t parameter.

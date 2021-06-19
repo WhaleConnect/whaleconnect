@@ -54,7 +54,7 @@ void Console::update() {
 
 		// Apply color if needed
 		if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, color);
-		ImGui::TextUnformatted(i.c_str());
+		ImGui::TextUnformatted(i);
 		if (hasColor) ImGui::PopStyleColor();
 	}
 
@@ -129,8 +129,12 @@ ClientWindow::ClientWindow(const DeviceData& data) {
 				// There is now new data:
 				_recvNew = true;
 
-				// -1 (SOCKET_ERROR) and 0 (disconnect) mean that this thread should be closed because the socket
-				// will no longer be able to receive more data.
+				// If the operation failed, save the last error because WSAGetLastError()/errno does not propagate
+				// across threads (it is thread local)
+				// This makes it accessible in the main thread, where it can be printed.
+				if (_receivedBytes == SOCKET_ERROR) _lastRecvErr = Sockets::getLastErr();
+
+				// A non-positive integer means that the socket can no longer receive data so exit the thread:
 				if (_receivedBytes <= 0) break;
 			}
 		}
@@ -157,16 +161,18 @@ void ClientWindow::_closeConnection() {
 }
 
 void ClientWindow::_errHandler() {
-	// Get numeric error code and string message
-	auto [errorCode, errorMsg] = Sockets::getLastErr();
-	if (errorCode == 0) return; // "[ERROR] 0: The operation completed successfully"
+	_errHandler(Sockets::getLastErr());
+}
+
+void ClientWindow::_errHandler(Sockets::SocketError err) {
+	if (err.code == 0) return; // "[ERROR] 0: The operation completed successfully"
 
 	// Socket errors are fatal
 	_closeConnection();
 
 	// Add error line to console
 	_output.forceNextLine();
-	_output.addText(std::format("[ERROR] {}: {}\n", errorCode, errorMsg));
+	_output.addText(std::format("[ERROR] {}: {}\n", err.code, err.desc));
 }
 
 void ClientWindow::_updateOutput() {
@@ -174,7 +180,7 @@ void ClientWindow::_updateOutput() {
 	switch (_receivedBytes) {
 	case SOCKET_ERROR:
 		// Error, print message
-		_errHandler();
+		_errHandler(_lastRecvErr);
 		break;
 	case 0:
 		// Peer closed connection
@@ -205,6 +211,7 @@ void ClientWindow::_updateOutput() {
 }
 
 void ClientWindow::update() {
+	ImGui::SetNextWindowSizeConstraints({ 380, 100 }, { FLT_MAX, FLT_MAX });
 	ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
 	if (!ImGui::Begin(title.c_str(), &open)) {
 		ImGui::End();

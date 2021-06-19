@@ -31,7 +31,7 @@ int CALLBACK WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 int main(int, char**) {
 #endif
 	// Create a main application window
-	if (!initApp(1280, 720, "Network Socket Terminal")) return EXIT_FAILURE;
+	if (!initApp()) return EXIT_FAILURE;
 
 #ifdef _WIN32
 	// Start Winsock on Windows
@@ -52,6 +52,7 @@ int main(int, char**) {
 #endif
 
 		// "New Connection" window
+		ImGui::SetNextWindowSizeConstraints({ 530, 150 }, { FLT_MAX, FLT_MAX });
 		ImGui::SetNextWindowSize({ 600, 250 }, ImGuiCond_FirstUseEver);
 		if (ImGui::Begin("New Connection")) {
 			if (ImGui::BeginTabBar("ConnectionTypes")) {
@@ -144,7 +145,7 @@ void drawBTConnectionTab() {
 
 	static std::atomic<bool> isNew = true;
 	static std::atomic<bool> searchRunning = false;
-	static std::pair<int, std::vector<DeviceData>> foundDevices{ 0, {} };
+	static Sockets::BTSearchResult searchResult;
 
 	if (ImGui::Button("Search for Devices")) {
 		// If the search action was initiated, make sure that the background searching thread isn't already running to
@@ -153,7 +154,7 @@ void drawBTConnectionTab() {
 			std::thread([&] {
 				isNew = true; // Hide the "connection is open" message
 				searchRunning = true; // Signal that the search thread is now running
-				foundDevices = Sockets::searchBluetoothDevices(); // Perform search
+				searchResult = Sockets::searchBT(); // Perform search
 				searchRunning = false; // Done searching
 			}).detach();
 		}
@@ -164,51 +165,65 @@ void drawBTConnectionTab() {
 		// (from https://github.com/ocornut/imgui/issues/1901#issuecomment-400563921)
 		ImGui::Text("Searching... %c", "|/-\\"[static_cast<int>(ImGui::GetTime() / 0.05f) & 3]);
 	} else {
-		int returnCode = foundDevices.first;
-		if (returnCode == 0) {
+		Sockets::SocketError err = searchResult.err;
+		if (err.code == 0) {
 			// "Display Advanced Info" checkbox to show information about the device
 			static bool displayAdvanced = false;
 			ImGui::Checkbox("Display Advanced Info", &displayAdvanced);
-			ImGui::HelpMarker("Show technical details about a device on hover.");
+			ImGui::HelpMarker("Show technical details about a device in its entry and on hover.");
 
 			// Search succeeded, display all devices found
-			for (const auto& i : foundDevices.second) {
+			ImGui::BeginChild("DeviceList");
+			for (const auto& i : searchResult.foundDevices) {
 				// Check if a connection can be made, look for a valid channel (if it's not 0 it was found successfully)
 				bool canConnect = i.port != 0;
 
 				// Display the button
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 5, 5 }); // Larger padding
-				if (ImGui::Button(i.name.c_str(), { -FLT_MIN, 0 })) if (canConnect) isNew = openNewConnection(i);
-				ImGui::PopStyleVar();
+				std::string buttonText = i.name;
+
+				// Format the address and channel into the device entry if advanced info is enabled
+				if (displayAdvanced) buttonText += std::format(" ({} channel {})", i.address, i.port);
+
+				if (!canConnect) {
+					// Get button color
+					ImVec4 disabled = ImGui::GetStyle().Colors[ImGuiCol_Button];
+
+					// Change the hover color and click color to the original idle color. This makes the button
+					// appear unresponsive, making it look disabled.
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, disabled);
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive, disabled);
+
+					// Prepend a warning symbol (U+26A0) to let the user know there's a problem with this device
+					buttonText = "\u26A0 " + buttonText;
+				}
+
+				// Display the button
+				if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) if (canConnect) isNew = openNewConnection(i);
+
+				if (!canConnect) ImGui::PopStyleColor(2); // Remove the disabled button colors
+				ImGui::PopStyleVar(); // Remove the larger inner padding
 
 				// Display a tooltip
-				if (ImGui::IsItemHovered()) {
+				if (!canConnect && ImGui::IsItemHovered()) {
 					ImGui::BeginTooltip();
 					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 
-					if (canConnect) {
-						// A connection can be made, show a simple description
-						ImGui::Text("Connect to this device");
-					} else {
-						// Can't connect
-						ImGui::Text("Can't connect to this device.");
+					ImGui::Text("Can't connect to this device.");
 
-						// Based on if advanced info is enabled, show a description of why a connection can't be made
-						if (displayAdvanced) ImGui::Text("The channel could not be obtained. The device may not be "
-							"advertising an SDP session with the protocol selected.");
-						else ImGui::Text("Enable \"Display Advanced Info\" to see more.");
-					}
-
-					// Show address and channel
-					if (displayAdvanced) ImGui::Text("Address: %s, Channel: %d", i.address.c_str(), i.port);
+					// Based on if advanced info is enabled, show a description of why a connection can't be made
+					if (displayAdvanced) ImGui::Text("The channel could not be obtained. The device may not be "
+						"advertising an SDP session with the protocol selected.");
+					else ImGui::Text("Enable \"Display Advanced Info\" to see more.");
 
 					ImGui::PopTextWrapPos();
 					ImGui::EndTooltip();
 				}
 			}
+			ImGui::EndChild();
 		} else {
 			// Error occurred
-			ImGui::Text("An error occurred: %d", returnCode);
+			ImGui::Text("An error occurred: %d: %s", err.code, err.desc.c_str());
 		}
 	}
 

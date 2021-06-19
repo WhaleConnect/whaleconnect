@@ -12,7 +12,7 @@
 
 #include "imguiext.hpp"
 
-void ImGui::Text(const std::string& s) {
+void ImGui::TextUnformatted(const std::string& s) {
 	TextUnformatted(s.c_str());
 }
 

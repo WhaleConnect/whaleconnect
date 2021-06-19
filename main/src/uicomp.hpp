@@ -4,7 +4,7 @@
 #include <vector> // std::vector
 #include <thread> // std::thread
 #include <atomic> // std::atomic
-#include <mutex>
+#include <mutex> // std::mutex
 
 #include "util.hpp"
 #include "sockets.hpp"
@@ -51,7 +51,8 @@ public:
 
 class ClientWindow {
 	std::atomic<SOCKET> _sockfd = INVALID_SOCKET; // Socket for connections
-	std::atomic<bool> _connected = false;
+	std::atomic<bool> _connected = false; // If the window has an active connection
+	Sockets::SocketError _lastRecvErr; // The last error encountered by the receiving thread
 
 	Console _output; // The output of the window, will hold system messages and data received from the server
 	std::string _sendBuf, _recvBuf; // Buffers
@@ -71,6 +72,12 @@ class ClientWindow {
 	/// Print the last socket error encountered by this object, then close the socket.
 	/// </summary>
 	void _errHandler();
+
+	/// <summary>
+	/// Print the error code and description of a given <int, string> pair, then close the socket.
+	/// </summary>
+	/// <param name="err">A SocketError containing the error message to format and print</param>
+	void _errHandler(Sockets::SocketError err);
 
 	/// <summary>
 	/// Add text to the output. Called after receiving data from the socket.

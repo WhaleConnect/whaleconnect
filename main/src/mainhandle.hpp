@@ -6,11 +6,8 @@
 /// <summary>
 /// Set up backends/context, configure Dear ImGui, and create a main application window.
 /// </summary>
-/// <param name="width">Window width (px)</param>
-/// <param name="height">Window height (px)</param>
-/// <param name="title">Window title</param>
 /// <returns>If the initialization was successful</returns>
-bool initApp(int width, int height, const char* title);
+bool initApp();
 
 /// <summary>
 /// Check if the main window is active (should not be closed).

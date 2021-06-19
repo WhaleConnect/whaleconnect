@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <utility> // std::pair
 #include <string> // std::string
 
 #ifdef _WIN32
@@ -56,14 +55,22 @@ typedef int SOCKET;
 #include "util.hpp"
 
 /// <summary>
-/// Variables and functions to use to send/receive data through a network socket.
+/// Functions to use to send/receive data through a network socket.
 /// </summary>
 namespace Sockets {
+	/// <summary>
+	/// A structure containing an int and a string to represent a socket error.
+	/// </summary>
+	struct SocketError {
+		int code{}; // Numeric error code of the error
+		std::string desc; // Extended error description
+	};
+
 	/// <summary>
 	/// Get the last socket error encountered by the system.
 	/// </summary>
 	/// <returns>Last error code (int) and detailed error message (string)</returns>
-	std::pair<int, std::string> getLastErr();
+	SocketError getLastErr();
 
 	/// <summary>
 	/// Connect a socket to a server with the timeout specified in Settings.

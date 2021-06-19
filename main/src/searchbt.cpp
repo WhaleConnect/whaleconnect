@@ -94,7 +94,7 @@ static uint16_t getSDPChannel(const char* addr) {
 }
 #endif
 
-std::pair<int, std::vector<DeviceData>> Sockets::searchBluetoothDevices() {
+Sockets::BTSearchResult Sockets::searchBT() {
 	// Return value
 	std::vector<DeviceData> ret;
 
@@ -118,7 +118,7 @@ std::pair<int, std::vector<DeviceData>> Sockets::searchBluetoothDevices() {
 	HANDLE hLookup{};
 	DWORD flags = LUP_RETURN_ADDR | LUP_RETURN_NAME | LUP_CONTAINERS | LUP_FLUSHCACHE;
 	WSAQUERYSETW wsaQuery{ .dwSize = sizeof(WSAQUERYSETW), .dwNameSpace = NS_BTH, .lpBlob = &bthConfig };
-	if (WSALookupServiceBeginW(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) return { WSAGetLastError(), ret };
+	if (WSALookupServiceBeginW(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) return { getLastErr(), ret };
 
 	// Query set return structure
 	DWORD size = 4096;
@@ -218,7 +218,7 @@ std::pair<int, std::vector<DeviceData>> Sockets::searchBluetoothDevices() {
 	int sock = hci_open_dev(deviceId);
 
 	// Check if any values are negative indicating a failure
-	if (deviceId < 0 || sock < 0) return { errno, ret };
+	if (deviceId < 0 || sock < 0) return { getLastErr(), ret };
 
 	// Bluetooth SDP UUID
 	// "The UUID for the SPP Serial Port service is defined by the Bluetooth SIG to be 0x1101."
@@ -241,7 +241,7 @@ std::pair<int, std::vector<DeviceData>> Sockets::searchBluetoothDevices() {
 	// Search for nearby devices
 	int searchLen = static_cast<int>(Settings::btSearchTime / searchDurationMultiplier);
 	int numRsp = hci_inquiry(deviceId, searchLen, maxRsp, nullptr, &ii, flags);
-	if (numRsp < 0) return { errno, ret };
+	if (numRsp < 0) return { getLastErr(), ret };
 
 	// Iterate through each found device
 	for (int i = 0; i < numRsp; i++) {
@@ -323,5 +323,5 @@ std::pair<int, std::vector<DeviceData>> Sockets::searchBluetoothDevices() {
 #endif
 
 	// Return result
-	return { NO_ERROR, ret };
+	return { { NO_ERROR, "" }, ret };
 }

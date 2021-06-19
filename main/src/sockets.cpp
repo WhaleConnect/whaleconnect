@@ -3,7 +3,7 @@
 
 #include "sockets.hpp"
 
-std::pair<int, std::string> Sockets::getLastErr() {
+Sockets::SocketError Sockets::getLastErr() {
 	int lastErr;
 	std::string errMsg;
 
@@ -57,7 +57,7 @@ int Sockets::connectWithTimeout(SOCKET sockfd, sockaddr* addr, size_t addrlen) {
 	connect(sockfd, addr, static_cast<int>(addrlen));
 
 	// Get the last socket error
-	int lastErr = getLastErr().first;
+	int lastErr = getLastErr().code;
 	if ((lastErr != WSAEWOULDBLOCK) && (lastErr != WSAEINPROGRESS)) {
 		// Check if the last socket error is not (WSA)EWOULDBLOCK or (WSA)EINPROGRESS, these are acceptable errors that
 		// may be thrown with a non-blocking socket. If it's anything else, set return code to -1 to indicate failure.

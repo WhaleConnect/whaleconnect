@@ -6,7 +6,7 @@
 #include <string>
 
 #ifndef _WIN32
-#include <bluetooth/bluetooth.h> // bdaddr_t
+struct bdaddr_t; // This structure is defined in <bluetooth/bluetooth.h>, provide a forward declaration for it
 #endif
 
 // Get the length of an array
@@ -21,10 +21,10 @@ inline const char* connectionTypesStr[] = { "TCP", "UDP", "Bluetooth" }; // Stri
 /// it and how to describe it.
 /// </summary>
 struct DeviceData {
-	int type; // Type of the connection
+	int type; // Type of connection
 	std::string name; // Name of device (Bluetooth only)
 	std::string address; // Address of device (IP address for TCP/UDP, MAC address for Bluetooth)
-	uint16_t port; // Port of device with TCP/UDP, RFCOMM channel with Bluetooth
+	uint16_t port; // Port/channel of device
 
 	// Bluetooth address (platform-specific)
 #ifdef _WIN32
