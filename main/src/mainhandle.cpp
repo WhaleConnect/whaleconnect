@@ -26,113 +26,113 @@ static GLFWwindow* window = nullptr;
 /// Set the configuration for Dear ImGui.
 /// </summary>
 static void configImGui() {
-	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
 
-	// Set styles
-	ImGuiStyle& style = ImGui::GetStyle();
-	style.WindowRounding = 0;
-	style.TabRounding = 0;
-	style.ScrollbarRounding = 0;
-	style.Colors[ImGuiCol_WindowBg].w = 1;
+    // Set styles
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowRounding = 0;
+    style.TabRounding = 0;
+    style.ScrollbarRounding = 0;
+    style.Colors[ImGuiCol_WindowBg].w = 1;
 
-	// Load font file
-	ImFontAtlas& fonts = *io.Fonts;
+    // Load font file
+    ImFontAtlas& fonts = *io.Fonts;
 
-	// Select glyphs for loading
-	// Include all in Unicode plane 0 except for control characters (U+0000 - U+0019), surrogates (U+D800 - U+DFFF),
-	// private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
-	static const ImWchar ranges[] = { 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
-	static const char* fontFile = "3rdparty/unifont/font/precompiled/unifont-13.0.06.ttf";
-	fonts.AddFontFromFileTTF(fontFile, Settings::fontSize, nullptr, &ranges[0]);
+    // Select glyphs for loading
+    // Include all in Unicode plane 0 except for control characters (U+0000 - U+0019), surrogates (U+D800 - U+DFFF),
+    // private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
+    static const ImWchar ranges[] = { 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
+    static const char* fontFile = "3rdparty/unifont/font/precompiled/unifont-13.0.06.ttf";
+    fonts.AddFontFromFileTTF(fontFile, Settings::fontSize, nullptr, &ranges[0]);
 }
 
 bool initApp() {
-	glfwSetErrorCallback([](int error, const char* description) {
-		// Error file for logging GLFW errors
-		auto file = fmt::output_file("err.txt", fmt::file::CREATE | fmt::file::APPEND | fmt::file::WRONLY);
+    glfwSetErrorCallback([](int error, const char* description) {
+        // Error file for logging GLFW errors
+        auto file = fmt::output_file("err.txt", fmt::file::CREATE | fmt::file::APPEND | fmt::file::WRONLY);
 
-		// Add the error to the file with timestamp, name, and description
-		file.print("[{:%F %T}] [GLFW] Error {}: {}\n", std::chrono::system_clock::now(), error, description);
-	});
+        // Add the error to the file with timestamp, name, and description
+        file.print("[{:%F %T}] [GLFW] Error {}: {}\n", std::chrono::system_clock::now(), error, description);
+    });
 
-	// Init GLFW
-	if (!glfwInit()) return false;
+    // Init GLFW
+    if (!glfwInit()) return false;
 
-	// Decide GL versions
+    // Decide GL versions
 #ifdef __APPLE__
-	// GL 3.2
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
+    // GL 3.2
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
 #else
-	// GL 3.0
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    // GL 3.0
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #endif
 
-	// Create window
-	window = glfwCreateWindow(1280, 720, "Network Socket Terminal", nullptr, nullptr);
-	if (window == nullptr) return false;
+    // Create window
+    window = glfwCreateWindow(1280, 720, "Network Socket Terminal", nullptr, nullptr);
+    if (window == nullptr) return false;
 
-	glfwMakeContextCurrent(window);
-	glfwSwapInterval(1); // Enable vsync
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1); // Enable vsync
 
-	// Set glad loader
-	gladSetGLOnDemandLoader(glfwGetProcAddress);
+    // Set glad loader
+    gladSetGLOnDemandLoader(glfwGetProcAddress);
 
-	// Setup Dear ImGui context and backends/renderers
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
+    // Setup Dear ImGui context and backends/renderers
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
 
-	configImGui();
+    configImGui();
 
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
 
-	// Initialization was successful
-	return true;
+    // Initialization was successful
+    return true;
 }
 
 bool isActive() {
-	return !glfwWindowShouldClose(window);
+    return !glfwWindowShouldClose(window);
 }
 
 void handleNewFrame() {
-	glfwPollEvents();
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
+    glfwPollEvents();
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
 
-	// Dockspace
-	ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+    // Dockspace
+    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 }
 
 void renderWindow() {
-	ImGui::Render();
-	int w, h;
-	glfwGetFramebufferSize(window, &w, &h);
-	glViewport(0, 0, w, h);
-	glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    ImGui::Render();
+    int w, h;
+    glfwGetFramebufferSize(window, &w, &h);
+    glViewport(0, 0, w, h);
+    glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-	// Render multi-viewport platform windows
-	GLFWwindow* backupCurrentContext = glfwGetCurrentContext();
-	ImGui::UpdatePlatformWindows();
-	ImGui::RenderPlatformWindowsDefault();
-	glfwMakeContextCurrent(backupCurrentContext);
+    // Render multi-viewport platform windows
+    GLFWwindow* backupCurrentContext = glfwGetCurrentContext();
+    ImGui::UpdatePlatformWindows();
+    ImGui::RenderPlatformWindowsDefault();
+    glfwMakeContextCurrent(backupCurrentContext);
 
-	glfwSwapBuffers(window);
+    glfwSwapBuffers(window);
 }
 
 void cleanupApp() {
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-	glfwDestroyWindow(window);
-	glfwTerminate();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }

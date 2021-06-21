@@ -5,6 +5,7 @@ root = true
 [*]
 # Indentation
 indent_size = 4
+indent_style = space
 
 # Basic file properties
 charset = utf-8
@@ -16,12 +17,10 @@ trim_trailing_whitespace = true
 ## Everything except Python files
 [!*.py]
 end_of_line = crlf
-indent_style = tab
 
 ## Python files
 [*.py]
 end_of_line = lf
-indent_style = space
 
 ## App source files
 [main/{src,loader}/*]
