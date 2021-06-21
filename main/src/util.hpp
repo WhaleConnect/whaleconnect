@@ -6,7 +6,7 @@
 #include <string>
 
 #ifndef _WIN32
-struct bdaddr_t; // This structure is defined in <bluetooth/bluetooth.h>, provide a forward declaration for it
+#include <bluetooth/bluetooth.h> // bdaddr_t
 #endif
 
 // Get the length of an array
