@@ -161,8 +161,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
         std::snprintf(portStr, ARRAY_LEN(portStr), "%hu", data.port);
 
         // Resolve and connect to the IP, getaddrinfo() allows both IPv4 and IPv6 addresses
-        int d = getaddrinfo(data.address.c_str(), portStr, &hints, &addr);
-        if (d == NO_ERROR) {
+        if (getaddrinfo(data.address.c_str(), portStr, &hints, &addr) == NO_ERROR) {
             // getaddrinfo() succeeded, initialize socket file descriptor with values created by GAI
             sockfd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
 
