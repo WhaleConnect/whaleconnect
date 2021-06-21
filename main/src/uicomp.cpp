@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <algorithm> // std::replace()
-#include <format> // std::format() [C++20]
 #include <mutex> // std::mutex
 
 #include <imgui/imgui.h>
@@ -11,6 +10,7 @@
 #include "imguiext.hpp"
 #include "util.hpp"
 #include "sockets.hpp"
+#include "formatcompat.hpp"
 
 std::string UIHelpers::makeClientWindowTitle(const DeviceData& data) {
 	// Connection type
@@ -108,7 +108,7 @@ ClientWindow::ClientWindow(const DeviceData& data) {
 	// Set title
 	title = UIHelpers::makeClientWindowTitle(data);
 
-	if (_sockfd == INVALID_SOCKET) _output.addText("[ERROR] Socket creation failed.\n"); // Socket invalid
+	if (_sockfd == INVALID_SOCKET) _errHandler(); // Socket invalid
 	else _connected = true; // Socket and connection valid
 
 	// Start the receiving background thread
@@ -152,11 +152,8 @@ void ClientWindow::_closeConnection() {
 	if (_connected) {
 		_connected = false;
 
-		// Shutdown socket to stop recv() in the parallel thread
-		shutdown(_sockfd, SD_BOTH);
-
-		// Close the socket
-		closesocket(_sockfd);
+		// Shutdown and close the socket
+		Sockets::destroySocket(_sockfd);
 	}
 }
 

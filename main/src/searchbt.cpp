@@ -1,7 +1,12 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef _WIN32
+#include <cstring> // std::memset(), std::strncpy()
+
+#ifdef _WIN32
+#include <WinSock2.h>
+#include <ws2bth.h>
+#else
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 #include <bluetooth/hci.h>

@@ -1,17 +1,50 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#ifdef _WIN32
+// Winsock headers for Windows
+#include <ws2tcpip.h>
+#include <ws2bth.h>
+#else
+// Bluetooth headers for Unix
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/rfcomm.h>
+
+#include <cerrno> // errno
+#include <cstring> // std::strerror()
+
+#include <netinet/in.h> // sockaddr, sockaddr_in, sockaddr_in6
+#include <sys/socket.h> // Socket definitions
+#include <netdb.h> // addrinfo/getaddrinfo() related indentifiers
+#include <unistd.h> // close()
+#include <fcntl.h> // fcntl()
+#include <poll.h> // poll()
+
+// Remap Winsock functions to Unix equivalents
+#define WSAPoll poll
+
+// Socket errors
+#define WSAEWOULDBLOCK EWOULDBLOCK
+#define WSAEINPROGRESS EINPROGRESS
+#define WSAETIMEDOUT ETIMEDOUT
+
+// Bluetooth definitions
+#define AF_BTH AF_BLUETOOTH
+#define BTHPROTO_RFCOMM BTPROTO_RFCOMM
+
+// Equivalent typedefs
+typedef sockaddr_rc SOCKADDR_BTH;
+#endif
+
 #include "sockets.hpp"
 
 Sockets::SocketError Sockets::getLastErr() {
-	int lastErr;
+	// Get the last error's numeric code
+	int lastErr = getLastErrInt();
 	std::string errMsg;
 
-#ifdef _WIN32
-	// Get the last error's numeric code
-	lastErr = WSAGetLastError();
-
 	// Get the last error's description
+#ifdef _WIN32
 	constexpr DWORD msgLen = 1024;
 	static char msg[msgLen];
 	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK, nullptr,
@@ -19,13 +52,25 @@ Sockets::SocketError Sockets::getLastErr() {
 
 	errMsg = msg;
 #else
-	// Get the last error's numeric code
-	lastErr = errno;
-
-	// Get the last error's description
 	errMsg = std::strerror(lastErr);
 #endif
 	return { lastErr, errMsg };
+}
+
+int Sockets::getLastErrInt() {
+#ifdef _WIN32
+	return WSAGetLastError();
+#else
+	return errno;
+#endif
+}
+
+void Sockets::setLastErrInt(int err) {
+#ifdef _WIN32
+	WSASetLastError(err);
+#else
+	errno = err;
+#endif
 }
 
 /// <summary>
@@ -47,33 +92,33 @@ static int setBlocking(SOCKET sockfd, bool blocking) {
 }
 
 int Sockets::connectWithTimeout(SOCKET sockfd, sockaddr* addr, size_t addrlen) {
-	// Return code
-	int rc = NO_ERROR;
-
-	// Make the socket non-blocking, abort and return -1 if this action fails.
+	// Make the socket non-blocking, abort if this action fails.
 	if (setBlocking(sockfd, false) == SOCKET_ERROR) return SOCKET_ERROR;
 
 	// Start connecting on the non-blocking socket
 	connect(sockfd, addr, static_cast<int>(addrlen));
 
 	// Get the last socket error
-	int lastErr = getLastErr().code;
+	int lastErr = getLastErrInt();
 	if ((lastErr != WSAEWOULDBLOCK) && (lastErr != WSAEINPROGRESS)) {
 		// Check if the last socket error is not (WSA)EWOULDBLOCK or (WSA)EINPROGRESS, these are acceptable errors that
-		// may be thrown with a non-blocking socket. If it's anything else, set return code to -1 to indicate failure.
-		rc = SOCKET_ERROR;
+		// may be thrown with a non-blocking socket. If it's anything else, set return code to indicate failure.
+		return SOCKET_ERROR;
 	} else {
+		setLastErrInt(NO_ERROR);
+
 		// Wait for connect to complete (or for the timeout deadline)
 		pollfd pfds[] = { { sockfd, POLLOUT, 0 } };
 
 		// If poll returns 0 it timed out indicating a failed connection.
-		if (WSAPoll(pfds, 1, Settings::connectTimeout * 1000) == 0) rc = SOCKET_ERROR;
+		if (WSAPoll(pfds, 1, Settings::connectTimeout * 1000) == 0) {
+			setLastErrInt(WSAETIMEDOUT);
+			return SOCKET_ERROR;
+		}
 	}
 
 	// Make socket blocking again
-	if (setBlocking(sockfd, true) == SOCKET_ERROR) return SOCKET_ERROR;
-
-	return rc;
+	return setBlocking(sockfd, true);
 }
 
 SOCKET Sockets::createClientSocket(const DeviceData& data) {
@@ -116,7 +161,8 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 		std::snprintf(portStr, ARRAY_LEN(portStr), "%hu", data.port);
 
 		// Resolve and connect to the IP, getaddrinfo() allows both IPv4 and IPv6 addresses
-		if (getaddrinfo(data.address.c_str(), portStr, &hints, &addr) == NO_ERROR) {
+		int d = getaddrinfo(data.address.c_str(), portStr, &hints, &addr);
+		if (d == NO_ERROR) {
 			// getaddrinfo() succeeded, initialize socket file descriptor with values created by GAI
 			sockfd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
 
@@ -133,11 +179,28 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 
 	// Check if connection failed
 	if (!connectSuccess) {
-		closesocket(sockfd);
+		// destroySocket() may reset the last error code to 0, save it first:
+		int lastErrBackup = getLastErrInt();
+
+		// Destroy the socket:
+		destroySocket(sockfd);
 		sockfd = INVALID_SOCKET;
+
+		// Restore the last error code:
+		setLastErrInt(lastErrBackup);
 	}
 
 	return sockfd;
+}
+
+void Sockets::destroySocket(SOCKET sockfd) {
+#ifdef _WIN32
+	shutdown(sockfd, SD_BOTH);
+	closesocket(sockfd);
+#else
+	shutdown(sockfd, SHUT_RDWR);
+	close(sockfd);
+#endif
 }
 
 int Sockets::sendData(SOCKET sockfd, const std::string& data) {

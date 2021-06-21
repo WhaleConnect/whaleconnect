@@ -6,56 +6,22 @@
 #include <string> // std::string
 
 #ifdef _WIN32
-// Winsock headers for Windows
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <ws2bth.h>
-
-// Link with Winsock static library
-#pragma comment(lib, "ws2_32.lib")
+// Winsock header
+#include <WinSock2.h>
 #else
-#include <cerrno> // errno
-#include <cstring> // std::strerror()
-
-// Bluetooth headers for Unix
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/rfcomm.h>
-
-#include <netinet/in.h> // sockaddr, sockaddr_in, sockaddr_in6
-#include <sys/socket.h> // Socket definitions
-#include <netdb.h> // addrinfo/getaddrinfo() related indentifiers
-#include <unistd.h> // close()
-#include <fcntl.h> // fcntl()
-#include <poll.h> // poll()
-
-// Remap Winsock functions to Unix equivalents
-#define closesocket close
-#define WSAPoll poll
-
-// Socket errors
-#define WSAEWOULDBLOCK EWOULDBLOCK
-#define WSAEINPROGRESS EINPROGRESS
-
-// Bluetooth definitions
-#define AF_BTH AF_BLUETOOTH
-#define BTHPROTO_RFCOMM BTPROTO_RFCOMM
-
-#define SD_BOTH SHUT_RDWR
-
-// Winsock error status codes
+// Error status codes
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
 #define NO_ERROR 0
 
-// Equivalent typedefs
-typedef sockaddr_rc SOCKADDR_BTH;
+// Windows-style SOCKET equals plain Unix int for file descriptors
 typedef int SOCKET;
 #endif
 
 #include "util.hpp"
 
 /// <summary>
-/// Functions to use to send/receive data through a network socket.
+/// Functions for handling network sockets. (create, send, receive, destroy)
 /// </summary>
 namespace Sockets {
 	/// <summary>
@@ -71,6 +37,16 @@ namespace Sockets {
 	/// </summary>
 	/// <returns>Last error code (int) and detailed error message (string)</returns>
 	SocketError getLastErr();
+
+	/// <summary>
+	/// Get the error code of the last socket error.
+	/// </summary>
+	int getLastErrInt();
+
+	/// <summary>
+	/// Set the last socket error code.
+	/// </summary>
+	void setLastErrInt(int err);
 
 	/// <summary>
 	/// Connect a socket to a server with the timeout specified in Settings.
@@ -89,6 +65,12 @@ namespace Sockets {
 	/// <param name="data">The DeviceData structure describing what to connect to</param>
 	/// <returns>Failure: INVALID_SOCKET, Success: The newly-created socket file descriptor</returns>
 	SOCKET createClientSocket(const DeviceData& data);
+
+	/// <summary>
+	/// Shutdown both directions (Send and Receive) of a socket and close it.
+	/// </summary>
+	/// <param name="sockfd">The file descriptor of the socket to close</param>
+	void destroySocket(SOCKET sockfd);
 
 	/// <summary>
 	/// Send a string of data through the socket. Will return true if sending succeeded, false if it failed.
