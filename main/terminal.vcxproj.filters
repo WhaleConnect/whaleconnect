@@ -1,18 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Glad Header Files">
-      <UniqueIdentifier>{0a768da3-651f-413f-a335-b6a4eaa61f50}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GLFW Header Files">
-      <UniqueIdentifier>{782b64c2-d308-4491-ba34-4a8f79accc6d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Dear ImGui Header Files">
-      <UniqueIdentifier>{8ae94db5-38a1-494c-9a47-0237400a83eb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Dear ImGui Source Files">
-      <UniqueIdentifier>{04f00034-3be0-4664-8953-4db38c38817d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
@@ -24,6 +12,27 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="3rd-Party Files">
+      <UniqueIdentifier>{c296698b-9d14-42b0-9738-59b391fe46d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rd-Party Files\{fmt} Header Files">
+      <UniqueIdentifier>{5bdd3059-896c-4065-9022-4187b1084311}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rd-Party Files\{fmt} Source Files">
+      <UniqueIdentifier>{b8de8b1b-4a18-492d-b76f-4a0b56f46dca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rd-Party Files\Dear ImGui Header Files">
+      <UniqueIdentifier>{8ae94db5-38a1-494c-9a47-0237400a83eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rd-Party Files\Dear ImGui Source Files">
+      <UniqueIdentifier>{04f00034-3be0-4664-8953-4db38c38817d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rd-Party Files\Glad Header Files">
+      <UniqueIdentifier>{0a768da3-651f-413f-a335-b6a4eaa61f50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rd-Party Files\GLFW Header Files">
+      <UniqueIdentifier>{782b64c2-d308-4491-ba34-4a8f79accc6d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -46,25 +55,31 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="3rdparty\imgui\imgui.cpp">
-      <Filter>Dear ImGui Source Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Source Files</Filter>
     </ClCompile>
     <ClCompile Include="3rdparty\imgui\imgui_demo.cpp">
-      <Filter>Dear ImGui Source Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Source Files</Filter>
     </ClCompile>
     <ClCompile Include="3rdparty\imgui\imgui_draw.cpp">
-      <Filter>Dear ImGui Source Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Source Files</Filter>
     </ClCompile>
     <ClCompile Include="3rdparty\imgui\imgui_impl_glfw.cpp">
-      <Filter>Dear ImGui Source Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Source Files</Filter>
     </ClCompile>
     <ClCompile Include="3rdparty\imgui\imgui_impl_opengl3.cpp">
-      <Filter>Dear ImGui Source Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Source Files</Filter>
     </ClCompile>
     <ClCompile Include="3rdparty\imgui\imgui_tables.cpp">
-      <Filter>Dear ImGui Source Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Source Files</Filter>
     </ClCompile>
     <ClCompile Include="3rdparty\imgui\imgui_widgets.cpp">
-      <Filter>Dear ImGui Source Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="3rdparty\fmt\format.cc">
+      <Filter>3rd-Party Files\{fmt} Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="3rdparty\fmt\os.cc">
+      <Filter>3rd-Party Files\{fmt} Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -87,37 +102,55 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\glad\gl.h">
-      <Filter>Glad Header Files</Filter>
+      <Filter>3rd-Party Files\Glad Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\GLFW\glfw3.h">
-      <Filter>GLFW Header Files</Filter>
+      <Filter>3rd-Party Files\GLFW Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\GLFW\glfw3native.h">
-      <Filter>GLFW Header Files</Filter>
+      <Filter>3rd-Party Files\GLFW Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\imgui\imconfig.h">
-      <Filter>Dear ImGui Header Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\imgui\imgui.h">
-      <Filter>Dear ImGui Header Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\imgui\imgui_impl_glfw.h">
-      <Filter>Dear ImGui Header Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\imgui\imgui_impl_opengl3.h">
-      <Filter>Dear ImGui Header Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\imgui\imgui_internal.h">
-      <Filter>Dear ImGui Header Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\imgui\imstb_rectpack.h">
-      <Filter>Dear ImGui Header Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\imgui\imstb_textedit.h">
-      <Filter>Dear ImGui Header Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdparty\imgui\imstb_truetype.h">
-      <Filter>Dear ImGui Header Files</Filter>
+      <Filter>3rd-Party Files\Dear ImGui Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\formatcompat.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\fmt\chrono.h">
+      <Filter>3rd-Party Files\{fmt} Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\fmt\core.h">
+      <Filter>3rd-Party Files\{fmt} Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\fmt\format.h">
+      <Filter>3rd-Party Files\{fmt} Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\fmt\format-inl.h">
+      <Filter>3rd-Party Files\{fmt} Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdparty\fmt\os.h">
+      <Filter>3rd-Party Files\{fmt} Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

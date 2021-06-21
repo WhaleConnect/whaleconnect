@@ -17,6 +17,7 @@
 #include "imguiext.hpp"
 #include "searchbt.hpp"
 #include "mainhandle.hpp"
+#include "formatcompat.hpp"
 
 // Vector of open windows
 std::vector<std::unique_ptr<ClientWindow>> connections;

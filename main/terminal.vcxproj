@@ -48,7 +48,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <IgnoreSpecificDefaultLibraries>msvcrt.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>3rdparty\GLFW\glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>3rdparty\GLFW\glfw3.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -62,10 +62,12 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>3rdparty\GLFW\glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>3rdparty\GLFW\glfw3.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="3rdparty\fmt\format.cc" />
+    <ClCompile Include="3rdparty\fmt\os.cc" />
     <ClCompile Include="3rdparty\imgui\imgui.cpp" />
     <ClCompile Include="3rdparty\imgui\imgui_demo.cpp" />
     <ClCompile Include="3rdparty\imgui\imgui_draw.cpp" />
@@ -81,6 +83,11 @@
     <ClCompile Include="src\uicomp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="3rdparty\fmt\chrono.h" />
+    <ClInclude Include="3rdparty\fmt\core.h" />
+    <ClInclude Include="3rdparty\fmt\format-inl.h" />
+    <ClInclude Include="3rdparty\fmt\format.h" />
+    <ClInclude Include="3rdparty\fmt\os.h" />
     <ClInclude Include="3rdparty\glad\gl.h" />
     <ClInclude Include="3rdparty\GLFW\glfw3.h" />
     <ClInclude Include="3rdparty\GLFW\glfw3native.h" />
@@ -94,6 +101,7 @@
     <ClInclude Include="3rdparty\imgui\imstb_truetype.h" />
     <ClInclude Include="src\imguiext.hpp" />
     <ClInclude Include="src\mainhandle.hpp" />
+    <ClInclude Include="src\formatcompat.hpp" />
     <ClInclude Include="src\searchbt.hpp" />
     <ClInclude Include="src\sockets.hpp" />
     <ClInclude Include="src\uicomp.hpp" />

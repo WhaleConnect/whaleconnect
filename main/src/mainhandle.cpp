@@ -1,7 +1,6 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <format> // std::format() [C++20]
 #include <fstream> // std::ofstream
 #include <chrono> // std::chrono
 
@@ -12,6 +11,9 @@
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+
+#include <fmt/os.h>
+#include <fmt/chrono.h>
 
 #include "mainhandle.hpp"
 #include "imguiext.hpp"
@@ -50,10 +52,10 @@ static void configImGui() {
 bool initApp() {
 	glfwSetErrorCallback([](int error, const char* description) {
 		// Error file for logging GLFW errors
-		std::ofstream file("err.txt", std::ios::app);
+		auto file = fmt::output_file("err.txt", fmt::file::CREATE | fmt::file::APPEND | fmt::file::WRONLY);
 
 		// Add the error to the file with timestamp, name, and description
-		file << std::format("[{:%F %T}] [GLFW] Error {}: {}\n", std::chrono::system_clock::now(), error, description);
+		file.print("[{:%F %T}] [GLFW] Error {}: {}\n", std::chrono::system_clock::now(), error, description);
 	});
 
 	// Init GLFW

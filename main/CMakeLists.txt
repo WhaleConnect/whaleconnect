@@ -30,8 +30,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	# MSVC options
 	target_compile_options(terminal PRIVATE /W4 /utf-8)
 
-	# Windows - GLFW lib file
-	target_link_libraries(terminal ${PROJECT_SOURCE_DIR}/3rdparty/GLFW/glfw3.lib)
+	# Windows - GLFW and Winsock lib files
+	target_link_libraries(terminal ${PROJECT_SOURCE_DIR}/3rdparty/GLFW/glfw3.lib ws2_32.lib)
 
 	# This prevents LNK4098 in Debug mode, but causes LNK2001 in Release mode.
 	# This is because the GLFW pre-built binaries were built in Release mode.
