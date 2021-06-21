@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <string> // std::string
+#include <cstring> // std::strchr()
 #include <imgui/imgui_internal.h>
 
 /// <summary>
@@ -120,7 +121,7 @@ void ImGui::UnsignedInputScalar(const char* label, T& val, unsigned long min, un
 
 	// Widget label
 	SameLine(0, widgetSpacing);
-	Text(label);
+	TextUnformatted(label);
 
 	PopID();
 	EndGroup();
