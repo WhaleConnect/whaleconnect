@@ -4,6 +4,10 @@ desktop.ini
 # Dear ImGui settings file
 imgui.ini
 
+# Python import cache
+__pycache__/
+*.py[cod]
+
 # Visual Studio generated files
 x64/
 .vs/

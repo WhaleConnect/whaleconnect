@@ -2,6 +2,7 @@
     //"editor.formatOnType": true,
     "[python]": {
         "editor.rulers": [
+            72,
             79
         ]
     },
@@ -30,6 +31,9 @@
     "cmake.debugConfig": {
         "cwd": "${workspaceFolder}/main"
     },
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/main/3rdparty"
+    ],
     "files.associations": {
         "algorithm": "cpp",
         "atomic": "cpp",
