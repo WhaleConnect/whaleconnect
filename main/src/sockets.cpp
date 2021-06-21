@@ -194,13 +194,15 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 }
 
 void Sockets::destroySocket(SOCKET sockfd) {
+if (sockfd != INVALID_SOCKET) {
 #ifdef _WIN32
-    shutdown(sockfd, SD_BOTH);
-    closesocket(sockfd);
+        shutdown(sockfd, SD_BOTH);
+        closesocket(sockfd);
 #else
-    shutdown(sockfd, SHUT_RDWR);
-    close(sockfd);
+        shutdown(sockfd, SHUT_RDWR);
+        close(sockfd);
 #endif
+    }
 }
 
 int Sockets::sendData(SOCKET sockfd, const std::string& data) {
