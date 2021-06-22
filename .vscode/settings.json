@@ -31,6 +31,7 @@
     "cmake.debugConfig": {
         "cwd": "${workspaceFolder}/main"
     },
+    "workbench.colorTheme": "Visual Studio Dark - C++",
     "python.analysis.extraPaths": [
         "${workspaceFolder}/main/3rdparty"
     ],
@@ -111,6 +112,8 @@
         "xlocbuf": "cpp",
         "xlocmes": "cpp",
         "xtree": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "list": "cpp",
+        "xhash": "cpp"
     }
 }
