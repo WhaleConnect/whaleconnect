@@ -74,7 +74,7 @@ class ClientWindow {
     void _errHandler();
 
     /// <summary>
-    /// Print the error code and description of a given <int, string> pair, then close the socket.
+    /// Print the error code and description of a given SocketError, then close the socket.
     /// </summary>
     /// <param name="err">A SocketError containing the error message to format and print</param>
     void _errHandler(Sockets::SocketError err);

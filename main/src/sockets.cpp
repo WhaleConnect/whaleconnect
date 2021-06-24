@@ -161,7 +161,8 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
         std::snprintf(portStr, ARRAY_LEN(portStr), "%hu", data.port);
 
         // Resolve and connect to the IP, getaddrinfo() allows both IPv4 and IPv6 addresses
-        if (getaddrinfo(data.address.c_str(), portStr, &hints, &addr) == NO_ERROR) {
+        switch (getaddrinfo(data.address.c_str(), portStr, &hints, &addr)) {
+        case NO_ERROR:
             // getaddrinfo() succeeded, initialize socket file descriptor with values created by GAI
             sockfd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
 
@@ -173,6 +174,48 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 
             // Release the resources
             freeaddrinfo(addr);
+            break;
+#ifndef _WIN32
+            // Unlike Winsock's getaddrinfo(), Unix versions may not set errno so errors are remapped to similar errnos
+        case EAI_SYSTEM:
+            // System error, this means the error is already in errno so do nothing
+            break;
+        case EAI_FAMILY:
+        case EAI_ADDRFAMILY:
+            // ai_family not supported
+            errno = EAFNOSUPPORT; // Address family not supported by protocol
+            break;
+        case EAI_SOCKTYPE:
+            // ai_socktype not supported
+            errno = ESOCKTNOSUPPORT; // Socket type not supported
+            break;
+        case EAI_MEMORY:
+            // Out of memory
+            errno = ENOMEM; // Out of memory
+            break;
+        case EAI_BADFLAGS:
+        case EAI_SERVICE:
+            // Invalid flags; EAI_SERVICE means that the specified service is not available, which also falls under an
+            // invalid argument error
+            errno = EINVAL; // Invalid argument
+            break;
+        case EAI_FAIL:
+            // Non-recoverable failure
+            errno = ENOTRECOVERABLE; // State not recoverable
+            break;
+        case EAI_OVERFLOW:
+            // Argument buffer overflow
+            errno = ENOBUFS; // No buffer space available
+            break;
+        case EAI_NODATA:
+        case EAI_NONAME:
+            // Host does not exist, or it exists but it has no addresses
+            errno = ENXIO; // No such device or address
+            break;
+        case EAI_AGAIN:
+            // Temporary failure
+            errno = EAGAIN; // Try again
+#endif
         }
     }
 
@@ -193,7 +236,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 }
 
 void Sockets::destroySocket(SOCKET sockfd) {
-if (sockfd != INVALID_SOCKET) {
+    if (sockfd != INVALID_SOCKET) {
 #ifdef _WIN32
         shutdown(sockfd, SD_BOTH);
         closesocket(sockfd);
