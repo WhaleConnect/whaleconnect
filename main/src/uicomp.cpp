@@ -161,7 +161,7 @@ void ClientWindow::_errHandler() {
     _errHandler(Sockets::getLastErr());
 }
 
-void ClientWindow::_errHandler(Sockets::SocketError err) {
+void ClientWindow::_errHandler(const Sockets::SocketError& err) {
     if (err.code == 0) return; // "[ERROR] 0: The operation completed successfully"
 
     // Socket errors are fatal
