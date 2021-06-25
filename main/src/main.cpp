@@ -4,12 +4,6 @@
 #include <vector> // std::vector
 #include <memory> // std::unique_ptr
 
-#ifdef _WIN32
-#include <winsock2.h>
-#else
-#include <csignal> // Signal handling for Unix
-#endif
-
 #include <imgui/imgui.h>
 
 #include "uicomp.hpp"
@@ -31,26 +25,15 @@ int CALLBACK WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 #else
 int main(int, char**) {
 #endif
-    // Create a main application window
-    if (!initApp()) return EXIT_FAILURE;
-
-#ifdef _WIN32
-    // Start Winsock on Windows
-    WSADATA wsaData;
-    int startupRet = WSAStartup(MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
-#else
-    // SIGPIPE throws on Unix when a socket disconnects, ignore it
-    std::signal(SIGPIPE, SIG_IGN);
-#endif
+    if (!initApp()) return EXIT_FAILURE; // Create a main application window
+    int startupRet = Sockets::init(); // Initialize sockets
 
     // Main loop
     while (isActive()) {
         handleNewFrame();
 
-#ifdef _WIN32
-        // Show error overlay if socket startup failed (Windows only)
+        // Show error overlay if socket startup failed
         if (startupRet != NO_ERROR) ImGui::Overlay({ 10, 10 }, "Winsock startup failed with error %d", startupRet);
-#endif
 
         // "New Connection" window
         ImGui::SetNextWindowSizeConstraints({ 530, 150 }, { FLT_MAX, FLT_MAX });
@@ -73,13 +56,8 @@ int main(int, char**) {
         renderWindow();
     }
 
-#ifdef _WIN32
-    // Cleanup Winsock
-    WSACleanup();
-#endif
-
+    Sockets::cleanup();
     cleanupApp();
-
     return EXIT_SUCCESS;
 }
 

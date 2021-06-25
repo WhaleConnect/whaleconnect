@@ -49,6 +49,17 @@ namespace Sockets {
     void setLastErrInt(int err);
 
     /// <summary>
+    /// Prepare the OS sockets for use by the application.
+    /// </summary>
+    /// <returns>Windows only: The return value of WSAStartup()</returns>
+    int init();
+
+    /// <summary>
+    /// Cleanup Winsock on Windows.
+    /// </summary>
+    void cleanup();
+
+    /// <summary>
     /// Connect a socket to a server with the timeout specified in Settings.
     /// </summary>
     /// <param name="sockfd">The socket file descriptor to perform the connection on</param>

@@ -10,6 +10,7 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 
+#include <csignal> // std::signal()
 #include <cerrno> // errno
 #include <cstring> // std::strerror()
 
@@ -88,6 +89,24 @@ static int setBlocking(SOCKET sockfd, bool blocking) {
     if (flags == SOCKET_ERROR) return SOCKET_ERROR; // If flag read failed, abort
     flags = (blocking) ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
     return fcntl(sockfd, F_SETFL, flags);
+#endif
+}
+
+int Sockets::init() {
+#ifdef _WIN32
+    // Start Winsock on Windows
+    WSADATA wsaData;
+    return WSAStartup(MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
+#else
+    // SIGPIPE throws on Unix when a socket disconnects, ignore it
+    std::signal(SIGPIPE, SIG_IGN);
+    return NO_ERROR;
+#endif
+}
+
+void Sockets::cleanup() {
+#ifdef _WIN32
+    WSACleanup();
 #endif
 }
 
