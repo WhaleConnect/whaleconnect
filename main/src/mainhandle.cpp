@@ -1,7 +1,6 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <fstream> // std::ofstream
 #include <chrono> // std::chrono
 
 #include <imgui/imgui.h>
