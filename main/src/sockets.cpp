@@ -176,8 +176,9 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
         addrinfo* addr;
 
         // uint16_t=>char[] conversion with snprintf()
-        char portStr[6];
-        std::snprintf(portStr, ARRAY_LEN(portStr), "%hu", data.port);
+        constexpr int strLen = 6;
+        char portStr[strLen];
+        std::snprintf(portStr, strLen, "%hu", data.port);
 
         // Resolve and connect to the IP, getaddrinfo() allows both IPv4 and IPv6 addresses
         switch (getaddrinfo(data.address.c_str(), portStr, &hints, &addr)) {
@@ -282,10 +283,11 @@ int Sockets::sendData(SOCKET sockfd, const std::string& data) {
 }
 
 int Sockets::recvData(SOCKET sockfd, std::string& data) {
-    char buf[1024] = "";
+    constexpr int bufLen = 1024;
+    char buf[bufLen] = "";
 
     // Receive and check bytes received
-    int ret = recv(sockfd, buf, ARRAY_LEN(buf) - 1, 0);
+    int ret = recv(sockfd, buf, bufLen - 1, 0);
     if (ret != SOCKET_ERROR) {
         buf[ret] = '\0'; // Add a null char to the end of the buffer
         data = buf;

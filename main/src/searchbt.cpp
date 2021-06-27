@@ -104,7 +104,8 @@ Sockets::BTSearchResult Sockets::searchBT() {
     std::vector<DeviceData> ret;
 
     // MAC address of detected device
-    char addrStr[18] = "";
+    constexpr int strLen = 18;
+    char addrStr[strLen] = "";
 
 #ifdef _WIN32
     BLOB bthConfig = makeInquiryTimeout(Settings::btSearchTime);
@@ -197,8 +198,8 @@ Sockets::BTSearchResult Sockets::searchBT() {
         WideCharToMultiByte(CP_UTF8, 0, name, -1, tmpBuf, stringSize, nullptr, nullptr);
 
         // Format MAC address into string
-        std::snprintf(addrStr, ARRAY_LEN(addrStr), "%02X:%02X:%02X:%02X:%02X:%02X", values[0], values[1], values[2],
-            values[3], values[4], values[5]);
+        std::snprintf(addrStr, strLen, "%02X:%02X:%02X:%02X:%02X:%02X", values[0], values[1], values[2], values[3],
+            values[4], values[5]);
 
         // Add the device's data to the vector
         ret.push_back({ Bluetooth, tmpBuf, addrStr, getSDPChannel(addrStr), mac });

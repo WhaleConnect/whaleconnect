@@ -9,9 +9,6 @@
 #include <bluetooth/bluetooth.h> // bdaddr_t
 #endif
 
-// Get the length of an array
-#define ARRAY_LEN(x) (sizeof(x) / sizeof(x[0]))
-
 // Enum of all possible connection types
 enum ConnectionTypes { TCP, UDP, Bluetooth };
 inline const char* connectionTypesStr[] = { "TCP", "UDP", "Bluetooth" }; // String representations of connection types
