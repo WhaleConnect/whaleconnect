@@ -32,9 +32,6 @@
 // Bluetooth definitions
 #define AF_BTH AF_BLUETOOTH
 #define BTHPROTO_RFCOMM BTPROTO_RFCOMM
-
-// Equivalent typedefs
-typedef sockaddr_rc SOCKADDR_BTH;
 #endif
 
 #include "sockets.hpp"
@@ -120,7 +117,7 @@ int Sockets::connectWithTimeout(SOCKET sockfd, sockaddr* addr, size_t addrlen) {
     // Get the last socket error
     int lastErr = getLastErrInt();
     if ((lastErr != WSAEWOULDBLOCK) && (lastErr != WSAEINPROGRESS)) {
-        // Check if the last socket error is not (WSA)EWOULDBLOCK or (WSA)EINPROGRESS, these are acceptable errors that
+        // Check if the last socket error is not (WSA)EWOULDBLOCK or (WSA)EINPROGRESS, these are non-fatal errors that
         // may be thrown with a non-blocking socket. If it's anything else, set return code to indicate failure.
         return SOCKET_ERROR;
     } else {
@@ -142,36 +139,39 @@ int Sockets::connectWithTimeout(SOCKET sockfd, sockaddr* addr, size_t addrlen) {
 
 SOCKET Sockets::createClientSocket(const DeviceData& data) {
     SOCKET sockfd = INVALID_SOCKET; // Socket file descriptor
-    bool connectSuccess = false; // If the connection was successful
+    bool success = false; // If the connection was successful
 
     if (data.type == Bluetooth) {
-        // Bluetooth connection uses SOCKADDR_BTH (sockaddr_rc on Unix)
-        SOCKADDR_BTH addr;
+        // Bluetooth connection - set up socket
         sockfd = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
+        if (sockfd == INVALID_SOCKET) return INVALID_SOCKET;
 
         // Set up server address structure
-        std::memset(&addr, 0, sizeof(addr));
 #ifdef _WIN32
-        addr.addressFamily = AF_BTH;
-        addr.serviceClassId = RFCOMM_PROTOCOL_UUID;
-        addr.port = data.port;
-        addr.btAddr = data.btAddr;
+        SOCKADDR_BTH addr{
+            .addressFamily = AF_BTH,
+            .btAddr = data.btAddr,
+            .serviceClassId = RFCOMM_PROTOCOL_UUID,
+            .port = data.port
+        };
 #else
-        addr.rc_family = AF_BLUETOOTH;
-        addr.rc_channel = data.port;
-        addr.rc_bdaddr = data.btAddr;
+        sockaddr_rc addr{
+            .rc_family = AF_BLUETOOTH,
+            .rc_bdaddr = data.btAddr,
+            .rc_channel = data.port
+        };
 #endif
 
         // Connect
-        connectSuccess = connectWithTimeout(sockfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != SOCKET_ERROR;
+        success = connectWithTimeout(sockfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != SOCKET_ERROR;
     } else {
-        // Set up hints for getaddrinfo()
-        addrinfo hints;
-        std::memset(&hints, 0, sizeof(hints));
-        hints.ai_flags = AI_NUMERICHOST;
-        hints.ai_family = AF_UNSPEC;
-        hints.ai_socktype = (data.type == TCP) ? SOCK_STREAM : SOCK_DGRAM;
-        hints.ai_protocol = (data.type == TCP) ? IPPROTO_TCP : IPPROTO_UDP;
+        // Internet protocol suite connection - Set up hints for getaddrinfo()
+        addrinfo hints{
+            .ai_flags = AI_NUMERICHOST,
+            .ai_family = AF_UNSPEC,
+            .ai_socktype = (data.type == TCP) ? SOCK_STREAM : SOCK_DGRAM,
+            .ai_protocol = (data.type == TCP) ? IPPROTO_TCP : IPPROTO_UDP
+        };
 
         addrinfo* addr;
 
@@ -186,14 +186,17 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
             // getaddrinfo() succeeded, initialize socket file descriptor with values created by GAI
             sockfd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
 
-            // TCP may need a timeout, UDP does not
-            if (data.type == TCP)
-                connectSuccess = connectWithTimeout(sockfd, addr->ai_addr, addr->ai_addrlen) != SOCKET_ERROR;
-            else
-                connectSuccess = connect(sockfd, addr->ai_addr, static_cast<int>(addr->ai_addrlen)) != SOCKET_ERROR;
+            if (sockfd != INVALID_SOCKET) {
+                // TCP may need a timeout, UDP does not
+                if (data.type == TCP)
+                    success = connectWithTimeout(sockfd, addr->ai_addr, addr->ai_addrlen) != SOCKET_ERROR;
+                else
+                    success = connect(sockfd, addr->ai_addr, static_cast<int>(addr->ai_addrlen)) != SOCKET_ERROR;
 
-            // Release the resources
-            freeaddrinfo(addr);
+                // Release the resources
+                freeaddrinfo(addr);
+            }
+
             break;
 #ifndef _WIN32
             // Unlike Winsock's getaddrinfo(), Unix versions may not set errno so errors are remapped to similar errnos
@@ -240,22 +243,19 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
     }
 
     // Check if connection failed
-    if (!connectSuccess) {
-        // destroySocket() may reset the last error code to 0, save it first:
-        int lastErrBackup = getLastErrInt();
-
+    if (!success) {
         // Destroy the socket:
         destroySocket(sockfd);
         sockfd = INVALID_SOCKET;
-
-        // Restore the last error code:
-        setLastErrInt(lastErrBackup);
     }
 
     return sockfd;
 }
 
 void Sockets::destroySocket(SOCKET sockfd) {
+    // This may reset the last error code to 0, save it first:
+    int lastErrBackup = getLastErrInt();
+
     if (sockfd != INVALID_SOCKET) {
 #ifdef _WIN32
         shutdown(sockfd, SD_BOTH);
@@ -265,6 +265,9 @@ void Sockets::destroySocket(SOCKET sockfd) {
         close(sockfd);
 #endif
     }
+
+    // Restore the last error code:
+    setLastErrInt(lastErrBackup);
 }
 
 int Sockets::sendData(SOCKET sockfd, const std::string& data) {
