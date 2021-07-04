@@ -2,9 +2,12 @@
 
 _This is under construction._
 
-## License
+## Licenses
 
-This repository is licensed under the third version of the GNU General Public License (GPLv3).
+This repository contains two licenses: the third version of the GNU General Public License (GPLv3) and the MIT license.
+
+The [GPLv3 license](/COPYING) applies to the NST source code and CMake build scripts.
+The [MIT license](/docs/MIT_LICENSE.txt) applies to all utility scripts that are not present in releases (e.g. Python downloaders).
 
 ## Third-Party Dependencies
 

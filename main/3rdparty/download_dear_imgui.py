@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# Copyright 2021 the Network Socket Terminal contributors
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: MIT
 #
 # This script will download the latest revision of Dear ImGui's docking
 # branch (https://github.com/ocornut/imgui/tree/docking) from GitHub.
