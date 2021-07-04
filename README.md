@@ -2,7 +2,7 @@
 
 _This is under construction._
 
-## Licenses
+## License
 
 This repository is licensed under the third version of the GNU General Public License (GPLv3).
 
