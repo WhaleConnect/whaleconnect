@@ -81,6 +81,9 @@
     <ClCompile Include="3rdparty\fmt\os.cc">
       <Filter>3rd-Party Files\{fmt} Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\winutf8.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\imguiext.hpp">
@@ -151,6 +154,9 @@
     </ClInclude>
     <ClInclude Include="3rdparty\fmt\os.h">
       <Filter>3rd-Party Files\{fmt} Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\winutf8.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

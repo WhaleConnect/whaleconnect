@@ -13,3 +13,4 @@ Name | Short for | Contains
 `sockets` | - | High-level, cross-platform socket functions
 `uicomp` | User Interface Components | Reusable classes to represent frequently-used GUI elements
 `util.hpp` | Utilities | Definitions for anything used by multiple files
+`winutf8` | Windows UTF-8 | Helpers to convert strings between UTF-8/UTF-16 on Windows

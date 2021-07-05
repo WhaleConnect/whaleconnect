@@ -21,6 +21,7 @@
 #include "searchbt.hpp"
 #include "sockets.hpp"
 #include "util.hpp"
+#include "winutf8.hpp"
 
 // How much longer the search time actually is compared to what its duration was set to
 static float searchDurationMultiplier = 1.28f;
@@ -49,24 +50,18 @@ static uint16_t getSDPChannel(const char* addr) {
     // Return value
     uint16_t ret = 0;
 
-    // Size of UTF-8 wide string in UTF-16 encoding
-    int stringSize = MultiByteToWideChar(CP_UTF8, 0, addr, -1, nullptr, 0);
-
-    // Allocate char buffer to contain new string
-    wchar_t* addrWide = new wchar_t[stringSize];
-
-    // Convert the address string to UTF-16
-    MultiByteToWideChar(CP_UTF8, 0, addr, -1, addrWide, stringSize);
+    std::wstring tmp = toWide(addr);
+    const wchar_t* addrWide = tmp.c_str();
 
     // Timeout for SDP query (1 second since this will be called for each device discovered so best to keep it short)
     BLOB bthConfig = makeInquiryTimeout(1);
 
     // Set up the queryset restrictions
-    WSAQUERYSETW wsaQuery{
-        .dwSize = sizeof(WSAQUERYSETW),
+    WSAQUERYSET wsaQuery{
+        .dwSize = sizeof(WSAQUERYSET),
         .lpServiceClassId = const_cast<LPGUID>(&RFCOMM_PROTOCOL_UUID),
         .dwNameSpace = NS_BTH,
-        .lpszContext = addrWide,
+        .lpszContext = const_cast<wchar_t*>(addrWide),
         .dwNumberOfCsAddrs = 0,
         .lpBlob = &bthConfig
     };
@@ -74,22 +69,21 @@ static uint16_t getSDPChannel(const char* addr) {
     // Start the lookup
     HANDLE hLookup{};
     DWORD flags = LUP_FLUSHCACHE | LUP_RETURN_ADDR;
-    if (WSALookupServiceBeginW(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) return 0;
+    if (WSALookupServiceBegin(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) return 0;
 
     // Continue the lookup
     DWORD size = 4096;
-    LPWSAQUERYSETW results = reinterpret_cast<LPWSAQUERYSETW>(new char[size]);
+    LPWSAQUERYSET results = reinterpret_cast<LPWSAQUERYSET>(new char[size]);
     results->dwSize = size;
     results->dwNameSpace = NS_BTH;
     results->lpBlob = &bthConfig;
 
     // Get the channel
-    while (WSALookupServiceNextW(hLookup, flags, &size, results) == NO_ERROR)
+    if (WSALookupServiceNext(hLookup, flags, &size, results) == NO_ERROR)
         ret = static_cast<uint16_t>(reinterpret_cast<PSOCKADDR_BTH>(results->lpcsaBuffer->RemoteAddr.lpSockaddr)->port);
 
-    // Free buffers
+    // Free buffer
     delete[] results;
-    delete[] addrWide;
 
     // End the lookup
     WSALookupServiceEnd(hLookup);
@@ -111,32 +105,24 @@ Sockets::BTSearchResult Sockets::searchBT() {
     BLOB bthConfig = makeInquiryTimeout(Settings::btSearchTime);
 
     // Begin Winsock lookup
-    //
-    // (LP)WSAQUERYSET, WSALookupServiceBegin, and WSALookupServiceNext are deprecated (warning C4996)
-    //
-    // These need to be replaced with a W-appended version (e.g. WSAQUERYSETW) to remove the deprecation warnings.
-    // The W stands for "wide character". This will make the string fields of the structures the LPWSTR datatype, which
-    // is a wide UTF-16 encoded string.
-    //
-    // These wide strings require a conversion into a UTF-8 std::string.
 
     // Query set structure
     HANDLE hLookup{};
     DWORD flags = LUP_RETURN_ADDR | LUP_RETURN_NAME | LUP_CONTAINERS | LUP_FLUSHCACHE;
-    WSAQUERYSETW wsaQuery{ .dwSize = sizeof(WSAQUERYSETW), .dwNameSpace = NS_BTH, .lpBlob = &bthConfig };
-    if (WSALookupServiceBeginW(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) return { getLastErr(), ret };
+    WSAQUERYSET wsaQuery{ .dwSize = sizeof(WSAQUERYSET), .dwNameSpace = NS_BTH, .lpBlob = &bthConfig };
+    if (WSALookupServiceBegin(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) return { getLastErr(), ret };
 
     // Query set return structure
     DWORD size = 4096;
-    LPWSAQUERYSETW results = reinterpret_cast<LPWSAQUERYSETW>(new char[size]);
+    LPWSAQUERYSET results = reinterpret_cast<LPWSAQUERYSET>(new char[size]);
 
     // Set structure fields
     results->dwNameSpace = NS_BTH;
-    results->dwSize = sizeof(WSAQUERYSETW);
+    results->dwSize = sizeof(WSAQUERYSET);
     results->lpBlob = &bthConfig;
 
     // Call Winsock lookup until no more devices are left
-    while (WSALookupServiceNextW(hLookup, flags, &size, results) == NO_ERROR) {
+    while (WSALookupServiceNext(hLookup, flags, &size, results) == NO_ERROR) {
         // Bluetooth socket of the current device that was found
         PSOCKADDR_BTH btSock = reinterpret_cast<PSOCKADDR_BTH>(results->lpcsaBuffer->RemoteAddr.lpSockaddr);
 
@@ -185,27 +171,12 @@ Sockets::BTSearchResult Sockets::searchBT() {
             values[5 - i] = static_cast<uint8_t>((mac & bitmask) >> bitshift); // Save the extracted octet
         }
 
-        // Convert name from UTF-16 to UTF-8
-        LPWSTR name = results->lpszServiceInstanceName;
-
-        // Size of UTF-16 wide string in UTF-8 encoding
-        int stringSize = WideCharToMultiByte(CP_UTF8, 0, name, -1, 0, 0, nullptr, nullptr);
-
-        // Allocate char buffer to contain new string
-        char* tmpBuf = new char[stringSize];
-
-        // Convert the wide string to UTF-8 and store it in the buffer
-        WideCharToMultiByte(CP_UTF8, 0, name, -1, tmpBuf, stringSize, nullptr, nullptr);
-
         // Format MAC address into string
         std::snprintf(addrStr, strLen, "%02X:%02X:%02X:%02X:%02X:%02X", values[0], values[1], values[2], values[3],
             values[4], values[5]);
 
         // Add the device's data to the vector
-        ret.push_back({ Bluetooth, tmpBuf, addrStr, getSDPChannel(addrStr), mac });
-
-        // Free name buffer
-        delete[] tmpBuf;
+        ret.push_back({ Bluetooth, fromWide(results->lpszServiceInstanceName), addrStr, getSDPChannel(addrStr), mac });
     }
 
     // Free results
