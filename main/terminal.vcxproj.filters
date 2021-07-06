@@ -84,6 +84,12 @@
     <ClCompile Include="src\winutf8.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\error.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\errorlist.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\imguiext.hpp">
@@ -156,6 +162,9 @@
       <Filter>3rd-Party Files\{fmt} Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\winutf8.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\error.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

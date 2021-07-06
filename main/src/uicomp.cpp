@@ -6,6 +6,7 @@
 
 #include <imgui/imgui.h>
 
+#include "error.hpp"
 #include "uicomp.hpp"
 #include "imguiext.hpp"
 #include "util.hpp"
@@ -108,7 +109,7 @@ ClientWindow::ClientWindow(const DeviceData& data) {
     // Set title
     title = UIHelpers::makeClientWindowTitle(data);
 
-    if (_sockfd == INVALID_SOCKET) _errHandler(); // Socket invalid
+    if (_sockfd == INVALID_SOCKET) _errHandler(Sockets::getLastErr()); // Socket invalid
     else _connected = true; // Socket and connection valid
 
     // Start the receiving background thread
@@ -157,19 +158,16 @@ void ClientWindow::_closeConnection() {
     }
 }
 
-void ClientWindow::_errHandler() {
-    _errHandler(Sockets::getLastErr());
-}
-
-void ClientWindow::_errHandler(const Sockets::SocketError& err) {
-    if (err.code == 0) return; // "[ERROR] 0: The operation completed successfully"
+void ClientWindow::_errHandler(int err) {
+    if (err == 0) return; // "[ERROR] 0: The operation completed successfully"
 
     // Socket errors are fatal
     _closeConnection();
 
     // Add error line to console
+    Sockets::NamedError ne = Sockets::getErr(err);
     _output.forceNextLine();
-    _output.addText(std::format("[ERROR] {}: {}\n", err.code, err.desc));
+    _output.addText(std::format("[ERROR] {} ({}): {}\n", ne.name, err, ne.desc));
 }
 
 void ClientWindow::_updateOutput() {
@@ -221,8 +219,14 @@ void ClientWindow::update() {
         // Add line ending
         const char* endings[] = { "", "\n", "\r", "\r\n" };
 
-        // Send data and check if success
-        if (_connected && (Sockets::sendData(_sockfd, _sendBuf + endings[_currentLE]) == SOCKET_ERROR)) _errHandler();
+        if (_connected) {
+            // Send data and check if success
+            if (Sockets::sendData(_sockfd, _sendBuf + endings[_currentLE]) == SOCKET_ERROR)
+                _errHandler(Sockets::getLastErr());
+        } else {
+            _output.forceNextLine();
+            _output.addText("[INFO ] The socket is not connected.\n");
+        }
 
         _sendBuf = ""; // Blank out input textbox
         ImGui::SetItemDefaultFocus();

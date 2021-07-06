@@ -7,8 +7,6 @@
 
 #include "sockets.hpp"
 
-struct DeviceData;
-
 namespace Sockets {
     /// <summary>
     /// A structure containing the results of a Bluetooth search.
@@ -16,7 +14,7 @@ namespace Sockets {
     /// If the search succeeded, a list of the devices discovered can be found from the `foundDevices` member.
     /// </summary>
     struct BTSearchResult {
-        SocketError err;
+        int err;
         std::vector<DeviceData> foundDevices;
     };
 

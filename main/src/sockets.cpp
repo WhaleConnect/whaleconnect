@@ -5,6 +5,8 @@
 // Winsock headers for Windows
 #include <ws2tcpip.h>
 #include <ws2bth.h>
+
+#pragma comment(lib, "Ws2_32.lib")
 #else
 // Bluetooth headers for Unix
 #include <bluetooth/bluetooth.h>
@@ -34,28 +36,14 @@
 #define BTHPROTO_RFCOMM BTPROTO_RFCOMM
 #endif
 
-#include "sockets.hpp"
-
-Sockets::SocketError Sockets::getLastErr() {
-    // Get the last error's numeric code
-    int lastErr = getLastErrInt();
-    std::string errMsg;
-
-    // Get the last error's description
-#ifdef _WIN32
-    constexpr DWORD msgLen = 1024;
-    static char msg[msgLen];
-    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK, nullptr,
-        lastErr, 0, msg, msgLen, nullptr);
-
-    errMsg = msg;
-#else
-    errMsg = std::strerror(lastErr);
+#ifndef EAI_SYSTEM
+#define EAI_SYSTEM 0
 #endif
-    return { lastErr, errMsg };
-}
 
-int Sockets::getLastErrInt() {
+#include "sockets.hpp"
+#include "error.hpp"
+
+int Sockets::getLastErr() {
 #ifdef _WIN32
     return WSAGetLastError();
 #else
@@ -63,7 +51,7 @@ int Sockets::getLastErrInt() {
 #endif
 }
 
-void Sockets::setLastErrInt(int err) {
+void Sockets::setLastErr(int err) {
 #ifdef _WIN32
     WSASetLastError(err);
 #else
@@ -115,20 +103,20 @@ int Sockets::connectWithTimeout(SOCKET sockfd, sockaddr* addr, size_t addrlen) {
     connect(sockfd, addr, static_cast<int>(addrlen));
 
     // Get the last socket error
-    int lastErr = getLastErrInt();
+    int lastErr = getLastErr();
     if ((lastErr != WSAEWOULDBLOCK) && (lastErr != WSAEINPROGRESS)) {
         // Check if the last socket error is not (WSA)EWOULDBLOCK or (WSA)EINPROGRESS, these are non-fatal errors that
         // may be thrown with a non-blocking socket. If it's anything else, set return code to indicate failure.
         return SOCKET_ERROR;
     } else {
-        setLastErrInt(NO_ERROR);
+        setLastErr(NO_ERROR);
 
         // Wait for connect to complete (or for the timeout deadline)
         pollfd pfds[] = { { sockfd, POLLOUT, 0 } };
 
         // If poll returns 0 it timed out indicating a failed connection.
         if (WSAPoll(pfds, 1, Settings::connectTimeout * 1000) == 0) {
-            setLastErrInt(WSAETIMEDOUT);
+            setLastErr(WSAETIMEDOUT);
             return SOCKET_ERROR;
         }
     }
@@ -158,20 +146,35 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
         sockaddr_rc addr{
             .rc_family = AF_BLUETOOTH,
             .rc_bdaddr = data.btAddr,
-            .rc_channel = data.port
+            .rc_channel = static_cast<uint8_t>(data.port)
         };
 #endif
 
         // Connect
         success = connectWithTimeout(sockfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != SOCKET_ERROR;
     } else {
-        // Internet protocol suite connection - Set up hints for getaddrinfo()
+        // Internet protocol - Set up hints for getaddrinfo()
+        // Ignore "missing initializer" warnings on GCC and clang
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-field-initializers"
+#endif
         addrinfo hints{
             .ai_flags = AI_NUMERICHOST,
             .ai_family = AF_UNSPEC,
             .ai_socktype = (data.type == TCP) ? SOCK_STREAM : SOCK_DGRAM,
             .ai_protocol = (data.type == TCP) ? IPPROTO_TCP : IPPROTO_UDP
         };
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
         addrinfo* addr;
 
@@ -181,8 +184,8 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
         std::snprintf(portStr, strLen, "%hu", data.port);
 
         // Resolve and connect to the IP, getaddrinfo() allows both IPv4 and IPv6 addresses
-        switch (getaddrinfo(data.address.c_str(), portStr, &hints, &addr)) {
-        case NO_ERROR:
+        int gaiResult = getaddrinfo(data.address.c_str(), portStr, &hints, &addr);
+        if (gaiResult == NO_ERROR) {
             // getaddrinfo() succeeded, initialize socket file descriptor with values created by GAI
             sockfd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
 
@@ -196,49 +199,12 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
                 // Release the resources
                 freeaddrinfo(addr);
             }
-
-            break;
-#ifndef _WIN32
-            // Unlike Winsock's getaddrinfo(), Unix versions may not set errno so errors are remapped to similar errnos
-        case EAI_SYSTEM:
-            // System error, this means the error is already in errno so do nothing
-            break;
-        case EAI_FAMILY:
-        case EAI_ADDRFAMILY:
-            // ai_family not supported
-            errno = EAFNOSUPPORT; // Address family not supported by protocol
-            break;
-        case EAI_SOCKTYPE:
-            // ai_socktype not supported
-            errno = ESOCKTNOSUPPORT; // Socket type not supported
-            break;
-        case EAI_MEMORY:
-            // Out of memory
-            errno = ENOMEM; // Out of memory
-            break;
-        case EAI_BADFLAGS:
-        case EAI_SERVICE:
-            // Invalid flags; EAI_SERVICE means that the specified service is not available, which also falls under an
-            // invalid argument error
-            errno = EINVAL; // Invalid argument
-            break;
-        case EAI_FAIL:
-            // Non-recoverable failure
-            errno = ENOTRECOVERABLE; // State not recoverable
-            break;
-        case EAI_OVERFLOW:
-            // Argument buffer overflow
-            errno = ENOBUFS; // No buffer space available
-            break;
-        case EAI_NODATA:
-        case EAI_NONAME:
-            // Host does not exist, or it exists but it has no addresses
-            errno = ENXIO; // No such device or address
-            break;
-        case EAI_AGAIN:
-            // Temporary failure
-            errno = EAGAIN; // Try again
-#endif
+        } else {
+            // Because we're using our own implementation of strerror() and getaddrinfo() errors differ from standard
+            // ones (on Unix they're negative while errnos are all positive, and on Windows all the errors are in one
+            // category and guaranteed not to clash) we can directly set errno to the result of getaddrinfo() and let
+            // the application handle the error.
+            if (gaiResult != EAI_SYSTEM) setLastErr(gaiResult);
         }
     }
 
@@ -254,7 +220,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 
 void Sockets::destroySocket(SOCKET sockfd) {
     // This may reset the last error code to 0, save it first:
-    int lastErrBackup = getLastErrInt();
+    int lastErrBackup = getLastErr();
 
     if (sockfd != INVALID_SOCKET) {
 #ifdef _WIN32
@@ -267,7 +233,7 @@ void Sockets::destroySocket(SOCKET sockfd) {
     }
 
     // Restore the last error code:
-    setLastErrInt(lastErrBackup);
+    setLastErr(lastErrBackup);
 }
 
 int Sockets::sendData(SOCKET sockfd, const std::string& data) {

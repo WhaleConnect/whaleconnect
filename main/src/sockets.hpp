@@ -25,28 +25,14 @@ typedef int SOCKET;
 /// </summary>
 namespace Sockets {
     /// <summary>
-    /// A structure containing an int and a string to represent a socket error.
-    /// </summary>
-    struct SocketError {
-        int code{}; // Numeric error code of the error
-        std::string desc; // Extended error description
-    };
-
-    /// <summary>
-    /// Get the last socket error encountered by the system.
-    /// </summary>
-    /// <returns>Last error code (int) and detailed error message (string)</returns>
-    SocketError getLastErr();
-
-    /// <summary>
     /// Get the error code of the last socket error.
     /// </summary>
-    int getLastErrInt();
+    int getLastErr();
 
     /// <summary>
     /// Set the last socket error code.
     /// </summary>
-    void setLastErrInt(int err);
+    void setLastErr(int err);
 
     /// <summary>
     /// Prepare the OS sockets for use by the application.

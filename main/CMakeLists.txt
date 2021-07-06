@@ -33,8 +33,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Use MSVC's Unicode character set
     target_compile_definitions(terminal PRIVATE UNICODE _UNICODE)
 
-	# Windows - GLFW and Winsock lib files
-	target_link_libraries(terminal ${PROJECT_SOURCE_DIR}/3rdparty/GLFW/glfw3.lib ws2_32.lib)
+	# Windows - GLFW lib file
+	target_link_libraries(terminal ${PROJECT_SOURCE_DIR}/3rdparty/GLFW/glfw3.lib)
 
 	# This prevents LNK4098 in Debug mode, but causes LNK2001 in Release mode.
 	# This is because the GLFW pre-built binaries were built in Release mode.

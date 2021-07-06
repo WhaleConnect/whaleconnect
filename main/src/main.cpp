@@ -6,6 +6,7 @@
 
 #include <imgui/imgui.h>
 
+#include "error.hpp"
 #include "uicomp.hpp"
 #include "util.hpp"
 #include "imguiext.hpp"
@@ -144,8 +145,8 @@ void drawBTConnectionTab() {
         // (from https://github.com/ocornut/imgui/issues/1901#issuecomment-400563921)
         ImGui::Text("Searching... %c", "|/-\\"[static_cast<int>(ImGui::GetTime() / 0.05f) & 3]);
     } else {
-        Sockets::SocketError err = searchResult.err;
-        if (err.code == 0) {
+        int err = searchResult.err;
+        if (err == 0) {
             // "Display Advanced Info" checkbox to show information about the device
             static bool displayAdvanced = false;
             ImGui::Checkbox("Display Advanced Info", &displayAdvanced);
@@ -202,7 +203,8 @@ void drawBTConnectionTab() {
             ImGui::EndChild();
         } else {
             // Error occurred
-            ImGui::Text("An error occurred: %d: %s", err.code, err.desc.c_str());
+            Sockets::NamedError ne = Sockets::getErr(err);
+            ImGui::Text("An error occurred: %s (%d): %s", ne.name, err, ne.desc);
         }
     }
 

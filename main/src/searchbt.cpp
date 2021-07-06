@@ -300,5 +300,5 @@ Sockets::BTSearchResult Sockets::searchBT() {
 #endif
 
     // Return result
-    return { { NO_ERROR, "" }, ret };
+    return { NO_ERROR, ret };
 }

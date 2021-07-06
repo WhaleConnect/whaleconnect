@@ -1,6 +1,8 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#pragma once
+
 #include <string> // std::string
 #include <cstring> // std::strchr()
 #include <imgui/imgui_internal.h>
