@@ -71,6 +71,15 @@ namespace ImGui {
     /// </remarks>
     template<class... Args>
     void Overlay(ImVec2 location, const char* text, Args... args);
+
+    /// <summary>
+    /// Display a basic spinner which rotates every few frames.
+    /// </summary>
+    /// <param name="label">The text to display next to the spinner</param>
+    /// <remarks>
+    /// This function is taken from https://github.com/ocornut/imgui/issues/1901#issuecomment-400563921
+    /// </remarks>
+    void LoadingSpinner(const char* label);
 }
 
 template<class T>

@@ -142,8 +142,7 @@ void drawBTConnectionTab() {
 
     if (searchRunning) {
         // While the search is running in the background thread, display a text spinner
-        // (from https://github.com/ocornut/imgui/issues/1901#issuecomment-400563921)
-        ImGui::Text("Searching... %c", "|/-\\"[static_cast<int>(ImGui::GetTime() / 0.05f) & 3]);
+        ImGui::LoadingSpinner("Searching");
     } else {
         int err = searchResult.err;
         if (err == 0) {

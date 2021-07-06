@@ -42,3 +42,7 @@ void ImGui::HelpMarker(const char* desc) {
         EndTooltip();
     }
 }
+
+void ImGui::LoadingSpinner(const char* label) {
+    Text("%d... %c", label, "|/-\\"[static_cast<int>(ImGui::GetTime() / 0.05f) & 3]);
+}
