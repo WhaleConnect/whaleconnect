@@ -164,24 +164,12 @@ void drawBTConnectionTab() {
                 // Format the address and channel into the device entry if advanced info is enabled
                 if (displayAdvanced) buttonText += std::format(" ({} channel {})", i.address, i.port);
 
-                if (!canConnect) {
-                    // Get button color
-                    ImVec4 disabled = ImGui::GetStyle().Colors[ImGuiCol_Button];
+                if (!canConnect) ImGui::PushDisabled();
+                if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) isNew = openNewConnection(i);
+                if (!canConnect) ImGui::PopDisabled();
 
-                    // Change the hover color and click color to the original idle color. This makes the button
-                    // appear unresponsive, making it look disabled.
-                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, disabled);
-                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, disabled);
-
-                    // Prepend a warning symbol (U+26A0) to let the user know there's a problem with this device
-                    buttonText = "\u26A0 " + buttonText;
-                }
-
-                // Display the button
-                if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) if (canConnect) isNew = openNewConnection(i);
-
-                if (!canConnect) ImGui::PopStyleColor(2); // Remove the disabled button colors
-                ImGui::PopStyleVar(); // Remove the larger inner padding
+                // Remove the larger inner padding
+                ImGui::PopStyleVar();
 
                 // Display a tooltip
                 if (!canConnect && ImGui::IsItemHovered()) {
