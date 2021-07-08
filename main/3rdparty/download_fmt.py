@@ -6,7 +6,7 @@
 
 from download_utils import *
 
-# Dear ImGui GitHub repo URL
+# {fmt} GitHub repo URL
 set_repo("fmtlib/fmt", "master")
 
 # Header files (.h extension)

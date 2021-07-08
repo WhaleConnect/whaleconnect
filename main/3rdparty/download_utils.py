@@ -31,30 +31,28 @@ def set_repo(name, branch, out_name=""):
     ----------
     name : str
         The repository's identifier, in the format
-        [username]/[repo name]. This is displayed at the top of every
-        repository's GitHub page.
+        [owner name]/[repo name]. This is displayed at the top of its
+        GitHub page.
     branch : str
-        The branch of the repository to target: "master", "main", etc.
+        The branch to download from: "master", "main", etc.
     out_name : str, optional
         The name of the output directory to places the files in. By
-        default this is the name of the repository but it can be
-        changed by setting this option.
+        default, this is the name of the repository.
     """
 
     global repo_url
     global out_dir
 
-    # Set the repository URL accordingly
+    # Repository URL
     repo_url = f"https://raw.githubusercontent.com/{name}/{branch}/"
 
-    # Get the directory this file is in:
+    # The working directory of this file
     file_dir = os.path.dirname(os.path.realpath(__file__))
 
     if out_name == "":
         # Unspecified output name, use the repo name
-        # The name of the repository is after the last /,
-        # use os.path.basename() to get it:
-        out_name = os.path.basename(name)
+        # This is the part after the /:
+        out_name = name.split("/")[1]
 
     # Join the current directory and the repository name together to
     # get the directory where the files will be placed
