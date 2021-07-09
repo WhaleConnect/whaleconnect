@@ -164,9 +164,9 @@ void drawBTConnectionTab() {
                 // Format the address and channel into the device entry if advanced info is enabled
                 if (displayAdvanced) buttonText += std::format(" ({} channel {})", i.address, i.port);
 
-                if (!canConnect) ImGui::PushDisabled();
+                ImGui::PushDisabled(!canConnect);
                 if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) isNew = openNewConnection(i);
-                if (!canConnect) ImGui::PopDisabled();
+                ImGui::PopDisabled();
 
                 // Remove the larger inner padding
                 ImGui::PopStyleVar();
@@ -179,7 +179,7 @@ void drawBTConnectionTab() {
                     ImGui::Text("Can't connect to this device.");
 
                     // Based on if advanced info is enabled, show a description of why a connection can't be made
-                    if (displayAdvanced) ImGui::Text("The channel could not be obtained. The device may not be "
+                    if (displayAdvanced) ImGui::Text("The channel could not be obtained. The device may not be on or "
                         "advertising an SDP session with the protocol selected.");
                     else ImGui::Text("Enable \"Display Advanced Info\" to see more.");
 
