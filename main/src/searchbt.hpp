@@ -14,7 +14,7 @@ namespace Sockets {
     /// If the search succeeded, a list of the devices discovered can be found from the `foundDevices` member.
     /// </summary>
     struct BTSearchResult {
-        int err;
+        int err = 0;
         std::vector<DeviceData> foundDevices;
     };
 
