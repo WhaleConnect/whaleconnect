@@ -18,8 +18,8 @@
 #define EFAULT WSAEFAULT
 #undef EADDRNOTAVAIL
 #define EADDRNOTAVAIL WSAEADDRNOTAVAIL
-#undef ENFILE
-#define ENFILE WSAEMFILE
+#undef EMFILE
+#define EMFILE WSAEMFILE
 #undef ENOMEM
 #define ENOMEM WSAENOBUFS
 #undef EMSGSIZE
@@ -91,7 +91,7 @@ const std::unordered_map<long, Sockets::NamedError> Sockets::errors = {
     E(EINVAL, "An argument is invalid."),
     E(EFAULT, "A supplied internal pointer address is invalid."),
     E(EADDRNOTAVAIL, "The address or port is not valid in its context."),
-    E(ENFILE, "Too many open sockets at this time."),
+    E(EMFILE, "Too many open sockets at this time."),
     E(ENOMEM, "No buffer space or memory available."),
     E(EMSGSIZE, "A datagram transferred was larger than the buffer allocated for it."),
     E(ENODATA, "The requested name is valid, but no data of the requested type was found."),
@@ -143,6 +143,7 @@ const std::unordered_map<long, Sockets::NamedError> Sockets::errors = {
     E(EPROTO, "The protocol encountered an unrecoverable error."),
     E(ENODEV, "No such device - check that you have a suitable hardware device and its driver."),
     E(ENXIO, "No such device or address - check that you have a suitable hardware device and its driver."),
+    E(ENFILE, "A system file table overflow occurred."),
     E(EAI_ADDRFAMILY, "The host does not have any network addresses in the requested address family."),
     E(EAI_AGAIN, "Temporary error in name resolution."),
     E(EAI_BADFLAGS, "Invalid flags value."),

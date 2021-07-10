@@ -12,7 +12,7 @@
         "EADDRNOTAVAIL": "The address or port is not valid in its context.",
 
         // Resource exhaustion errors
-        "ENFILE:WSAEMFILE": "Too many open sockets at this time.",
+        "EMFILE:WSAEMFILE": "Too many open sockets at this time.",
         "ENOMEM:WSAENOBUFS": "No buffer space or memory available.",
         "EMSGSIZE": "A datagram transferred was larger than the buffer allocated for it.",
 
@@ -83,6 +83,7 @@
         "EPROTO": "The protocol encountered an unrecoverable error.",
         "ENODEV": "No such device - check that you have a suitable hardware device and its driver.",
         "ENXIO": "No such device or address - check that you have a suitable hardware device and its driver.",
+        "ENFILE": "A system file table overflow occurred.",
 
         // Unix-specific getaddrinfo errors
         "EAI_ADDRFAMILY": "The host does not have any network addresses in the requested address family.",
