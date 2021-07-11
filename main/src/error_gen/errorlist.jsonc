@@ -12,7 +12,7 @@
         "EADDRNOTAVAIL": "The address or port is not valid in its context.",
 
         // Resource exhaustion errors
-        "EMFILE:WSAEMFILE": "Too many open sockets at this time.",
+        "EMFILE": "Too many open sockets at this time.",
         "ENOMEM:WSAENOBUFS": "No buffer space or memory available.",
         "EMSGSIZE": "A datagram transferred was larger than the buffer allocated for it.",
 
