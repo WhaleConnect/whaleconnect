@@ -6,6 +6,8 @@ This directory contains a JSON file and a Python file.\
 The JSON file contains all the error identifiers and string descriptions.\
 The Python file reads this JSON and translates it into C++ code. This is outputted to `errorlist.cpp`.
 
+Both files are GPLv3-licensed as they are considered to be part of the Network Socket Terminal source code.
+
 ## Format of the JSON File
 
 There are three sections of the JSON data: "crossplatform", "windows", and "unix". These associate error identifiers to descriptions. They contain entries specific to either Windows or Unix (or both), their names are self-explanatory.\

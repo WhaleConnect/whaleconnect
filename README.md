@@ -6,8 +6,8 @@ _This is under construction._
 
 This repository contains two licenses: the third version of the GNU General Public License (GPLv3) and the MIT license.
 
-The [GPLv3 license](/COPYING) applies to the NST source code and CMake build scripts.
-The [MIT license](/docs/MIT_LICENSE.txt) applies to all utility scripts that are unrelated to the NST source code and releases (e.g. Python downloaders).
+The [GPLv3 license](/COPYING) applies to the NST source code and CMake build scripts.\
+The [MIT license](/docs/MIT_LICENSE.txt) applies to all utility scripts that are unrelated to the GPL-ed code and releases (e.g. Python downloaders).
 
 ## Third-Party Dependencies
 
