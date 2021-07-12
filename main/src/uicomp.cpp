@@ -3,6 +3,12 @@
 
 #include <algorithm> // std::replace()
 #include <mutex> // std::mutex
+#include <chrono> // std::chrono::microseconds
+
+#ifdef _WIN32
+#include <io.h> // _pipe()
+#include <fcntl.h> // O_TEXT
+#endif
 
 #include <imgui/imgui.h>
 
@@ -102,18 +108,23 @@ void Console::clear() {
     _items.clear();
 }
 
-ClientWindow::ClientWindow(const DeviceData& data) {
-    // Create the socket
-    _sockfd = Sockets::createClientSocket(data);
+ClientWindow::ClientWindow(const DeviceData& data) : title(UIHelpers::makeClientWindowTitle(data)) {
+    _connFut = std::async(std::launch::async, [&](const DeviceData& d) {
+        SOCKET sockfd = Sockets::createClientSocket(d, _connectStop);
+        _lastConnectError = Sockets::getLastErr();
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
+        return sockfd;
+    }, data);
+}
 
-    // Set title
-    title = UIHelpers::makeClientWindowTitle(data);
+ClientWindow::~ClientWindow() {
+    _closeConnection();
 
-    if (_sockfd == INVALID_SOCKET) _errHandler(Sockets::getLastErr()); // Socket invalid
-    else _connected = true; // Socket and connection valid
+    // Join the receiving thread
+    if (_recvThread.joinable()) _recvThread.join();
+}
 
-    // Start the receiving background thread
-    // (If the socket creation failed, `_connected` remains false and the thread simply exits right away.)
+void ClientWindow::_startRecvThread() {
     _recvThread = std::thread([&] {
         // Read data into buffer as long as the socket is connected
         while (_connected) {
@@ -142,20 +153,10 @@ ClientWindow::ClientWindow(const DeviceData& data) {
     });
 }
 
-ClientWindow::~ClientWindow() {
-    _closeConnection();
-
-    // Join the receiving thread
-    if (_recvThread.joinable()) _recvThread.join();
-}
-
 void ClientWindow::_closeConnection() {
-    if (_connected) {
-        _connected = false;
-
-        // Shutdown and close the socket
-        Sockets::destroySocket(_sockfd);
-    }
+    Sockets::destroySocket(_sockfd);
+    _connected = false;
+    _connectStop = true;
 }
 
 void ClientWindow::_errHandler(int err) {
@@ -168,6 +169,31 @@ void ClientWindow::_errHandler(int err) {
     Sockets::NamedError ne = Sockets::getErr(err);
     _output.forceNextLine();
     _output.addText(std::format("[ERROR] {} ({}): {}\n", ne.name, err, ne.desc));
+}
+
+void ClientWindow::_checkConnectionStatus() {
+    // The && should short-circuit here - wait_for() should not execute if valid() returns false.
+    // This is the desired and expected behavior, since waiting on an invalid future throws an exception.
+    if (_connFut.valid() && _connFut.wait_for(std::chrono::microseconds(0)) == std::future_status::ready) {
+        // If the socket is ready, get its file descriptor
+        _sockfd = _connFut.get();
+
+        if (_sockfd == INVALID_SOCKET) {
+            // Something failed, print the error
+            _errHandler(_lastConnectError);
+        } else {
+            // Connected, confirm success and start receiving data
+            _connected = true;
+            _output.addText("[INFO ] Done.\n");
+            _startRecvThread();
+        }
+    } else {
+        // Still connecting, display a message
+        if (!_connectInitialized) {
+            _output.addText(std::format("Connecting... ({} sec timeout)\n", Settings::connectTimeout));
+            _connectInitialized = true;
+        }
+    }
 }
 
 void ClientWindow::_updateOutput() {
@@ -220,9 +246,12 @@ void ClientWindow::update() {
         const char* endings[] = { "", "\n", "\r", "\r\n" };
 
         if (_connected) {
-            // Send data and check if success
-            if (Sockets::sendData(_sockfd, _sendBuf + endings[_currentLE]) == SOCKET_ERROR)
-                _errHandler(Sockets::getLastErr());
+            // Construct the string to send by adding the line ending to the end of the string
+            std::string sendString = _sendBuf + endings[_currentLE];
+            if (sendString != "") {
+                // Send data and check if success
+                if (Sockets::sendData(_sockfd, sendString) == SOCKET_ERROR) _errHandler(Sockets::getLastErr());
+            }
         } else {
             _output.forceNextLine();
             _output.addText("[INFO ] The socket is not connected.\n");
@@ -232,6 +261,8 @@ void ClientWindow::update() {
         ImGui::SetItemDefaultFocus();
         ImGui::SetKeyboardFocusHere(-1); // Auto focus on input textbox
     }
+
+    _checkConnectionStatus(); // Check the status of the async connection
 
     if (_connected && _recvNew) {
         // If the socket is connected and there is new data received, try to lock the receiving access mutex:

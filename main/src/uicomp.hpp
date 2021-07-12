@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <future> // std::future, std::async()
 #include <vector> // std::vector
 #include <thread> // std::thread
 #include <atomic> // std::atomic
@@ -53,17 +54,26 @@ public:
 
 class ClientWindow {
     std::atomic<SOCKET> _sockfd = INVALID_SOCKET; // Socket for connections
+    std::future<SOCKET> _connFut; // The future object responsible for connecting asynchronously
     std::atomic<bool> _connected = false; // If the window has an active connection
-    int _lastRecvErr; // The last error encountered by the receiving thread
-
-    Console _output; // The output of the window, will hold system messages and data received from the server
-    std::string _sendBuf, _recvBuf; // Buffers
-    int _currentLE = 0; // The index of the line ending selected in the combobox
+    std::atomic<int> _lastConnectError = 0; // The last error encountered while connecting
+    bool _connectInitialized = false; // If the "Connecting..." message has been printed
+    std::atomic<bool> _connectStop = false; // If the connection should be canceled
 
     std::thread _recvThread; // Thread responsible for receiving data from the server
     std::mutex _recvAccess; // Mutex to ensure only one thread can access the recv buffer at a time
     int _receivedBytes = 0; // Number of bytes received from the socket
     std::atomic<bool> _recvNew = false; // If new data has been received
+    int _lastRecvErr = 0; // The last error encountered by the receiving thread
+
+    Console _output; // The output of the window, will hold system messages and data received from the server
+    std::string _sendBuf, _recvBuf; // Buffers
+    int _currentLE = 0; // The index of the line ending selected in the combobox
+
+    /// <summary>
+    /// Start the receiving background thread.
+    /// </summary>
+    void _startRecvThread();
 
     /// <summary>
     /// Shut down and close the internal socket.
@@ -75,6 +85,11 @@ class ClientWindow {
     /// </summary>
     /// <param name="err">The error code to format and print</param>
     void _errHandler(int err);
+
+    /// <summary>
+    /// Check if the async connection finished and what errors occured, then perform the appropriate behavior.
+    /// </summary>
+    void _checkConnectionStatus();
 
     /// <summary>
     /// Add text to the output. Called after receiving data from the socket.
@@ -97,7 +112,7 @@ public:
     ~ClientWindow();
 
     /// <summary>
-    /// Redraw the connection window and all of its elements, and sends data through the socket if when necessary.
+    /// Redraw the connection window and send data through the socket.
     /// </summary>
     void update();
 };

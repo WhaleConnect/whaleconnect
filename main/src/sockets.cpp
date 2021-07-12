@@ -1,6 +1,8 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <chrono> // std::chrono
+
 #ifdef _WIN32
 // Winsock headers for Windows
 #include <ws2tcpip.h>
@@ -95,12 +97,13 @@ void Sockets::cleanup() {
 #endif
 }
 
-int Sockets::connectWithTimeout(SOCKET sockfd, sockaddr* addr, size_t addrlen) {
+int Sockets::connectWithTimeout(SOCKET sockfd, const std::atomic<bool>& sig, sockaddr* addr, size_t addrlen) {
     // Make the socket non-blocking, abort if this action fails.
     if (setBlocking(sockfd, false) == SOCKET_ERROR) return SOCKET_ERROR;
 
     // Start connecting on the non-blocking socket
     connect(sockfd, addr, static_cast<int>(addrlen));
+    bool success = false;
 
     // Get the last socket error
     int lastErr = getLastErr();
@@ -110,12 +113,27 @@ int Sockets::connectWithTimeout(SOCKET sockfd, sockaddr* addr, size_t addrlen) {
         return SOCKET_ERROR;
     } else {
         setLastErr(NO_ERROR);
+        auto start = std::chrono::steady_clock::now(); // When the loop started
 
-        // Wait for connect to complete (or for the timeout deadline)
-        pollfd pfds[] = { { sockfd, POLLOUT, 0 } };
+        // We're not using (WSA)poll() directly because we need to periodically check for the signal.
+        // (WSA)poll() blocks for the entirety of its execution, preventing the thread from checking anything else.
+        while (!sig) {
+            // Set up array of pollfd structures (we only need one here)
+            pollfd pfds[] = { { sockfd, POLLOUT, 0 } };
 
-        // If poll returns 0 it timed out indicating a failed connection.
-        if (WSAPoll(pfds, 1, Settings::connectTimeout * 1000) == 0) {
+            // Poll for a short amount of time
+            if (WSAPoll(pfds, 1, Settings::connectPollTime) > 0) {
+                // Return value greater than 0, this means the socket was connected successfully so break
+                success = true;
+                break;
+            }
+
+            // Check if the timeout value has been reached
+            if (std::chrono::steady_clock::now() - start > std::chrono::seconds(Settings::connectTimeout)) break;
+        }
+
+        // If the connect was not successful, set the last error to be "Timed Out" and exit
+        if (!success) {
             setLastErr(WSAETIMEDOUT);
             return SOCKET_ERROR;
         }
@@ -125,7 +143,7 @@ int Sockets::connectWithTimeout(SOCKET sockfd, sockaddr* addr, size_t addrlen) {
     return setBlocking(sockfd, true);
 }
 
-SOCKET Sockets::createClientSocket(const DeviceData& data) {
+SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<bool>& sig) {
     SOCKET sockfd = INVALID_SOCKET; // Socket file descriptor
     bool success = false; // If the connection was successful
 
@@ -151,7 +169,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 #endif
 
         // Connect
-        success = connectWithTimeout(sockfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != SOCKET_ERROR;
+        success = connectWithTimeout(sockfd, sig, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != SOCKET_ERROR;
     } else {
         // Internet protocol - Set up hints for getaddrinfo()
         // Ignore "missing initializer" warnings on GCC and clang
@@ -192,7 +210,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
             if (sockfd != INVALID_SOCKET) {
                 // TCP may need a timeout, UDP does not
                 if (data.type == TCP)
-                    success = connectWithTimeout(sockfd, addr->ai_addr, addr->ai_addrlen) != SOCKET_ERROR;
+                    success = connectWithTimeout(sockfd, sig, addr->ai_addr, addr->ai_addrlen) != SOCKET_ERROR;
                 else
                     success = connect(sockfd, addr->ai_addr, static_cast<int>(addr->ai_addrlen)) != SOCKET_ERROR;
 

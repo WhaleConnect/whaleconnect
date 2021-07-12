@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string> // std::string
+#include <atomic> // std::atomic
 
 #ifdef _WIN32
 // Winsock header
@@ -49,19 +50,23 @@ namespace Sockets {
     /// Connect a socket to a server with the timeout specified in Settings.
     /// </summary>
     /// <param name="sockfd">The socket file descriptor to perform the connection on</param>
+    /// <param name="sig">Atomic bool, set to true in another thread to abort this function</param>
     /// <param name="addr">The sockaddr* instance describing what to connect to</param>
     /// <param name="addrlen">The size of the addr param [use sizeof()]</param>
-    /// <returns>Failure/timeout: SOCKET_ERROR, Success: NO_ERROR</returns>
-    int connectWithTimeout(SOCKET sockfd, sockaddr* addr, size_t addrlen);
+    /// <returns>Failure/abort/timeout: SOCKET_ERROR, Success: NO_ERROR</returns>
+    /// <remarks>
+    /// This function should not be used outside of createClientSocket() since that handles most of the error checking
+    /// and parameter evaluation involved in connecting.
+    /// </remarks>
+    int connectWithTimeout(SOCKET sockfd, const std::atomic<bool>& sig, sockaddr* addr, size_t addrlen);
 
     /// <summary>
-    /// Resolve the remote device and attempt to connect to it. If the type param indicates an IP-type connection
-    /// (TCP/UDP), it will decide if the address is IPv4 or IPv6. If the type param indicates a Bluetooth connection,
-    /// it will connect with the RFCOMM protocol.
+    /// Resolve the remote device and attempt to connect to it.
     /// </summary>
-    /// <param name="data">The DeviceData structure describing what to connect to</param>
-    /// <returns>Failure: INVALID_SOCKET, Success: The newly-created socket file descriptor</returns>
-    SOCKET createClientSocket(const DeviceData& data);
+    /// <param name="data">The DeviceData structure describing what to connect to and how to do so</param>
+    /// <param name="sig">Atomic bool, set to true in another thread to abort this function (optional)</param>
+    /// <returns>Failure/abort: INVALID_SOCKET, Success: The newly-created socket file descriptor</returns>
+    SOCKET createClientSocket(const DeviceData& data, const std::atomic<bool>& sig = false);
 
     /// <summary>
     /// Shutdown both directions (Send and Receive) of a socket and close it.
