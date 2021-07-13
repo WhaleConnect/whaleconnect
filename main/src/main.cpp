@@ -3,6 +3,7 @@
 
 #include <vector> // std::vector
 #include <memory> // std::unique_ptr
+#include <utility> // std::pair
 
 #include <imgui/imgui.h>
 
@@ -65,19 +66,31 @@ int main(int, char**) {
 /// <summary>
 /// Create a new connection window with given address, port, and type.
 /// </summary>
-/// <param name="address">The address of the remote host</param>
-/// <param name="port">The port number of the remote host</param>
-/// <param name="type">The type of connection to create</param>
+/// <param name="data">The remote host to connect to</param>
 /// <returns>If the connection window was created (true if created, false if it already exists)</returns>
 bool openNewConnection(const DeviceData& data) {
-    // Get the hypothetical ClientWindow title of the DeviceData struct if it were to exist
+    // Format the DeviceData into a readable title string
     std::string dataTitle = UIHelpers::makeClientWindowTitle(data);
 
     // Iterate through all open windows, check if the title matches
     for (const auto& i : connections) if (i->title == dataTitle) return false;
 
     // If this point is reached it means that the title is unique, it is okay to create a new window
-    connections.push_back(std::make_unique<ClientWindow>(data));
+
+    // The connector function:
+    auto connFunc = [](const std::atomic<bool>& sig, const DeviceData& data) -> ConnectResult {
+        // Create the client socket with the given DeviceData and stop signal
+        SOCKET sockfd = Sockets::createClientSocket(data, sig);
+
+        // Small delay to prevent the function from finishing too fast
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
+
+        // Return result
+        return { sockfd, Sockets::getLastErr() };
+    };
+
+    // Append the ClientWindow to the vector
+    connections.push_back(std::make_unique<ClientWindow>(dataTitle, connFunc, data));
     return true;
 }
 

@@ -50,7 +50,7 @@ namespace Sockets {
     /// Connect a socket to a server with the timeout specified in Settings.
     /// </summary>
     /// <param name="sockfd">The socket file descriptor to perform the connection on</param>
-    /// <param name="sig">Atomic bool, set to true in another thread to abort this function</param>
+    /// <param name="sig">Atomic bool signal, set to true in another thread to abort this function</param>
     /// <param name="addr">The sockaddr* instance describing what to connect to</param>
     /// <param name="addrlen">The size of the addr param [use sizeof()]</param>
     /// <returns>Failure/abort/timeout: SOCKET_ERROR, Success: NO_ERROR</returns>
@@ -64,7 +64,7 @@ namespace Sockets {
     /// Resolve the remote device and attempt to connect to it.
     /// </summary>
     /// <param name="data">The DeviceData structure describing what to connect to and how to do so</param>
-    /// <param name="sig">Atomic bool, set to true in another thread to abort this function (optional)</param>
+    /// <param name="sig">Atomic bool signal, set to true in another thread to abort this function (optional)</param>
     /// <returns>Failure/abort: INVALID_SOCKET, Success: The newly-created socket file descriptor</returns>
     SOCKET createClientSocket(const DeviceData& data, const std::atomic<bool>& sig = false);
 

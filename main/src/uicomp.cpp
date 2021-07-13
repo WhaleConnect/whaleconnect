@@ -5,11 +5,6 @@
 #include <mutex> // std::mutex
 #include <chrono> // std::chrono::microseconds
 
-#ifdef _WIN32
-#include <io.h> // _pipe()
-#include <fcntl.h> // O_TEXT
-#endif
-
 #include <imgui/imgui.h>
 
 #include "error.hpp"
@@ -108,15 +103,6 @@ void Console::clear() {
     _items.clear();
 }
 
-ClientWindow::ClientWindow(const DeviceData& data) : title(UIHelpers::makeClientWindowTitle(data)) {
-    _connFut = std::async(std::launch::async, [&](const DeviceData& d) {
-        SOCKET sockfd = Sockets::createClientSocket(d, _connectStop);
-        _lastConnectError = Sockets::getLastErr();
-        std::this_thread::sleep_for(std::chrono::microseconds(100));
-        return sockfd;
-    }, data);
-}
-
 ClientWindow::~ClientWindow() {
     _closeConnection();
 
@@ -184,13 +170,14 @@ void ClientWindow::_checkConnectionStatus() {
         } else {
             // Connected, confirm success and start receiving data
             _connected = true;
+            _output.forceNextLine();
             _output.addText("[INFO ] Done.\n");
             _startRecvThread();
         }
     } else {
         // Still connecting, display a message
         if (!_connectInitialized) {
-            _output.addText(std::format("Connecting... ({} sec timeout)\n", Settings::connectTimeout));
+            _output.addText("Connecting... (close to cancel)");
             _connectInitialized = true;
         }
     }
