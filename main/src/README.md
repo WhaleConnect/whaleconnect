@@ -19,5 +19,4 @@ Name | Short for | Contains
 `util.hpp` | Utilities | Definitions for anything used by multiple files
 `winutf8` | Windows UTF-8 | Helpers to convert strings between UTF-8/UTF-16 on Windows
 
-\*: This file is *automatically generated*, do not edit it.
-Instead, edit the files in the `error_gen` directory. See its README for details.
+\*: This file is *automatically generated*, do not edit it. Instead, edit the files in the `error_gen` directory. See its README for details.
