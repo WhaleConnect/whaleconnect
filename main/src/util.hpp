@@ -11,7 +11,9 @@
 
 // Enum of all possible connection types
 enum ConnectionTypes { TCP, UDP, Bluetooth };
-inline const char* connectionTypesStr[] = { "TCP", "UDP", "Bluetooth" }; // String representations of connection types
+
+// String representations of connection types
+inline const char* connectionTypesStr[] = { "TCP", "UDP", "Bluetooth" };
 
 /// <summary>
 /// Structure containing metadata about a device (type, name, address, port) to provide information on how to connect to
