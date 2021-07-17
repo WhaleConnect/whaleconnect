@@ -14,21 +14,21 @@
 #include "sockets.hpp"
 #include "formatcompat.hpp"
 
-std::string UIHelpers::makeClientWindowTitle(const DeviceData& data) {
+std::string UIHelpers::makeClientString(const DeviceData& data, bool useName) {
     // Connection type
-    const char* connectionType = connectionTypesStr[data.type];
+    const char* type = connectionTypesStr[data.type];
 
     // Bluetooth connections are described using the device's name (e.g. "MyESP32"),
     // IP connections (TCP/UDP) use the device's IP address (e.g. 192.168.0.178).
-    std::string deviceString = (data.type == Bluetooth) ? data.name : data.address;
+    std::string deviceString = ((data.type == Bluetooth) && useName) ? data.name : data.address;
 
     // Newlines may be present in a Bluetooth device name, and if they get into a window's title, anything after the
     // first one will get cut off (the title bar can only hold one line). Replace them with spaces to keep everything on
     // one line.
-    std::replace(deviceString.begin(), deviceString.end(), '\n', ' ');
+    if (useName) std::replace(deviceString.begin(), deviceString.end(), '\n', ' ');
 
     // Format the values into a string and return it
-    return std::format("{} Connection - {} port {}", connectionType, deviceString, data.port);
+    return std::format("{} Connection - {} port {}##{}", type, deviceString, data.port, data.address);
 }
 
 void Console::update() {
@@ -103,14 +103,14 @@ void Console::clear() {
     _items.clear();
 }
 
-ClientWindow::~ClientWindow() {
+ConnWindow::~ConnWindow() {
     _closeConnection();
 
     // Join the receiving thread
     if (_recvThread.joinable()) _recvThread.join();
 }
 
-void ClientWindow::_startRecvThread() {
+void ConnWindow::_startRecvThread() {
     _recvThread = std::thread([&] {
         // Read data into buffer as long as the socket is connected
         while (_connected) {
@@ -139,13 +139,13 @@ void ClientWindow::_startRecvThread() {
     });
 }
 
-void ClientWindow::_closeConnection() {
+void ConnWindow::_closeConnection() {
     Sockets::destroySocket(_sockfd);
     _connected = false;
     _connectStop = true;
 }
 
-void ClientWindow::_errHandler(int err) {
+void ConnWindow::_errHandler(int err) {
     if (err == 0) return; // "[ERROR] 0: The operation completed successfully"
 
     // Socket errors are fatal
@@ -157,7 +157,7 @@ void ClientWindow::_errHandler(int err) {
     _output.addText(std::format("[ERROR] {} ({}): {}\n", ne.name, err, ne.desc));
 }
 
-void ClientWindow::_checkConnectionStatus() {
+void ConnWindow::_checkConnectionStatus() {
     // The && should short-circuit here - wait_for() should not execute if valid() returns false.
     // This is the desired and expected behavior, since waiting on an invalid future throws an exception.
     if (_connFut.valid() && _connFut.wait_for(std::chrono::microseconds(0)) == std::future_status::ready) {
@@ -183,7 +183,7 @@ void ClientWindow::_checkConnectionStatus() {
     }
 }
 
-void ClientWindow::_updateOutput() {
+void ConnWindow::_updateOutput() {
     // Check status code
     switch (_receivedBytes) {
     case SOCKET_ERROR:
@@ -218,10 +218,10 @@ void ClientWindow::_updateOutput() {
     _recvBuf = "";
 }
 
-void ClientWindow::update() {
+void ConnWindow::update() {
     ImGui::SetNextWindowSizeConstraints({ 380, 100 }, { FLT_MAX, FLT_MAX });
     ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin(title.c_str(), &open)) {
+    if (!ImGui::Begin(_title.c_str(), &open)) {
         ImGui::End();
         return;
     }

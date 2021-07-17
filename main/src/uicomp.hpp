@@ -8,23 +8,33 @@
 #include <thread> // std::thread
 #include <atomic> // std::atomic
 #include <mutex> // std::mutex
-#include <utility> // std::pair
 
 #include "util.hpp"
 #include "sockets.hpp"
 
-typedef std::pair<SOCKET, int> ConnectResult;
+/// <summary>
+/// A structure representing the result of a connection attempt.
+/// </summary>
+/// <remarks>
+/// This structure contains a SOCKET to hold the file descriptor of the connection and an int to hold the last error
+/// code that was caught while connecting.
+/// </remarks>
+struct ConnectResult {
+    SOCKET fd = INVALID_SOCKET;
+    int err = NO_ERROR;
+};
 
 /// <summary>
 /// Namespace containing helper functions to use with the UI component classes.
 /// </summary>
 namespace UIHelpers {
     /// <summary>
-    /// Format a DeviceData instance into a string.
+    /// Format a DeviceData instance into a readable title string.
     /// </summary>
     /// <param name="data">The DeviceData instance to format</param>
-    /// <returns>The formatted string, see this function's declaration for details.</returns>
-    std::string makeClientWindowTitle(const DeviceData& data);
+    /// <param name="useName">If the device's name should be substituted for its address for Bluetooth</param>
+    /// <returns>The formatted string, see this function's definition for details.</returns>
+    std::string makeClientString(const DeviceData& data, bool useName);
 }
 
 /// <summary>
@@ -61,7 +71,7 @@ public:
 /// <summary>
 /// A class to handle a connection in an easy-to-use GUI.
 /// </summary>
-class ClientWindow {
+class ConnWindow {
     std::atomic<SOCKET> _sockfd = INVALID_SOCKET; // Socket for connections
     std::future<SOCKET> _connFut; // The future object responsible for connecting asynchronously
     std::atomic<bool> _connected = false; // If the window has an active connection
@@ -75,6 +85,7 @@ class ClientWindow {
     std::atomic<bool> _recvNew = false; // If new data has been received
     int _lastRecvErr = 0; // The last error encountered by the receiving thread
 
+    std::string _title; // Title of window
     Console _output; // The output of the window, will hold system messages and data received from the server
     std::string _sendBuf, _recvBuf; // Buffers
     int _currentLE = 0; // The index of the line ending selected in the combobox
@@ -106,24 +117,25 @@ class ClientWindow {
     void _updateOutput();
 
 public:
-    std::string title; // Title of window
+    std::string id; // Identifier of the window
     bool open = true; // If the window is open (affected by the close button)
 
     /// <summary>
-    /// ClientWindow constructor, connect to the address and port specified.
+    /// ConnWindow constructor, initialize a new object that can send/receive data across a socket file descriptor.
     /// </summary>
     /// <typeparam name="...Args">Additional arguments passed to the connector function</typeparam>
     /// <typeparam name="Fn">The connector function, see comment at the bottom of the file for details</typeparam>
-    /// <param name="name">The title of the window</param>
+    /// <param name="title">The title of the window, shown in the title bar</param>
+    /// <param name="id">The unique identifier string for the window, made up of the address and port</param>
     /// <param name="fn">A function which connects and returns the socket fd and the last error code</param>
     /// <param name="...args">Additional arguments passed to the connector function</param>
     template<class Fn, class... Args>
-    ClientWindow(const std::string& name, Fn&& fn, Args&&... args);
+    ConnWindow(const std::string& title, const std::string& id, Fn&& fn, Args&&... args);
 
     /// <summary>
-    /// ClientWindow destructor, close the socket file descriptor.
+    /// ConnWindow destructor, close the socket file descriptor.
     /// </summary>
-    ~ClientWindow();
+    ~ConnWindow();
 
     /// <summary>
     /// Redraw the connection window and send data through the socket.
@@ -132,37 +144,36 @@ public:
 };
 
 template<class Fn, class... Args>
-ClientWindow::ClientWindow(const std::string& name, Fn&& fn, Args&&... args) : title(name) {
+ConnWindow::ConnWindow(const std::string& title, const std::string& id, Fn&& fn, Args&&... args)
+    : _title(title), id(id) {
     // (The instantiation of _connFut is not put in the member initializer list because of its large size.)
     _connFut = std::async(std::launch::async, [&](Args&&... _args) {
         // Call the provided function with the stop flag and additional arguments
         ConnectResult ret = fn(_connectStop, _args...);
 
         // Get the last connect error
-        _lastConnectError = ret.second;
+        _lastConnectError = ret.err;
 
         // Return the socket file descriptor from the async function
-        return ret.first;
+        return ret.fd;
     }, args...);
 }
 
-// The ClientWindow connector function:
+// The ConnWindow connector function:
 //
 // A function (either a lambda or traditionally-declared) should be passed to the `fn` parameter. This is known as the
 // connector function.
 //
 // The exact code for establishing the connection should be contained within the body of this function.
-// This is why it is called a "connector function" - it handles the connection process, the ClientWindow doesn't.
+// This is why it is called a "connector function" - it handles the connection process, the ConnWindow doesn't.
 //
-// This function should return a ConnectResult, which contains an int and a SOCKET in that order. The int is the error
-// code from connecting [use Sockets::getLastError()] and the SOCKET is the file descriptor of the new connection
-// (INVALID_SOCKET is allowed).
+// This function should return a ConnectResult. See its documentation comment for details about what it holds.
 //
 // This function must also take a `const std::atomic<bool>&` as its very first argument. This is the stop signal used
-// to abort a connection and is set to true when the ClientWindow is closed. This does not have to be used.
+// to abort a connection and is set to true when the ConnWindow is closed. This does not have to be used.
 //
 // This function may take additional arguments after the stop signal. These are fed in via the `args` parameter of the
-// ClientWindow constructor.
+// ConnWindow constructor.
 //
 // Therefore, the minimal definition for a valid connector function is as follows:
 //
@@ -174,4 +185,4 @@ ClientWindow::ClientWindow(const std::string& name, Fn&& fn, Args&&... args) : t
 //     return { sockfd, Sockets::getLastErr() };
 //
 // It is desirable to add a small delay right before the return to prevent the function from completing too fast for
-// the ClientWindow to process. [Use `std::this_thread::sleep_for()`]
+// the ConnWindow to process. [Use `std::this_thread::sleep_for()`]

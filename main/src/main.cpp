@@ -16,7 +16,7 @@
 #include "formatcompat.hpp"
 
 // Vector of open windows
-std::vector<std::unique_ptr<ClientWindow>> connections;
+std::vector<std::unique_ptr<ConnWindow>> connections;
 
 bool openNewConnection(const DeviceData& data);
 void drawIPConnectionTab();
@@ -69,18 +69,18 @@ int main(int, char**) {
 /// <param name="data">The remote host to connect to</param>
 /// <returns>If the connection window was created (true if created, false if it already exists)</returns>
 bool openNewConnection(const DeviceData& data) {
-    // Format the DeviceData into a readable title string
-    std::string dataTitle = UIHelpers::makeClientWindowTitle(data);
+    // Format the DeviceData into a usable id
+    std::string id = UIHelpers::makeClientString(data, false);
 
-    // Iterate through all open windows, check if the title matches
-    for (const auto& i : connections) if (i->title == dataTitle) return false;
+    // Iterate through all open windows, check if the id matches
+    for (const auto& i : connections) if (i->id == id) return false;
 
-    // If this point is reached it means that the title is unique, it is okay to create a new window
+    // If this point is reached it means that the window is unique, it is okay to create it
 
-    // The connector function:
-    auto connFunc = [](const std::atomic<bool>& sig, const DeviceData& data) -> ConnectResult {
+    // The connector function for the ConnWindow
+    auto connFunc = [](const std::atomic<bool>& sig, const DeviceData& _data) -> ConnectResult {
         // Create the client socket with the given DeviceData and stop signal
-        SOCKET sockfd = Sockets::createClientSocket(data, sig);
+        SOCKET sockfd = Sockets::createClientSocket(_data, sig);
 
         // Small delay to prevent the function from finishing too fast
         std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -89,8 +89,9 @@ bool openNewConnection(const DeviceData& data) {
         return { sockfd, Sockets::getLastErr() };
     };
 
-    // Append the ClientWindow to the vector
-    connections.push_back(std::make_unique<ClientWindow>(dataTitle, connFunc, data));
+    // Append the ConnWindow to the vector
+    std::string title = UIHelpers::makeClientString(data, true);
+    connections.push_back(std::make_unique<ConnWindow>(title, id, connFunc, data));
     return true;
 }
 
@@ -104,7 +105,7 @@ void drawIPConnectionTab() {
     static std::string addr = ""; // Server address
     static uint16_t port = 0; // Server port
     static bool isTCP = true; // Type of connection to create (default is TCP)
-    static bool isNewConnection = true; // If the specified connection is unique
+    static bool isNew = true; // If the specified connection is unique
 
     // Server address
     ImGui::SetNextItemWidth(340);
@@ -118,11 +119,13 @@ void drawIPConnectionTab() {
     if (ImGui::RadioButton("TCP", isTCP)) isTCP = true;
     if (ImGui::RadioButton("UDP", !isTCP)) isTCP = false;
 
-    // Connect button, but make sure the address/port are not empty to continue.
-    if (ImGui::Button("Connect") && !addr.empty()) isNewConnection = openNewConnection({ !isTCP, "", addr, port, 0 });
+    // Connect button
+    ImGui::PushDisabled(addr.empty());
+    if (ImGui::Button("Connect")) isNew = openNewConnection({ !isTCP, "", addr, port, 0 });
+    ImGui::PopDisabled();
 
     // If the connection exists, show a message
-    if (!isNewConnection) {
+    if (!isNew) {
         ImGui::Separator();
         ImGui::Text("A connection with this address is already open.");
     }
@@ -173,12 +176,15 @@ void drawBTConnectionTab() {
                 // Display the button
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 5, 5 }); // Larger padding
                 std::string buttonText = i.name;
+                const char* addr = i.address.c_str();
 
                 // Format the address and channel into the device entry if advanced info is enabled
-                if (displayAdvanced) buttonText += std::format(" ({} channel {})", i.address, i.port);
+                if (displayAdvanced) buttonText += std::format(" ({} channel {})", addr, i.port);
 
-                ImGui::PushDisabled(!canConnect);
+                ImGui::PushDisabled(!canConnect); // Don't connect if you can't
+                ImGui::PushID(addr); // Set the address (always unique) as the id in case devices have the same name
                 if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) isNew = openNewConnection(i);
+                ImGui::PopID();
                 ImGui::PopDisabled();
 
                 // Remove the larger inner padding
