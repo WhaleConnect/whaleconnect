@@ -167,7 +167,7 @@ void drawBTConnectionTab() {
             ImGui::HelpMarker("Show technical details about a device in its entry and on hover.");
 
             // Search succeeded, display all devices found
-            ImGui::BeginChild("DeviceList");
+            ImGui::BeginChild("DeviceList", { 0, -ImGui::GetFrameHeightWithSpacing() });
             for (const auto& i : searchResult.foundDevices) {
                 // Check if a connection can be made, look for a valid channel (if it's not 0 it was found successfully)
                 bool canConnect = i.port != 0;
