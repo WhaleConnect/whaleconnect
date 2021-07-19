@@ -30,6 +30,10 @@ static void configImGui() {
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
 
+    // Disable imgui.ini
+    // It can easily get plastered all over the filesystem and grow in size rapidly over time.
+    io.IniFilename = nullptr;
+
     // Set styles
     ImGuiStyle& style = ImGui::GetStyle();
     style.WindowRounding = 0;
