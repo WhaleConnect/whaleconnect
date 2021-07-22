@@ -160,7 +160,7 @@ void ConnWindow::_errHandler(int err) {
 void ConnWindow::_checkConnectionStatus() {
     // The && should short-circuit here - wait_for() should not execute if valid() returns false.
     // This is the desired and expected behavior, since waiting on an invalid future throws an exception.
-    if (_connFut.valid() && _connFut.wait_for(std::chrono::microseconds(0)) == std::future_status::ready) {
+    if (_connFut.valid() && (_connFut.wait_for(std::chrono::microseconds(0)) == std::future_status::ready)) {
         // If the socket is ready, get its file descriptor
         _sockfd = _connFut.get();
 
