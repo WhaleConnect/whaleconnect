@@ -100,7 +100,6 @@ bool openNewConnection(const DeviceData& data) {
 void drawIPConnectionTab() {
     if (!ImGui::BeginTabItem("Internet Protocol")) return;
 
-    // Static local variables remove the need for global variables
     static std::string addr = ""; // Server address
     static uint16_t port = 0; // Server port
     static bool isTCP = true; // Type of connection to create (default is TCP)
@@ -126,7 +125,7 @@ void drawIPConnectionTab() {
     // If the connection exists, show a message
     if (!isNew) {
         ImGui::Separator();
-        ImGui::Text("A connection with this address is already open.");
+        ImGui::Text("This connection is already open.");
     }
 
     ImGui::EndTabItem();
@@ -138,40 +137,39 @@ void drawIPConnectionTab() {
 void drawBTConnectionTab() {
     if (!ImGui::BeginTabItem("Bluetooth RFCOMM")) return;
 
-    static std::atomic<bool> isNew = true;
-    static std::atomic<bool> searchRunning = false;
-    static Sockets::BTSearchResult searchResult;
+    static bool firstRun = false; // If a search has been performed at least once
+    static bool done = false; // If the search has completed and returned a result
+    static bool isNew = true; // If the specified connection is unique
+    static std::future<Sockets::BTSearchResult> fut; // The future  to run the search in parallel
+    static Sockets::BTSearchResult result; // The result of the search
 
+    ImGui::PushDisabled(!done && firstRun);
     if (ImGui::Button("Search for Devices")) {
-        // If the search action was initiated, make sure that the background searching thread isn't already running to
-        // prevent spawning multiple threads
-        if (!searchRunning) {
-            std::thread([&] {
-                isNew = true; // Hide the "connection is open" message
-                searchRunning = true; // Signal that the search thread is now running
-                searchResult = Sockets::searchBT(); // Perform search
-                searchRunning = false; // Done searching
-            }).detach();
-        }
+        isNew = true; // Hide the "connection is open" message
+        firstRun = true; // The search has been run
+        done = false; // Search is in progress
+        fut = std::async(std::launch::async, Sockets::searchBT);
+    }
+    ImGui::PopDisabled();
+
+    // Check the state of the search
+    if (fut.valid() && (fut.wait_for(std::chrono::seconds(0)) == std::future_status::ready)) {
+        done = true;
+        result = fut.get();
     }
 
-    if (searchRunning) {
-        // While the search is running in the background thread, display a text spinner
-        ImGui::LoadingSpinner("Searching");
-    } else {
-        int err = searchResult.err;
+    ImVec2 reservedSpace = { 0, (isNew) ? 0 : -ImGui::GetFrameHeightWithSpacing() };
+    ImGui::BeginChild("Output", reservedSpace, false, ImGuiWindowFlags_HorizontalScrollbar);
+    if (done) {
+        int err = result.err;
         if (err == 0) {
             // "Display Advanced Info" checkbox to show information about the device
             static bool displayAdvanced = false;
             ImGui::Checkbox("Display Advanced Info", &displayAdvanced);
-            ImGui::HelpMarker("Show technical details about a device in its entry and on hover.");
+            ImGui::HelpMarker("Show technical details about a device in its entry");
 
             // Search succeeded, display all devices found
-            ImGui::BeginChild("DeviceList", { 0, -ImGui::GetFrameHeightWithSpacing() });
-            for (const auto& i : searchResult.foundDevices) {
-                // Check if a connection can be made, look for a valid channel (if it's not 0 it was found successfully)
-                bool canConnect = i.port != 0;
-
+            for (const auto& i : result.foundDevices) {
                 // Display the button
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 5, 5 }); // Larger padding
                 std::string buttonText = i.name;
@@ -180,38 +178,23 @@ void drawBTConnectionTab() {
                 // Format the address and channel into the device entry if advanced info is enabled
                 if (displayAdvanced) buttonText += std::format(" ({} channel {})", addr, i.port);
 
-                ImGui::PushDisabled(!canConnect); // Don't connect if you can't
+                ImGui::PushDisabled(i.port == 0); // 0 is an invalid channel meaning it couldn't be found
                 ImGui::PushID(addr); // Set the address (always unique) as the id in case devices have the same name
                 if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) isNew = openNewConnection(i);
                 ImGui::PopID();
                 ImGui::PopDisabled();
-
-                // Remove the larger inner padding
                 ImGui::PopStyleVar();
-
-                // Display a tooltip
-                if (!canConnect && ImGui::IsItemHovered()) {
-                    ImGui::BeginTooltip();
-                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-
-                    ImGui::Text("Can't connect to this device.");
-
-                    // Based on if advanced info is enabled, show a description of why a connection can't be made
-                    if (displayAdvanced) ImGui::Text("The channel could not be obtained. The device may not be on or "
-                        "advertising an SDP session with the protocol selected.");
-                    else ImGui::Text("Enable \"Display Advanced Info\" to see more.");
-
-                    ImGui::PopTextWrapPos();
-                    ImGui::EndTooltip();
-                }
             }
-            ImGui::EndChild();
         } else {
             // Error occurred
             Sockets::NamedError ne = Sockets::getErr(err);
-            ImGui::Text("An error occurred: %s (%d): %s", ne.name, err, ne.desc);
+            ImGui::Text("[ERROR] %s (%d): %s", ne.name, err, ne.desc);
         }
+    } else {
+        // While the search is running in the background thread, display a text spinner
+        if (firstRun) ImGui::LoadingSpinner("Searching");
     }
+    ImGui::EndChild();
 
     // If the connection exists, show a message
     if (!isNew) {
