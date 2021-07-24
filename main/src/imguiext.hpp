@@ -141,8 +141,8 @@ void ImGui::UnsignedInputScalar(const char* label, T& val, unsigned long min, un
 template<class... Args>
 void ImGui::Overlay(ImVec2 location, const char* text, Args... args) {
     // Window flags to make the overlay be fixed, immobile, and have no decoration
-    int flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav
-        | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav
+        | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize;
 
     // Get main viewport
     const ImGuiViewport* viewport = GetMainViewport();
