@@ -38,25 +38,13 @@ void Console::update() {
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 4, 1 }); // Tighten line spacing
 
     // Add each item in the deque
-    for (const std::string& i : _items) {
-        // Set color of text
-        ImVec4 color;
-        bool hasColor = false;
-
-        // std::string::starts_with() is introduced in C++20.
-        if (i.starts_with("[ERROR]")) {
-            // Error messages in red
-            color = { 1.0f, 0.4f, 0.4f, 1.0f };
-            hasColor = true;
-        } else if (i.starts_with("[INFO ]")) {
-            // Information in yellow
-            color = { 1.0f, 0.8f, 0.6f, 1.0f };
-            hasColor = true;
-        }
+    for (const auto& i : _items) {
+        // Only color tuples with the last value set to 1 are considered
+        bool hasColor = (i.color.w == 1.0f);
 
         // Apply color if needed
-        if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, color);
-        ImGui::TextUnformatted(i);
+        if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, i.color);
+        ImGui::TextUnformatted(i.text);
         if (hasColor) ImGui::PopStyleColor();
     }
 
@@ -79,22 +67,34 @@ void Console::update() {
     ImGui::Checkbox("Autoscroll", &_autoscroll);
 }
 
-void Console::addText(const std::string& s) {
+void Console::addText(const std::string& s, ImVec4 color) {
     // Don't add an empty string
     // (highly unlikely, but still check as string::back() called on an empty string throws a fatal exception)
     if (s.empty()) return;
 
-    // Text goes on its own line if deque is empty or the last line ends with a \n
-    if (_items.empty() || (_items.back().back() == '\n')) _items.push_back(s);
-    else _items.back() += s; // Text goes on the last line (append)
+    // Text goes on its own line if deque is empty or the last line ends with a newline
+    if (_items.empty() || (_items.back().text.back() == '\n')) _items.push_back({ s, color });
+    else _items.back().text += s; // Text goes on the last line (append)
 
     _scrollToEnd = _autoscroll; // Only force scroll if autoscroll is set first
+}
+
+void Console::addError(const std::string& s) {
+    // Error messages in red
+    forceNextLine();
+    addText(std::format("[ERROR] {}\n", s), { 1.0f, 0.4f, 0.4f, 1.0f });
+}
+
+void Console::addInfo(const std::string& s) {
+    // Information in yellow
+    forceNextLine();
+    addText(std::format("[INFO ] {}\n", s), { 1.0f, 0.8f, 0.6f, 1.0f });
 }
 
 void Console::forceNextLine() {
     // If the deque is empty, the item will have to be on its own line.
     if (!_items.empty()) {
-        std::string& lastItem = _items.back();
+        std::string& lastItem = _items.back().text;
         if (lastItem.back() != '\n') lastItem += '\n';
     }
 }
@@ -153,8 +153,7 @@ void ConnWindow::_errHandler(int err) {
 
     // Add error line to console
     Sockets::NamedError ne = Sockets::getErr(err);
-    _output.forceNextLine();
-    _output.addText(std::format("[ERROR] {} ({}): {}\n", ne.name, err, ne.desc));
+    _output.addError(std::format("{} ({}): {}", ne.name, err, ne.desc));
 }
 
 void ConnWindow::_checkConnectionStatus() {
@@ -170,13 +169,13 @@ void ConnWindow::_checkConnectionStatus() {
         } else {
             // Connected, confirm success and start receiving data
             _connected = true;
-            _output.forceNextLine();
-            _output.addText("[INFO ] Done.\n");
+            _output.addInfo("Done.");
             _startRecvThread();
         }
     } else {
         // Still connecting, display a message
         if (!_connectInitialized) {
+            _output.forceNextLine();
             _output.addText("Connecting... (close to cancel)");
             _connectInitialized = true;
         }
@@ -192,8 +191,7 @@ void ConnWindow::_updateOutput() {
         break;
     case 0:
         // Peer closed connection
-        _output.forceNextLine();
-        _output.addText("[INFO ] Remote host closed connection.\n");
+        _output.addInfo("Remote host closed connection.");
         _closeConnection();
         break;
     default:
@@ -240,8 +238,7 @@ void ConnWindow::update() {
                 if (Sockets::sendData(_sockfd, sendString) == SOCKET_ERROR) _errHandler(Sockets::getLastErr());
             }
         } else {
-            _output.forceNextLine();
-            _output.addText("[INFO ] The socket is not connected.\n");
+            _output.addInfo("The socket is not connected.");
         }
 
         _sendBuf = ""; // Blank out input textbox

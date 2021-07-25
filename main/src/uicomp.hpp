@@ -9,8 +9,18 @@
 #include <atomic> // std::atomic
 #include <mutex> // std::mutex
 
+#include <imgui/imgui.h>
+
 #include "util.hpp"
 #include "sockets.hpp"
+
+/// <summary>
+/// A structure representing an item in a Console object's output.
+/// </summary>
+struct ConsoleItem {
+    std::string text; // The text of the item
+    ImVec4 color; // The color of the item
+};
 
 /// <summary>
 /// A structure representing the result of a connection attempt.
@@ -20,8 +30,8 @@
 /// code that was caught while connecting.
 /// </remarks>
 struct ConnectResult {
-    SOCKET fd = INVALID_SOCKET;
-    int err = NO_ERROR;
+    SOCKET fd = INVALID_SOCKET; // The resultant file descriptor
+    int err = NO_ERROR; // Any error that occurred
 };
 
 /// <summary>
@@ -43,7 +53,7 @@ namespace UIHelpers {
 class Console {
     bool _scrollToEnd = false; // If the console is force-scrolled to the end
     bool _autoscroll = true; // If console autoscrolls when new data is put
-    std::vector<std::string> _items; // Items in console output
+    std::vector<ConsoleItem> _items; // Items in console output
 
 public:
     /// <summary>
@@ -55,7 +65,20 @@ public:
     /// Add text to the console. Does not make it go on its own line.
     /// </summary>
     /// <param name="s">The string to add to the output</param>
-    void addText(const std::string& s);
+    /// <param name="color">The color of the text</param>
+    void addText(const std::string& s, ImVec4 color = {});
+
+    /// <summary>
+    /// Add a red error message. Does make it go on its own line.
+    /// </summary>
+    /// <param name="s">The string to add to the output</param>
+    void addError(const std::string& s);
+
+    /// <summary>
+    /// Add a yellow information message. Does make it go on its own line.
+    /// </summary>
+    /// <param name="s">The string to add to the output</param>
+    void addInfo(const std::string& s);
 
     /// <summary>
     /// Add a newline to the last line of the output (if it doesn't already end with one).
