@@ -43,7 +43,7 @@ namespace UIHelpers {
     /// </summary>
     /// <param name="data">The DeviceData instance to format</param>
     /// <param name="useName">If the device's name should be substituted for its address for Bluetooth</param>
-    /// <returns>The formatted string, see this function's definition for details.</returns>
+    /// <returns>The formatted string, see this function's definition for details</returns>
     std::string makeClientString(const DeviceData& data, bool useName);
 }
 
@@ -65,7 +65,7 @@ public:
     /// Add text to the console. Does not make it go on its own line.
     /// </summary>
     /// <param name="s">The string to add to the output</param>
-    /// <param name="color">The color of the text</param>
+    /// <param name="color">The color of the text (optional, default is uncolored)</param>
     void addText(const std::string& s, ImVec4 color = {});
 
     /// <summary>
@@ -81,12 +81,13 @@ public:
     void addInfo(const std::string& s);
 
     /// <summary>
-    /// Add a newline to the last line of the output (if it doesn't already end with one).
+    /// Add a newline to the last line of the output (if it doesn't already end with one). This causes the next item to
+    /// go on a new line.
     /// </summary>
     void forceNextLine();
 
     /// <summary>
-    /// Clear the console output by clearing the items deque.
+    /// Clear the console output.
     /// </summary>
     void clear();
 };
