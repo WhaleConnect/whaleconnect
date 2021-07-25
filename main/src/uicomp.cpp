@@ -3,7 +3,7 @@
 
 #include <algorithm> // std::replace()
 #include <mutex> // std::mutex
-#include <chrono> // std::chrono::microseconds
+#include <chrono> // std::chrono::microseconds, std::chrono::system_clock::now()
 
 #include <imgui/imgui.h>
 
@@ -42,6 +42,12 @@ void Console::update() {
         // Only color tuples with the last value set to 1 are considered
         bool hasColor = (i.color.w == 1.0f);
 
+        // Timestamps
+        if (_showTimestamps) {
+            ImGui::TextUnformatted(i.timestamp);
+            ImGui::SameLine();
+        }
+
         // Apply color if needed
         if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, i.color);
         ImGui::TextUnformatted(i.text);
@@ -62,9 +68,18 @@ void Console::update() {
     // "Clear output" button
     if (ImGui::Button("Clear output")) clear();
 
-    // Autoscroll checkbox
+    // "Options" button
     ImGui::SameLine();
-    ImGui::Checkbox("Autoscroll", &_autoscroll);
+    if (ImGui::Button("Options...")) ImGui::OpenPopup("options");
+
+    // Popup for more options
+    if (ImGui::BeginPopup("options")) {
+        ImGui::MenuItem("Autoscroll", nullptr, &_autoscroll);
+
+        ImGui::MenuItem("Show timestamps", nullptr, &_showTimestamps);
+
+        ImGui::EndPopup();
+    }
 }
 
 void Console::addText(const std::string& s, ImVec4 color) {
@@ -72,8 +87,12 @@ void Console::addText(const std::string& s, ImVec4 color) {
     // (highly unlikely, but still check as string::back() called on an empty string throws a fatal exception)
     if (s.empty()) return;
 
+    // Get timestamp
+    using namespace std::chrono;
+    std::string timestamp = std::format("{:%H:%M:%S} >", current_zone()->to_local(system_clock::now()));
+
     // Text goes on its own line if deque is empty or the last line ends with a newline
-    if (_items.empty() || (_items.back().text.back() == '\n')) _items.push_back({ s, color });
+    if (_items.empty() || (_items.back().text.back() == '\n')) _items.push_back({ s, color, timestamp });
     else _items.back().text += s; // Text goes on the last line (append)
 
     _scrollToEnd = _autoscroll; // Only force scroll if autoscroll is set first

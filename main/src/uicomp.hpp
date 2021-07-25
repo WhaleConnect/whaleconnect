@@ -20,6 +20,7 @@
 struct ConsoleItem {
     std::string text; // The text of the item
     ImVec4 color; // The color of the item
+    std::string timestamp; // The time when the item was added
 };
 
 /// <summary>
@@ -53,6 +54,7 @@ namespace UIHelpers {
 class Console {
     bool _scrollToEnd = false; // If the console is force-scrolled to the end
     bool _autoscroll = true; // If console autoscrolls when new data is put
+    bool _showTimestamps = false; // If timestamps are shown in the output
     std::vector<ConsoleItem> _items; // Items in console output
 
 public:
