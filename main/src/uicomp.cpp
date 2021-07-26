@@ -202,8 +202,7 @@ void ConnWindow::_checkConnectionStatus() {
     } else {
         // Still connecting, display a message
         if (!_connectInitialized) {
-            _output.forceNextLine();
-            _output.addText("Connecting... (close to cancel)");
+            _output.addInfo("Connecting...");
             _connectInitialized = true;
         }
     }
