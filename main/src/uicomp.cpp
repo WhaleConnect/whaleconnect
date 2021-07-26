@@ -76,7 +76,10 @@ void Console::update() {
     if (ImGui::BeginPopup("options")) {
         ImGui::MenuItem("Autoscroll", nullptr, &_autoscroll);
 
+        // TODO: Remove the #if check once all major compilers implement timezones for <chrono>
+#if __cpp_lib_chrono >= 201803L
         ImGui::MenuItem("Show timestamps", nullptr, &_showTimestamps);
+#endif
 
         ImGui::EndPopup();
     }
@@ -88,8 +91,13 @@ void Console::addText(const std::string& s, ImVec4 color) {
     if (s.empty()) return;
 
     // Get timestamp
+    // TODO: Remove the #if check once all major compilers implement timezones for <chrono>
+#if __cpp_lib_chrono >= 201803L
     using namespace std::chrono;
-    std::string timestamp = std::format("{:%H:%M:%S} >", current_zone()->to_local(system_clock::now()));
+
+    // TODO: Limitations with {fmt} - `.time_since_epoch()` is added. Remove when standard std::format() is used
+    std::string timestamp = std::format("{:%T} >", current_zone()->to_local(system_clock::now()).time_since_epoch());
+#endif
 
     // Text goes on its own line if deque is empty or the last line ends with a newline
     if (_items.empty() || (_items.back().text.back() == '\n')) _items.push_back({ s, color, timestamp });
