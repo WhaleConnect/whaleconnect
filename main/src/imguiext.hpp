@@ -80,6 +80,16 @@ namespace ImGui {
     /// This function is taken from https://github.com/ocornut/imgui/issues/1901#issuecomment-400563921
     /// </remarks>
     void LoadingSpinner(const char* label);
+
+    /// <summary>
+    /// Create a tab item, but with no spacing around the top tab button.
+    /// </summary>
+    /// <param name="label">The text to display in the tab</param>
+    /// <returns>If the tab is active and selected</returns>
+    /// <remarks>
+    /// This function is taken from https://github.com/ocornut/imgui/issues/4368#issuecomment-887209351
+    /// </remarks>
+    bool BeginTabItemNoSpacing(const char* label);
 }
 
 template<class T>

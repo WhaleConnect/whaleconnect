@@ -40,6 +40,7 @@ static void configImGui() {
     style.TabRounding = 0;
     style.ScrollbarRounding = 0;
     style.Colors[ImGuiCol_WindowBg].w = 1;
+    style.Colors[ImGuiCol_Tab].w = 0;
 
     // Load font file
     ImFontAtlas& fonts = *io.Fonts;
@@ -108,13 +109,15 @@ void handleNewFrame() {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, { 0, 0 }); // No space between docked tabs (ocornut/imgui#4328)
     ImGui::NewFrame();
+    ImGui::PopStyleVar();
 
     // Dockspace
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
 #if !defined(IMGUI_DISABLE_DEMO_WINDOWS) && !defined(IMGUI_DISABLE_METRICS_WINDOW)
-    // The demo and metrics window are enabled in debug builds (see imconfig.h), give a window to show them
+    // The demo and metrics window are enabled in debug builds (see imconfig.h), provide a window to show them
     static bool showDebugTools = true;
 
     if (showDebugTools) {

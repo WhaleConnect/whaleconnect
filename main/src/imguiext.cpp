@@ -46,3 +46,10 @@ void ImGui::HelpMarker(const char* desc) {
 void ImGui::LoadingSpinner(const char* label) {
     Text("%s... %c", label, "|/-\\"[static_cast<int>(ImGui::GetTime() / 0.05f) & 3]);
 }
+
+bool ImGui::BeginTabItemNoSpacing(const char* label) {
+    PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, { 0, 0 });
+    bool result = BeginTabItem(label);
+    PopStyleVar();
+    return result;
+}

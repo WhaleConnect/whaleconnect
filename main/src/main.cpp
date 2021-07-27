@@ -98,7 +98,7 @@ bool openNewConnection(const DeviceData& data) {
 /// Render the "New Connection" window for Internet Protocol connections (TCP/UDP).
 /// </summary>
 void drawIPConnectionTab() {
-    if (!ImGui::BeginTabItem("Internet Protocol")) return;
+    if (!ImGui::BeginTabItemNoSpacing("Internet Protocol")) return;
 
     static std::string addr = ""; // Server address
     static uint16_t port = 0; // Server port
@@ -135,7 +135,7 @@ void drawIPConnectionTab() {
 /// Render the "New Connection" window for Bluetooth connections. Includes a "Search for Devices" button.
 /// </summary>
 void drawBTConnectionTab() {
-    if (!ImGui::BeginTabItem("Bluetooth RFCOMM")) return;
+    if (!ImGui::BeginTabItemNoSpacing("Bluetooth RFCOMM")) return;
 
     static bool firstRun = false; // If a search has been performed at least once
     static bool done = false; // If the search has completed and returned a result
