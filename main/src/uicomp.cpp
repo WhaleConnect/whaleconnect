@@ -50,7 +50,7 @@ void Console::update() {
 
         // Apply color if needed
         if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, i.color);
-        ImGui::TextUnformatted(i.text);
+        ImGui::TextUnformatted((_showHex && i.canUseHex) ? i.textHex.str() : i.text);
         if (hasColor) ImGui::PopStyleColor();
     }
 
@@ -81,11 +81,13 @@ void Console::update() {
         ImGui::MenuItem("Show timestamps", nullptr, &_showTimestamps);
 #endif
 
+        ImGui::MenuItem("Show hexadecimal", nullptr, &_showHex);
+
         ImGui::EndPopup();
     }
 }
 
-void Console::addText(const std::string& s, ImVec4 color) {
+void Console::addText(const std::string& s, ImVec4 color, bool canUseHex) {
     // Don't add an empty string
     // (highly unlikely, but still check as string::back() called on an empty string throws a fatal exception)
     if (s.empty()) return;
@@ -100,8 +102,27 @@ void Console::addText(const std::string& s, ImVec4 color) {
 #endif
 
     // Text goes on its own line if deque is empty or the last line ends with a newline
-    if (_items.empty() || (_items.back().text.back() == '\n')) _items.push_back({ s, color, timestamp });
+    if (_items.empty() || (_items.back().text.back() == '\n')) _items.push_back({ canUseHex, s, {}, color, timestamp });
     else _items.back().text += s; // Text goes on the last line (append)
+
+    // The code block below is located here as a "caching" mechanism - the hex representation is only computed when the
+    // item is added. It is simply retreived in the main loop.
+    // If this was in `update()` (which would make the code slightly simpler), this would get unnecessarily re-computed
+    // every frame - 60 times a second or more.
+    if (canUseHex) {
+        // Build the hex representation of the string
+        // We're appending to the last item's ostringstream (`_items.back()` is guaranteed to exist at this point).
+        // We won't need to check for newlines using this approach.
+        std::ostringstream& oss = _items.back().textHex;
+        for (const unsigned char& c : s) {
+            oss << std::hex            // Express integers in hexadecimal (i.e. base-16)
+                << std::uppercase      // Make hex digits A-F uppercase
+                << std::setw(2)        // Hex tuples (groups of digits) always contain 2 digits
+                << std::setfill('0')   // If something is less than 2 digits it's padded with 0s (i.e. "A" => "0A")
+                << static_cast<int>(c) // Use the above formatting rules to append the character's codepoint
+                << " ";                // Single space between tuples to separate them
+        }
+    }
 
     _scrollToEnd = _autoscroll; // Only force scroll if autoscroll is set first
 }
@@ -109,13 +130,13 @@ void Console::addText(const std::string& s, ImVec4 color) {
 void Console::addError(const std::string& s) {
     // Error messages in red
     forceNextLine();
-    addText(std::format("[ERROR] {}\n", s), { 1.0f, 0.4f, 0.4f, 1.0f });
+    addText(std::format("[ERROR] {}\n", s), { 1.0f, 0.4f, 0.4f, 1.0f }, false);
 }
 
 void Console::addInfo(const std::string& s) {
     // Information in yellow
     forceNextLine();
-    addText(std::format("[INFO ] {}\n", s), { 1.0f, 0.8f, 0.6f, 1.0f });
+    addText(std::format("[INFO ] {}\n", s), { 1.0f, 0.8f, 0.6f, 1.0f }, false);
 }
 
 void Console::forceNextLine() {

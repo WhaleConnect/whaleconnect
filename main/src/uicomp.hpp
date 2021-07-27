@@ -18,7 +18,9 @@
 /// A structure representing an item in a Console object's output.
 /// </summary>
 struct ConsoleItem {
+    bool canUseHex; // If the item gets displayed as hexadecimal when the option is set
     std::string text; // The text of the item
+    std::ostringstream textHex; // The text of the item, in hexadecimal format
     ImVec4 color; // The color of the item
     std::string timestamp; // The time when the item was added
 };
@@ -55,6 +57,7 @@ class Console {
     bool _scrollToEnd = false; // If the console is force-scrolled to the end
     bool _autoscroll = true; // If console autoscrolls when new data is put
     bool _showTimestamps = false; // If timestamps are shown in the output
+    bool _showHex = false; // If items are shown in hexadecimal
     std::vector<ConsoleItem> _items; // Items in console output
 
 public:
@@ -68,7 +71,8 @@ public:
     /// </summary>
     /// <param name="s">The string to add to the output</param>
     /// <param name="color">The color of the text (optional, default is uncolored)</param>
-    void addText(const std::string& s, ImVec4 color = {});
+    /// <param name="canUseHex">If the string gets displayed as hexadecimal when set (optional, default is true)</param>
+    void addText(const std::string& s, ImVec4 color = {}, bool canUseHex = true);
 
     /// <summary>
     /// Add a red error message. Does make it go on its own line.
