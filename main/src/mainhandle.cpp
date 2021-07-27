@@ -112,6 +112,27 @@ void handleNewFrame() {
 
     // Dockspace
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
+#if !defined(IMGUI_DISABLE_DEMO_WINDOWS) && !defined(IMGUI_DISABLE_METRICS_WINDOW)
+    // The demo and metrics window are enabled in debug builds (see imconfig.h), give a window to show them
+    static bool showDebugTools = true;
+
+    if (showDebugTools) {
+        if (ImGui::Begin("Debug Tools", &showDebugTools, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("This is a debug build for testing.");
+            ImGui::Text("Closing this window hides it until the next launch!");
+
+            static bool showDemoWindow = false;
+            static bool showMetricsWindow = false;
+            ImGui::Checkbox("Show Demo Window", &showDemoWindow);
+            ImGui::Checkbox("Show Metrics Window", &showMetricsWindow);
+
+            if (showDemoWindow) ImGui::ShowDemoWindow(&showDemoWindow);
+            if (showMetricsWindow) ImGui::ShowMetricsWindow(&showMetricsWindow);
+        }
+        ImGui::End();
+    }
+#endif
 }
 
 void renderWindow() {
