@@ -95,13 +95,12 @@ namespace ImGui {
 template<class T>
 void ImGui::UnsignedInputScalar(const char* label, T& val, unsigned long min, unsigned long max) {
     // Decide data type of parameter
-    ImGuiDataType dt;
-    if (std::is_same_v<uint8_t, T>) dt = ImGuiDataType_U8; // Type of T is uint8_t
-    else if (std::is_same_v<uint16_t, T>) dt = ImGuiDataType_U16; // Type of T is uint16_t
-    else throw std::invalid_argument("This function only supports uint8_t/uint16_t data types");
+    constexpr bool is8bit = std::is_same_v<uint8_t, T>;
+    constexpr bool is16bit = std::is_same_v<uint16_t, T>;
+    static_assert(is8bit || is16bit, "This function only supports uint8_t/uint16_t data types");
 
-    // Minimum and maximum
-    if (max == 0) max = (dt == ImGuiDataType_U8) ? 255UL : 65535UL;
+    // Set maximum
+    if (max == 0) max = (is8bit) ? 255UL : 65535UL;
 
     // Char buffer to hold input
     constexpr int bufLen = 6;
