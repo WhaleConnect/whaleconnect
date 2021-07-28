@@ -159,7 +159,7 @@ ConnWindow::~ConnWindow() {
 }
 
 void ConnWindow::_startRecvThread() {
-    _recvThread = std::thread([&] {
+    auto recvFunc = [&] {
         // Read data into buffer as long as the socket is connected
         while (_connected) {
             // The `recvNew` flag is used to check if there's new data not yet added to the output. If there is, this
@@ -184,7 +184,13 @@ void ConnWindow::_startRecvThread() {
                 if (_receivedBytes <= 0) break;
             }
         }
-    });
+    };
+
+    try {
+        _recvThread = std::thread(recvFunc);
+    } catch (const std::system_error&) {
+        _output.addError("System error - Failed to start the receiving thread. (You may still send data.)");
+    }
 }
 
 void ConnWindow::_closeConnection() {
@@ -222,9 +228,9 @@ void ConnWindow::_checkConnectionStatus() {
         }
     } else {
         // Still connecting, display a message
-        if (!_connectInitialized) {
+        if (_connectInitialized && !_connectPrinted) {
             _output.addInfo("Connecting...");
-            _connectInitialized = true;
+            _connectPrinted = true;
         }
     }
 }

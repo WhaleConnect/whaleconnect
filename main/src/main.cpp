@@ -140,6 +140,7 @@ void drawBTConnectionTab() {
     static bool firstRun = false; // If a search has been performed at least once
     static bool done = false; // If the search has completed and returned a result
     static bool isNew = true; // If the specified connection is unique
+    static bool error = false; // If the async function failed to start
     static std::future<Sockets::BTSearchResult> fut; // The future  to run the search in parallel
     static Sockets::BTSearchResult result; // The result of the search
 
@@ -148,7 +149,12 @@ void drawBTConnectionTab() {
         isNew = true; // Hide the "connection is open" message
         firstRun = true; // The search has been run
         done = false; // Search is in progress
-        fut = std::async(std::launch::async, Sockets::searchBT);
+
+        try {
+            fut = std::async(std::launch::async, Sockets::searchBT);
+        } catch (const std::system_error&) {
+            error = done = true;
+        }
     }
     ImGui::PopDisabled();
 
@@ -160,7 +166,7 @@ void drawBTConnectionTab() {
 
     ImVec2 reservedSpace = { 0, (isNew) ? 0 : -ImGui::GetFrameHeightWithSpacing() };
     ImGui::BeginChild("Output", reservedSpace, false, ImGuiWindowFlags_HorizontalScrollbar);
-    if (done) {
+    if (done && !error) {
         int err = result.err;
         if (err == 0) {
             // "Display Advanced Info" checkbox to show information about the device
@@ -191,8 +197,11 @@ void drawBTConnectionTab() {
             ImGui::Text("[ERROR] %s (%d): %s", ne.name, err, ne.desc);
         }
     } else {
+        // If the async function failed to launch show an error
+        if (error) ImGui::Text("[ERROR] System error - Failed to launch thread.");
+
         // While the search is running in the background thread, display a text spinner
-        if (firstRun) ImGui::LoadingSpinner("Searching");
+        else if (firstRun) ImGui::LoadingSpinner("Searching");
     }
     ImGui::EndChild();
 

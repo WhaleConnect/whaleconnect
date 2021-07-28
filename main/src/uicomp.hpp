@@ -106,7 +106,8 @@ class ConnWindow {
     std::future<SOCKET> _connFut; // The future object responsible for connecting asynchronously
     std::atomic<bool> _connected = false; // If the window has an active connection
     std::atomic<int> _lastConnectError = 0; // The last error encountered while connecting
-    bool _connectInitialized = false; // If the "Connecting..." message has been printed
+    bool _connectInitialized = false; // If the connecting async function has been started successfully
+    bool _connectPrinted = false; // If the "Connecting..." message has been printed
     std::atomic<bool> _connectStop = false; // If the connection should be canceled
 
     std::thread _recvThread; // Thread responsible for receiving data from the server
@@ -177,16 +178,21 @@ template<class Fn, class... Args>
 ConnWindow::ConnWindow(const std::string& title, const std::string& id, Fn&& fn, Args&&... args)
     : _title(title), id(id) {
     // (The instantiation of _connFut is not put in the member initializer list because of its large size.)
-    _connFut = std::async(std::launch::async, [&](Args&&... _args) {
-        // Call the provided function with the stop flag and additional arguments
-        ConnectResult ret = fn(_connectStop, _args...);
+    try {
+        _connFut = std::async(std::launch::async, [&](Args&&... _args) {
+            // Call the provided function with the stop flag and additional arguments
+            ConnectResult ret = fn(_connectStop, _args...);
 
-        // Get the last connect error
-        _lastConnectError = ret.err;
+            // Get the last connect error
+            _lastConnectError = ret.err;
 
-        // Return the socket file descriptor from the async function
-        return ret.fd;
-    }, args...);
+            // Return the socket file descriptor from the async function
+            return ret.fd;
+        }, args...);
+        _connectInitialized = true;
+    } catch (const std::system_error&) {
+        _output.addError("System error - Failed to start connecting.");
+    }
 }
 
 // The ConnWindow connector function:
