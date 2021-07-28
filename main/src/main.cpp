@@ -151,8 +151,11 @@ void drawBTConnectionTab() {
         done = false; // Search is in progress
 
         try {
+            // Attempt to start the async function
             fut = std::async(std::launch::async, Sockets::searchBT);
         } catch (const std::system_error&) {
+            // Something happened - set the error flag to true
+            // Technically the async function is "done" so set that flag as well.
             error = done = true;
         }
     }
@@ -197,10 +200,10 @@ void drawBTConnectionTab() {
             ImGui::Text("[ERROR] %s (%d): %s", ne.name, err, ne.desc);
         }
     } else {
-        // If the async function failed to launch show an error
+        // If the async function failed to launch, show an error
         if (error) ImGui::Text("[ERROR] System error - Failed to launch thread.");
 
-        // While the search is running in the background thread, display a text spinner
+        // Otherwise, while the search is running in the background thread, display a text spinner
         else if (firstRun) ImGui::LoadingSpinner("Searching");
     }
     ImGui::EndChild();

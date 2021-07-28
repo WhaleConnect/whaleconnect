@@ -191,6 +191,7 @@ ConnWindow::ConnWindow(const std::string& title, const std::string& id, Fn&& fn,
         }, args...);
         _connectInitialized = true;
     } catch (const std::system_error&) {
+        // Failed to start the function - usually because something happened in the system.
         _output.addError("System error - Failed to start connecting.");
     }
 }

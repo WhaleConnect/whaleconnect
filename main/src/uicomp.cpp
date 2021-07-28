@@ -159,6 +159,7 @@ ConnWindow::~ConnWindow() {
 }
 
 void ConnWindow::_startRecvThread() {
+    // Receiving loop function, this runs in the background of a ConnWindow
     auto recvFunc = [&] {
         // Read data into buffer as long as the socket is connected
         while (_connected) {
@@ -187,8 +188,11 @@ void ConnWindow::_startRecvThread() {
     };
 
     try {
+        // Start the thread with the receiving loop
         _recvThread = std::thread(recvFunc);
     } catch (const std::system_error&) {
+        // Failed to start the thread
+        // This doesn't mean the connection is useless - sending data can still be done.
         _output.addError("System error - Failed to start the receiving thread. (You may still send data.)");
     }
 }
