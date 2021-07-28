@@ -53,7 +53,7 @@ static void configImGui() {
     fonts.AddFontFromFileTTF(fontFile, Settings::fontSize, nullptr, &ranges[0]);
 }
 
-bool initApp() {
+bool MainHandler::initApp() {
     glfwSetErrorCallback([](int error, const char* description) {
         // Error file for logging GLFW errors
         auto file = fmt::output_file("err.txt", fmt::file::CREATE | fmt::file::APPEND | fmt::file::WRONLY);
@@ -101,11 +101,11 @@ bool initApp() {
     return true;
 }
 
-bool isActive() {
+bool MainHandler::isActive() {
     return !glfwWindowShouldClose(window);
 }
 
-void handleNewFrame() {
+void MainHandler::handleNewFrame() {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -138,7 +138,7 @@ void handleNewFrame() {
 #endif
 }
 
-void renderWindow() {
+void MainHandler::renderWindow() {
     ImGui::Render();
     int w, h;
     glfwGetFramebufferSize(window, &w, &h);
@@ -156,7 +156,7 @@ void renderWindow() {
     glfwSwapBuffers(window);
 }
 
-void cleanupApp() {
+void MainHandler::cleanupApp() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

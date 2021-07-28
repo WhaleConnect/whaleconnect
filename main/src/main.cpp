@@ -26,12 +26,12 @@ int CALLBACK WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 #else
 int main(int, char**) {
 #endif
-    if (!initApp()) return EXIT_FAILURE; // Create a main application window
+    if (!MainHandler::initApp()) return EXIT_FAILURE; // Create a main application window
     int startupRet = Sockets::init(); // Initialize sockets
 
     // Main loop
-    while (isActive()) {
-        handleNewFrame();
+    while (MainHandler::isActive()) {
+        MainHandler::handleNewFrame();
 
         // Show error overlay if socket startup failed
         if (startupRet != NO_ERROR) ImGui::Overlay({ 10, 10 }, "Winsock startup failed with error %d", startupRet);
@@ -54,11 +54,11 @@ int main(int, char**) {
             else connections.erase(connections.begin() + i); // Window is closed, remove it from vector
         }
 
-        renderWindow();
+        MainHandler::renderWindow();
     }
 
     Sockets::cleanup();
-    cleanupApp();
+    MainHandler::cleanupApp();
     return EXIT_SUCCESS;
 }
 
