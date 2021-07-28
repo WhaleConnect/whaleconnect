@@ -109,7 +109,7 @@ void MainHandler::handleNewFrame() {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, { 0, 0 }); // No space between docked tabs (ocornut/imgui#4328)
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, { 0, 0 }); // No space between docked tabs (ocornut/imgui#4368)
     ImGui::NewFrame();
     ImGui::PopStyleVar();
 
