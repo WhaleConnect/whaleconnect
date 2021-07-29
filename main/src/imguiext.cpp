@@ -16,10 +16,6 @@ void ImGui::TextUnformatted(const std::string& s) {
     TextUnformatted(s.c_str());
 }
 
-void ImGui::Text(uint16_t i) {
-    Text("%hu", i);
-}
-
 bool ImGui::InputText(const char* label, std::string* s, ImGuiInputTextFlags flags) {
     return InputText(label, const_cast<char*>(s->c_str()), s->capacity() + 1, flags
         | ImGuiInputTextFlags_CallbackResize, [](ImGuiInputTextCallbackData* data) {

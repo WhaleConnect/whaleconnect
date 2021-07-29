@@ -27,14 +27,14 @@ int CALLBACK WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 int main(int, char**) {
 #endif
     if (!MainHandler::initApp()) return EXIT_FAILURE; // Create a main application window
-    int startupRet = Sockets::init(); // Initialize sockets
+    int init = Sockets::init(); // Initialize sockets
 
     // Main loop
     while (MainHandler::isActive()) {
         MainHandler::handleNewFrame();
 
         // Show error overlay if socket startup failed
-        if (startupRet != NO_ERROR) ImGui::Overlay({ 10, 10 }, "Winsock startup failed with error %d", startupRet);
+        if (init != NO_ERROR) ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner_TopLeft, "Startup failed (%d).", init);
 
         // "New Connection" window
         ImGui::SetNextWindowSizeConstraints({ 530, 150 }, { FLT_MAX, FLT_MAX });
@@ -67,7 +67,7 @@ int main(int, char**) {
 /// </summary>
 /// <param name="data">The remote host to connect to</param>
 /// <returns>If the connection window was created (true if created, false if it already exists)</returns>
-bool openNewConnection(const DeviceData& data) {
+bool openNewConnection(const DeviceData & data) {
     // Format the DeviceData into a usable id
     std::string id = UIHelpers::makeClientString(data, false);
 
@@ -167,8 +167,8 @@ void drawBTConnectionTab() {
         result = fut.get();
     }
 
-    ImVec2 reservedSpace = { 0, (isNew) ? 0 : -ImGui::GetFrameHeightWithSpacing() };
-    ImGui::BeginChild("Output", reservedSpace, false, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_HorizontalScrollbar;
+    ImGui::BeginChild("Output", { 0, (isNew) ? 0 : -ImGui::GetFrameHeightWithSpacing() }, false, windowFlags);
     if (done && !error) {
         int err = result.err;
         if (err == 0) {

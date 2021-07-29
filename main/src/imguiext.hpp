@@ -7,6 +7,14 @@
 #include <cstring> // std::strchr()
 #include <imgui/imgui_internal.h>
 
+enum ImGuiOverlayCorner_ {
+    ImGuiOverlayCorner_TopLeft,
+    ImGuiOverlayCorner_TopRight,
+    ImGuiOverlayCorner_BottomLeft,
+    ImGuiOverlayCorner_BottomRight
+};
+typedef int ImGuiOverlayCorner;
+
 /// <summary>
 /// Namespace containing add-on functions for Dear ImGui. Members of this namespace may not necessarily follow the style
 /// guide in order to remain consistent with Dear ImGui's naming conventions. Unused return values or parameters present
@@ -19,12 +27,6 @@ namespace ImGui {
     /// </summary>
     /// <param name="s">The string to display</param>
     void TextUnformatted(const std::string& s);
-
-    /// <summary>
-    /// Wrapper function for ImGui::Text() to allow a uint16_t parameter.
-    /// </summary>
-    /// <param name="i">The uint16_t to display</param>
-    void Text(uint16_t i);
 
     /// <summary>
     /// An adapted InputScalar() function with operator handling removed. Only works with uint8_t/uint16_t types.
@@ -63,14 +65,15 @@ namespace ImGui {
     /// Create a semi-transparent, fixed overlay on the application window.
     /// </summary>
     /// <typeparam name="...Args">Any parameters to format into the text</typeparam>
-    /// <param name="location">An ImVec2 specifying the coordinates (from top-left corner) to put the overlay</param>
+    /// <param name="padding">The distance from the overlay to the specified corner</param>
+    /// <param name="corner">The corner to put the overlay in (use ImGuiOverlayCorner_)</param>
     /// <param name="text">The string to display in the overlay, accepts format specifiers</param>
     /// <param name="...args">Any parameters to format into the text</param>
     /// <remarks>
     /// Adapted from imgui_demo.cpp.
     /// </remarks>
     template<class... Args>
-    void Overlay(ImVec2 location, const char* text, Args... args);
+    void Overlay(ImVec2 padding, ImGuiOverlayCorner corner, const char* text, Args... args);
 
     /// <summary>
     /// Display a basic spinner which rotates every few frames.
@@ -129,7 +132,7 @@ void ImGui::UnsignedInputScalar(const char* label, T& val, unsigned long min, un
 
     // Style config
     const float widgetSpacing = 2;
-    const ImVec2 sz = { GetFrameHeight(), GetFrameHeight() }; // Button size
+    const ImVec2 sz{ GetFrameHeight(), GetFrameHeight() }; // Button size
 
     // Step buttons: Subtract
     SameLine(0, widgetSpacing);
@@ -148,22 +151,35 @@ void ImGui::UnsignedInputScalar(const char* label, T& val, unsigned long min, un
 }
 
 template<class... Args>
-void ImGui::Overlay(ImVec2 location, const char* text, Args... args) {
+void ImGui::Overlay(ImVec2 padding, ImGuiOverlayCorner corner, const char* text, Args... args) {
     // Window flags to make the overlay be fixed, immobile, and have no decoration
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav
         | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize;
 
     // Get main viewport
     const ImGuiViewport* viewport = GetMainViewport();
+
+    // Use work area to avoid any menubars or taskbars
     ImVec2 workPos = viewport->WorkPos;
+    ImVec2 workSize = viewport->WorkSize;
+    bool isRight = (corner == ImGuiOverlayCorner_TopRight) || (corner == ImGuiOverlayCorner_BottomRight);
+    bool isBottom = (corner == ImGuiOverlayCorner_BottomLeft) || (corner == ImGuiOverlayCorner_BottomRight);
+
+    // Window position calculations
+    ImVec2 windowPos{
+        isRight ? (workPos.x + workSize.x - padding.x) : (workPos.x + padding.x), // Offset X
+        isBottom ? (workPos.y + workSize.y - padding.y) : (workPos.y + padding.y) // Offset Y
+    };
+
+    ImVec2 windowPosPivot{ static_cast<int>(isRight), static_cast<int>(isBottom) };
 
     // Window configuration
     SetNextWindowBgAlpha(0.5f);
-    SetNextWindowPos({ workPos.x + location.x, workPos.y + location.y }, ImGuiCond_Always);
+    SetNextWindowPos(windowPos, ImGuiCond_Always, windowPosPivot);
     SetNextWindowViewport(viewport->ID);
 
-    // Draw the window - we're passing the text as the window name (which doesn't show). This function will work as long
-    // as every call has a different text value.
+    // Draw the window - we're passing the text as the window name (which doesn't show). This function will work as
+    // long as every call has a different text value.
     if (Begin(text, nullptr, flags)) Text(text, args...);
     End();
 }
