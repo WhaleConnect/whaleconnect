@@ -67,7 +67,7 @@ int main(int, char**) {
 /// </summary>
 /// <param name="data">The remote host to connect to</param>
 /// <returns>If the connection window was created (true if created, false if it already exists)</returns>
-bool openNewConnection(const DeviceData & data) {
+bool openNewConnection(const DeviceData& data) {
     // Format the DeviceData into a usable id
     std::string id = UIHelpers::makeClientString(data, false);
 

@@ -116,6 +116,10 @@ void MainHandler::handleNewFrame() {
     // Dockspace
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
+    // FPS counter
+    if (Settings::showFPScounter)
+        ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner_TopRight, "%d FPS", static_cast<int>(ImGui::GetIO().Framerate));
+
 #if !defined(IMGUI_DISABLE_DEMO_WINDOWS) && !defined(IMGUI_DISABLE_METRICS_WINDOW)
     // The demo and metrics window are enabled in debug builds (see imconfig.h), provide a window to show them
     static bool showDebugTools = true;

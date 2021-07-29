@@ -171,7 +171,7 @@ void ImGui::Overlay(ImVec2 padding, ImGuiOverlayCorner corner, const char* text,
         isBottom ? (workPos.y + workSize.y - padding.y) : (workPos.y + padding.y) // Offset Y
     };
 
-    ImVec2 windowPosPivot{ static_cast<int>(isRight), static_cast<int>(isBottom) };
+    ImVec2 windowPosPivot{ static_cast<float>(isRight), static_cast<float>(isBottom) };
 
     // Window configuration
     SetNextWindowBgAlpha(0.5f);

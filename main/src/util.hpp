@@ -10,7 +10,7 @@
 #endif
 
 // Enum of all possible connection types
-enum ConnectionTypes { TCP, UDP, Bluetooth };
+enum ConnectionType { TCP, UDP, Bluetooth };
 
 // String representations of connection types
 inline const char* connectionTypesStr[] = { "TCP", "UDP", "Bluetooth" };
@@ -42,4 +42,5 @@ namespace Settings {
     inline uint8_t connectTimeout = 5; // Number of seconds to allow for connection before it aborts
     inline uint8_t btSearchTime = 5; // Duration of Bluetooth search in seconds
     inline uint8_t connectPollTime = 100; // Milliseconds between poll checks while connecting
+    inline bool showFPScounter = true; // If a framerate counter is shown in the top-right corner
 }
