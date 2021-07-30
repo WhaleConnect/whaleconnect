@@ -37,7 +37,6 @@ int main(int, char**) {
         if (init != NO_ERROR) ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner_TopLeft, "Startup failed (%d).", init);
 
         // "New Connection" window
-        ImGui::SetNextWindowSizeConstraints({ 530, 150 }, { FLT_MAX, FLT_MAX });
         ImGui::SetNextWindowSize({ 600, 250 }, ImGuiCond_FirstUseEver);
         if (ImGui::Begin("New Connection")) {
             if (ImGui::BeginTabBar("ConnectionTypes")) {

@@ -289,7 +289,6 @@ void ConnWindow::_updateOutput() {
 }
 
 void ConnWindow::update() {
-    ImGui::SetNextWindowSizeConstraints({ 380, 100 }, { FLT_MAX, FLT_MAX });
     ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
     if (!ImGui::Begin(_title.c_str(), &open)) {
         ImGui::End();
