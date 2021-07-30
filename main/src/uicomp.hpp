@@ -59,6 +59,7 @@ class Console {
     bool _autoscroll = true; // If console autoscrolls when new data is put
     bool _showTimestamps = false; // If timestamps are shown in the output
     bool _showHex = false; // If items are shown in hexadecimal
+    bool _clearTextboxOnSend = true; // If the textbox is cleared on each send
 
     std::vector<ConsoleItem> _items; // Items in console output
     std::string _textBuf; // Buffer for the texbox
@@ -121,7 +122,7 @@ void Console::update(Fn fn) {
 
         if (sendString != "") fn(sendString);
 
-        _textBuf = ""; // Blank out input textbox
+        if (_clearTextboxOnSend) _textBuf = ""; // Blank out input textbox
         ImGui::SetItemDefaultFocus();
         ImGui::SetKeyboardFocusHere(-1); // Auto focus on input textbox
     }

@@ -83,6 +83,10 @@ void Console::_updateOutput() {
 
         ImGui::MenuItem("Show hexadecimal", nullptr, &_showHex);
 
+        ImGui::Separator();
+
+        ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSend);
+
         ImGui::EndPopup();
     }
 
