@@ -33,8 +33,10 @@ for file in backend_files:
 imconfig_path = calc_out_path("imconfig.h")
 if not os.path.exists(imconfig_path):
     print("Generating imconfig.h...")
-    with open(imconfig_path, "w") as f:
-        f.write("""#pragma once
+    with open(imconfig_path, "wb") as f:
+        # This Python script has LF (\n) line endings,
+        # the target imconfig.h should have CRLF (\r\n) endings.
+        f.write(b"""#pragma once
 
 #define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
@@ -42,7 +44,7 @@ if not os.path.exists(imconfig_path):
 #define IMGUI_DISABLE_DEMO_WINDOWS
 #define IMGUI_DISABLE_METRICS_WINDOW
 #endif
-""")
+""".replace(b"\n", b"\r\n"))
 
 # Download license
 print("Downloading license...")
