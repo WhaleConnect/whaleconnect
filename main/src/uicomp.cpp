@@ -31,7 +31,7 @@ std::string UIHelpers::makeClientString(const DeviceData& data, bool useName) {
     return std::format("{} Connection - {} port {}##{}", type, deviceString, data.port, data.address);
 }
 
-void Console::update() {
+void Console::_updateOutput() {
     // Reserve space at bottom for more elements
     static const float reservedSpace = -ImGui::GetFrameHeightWithSpacing();
     ImGui::BeginChild("ConsoleOutput", { 0, reservedSpace }, true, ImGuiWindowFlags_HorizontalScrollbar);
@@ -85,6 +85,17 @@ void Console::update() {
 
         ImGui::EndPopup();
     }
+
+    // Line ending combobox
+    ImGui::SameLine();
+
+    // The code used to calculate where to put the combobox is derived from
+    // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
+    float comboWidth = 150.0f;
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
+
+    ImGui::SetNextItemWidth(comboWidth);
+    ImGui::Combo("##lineEnding", &_currentLE, "None\0Newline\0Carriage return\0Both\0");
 }
 
 void Console::addText(const std::string& s, ImVec4 color, bool canUseHex) {
@@ -141,10 +152,10 @@ void Console::addInfo(const std::string& s) {
 
 void Console::forceNextLine() {
     // If the deque is empty, the item will have to be on its own line.
-    if (!_items.empty()) {
-        std::string& lastItem = _items.back().text;
-        if (lastItem.back() != '\n') lastItem += '\n';
-    }
+    if (_items.empty()) return;
+
+    std::string& lastItem = _items.back().text;
+    if (lastItem.back() != '\n') lastItem += '\n';
 }
 
 void Console::clear() {
@@ -281,28 +292,6 @@ void ConnWindow::update() {
         return;
     }
 
-    // Send textbox
-    ImGui::SetNextItemWidth(-FLT_MIN); // Make the textbox full width
-    if (ImGui::InputText("##input", &_sendBuf, ImGuiInputTextFlags_EnterReturnsTrue)) {
-        // Add line ending
-        const char* endings[] = { "", "\n", "\r", "\r\n" };
-
-        if (_connected) {
-            // Construct the string to send by adding the line ending to the end of the string
-            std::string sendString = _sendBuf + endings[_currentLE];
-            if (sendString != "") {
-                // Send data and check if success
-                if (Sockets::sendData(_sockfd, sendString) == SOCKET_ERROR) _errHandler(Sockets::getLastErr());
-            }
-        } else {
-            _output.addInfo("The socket is not connected.");
-        }
-
-        _sendBuf = ""; // Blank out input textbox
-        ImGui::SetItemDefaultFocus();
-        ImGui::SetKeyboardFocusHere(-1); // Auto focus on input textbox
-    }
-
     _checkConnectionStatus(); // Check the status of the async connection
 
     if (_connected && _recvNew) {
@@ -318,18 +307,15 @@ void ConnWindow::update() {
         }
     }
 
-    _output.update(); // Draw console output
-
-    // Line ending combobox
-    ImGui::SameLine();
-
-    // The code used to calculate where to put the combobox is derived from
-    // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
-    float comboWidth = 150.0f;
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
-
-    ImGui::SetNextItemWidth(comboWidth);
-    ImGui::Combo("##lineEnding", &_currentLE, "None\0Newline\0Carriage return\0Both\0");
+    // Draw console output
+    _output.update([&](const std::string& text) {
+        if (_connected) {
+            int ret = Sockets::sendData(_sockfd, text);
+            if (ret == SOCKET_ERROR) _errHandler(Sockets::getLastErr());
+        } else {
+            _output.addInfo("The socket is not connected.");
+        }
+    });
 
     // End window
     ImGui::End();

@@ -12,6 +12,7 @@
 #include <imgui/imgui.h>
 
 #include "util.hpp"
+#include "imguiext.hpp"
 #include "sockets.hpp"
 
 /// <summary>
@@ -51,20 +52,31 @@ namespace UIHelpers {
 }
 
 /// <summary>
-/// A class to represent a scrollable panel of output text.
+/// A class to represent a scrollable panel of output text with an input textbox.
 /// </summary>
 class Console {
     bool _scrollToEnd = false; // If the console is force-scrolled to the end
     bool _autoscroll = true; // If console autoscrolls when new data is put
     bool _showTimestamps = false; // If timestamps are shown in the output
     bool _showHex = false; // If items are shown in hexadecimal
+
     std::vector<ConsoleItem> _items; // Items in console output
+    std::string _textBuf; // Buffer for the texbox
+    int _currentLE = 0; // The index of the line ending selected
+
+    /// <summary>
+    /// Draw all elements below the textbox.
+    /// </summary>
+    void _updateOutput();
 
 public:
     /// <summary>
-    /// Redraw the console output. Must be called after adding an item to make it show up.
+    /// Draw the console output.
     /// </summary>
-    void update();
+    /// <typeparam name="Fn">The function to call when the input textbox is activated</typeparam>
+    /// <param name="fn">A function which takes a string which is the textbox contents at the time</param>
+    template<class Fn>
+    void update(Fn fn);
 
     /// <summary>
     /// Add text to the console. Does not make it go on its own line.
@@ -98,6 +110,25 @@ public:
     void clear();
 };
 
+template<class Fn>
+void Console::update(Fn fn) {
+    // Send textbox
+    ImGui::SetNextItemWidth(-FLT_MIN); // Make the textbox full width
+    if (ImGui::InputText("##ConsoleInput", &_textBuf, ImGuiInputTextFlags_EnterReturnsTrue)) {
+        // Construct the string to send by adding the line ending to the end of the string
+        const char* endings[] = { "", "\n", "\r", "\r\n" };
+        std::string sendString = _textBuf + endings[_currentLE];
+
+        if (sendString != "") fn(sendString);
+
+        _textBuf = ""; // Blank out input textbox
+        ImGui::SetItemDefaultFocus();
+        ImGui::SetKeyboardFocusHere(-1); // Auto focus on input textbox
+    }
+
+    _updateOutput();
+}
+
 /// <summary>
 /// A class to handle a connection in an easy-to-use GUI.
 /// </summary>
@@ -106,9 +137,9 @@ class ConnWindow {
     std::future<SOCKET> _connFut; // The future object responsible for connecting asynchronously
     std::atomic<bool> _connected = false; // If the window has an active connection
     std::atomic<int> _lastConnectError = 0; // The last error encountered while connecting
+    std::atomic<bool> _connectStop = false; // If the connection should be canceled
     bool _connectInitialized = false; // If the connecting async function has been started successfully
     bool _connectPrinted = false; // If the "Connecting..." message has been printed
-    std::atomic<bool> _connectStop = false; // If the connection should be canceled
 
     std::thread _recvThread; // Thread responsible for receiving data from the server
     std::mutex _recvAccess; // Mutex to ensure only one thread can access the recv buffer at a time
@@ -118,8 +149,7 @@ class ConnWindow {
 
     std::string _title; // Title of window
     Console _output; // The output of the window, will hold system messages and data received from the server
-    std::string _sendBuf, _recvBuf; // Buffers
-    int _currentLE = 0; // The index of the line ending selected in the combobox
+    std::string _recvBuf; // Receive buffer
 
     /// <summary>
     /// Start the receiving background thread.
