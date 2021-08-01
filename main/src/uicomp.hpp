@@ -115,7 +115,7 @@ template<class Fn>
 void Console::update(Fn fn) {
     // Send textbox
     ImGui::SetNextItemWidth(-FLT_MIN); // Make the textbox full width
-    if (ImGui::InputText("##ConsoleInput", &_textBuf, ImGuiInputTextFlags_EnterReturnsTrue)) {
+    if (ImGui::InputText("##ConsoleInput", _textBuf, ImGuiInputTextFlags_EnterReturnsTrue)) {
         // Construct the string to send by adding the line ending to the end of the string
         const char* endings[] = { "", "\n", "\r", "\r\n" };
         std::string sendString = _textBuf + endings[_currentLE];

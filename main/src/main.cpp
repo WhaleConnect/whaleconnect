@@ -106,7 +106,7 @@ void drawIPConnectionTab() {
 
     // Server address
     ImGui::SetNextItemWidth(340);
-    ImGui::InputText("Address", &addr);
+    ImGui::InputText("Address", addr);
 
     // Server port
     ImGui::SameLine();

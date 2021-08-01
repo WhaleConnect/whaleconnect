@@ -43,14 +43,14 @@ namespace ImGui {
     /// An adapted InputText() to use a std::string passed by reference.
     /// </summary>
     /// <param name="label">The text to show next to the input</param>
-    /// <param name="s">A pointer to the std::string buffer to use</param>
+    /// <param name="s">The std::string buffer to use</param>
     /// <param name="flags">A set of ImGuiInputTextFlags to change how the textbox behaves</param>
     /// <returns>The value from InputText() called internally</returns>
     /// <remarks>
     /// The implementation for this function is copied from /misc/cpp/imgui_stdlib.cpp in the Dear ImGui GitHub repo,
     /// with slight modifications.
     /// </remarks>
-    bool InputText(const char* label, std::string* s, ImGuiInputTextFlags flags = 0);
+    bool InputText(const char* label, std::string& s, ImGuiInputTextFlags flags = 0);
 
     /// <summary>
     /// Create a (?) mark which shows a tooltip on hover. Placed next to an element to provide more details about it.
