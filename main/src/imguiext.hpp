@@ -123,7 +123,7 @@ void ImGui::UnsignedInputScalar(const char* label, T& val, unsigned long min, un
     if (InputText("", buf, bufLen, ImGuiInputTextFlags_CallbackCharFilter, filter)) {
         try {
             // Convert buffer to unsigned long
-            val = static_cast<T>(std::clamp(std::stoul(buf), min, max));
+            val = static_cast<T>(ImClamp(std::stoul(buf), min, max));
         } catch (std::exception&) {
             // Exception thrown during conversion, set variable to minimum
             val = static_cast<T>(min);
