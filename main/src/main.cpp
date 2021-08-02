@@ -21,11 +21,7 @@ bool openNewConnection(const DeviceData& data);
 void drawIPConnectionTab();
 void drawBTConnectionTab();
 
-#if defined(_WIN32) && defined(_MSC_VER)
-int CALLBACK WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
-#else
-int main(int, char**) {
-#endif
+int MAIN_FUNC(MAIN_ARGS) {
     if (!MainHandler::initApp()) return EXIT_FAILURE; // Create a main application window
     int init = Sockets::init(); // Initialize sockets
 

@@ -3,6 +3,16 @@
 
 #pragma once
 
+#ifdef _MSC_VER
+// Use WinMain() as an entry point on MSVC
+#define MAIN_FUNC CALLBACK WinMain
+#define MAIN_ARGS _In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int
+#else
+// Use the standard main() as an entry point on other compilers
+#define MAIN_FUNC main
+#define MAIN_ARGS
+#endif
+
 namespace MainHandler {
     /// <summary>
     /// Set up backends/context, configure Dear ImGui, and create a main application window.
