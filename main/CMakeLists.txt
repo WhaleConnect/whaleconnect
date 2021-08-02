@@ -30,8 +30,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	# MSVC options
 	target_compile_options(terminal PRIVATE /W4 /utf-8)
 
-    # Use MSVC's Unicode character set
-    target_compile_definitions(terminal PRIVATE UNICODE _UNICODE)
+	# Use MSVC's Unicode character set
+	target_compile_definitions(terminal PRIVATE UNICODE _UNICODE)
 
 	# Windows - GLFW lib file
 	target_link_libraries(terminal ${PROJECT_SOURCE_DIR}/3rdparty/GLFW/glfw3.lib)
