@@ -9,12 +9,15 @@
 #include <ws2bth.h>
 
 #pragma comment(lib, "Ws2_32.lib")
+
+// These don't exist on Windows
+#define EAI_SYSTEM 0
+#define MSG_NOSIGNAL 0
 #else
-// Bluetooth headers for Unix
+// Bluetooth headers for Linux
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 
-#include <csignal> // std::signal()
 #include <cerrno> // errno
 #include <cstring> // std::strerror()
 
@@ -25,7 +28,7 @@
 #include <fcntl.h> // fcntl()
 #include <poll.h> // poll()
 
-// Remap Winsock functions to Unix equivalents
+// WSAPoll = poll
 #define WSAPoll poll
 
 // Socket errors
@@ -36,10 +39,6 @@
 // Bluetooth definitions
 #define AF_BTH AF_BLUETOOTH
 #define BTHPROTO_RFCOMM BTPROTO_RFCOMM
-#endif
-
-#ifndef EAI_SYSTEM
-#define EAI_SYSTEM 0
 #endif
 
 #include "sockets.hpp"
@@ -85,8 +84,6 @@ int Sockets::init() {
     WSADATA wsaData;
     return WSAStartup(MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
 #else
-    // SIGPIPE throws on Unix when a socket disconnects, ignore it
-    std::signal(SIGPIPE, SIG_IGN);
     return NO_ERROR;
 #endif
 }
@@ -257,7 +254,7 @@ void Sockets::destroySocket(SOCKET sockfd) {
 int Sockets::sendData(SOCKET sockfd, const std::string& data) {
     // Send data through socket, static_cast the string size to avoid MSVC warning C4267
     // ('var': conversion from 'size_t' to 'type', possible loss of data)
-    return send(sockfd, data.c_str(), static_cast<int>(data.size()), 0);
+    return send(sockfd, data.c_str(), static_cast<int>(data.size()), MSG_NOSIGNAL);
 
     // Note: Typically, sendto() and recvfrom() are used with a UDP connection.
     // However, these require a sockaddr parameter, which becomes hard to get with getaddrinfo().
@@ -274,7 +271,7 @@ int Sockets::recvData(SOCKET sockfd, std::string& data) {
     char buf[bufLen] = "";
 
     // Receive and check bytes received
-    int ret = recv(sockfd, buf, bufLen - 1, 0);
+    int ret = recv(sockfd, buf, bufLen - 1, MSG_NOSIGNAL);
     if (ret != SOCKET_ERROR) {
         buf[ret] = '\0'; // Add a null char to the end of the buffer
         data = buf;
