@@ -15,14 +15,14 @@
 #define SOCKET_ERROR -1
 #define NO_ERROR 0
 
-// Windows-style SOCKET equals plain Unix int for file descriptors
+// Windows-style SOCKET equals int on Unix for file descriptors
 typedef int SOCKET;
 #endif
 
 #include "util.hpp"
 
 /// <summary>
-/// Functions for handling network sockets. (create, send, receive, destroy)
+/// Namespace containing functions for handling network sockets.
 /// </summary>
 namespace Sockets {
     /// <summary>
@@ -51,11 +51,11 @@ namespace Sockets {
     /// </summary>
     /// <param name="sockfd">The socket file descriptor to perform the connection on</param>
     /// <param name="sig">Atomic bool signal, set to true in another thread to abort this function</param>
-    /// <param name="addr">The sockaddr* instance describing what to connect to</param>
-    /// <param name="addrlen">The size of the addr param [use sizeof()]</param>
+    /// <param name="addr">The sockaddr* describing the connection</param>
+    /// <param name="addrlen">The size of the "addr" parameter</param>
     /// <returns>Failure/abort/timeout: SOCKET_ERROR, Success: NO_ERROR</returns>
     /// <remarks>
-    /// This function should not be used outside of createClientSocket() since that handles most of the error checking
+    /// This function should not be used outside of createClientSocket(), since that handles most of the error checking
     /// and parameter evaluation involved in connecting.
     /// </remarks>
     int connectWithTimeout(SOCKET sockfd, const std::atomic<bool>& sig, sockaddr* addr, size_t addrlen);
@@ -71,11 +71,11 @@ namespace Sockets {
     /// <summary>
     /// Shutdown both directions (Send and Receive) of a socket and close it.
     /// </summary>
-    /// <param name="sockfd">The file descriptor of the socket to close</param>
+    /// <param name="sockfd">The file descriptor of the socket</param>
     void destroySocket(SOCKET sockfd);
 
     /// <summary>
-    /// Send a string of data through the socket. Will return true if sending succeeded, false if it failed.
+    /// Send a string through the socket.
     /// </summary>
     /// <param name="sockfd">The socket file descriptor to receive from</param>
     /// <param name="data">The data to send through the socket</param>
@@ -83,7 +83,7 @@ namespace Sockets {
     int sendData(SOCKET sockfd, const std::string& data);
 
     /// <summary>
-    /// Receive a string of data through the socket. Will return true if receiving succeeded, false if it failed.
+    /// Receive a string from the socket.
     /// </summary>
     /// <param name="sockfd">The socket file descriptor to receive from</param>
     /// <param name="data">The string to hold the data received (passed by reference)</param>

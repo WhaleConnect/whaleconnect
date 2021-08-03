@@ -16,11 +16,11 @@ enum ImGuiOverlayCorner_ {
 typedef int ImGuiOverlayCorner;
 
 /// <summary>
-/// Namespace containing add-on functions for Dear ImGui. Members of this namespace may not necessarily follow the style
-/// guide in order to remain consistent with Dear ImGui's naming conventions. Unused return values or parameters present
-/// in the original Dear ImGui API of which these functions are derived from may be removed to better fit the usage of
-/// the functions.
+/// Namespace containing add-on functions for Dear ImGui.
 /// </summary>
+/// <remarks>
+/// The naming conventions used here are selected to remain consistent with the official Dear ImGui API.
+/// </remarks>
 namespace ImGui {
     /// <summary>
     /// Wrapper function for ImGui::TextUnformatted() to allow a std::string parameter.
@@ -47,8 +47,7 @@ namespace ImGui {
     /// <param name="flags">A set of ImGuiInputTextFlags to change how the textbox behaves</param>
     /// <returns>The value from InputText() called internally</returns>
     /// <remarks>
-    /// The implementation for this function is copied from /misc/cpp/imgui_stdlib.cpp in the Dear ImGui GitHub repo,
-    /// with slight modifications.
+    /// Adapted from imgui_stdlib.cpp.
     /// </remarks>
     bool InputText(const char* label, std::string& s, ImGuiInputTextFlags flags = 0);
 
@@ -80,7 +79,7 @@ namespace ImGui {
     /// </summary>
     /// <param name="label">The text to display next to the spinner</param>
     /// <remarks>
-    /// This function is taken from https://github.com/ocornut/imgui/issues/1901#issuecomment-400563921
+    /// Taken from https://github.com/ocornut/imgui/issues/1901#issuecomment-400563921.
     /// </remarks>
     void LoadingSpinner(const char* label);
 
@@ -90,14 +89,14 @@ namespace ImGui {
     /// <param name="label">The text to display in the tab</param>
     /// <returns>If the tab is active and selected</returns>
     /// <remarks>
-    /// This function is taken from https://github.com/ocornut/imgui/issues/4368#issuecomment-887209351
+    /// Taken from https://github.com/ocornut/imgui/issues/4368#issuecomment-887209351.
     /// </remarks>
     bool BeginTabItemNoSpacing(const char* label);
 }
 
 template<class T>
 void ImGui::UnsignedInputScalar(const char* label, T& val, unsigned long min, unsigned long max) {
-    // Decide data type of parameter
+    // Decide parameter datatype
     constexpr bool is8bit = std::is_same_v<uint8_t, T>;
     constexpr bool is16bit = std::is_same_v<uint16_t, T>;
     static_assert(is8bit || is16bit, "This function only supports uint8_t/uint16_t data types");
@@ -122,7 +121,7 @@ void ImGui::UnsignedInputScalar(const char* label, T& val, unsigned long min, un
     SetNextItemWidth(50);
     if (InputText("", buf, bufLen, ImGuiInputTextFlags_CallbackCharFilter, filter)) {
         try {
-            // Convert buffer to unsigned long
+            // Convert buffer to the appropriate datatype
             val = static_cast<T>(ImClamp(std::stoul(buf), min, max));
         } catch (std::exception&) {
             // Exception thrown during conversion, set variable to minimum
@@ -131,19 +130,19 @@ void ImGui::UnsignedInputScalar(const char* label, T& val, unsigned long min, un
     }
 
     // Style config
-    const float widgetSpacing = 2;
+    const float spacing = 2; // Space between widgets
     const ImVec2 sz{ GetFrameHeight(), GetFrameHeight() }; // Button size
 
-    // Step buttons: Subtract
-    SameLine(0, widgetSpacing);
+    // "-" button
+    SameLine(0, spacing);
     if (ButtonEx("-", sz, ImGuiButtonFlags_Repeat)) if (val > min) val--;
 
-    // Step buttons: Add
-    SameLine(0, widgetSpacing);
+    // "+" button
+    SameLine(0, spacing);
     if (ButtonEx("+", sz, ImGuiButtonFlags_Repeat)) if (val < max) val++;
 
-    // Widget label
-    SameLine(0, widgetSpacing);
+    // Label
+    SameLine(0, spacing);
     TextUnformatted(label);
 
     PopID();

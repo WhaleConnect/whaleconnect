@@ -23,16 +23,12 @@ namespace MainHandler {
     /// <summary>
     /// Check if the main window is active (should not be closed).
     /// </summary>
-    /// <returns>If the window is still open (user has not yet clicked closed it)</returns>
+    /// <returns>If the window is still open (user has not clicked the X button)</returns>
     bool isActive();
 
     /// <summary>
     /// Create a new frame at the start of every main loop iteration.
     /// </summary>
-    /// <remarks>
-    /// This function also creates a dockspace over the main viewport so windows can be docked. (This is not part of the
-    /// new frame handling process, this is just for convenience.)
-    /// </remarks>
     void handleNewFrame();
 
     /// <summary>

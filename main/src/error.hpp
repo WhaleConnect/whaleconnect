@@ -10,12 +10,12 @@ namespace Sockets {
     /// A structure to represent an error with a symbolic name and a description.
     /// </summary>
     /// <remarks>
-    /// A symbolic name is a human-readable identifier for the error (like "ENOMEM").
-    /// A description is a short piece of text describing the error (like "No more memory").
+    /// A symbolic name is a human-readable identifier for the error (e.g. "ENOMEM").
+    /// A description is a short string describing the error (e.g. "No more memory").
     /// </remarks>
     struct NamedError {
-        const char* name;
-        const char* desc;
+        const char* name; // Symbolic name
+        const char* desc; // Description
     };
 
     // The data structure to act as a lookup table for error codes. It maps numeric codes to NamedErrors.

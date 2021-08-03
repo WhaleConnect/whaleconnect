@@ -132,14 +132,14 @@ void Console::addText(const std::string& s, ImVec4 color, bool canUseHex) {
         for (const unsigned char& c : s) {
             oss << std::hex            // Express integers in hexadecimal (i.e. base-16)
                 << std::uppercase      // Make hex digits A-F uppercase
-                << std::setw(2)        // Hex tuples (groups of digits) always contain 2 digits
+                << std::setw(2)        // Format in octets (8 bits => 2 hex digits)
                 << std::setfill('0')   // If something is less than 2 digits it's padded with 0s (i.e. "A" => "0A")
                 << static_cast<int>(c) // Use the above formatting rules to append the character's codepoint
-                << " ";                // Single space between tuples to separate them
+                << " ";                // Separate octets with a single space
         }
     }
 
-    _scrollToEnd = _autoscroll; // Only force scroll if autoscroll is set first
+    _scrollToEnd = _autoscroll; // Scroll to the end if autoscroll is enabled
 }
 
 void Console::addError(const std::string& s) {
@@ -191,12 +191,11 @@ void ConnWindow::_startRecvThread() {
                 // There is now new data:
                 _recvNew = true;
 
-                // If the operation failed, save the last error because WSAGetLastError()/errno does not propagate
-                // across threads (it is thread local)
+                // If the operation failed, save the last error
                 // This makes it accessible in the main thread, where it can be printed.
                 if (_receivedBytes == SOCKET_ERROR) _lastRecvErr = Sockets::getLastErr();
 
-                // A non-positive integer means that the socket can no longer receive data so exit the thread:
+                // A non-positive integer means that the socket can no longer receive data so exit the thread
                 if (_receivedBytes <= 0) break;
             }
         }

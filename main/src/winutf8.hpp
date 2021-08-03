@@ -7,14 +7,14 @@
 #include <string>
 
 /// <summary>
-/// Convert a UTF-8 encoded string into a UTF-16 encoded string.
+/// Convert a UTF-8 string into a UTF-16 string.
 /// </summary>
 /// <param name="from">The input string</param>
 /// <returns>The converted output string</returns>
 std::wstring toWide(const char* from);
 
 /// <summary>
-/// Convert a UTF-16 encoded string into a UTF-8 encoded string.
+/// Convert a UTF-16 string into a UTF-8 string.
 /// </summary>
 /// <param name="from">The input string</param>
 /// <returns>The converted output string</returns>
