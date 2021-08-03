@@ -64,19 +64,8 @@ bool MainHandler::initApp() {
 
     // Init GLFW
     if (!glfwInit()) return false;
-
-    // Decide GL versions
-#ifdef __APPLE__
-    // GL 3.2
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
-#else
-    // GL 3.0
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-#endif
 
     // Create window
     window = glfwCreateWindow(1280, 720, "Network Socket Terminal", nullptr, nullptr);
