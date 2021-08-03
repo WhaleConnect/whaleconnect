@@ -233,11 +233,12 @@ void ConnWindow::_checkConnectionStatus() {
     // This is the desired and expected behavior, since waiting on an invalid future throws an exception.
     if (_connFut.valid() && (_connFut.wait_for(std::chrono::microseconds(0)) == std::future_status::ready)) {
         // If the socket is ready, get its file descriptor
-        _sockfd = _connFut.get();
+        ConnectResult res = _connFut.get();
+        _sockfd = res.fd;
 
         if (_sockfd == INVALID_SOCKET) {
             // Something failed, print the error
-            _errHandler(_lastConnectError);
+            _errHandler(res.err);
         } else {
             // Connected, confirm success and start receiving data
             _connected = true;

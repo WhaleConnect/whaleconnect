@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <chrono> // std::chrono
 #include <future> // std::future, std::async()
 #include <vector> // std::vector
 #include <thread> // std::thread
@@ -135,9 +136,8 @@ void Console::update(Fn fn) {
 /// </summary>
 class ConnWindow {
     std::atomic<SOCKET> _sockfd = INVALID_SOCKET; // Socket for connections
-    std::future<SOCKET> _connFut; // The future object responsible for connecting asynchronously
+    std::future<ConnectResult> _connFut; // The future object responsible for connecting asynchronously
     std::atomic<bool> _connected = false; // If the window has an active connection
-    std::atomic<int> _lastConnectError = 0; // The last error encountered while connecting
     std::atomic<bool> _connectStop = false; // If the connection should be canceled
     bool _connectInitialized = false; // If the connecting async function has been started successfully
     bool _connectPrinted = false; // If the "Connecting..." message has been printed
@@ -208,18 +208,14 @@ public:
 template<class Fn, class... Args>
 ConnWindow::ConnWindow(const std::string& title, const std::string& id, Fn&& fn, Args&&... args)
     : _title(title), id(id) {
-    // (The instantiation of _connFut is not put in the member initializer list because of its large size.)
     try {
-        _connFut = std::async(std::launch::async, [&](Args&&... _args) {
+        _connFut = std::async(std::launch::async, [&, args...]() -> ConnectResult {
+            // Small delay to prevent the function from finishing too fast
+            std::this_thread::sleep_for(std::chrono::microseconds(100));
+
             // Call the provided function with the stop flag and additional arguments
-            ConnectResult ret = fn(_connectStop, _args...);
-
-            // Get the last connect error
-            _lastConnectError = ret.err;
-
-            // Return the socket file descriptor from the async function
-            return ret.fd;
-        }, args...);
+            return fn(_connectStop, args...);
+        });
         _connectInitialized = true;
     } catch (const std::system_error&) {
         // Failed to start the function - usually because something happened in the system.
@@ -251,6 +247,3 @@ ConnWindow::ConnWindow(const std::string& title, const std::string& id, Fn&& fn,
 //
 //     SOCKET sockfd = createSomeSocket();
 //     return { sockfd, Sockets::getLastErr() };
-//
-// It is desirable to add a small delay right before the return to prevent the function from completing too fast for
-// the ConnWindow to process. [Use `std::this_thread::sleep_for()`]

@@ -75,11 +75,6 @@ bool openNewConnection(const DeviceData& data) {
     auto connFunc = [](const std::atomic<bool>& sig, const DeviceData& _data) -> ConnectResult {
         // Create the client socket with the given DeviceData and stop signal
         SOCKET sockfd = Sockets::createClientSocket(_data, sig);
-
-        // Small delay to prevent the function from finishing too fast
-        std::this_thread::sleep_for(std::chrono::microseconds(100));
-
-        // Return result
         return { sockfd, Sockets::getLastErr() };
     };
 
