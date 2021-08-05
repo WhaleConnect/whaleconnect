@@ -28,8 +28,10 @@
 #include <fcntl.h> // fcntl()
 #include <poll.h> // poll()
 
-// WSAPoll = poll
+// Windows API functions remapped to Berkley Sockets API functions
 #define WSAPoll poll
+#define GetAddrInfoW getaddrinfo
+#define FreeAddrInfoW freeaddrinfo
 
 // Socket errors
 #define WSAEWOULDBLOCK EWOULDBLOCK
@@ -39,10 +41,13 @@
 // Bluetooth definitions
 #define AF_BTH AF_BLUETOOTH
 #define BTHPROTO_RFCOMM BTPROTO_RFCOMM
+
+typedef addrinfo ADDRINFOW;
 #endif
 
 #include "sockets.hpp"
 #include "error.hpp"
+#include "winutf8.hpp"
 
 int Sockets::getLastErr() {
 #ifdef _WIN32
@@ -178,7 +183,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #endif
-        addrinfo hints{
+        ADDRINFOW hints{
             .ai_flags = AI_NUMERICHOST,
             .ai_family = AF_UNSPEC,
             .ai_socktype = (data.type == TCP) ? SOCK_STREAM : SOCK_DGRAM,
@@ -191,15 +196,21 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
 #pragma clang diagnostic pop
 #endif
 
-        addrinfo* addr;
+        ADDRINFOW* addr;
 
         // uint16_t=>char[] conversion with snprintf()
         constexpr int strLen = 6;
         char portStr[strLen];
         std::snprintf(portStr, strLen, "%hu", data.port);
 
-        // Resolve and connect to the IP, getaddrinfo() allows both IPv4 and IPv6 addresses
-        int gaiResult = getaddrinfo(data.address.c_str(), portStr, &hints, &addr);
+        // Wide encoding conversions for Windows
+        // These are stored in their own variables to prevent them from being temporaries and destroyed later.
+        // If we were to call `.c_str()` and then have these destroyed, `.c_str()` would be a dangling pointer.
+        widestr addrWide = toWide(data.address.c_str());
+        widestr portWide = toWide(portStr);
+
+        // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
+        int gaiResult = GetAddrInfoW(addrWide.c_str(), portWide.c_str(), &hints, &addr);
         if (gaiResult == NO_ERROR) {
             // getaddrinfo() succeeded, initialize socket file descriptor with values created by GAI
             sockfd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
@@ -212,7 +223,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
                     success = connect(sockfd, addr->ai_addr, static_cast<int>(addr->ai_addrlen)) != SOCKET_ERROR;
 
                 // Release the resources
-                freeaddrinfo(addr);
+                FreeAddrInfoW(addr);
             }
         } else {
             // Because we're using our own implementation of strerror() and getaddrinfo() errors differ from standard

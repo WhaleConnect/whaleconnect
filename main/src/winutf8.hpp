@@ -3,8 +3,10 @@
 
 #pragma once
 
-#ifdef _WIN32
 #include <string>
+
+#ifdef _WIN32
+typedef std::wstring widestr;
 
 /// <summary>
 /// Convert a UTF-8 string into a UTF-16 string.
@@ -19,4 +21,10 @@ std::wstring toWide(const char* from);
 /// <param name="from">The input string</param>
 /// <returns>The converted output string</returns>
 std::string fromWide(const wchar_t* from);
+#else
+// No wide strings on other platforms, these have no meaning
+#define toWide(from) from
+#define fromWide(from) from
+
+typedef std::string widestr;
 #endif
