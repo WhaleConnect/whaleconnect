@@ -3,7 +3,8 @@
 
 #include <algorithm> // std::replace()
 #include <mutex> // std::mutex
-#include <chrono> // std::chrono::microseconds, std::chrono::system_clock::now()
+#include <chrono> // std::chrono
+#include <iomanip> // std::hex, std::uppercase, std::setw(), std::setfill()
 
 #include <imgui/imgui.h>
 
@@ -114,6 +115,8 @@ void Console::addText(const std::string& s, ImVec4 color, bool canUseHex) {
 
     // TODO: Limitations with {fmt} - `.time_since_epoch()` is added. Remove when standard std::format() is used
     std::string timestamp = std::format("{:%T} >", current_zone()->to_local(system_clock::now()).time_since_epoch());
+#else
+    std::string timestamp = "";
 #endif
 
     // Text goes on its own line if deque is empty or the last line ends with a newline

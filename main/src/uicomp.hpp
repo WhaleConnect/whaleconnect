@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <sstream> // std::ostringstream
 #include <chrono> // std::chrono
 #include <future> // std::future, std::async()
 #include <vector> // std::vector
