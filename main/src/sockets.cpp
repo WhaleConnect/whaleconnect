@@ -28,7 +28,7 @@
 #include <fcntl.h> // fcntl()
 #include <poll.h> // poll()
 
-// Windows API functions remapped to Berkley Sockets API functions
+// Windows API functions remapped to Berkeley Sockets API functions
 #define WSAPoll poll
 #define GetAddrInfoW getaddrinfo
 #define FreeAddrInfoW freeaddrinfo
