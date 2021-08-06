@@ -116,7 +116,7 @@ void drawIPConnectionTab() {
     // If the connection exists, show a message
     if (!isNew) {
         ImGui::Separator();
-        ImGui::Text("This connection is already open.");
+        ImGui::TextUnformatted("This connection is already open.");
     }
 
     ImGui::EndTabItem();
@@ -186,7 +186,7 @@ void drawBTConnectionTab() {
     // If the connection exists, show a message
     if (!isNew) {
         ImGui::Separator();
-        ImGui::Text("A connection to this device is already open.");
+        ImGui::TextUnformatted("A connection to this device is already open.");
     }
 
     ImGui::EndTabItem();
