@@ -47,13 +47,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 else()
     # GCC/clang options
     set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS "-Wall -Wextra")
-
-    # Provide debug-mode macros
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        target_compile_definitions(terminal PRIVATE DEBUG _DEBUG)
-    else()
-        target_compile_definitions(terminal PRIVATE NDEBUG)
-    endif()
 endif()
 
 if (NOT WIN32)
