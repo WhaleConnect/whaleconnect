@@ -94,7 +94,7 @@ void drawIPConnectionTab() {
     static std::string addr = ""; // Server address
     static uint16_t port = 0; // Server port
     static bool isTCP = true; // Type of connection to create (default is TCP)
-    static bool isNew = true; // If the specified connection is unique
+    static bool isNew = true; // If the attempted connection is unique
 
     // Server address
     ImGui::SetNextItemWidth(340);
@@ -126,48 +126,52 @@ void drawIPConnectionTab() {
 /// Render the "New Connection" window for Bluetooth connections.
 /// </summary>
 void drawBTConnectionTab() {
-    if (!ImGui::BeginTabItemNoSpacing("Bluetooth RFCOMM")) return;
+    if (!ImGui::BeginTabItemNoSpacing("Bluetooth")) return;
 
-    static bool isNew = true; // If the specified connection is unique
-    static int err = 0; // Any error that occurred during device enumeration
-    static std::vector<DeviceData> pairedDevices;
+    static bool firstRun = false; // If device enumeration has completed at least once
+    static bool showAddrs = false; // If device addresses are shown
+    static bool isNew = true; // If the attempted connection is unique
+    static int err = NO_ERROR; // Error that occurred during device enumeration
+    static std::vector<DeviceData> pairedDevices; // Vector of paired devices
 
-#ifndef WIN32
-    if (!BTUtil::glibConnected) {
-        ImGui::TextUnformatted(BTUtil::glibDisconnectedMessage);
-        ImGui::PushDisabled();
-    }
+    ImGui::TextUnformatted("Paired Devices");
+
+#ifdef _WIN32
+    bool btInitDone = true; // No Bluetooth initialization on Windows
+#else
+    bool btInitDone = BTUtil::glibConnected;
+    if (!btInitDone) ImGui::TextUnformatted(BTUtil::glibDisconnectedMessage);
+    ImGui::PushDisabled(!btInitDone);
 #endif
 
-    if (ImGui::Button("Refresh")) err = BTUtil::getPaired(pairedDevices);
+    // Get the paired devices when this tab is first clicked or if the "Refresh" button is clicked
+    if (ImGui::Button("Refresh") || !firstRun && btInitDone) {
+        err = BTUtil::getPaired(pairedDevices);
+        firstRun = true;
+    }
+
+    ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x * 4);
+    ImGui::Checkbox("Show Addresses", &showAddrs);
+    ImGui::Spacing();
 
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_HorizontalScrollbar;
     ImGui::BeginChild("Output", { 0, (isNew) ? 0 : -ImGui::GetFrameHeightWithSpacing() }, false, windowFlags);
-    if (err == 0) {
-        // "Display Advanced Info" checkbox to show information about the device
-        static bool displayAdvanced = false;
-        ImGui::Checkbox("Display Advanced Info", &displayAdvanced);
-        ImGui::HelpMarker("Show technical details about a device in its entry");
-
+    if (err == NO_ERROR) {
         // Search succeeded, display all devices found
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 5, 5 }); // Larger padding
         for (const auto& i : pairedDevices) {
-            // Display the button
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 5, 5 }); // Larger padding
-            std::string buttonText = i.name;
-            const char* addr = i.address.c_str();
+            std::string buttonText = i.name; // Button text
+            if (showAddrs) buttonText += std::format(" ({})", i.address); // Format the address into the entry
 
-            // Format the address and channel into the device entry if advanced info is enabled
-            if (displayAdvanced) buttonText += std::format(" ({})", addr);
-
-            ImGui::PushID(addr); // Set the address (always unique) as the id in case devices have the same name
+            ImGui::PushID(i.address.c_str()); // Set the address as the id for when devices have the same name
             if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) isNew = openNewConnection(i);
             ImGui::PopID();
-            ImGui::PopStyleVar();
         }
+        ImGui::PopStyleVar();
 
         // If there are no paired devices, display a message
         // (The above loop won't run if the vector is empty, so it's not in an if-condition.)
-        if (pairedDevices.empty()) ImGui::TextUnformatted("No paired devices.");
+        if (pairedDevices.empty() && btInitDone) ImGui::TextUnformatted("No paired devices.");
     } else {
         // Error occurred
         Sockets::NamedError ne = Sockets::getErr(err);
@@ -176,7 +180,7 @@ void drawBTConnectionTab() {
     ImGui::EndChild();
 
 #ifndef WIN32
-    if (!BTUtil::glibConnected) ImGui::PopDisabled();
+    ImGui::PopDisabled();
 #endif
 
     // If the connection exists, show a message
