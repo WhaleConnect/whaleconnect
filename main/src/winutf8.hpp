@@ -13,14 +13,14 @@ typedef std::wstring widestr;
 /// </summary>
 /// <param name="from">The input string</param>
 /// <returns>The converted output string</returns>
-std::wstring toWide(const char* from);
+std::wstring toWide(const std::string& from);
 
 /// <summary>
 /// Convert a UTF-16 string into a UTF-8 string.
 /// </summary>
 /// <param name="from">The input string</param>
 /// <returns>The converted output string</returns>
-std::string fromWide(const wchar_t* from);
+std::string fromWide(const std::wstring& from);
 #else
 // No wide strings on other platforms, these have no meaning
 #define toWide(from) from

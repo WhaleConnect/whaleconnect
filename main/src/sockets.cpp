@@ -14,12 +14,11 @@
 #define EAI_SYSTEM 0
 #define MSG_NOSIGNAL 0
 #else
+#include <cerrno> // errno
+
 // Bluetooth headers for Linux
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
-
-#include <cerrno> // errno
-#include <cstring> // std::strerror()
 
 #include <netinet/in.h> // sockaddr, sockaddr_in, sockaddr_in6
 #include <sys/socket.h> // Socket definitions
@@ -201,16 +200,11 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
 
         ADDRINFOW* addr;
 
-        // uint16_t=>char[] conversion with snprintf()
-        constexpr int strLen = 6;
-        char portStr[strLen];
-        std::snprintf(portStr, strLen, "%hu", data.port);
-
         // Wide encoding conversions for Windows
         // These are stored in their own variables to prevent them from being temporaries and destroyed later.
         // If we were to call `.c_str()` and then have these destroyed, `.c_str()` would be a dangling pointer.
-        widestr addrWide = toWide(data.address.c_str());
-        widestr portWide = toWide(portStr);
+        widestr addrWide = toWide(data.address);
+        widestr portWide = toWide(std::to_string(data.port));
 
         // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
         int gaiResult = GetAddrInfoW(addrWide.c_str(), portWide.c_str(), &hints, &addr);
