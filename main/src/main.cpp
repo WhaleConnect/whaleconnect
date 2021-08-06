@@ -6,11 +6,11 @@
 
 #include <imgui/imgui.h>
 
+#include "btutil.hpp"
 #include "error.hpp"
 #include "uicomp.hpp"
 #include "util.hpp"
 #include "imguiext.hpp"
-#include "searchbt.hpp"
 #include "mainhandle.hpp"
 #include "formatcompat.hpp"
 
@@ -28,6 +28,7 @@ int MAIN_FUNC(MAIN_ARGS) {
     // Main loop
     while (MainHandler::isActive()) {
         MainHandler::handleNewFrame();
+        BTUtil::glibMainContextIteration(); // (This only does stuff on Linux)
 
         // Show error overlay if socket startup failed
         if (init != NO_ERROR) ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner_TopLeft, "Startup failed (%d).", init);
@@ -122,81 +123,61 @@ void drawIPConnectionTab() {
 }
 
 /// <summary>
-/// Render the "New Connection" window for Bluetooth connections. Includes a "Search for Devices" button.
+/// Render the "New Connection" window for Bluetooth connections.
 /// </summary>
 void drawBTConnectionTab() {
     if (!ImGui::BeginTabItemNoSpacing("Bluetooth RFCOMM")) return;
 
-    static bool firstRun = false; // If a search has been performed at least once
-    static bool done = false; // If the search has completed and returned a result
     static bool isNew = true; // If the specified connection is unique
-    static bool error = false; // If the async function failed to start
-    static std::future<Sockets::BTSearchResult> fut; // The future  to run the search in parallel
-    static Sockets::BTSearchResult result; // The result of the search
+    static int err = 0; // Any error that occurred during device enumeration
+    static std::vector<DeviceData> pairedDevices;
 
-    ImGui::PushDisabled(!done && firstRun);
-    if (ImGui::Button("Search for Devices")) {
-        isNew = true; // Hide the "connection is open" message
-        firstRun = true; // The search has been run
-        done = false; // Search is in progress
-
-        try {
-            // Attempt to start the async function
-            fut = std::async(std::launch::async, Sockets::searchBT);
-        } catch (const std::system_error&) {
-            // Something happened - set the error flag to true
-            // Technically the async function is "done" so set that flag as well.
-            error = done = true;
-        }
+#ifndef WIN32
+    if (!BTUtil::glibConnected) {
+        ImGui::TextUnformatted(BTUtil::glibDisconnectedMessage);
+        ImGui::PushDisabled();
     }
-    ImGui::PopDisabled();
+#endif
 
-    // Check the state of the search
-    if (fut.valid() && (fut.wait_for(std::chrono::seconds(0)) == std::future_status::ready)) {
-        done = true;
-        result = fut.get();
-    }
+    if (ImGui::Button("Refresh")) err = BTUtil::getPaired(pairedDevices);
 
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_HorizontalScrollbar;
     ImGui::BeginChild("Output", { 0, (isNew) ? 0 : -ImGui::GetFrameHeightWithSpacing() }, false, windowFlags);
-    if (done && !error) {
-        int err = result.err;
-        if (err == 0) {
-            // "Display Advanced Info" checkbox to show information about the device
-            static bool displayAdvanced = false;
-            ImGui::Checkbox("Display Advanced Info", &displayAdvanced);
-            ImGui::HelpMarker("Show technical details about a device in its entry");
+    if (err == 0) {
+        // "Display Advanced Info" checkbox to show information about the device
+        static bool displayAdvanced = false;
+        ImGui::Checkbox("Display Advanced Info", &displayAdvanced);
+        ImGui::HelpMarker("Show technical details about a device in its entry");
 
-            // Search succeeded, display all devices found
-            for (const auto& i : result.foundDevices) {
-                // Display the button
-                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 5, 5 }); // Larger padding
-                std::string buttonText = i.name;
-                const char* addr = i.address.c_str();
+        // Search succeeded, display all devices found
+        for (const auto& i : pairedDevices) {
+            // Display the button
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 5, 5 }); // Larger padding
+            std::string buttonText = i.name;
+            const char* addr = i.address.c_str();
 
-                // Format the address and channel into the device entry if advanced info is enabled
-                if (displayAdvanced) buttonText += std::format(" ({} channel {})", addr, i.port);
+            // Format the address and channel into the device entry if advanced info is enabled
+            if (displayAdvanced) buttonText += std::format(" ({})", addr);
 
-                ImGui::PushDisabled(i.port == 0); // 0 is an invalid channel meaning it couldn't be found
-                ImGui::PushID(addr); // Set the address (always unique) as the id in case devices have the same name
-                if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) isNew = openNewConnection(i);
-                ImGui::PopID();
-                ImGui::PopDisabled();
-                ImGui::PopStyleVar();
-            }
-        } else {
-            // Error occurred
-            Sockets::NamedError ne = Sockets::getErr(err);
-            ImGui::Text("[ERROR] %s (%d): %s", ne.name, err, ne.desc);
+            ImGui::PushID(addr); // Set the address (always unique) as the id in case devices have the same name
+            if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) isNew = openNewConnection(i);
+            ImGui::PopID();
+            ImGui::PopStyleVar();
         }
-    } else {
-        // If the async function failed to launch, show an error
-        if (error) ImGui::Text("[ERROR] System error - Failed to launch thread.");
 
-        // Otherwise, while the search is running in the background thread, display a text spinner
-        else if (firstRun) ImGui::LoadingSpinner("Searching");
+        // If there are no paired devices, display a message
+        // (The above loop won't run if the vector is empty, so it's not in an if-condition.)
+        if (pairedDevices.empty()) ImGui::TextUnformatted("No paired devices.");
+    } else {
+        // Error occurred
+        Sockets::NamedError ne = Sockets::getErr(err);
+        ImGui::Text("[ERROR] %s (%d): %s", ne.name, err, ne.desc);
     }
     ImGui::EndChild();
+
+#ifndef WIN32
+    if (!BTUtil::glibConnected) ImGui::PopDisabled();
+#endif
 
     // If the connection exists, show a message
     if (!isNew) {

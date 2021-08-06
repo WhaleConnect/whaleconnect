@@ -45,9 +45,6 @@
     <ClCompile Include="src\mainhandle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\searchbt.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\sockets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -90,15 +87,15 @@
     <ClCompile Include="src\errorlist.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\btutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\imguiext.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\mainhandle.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\searchbt.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\sockets.hpp">
@@ -165,6 +162,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\error.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\btutil.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

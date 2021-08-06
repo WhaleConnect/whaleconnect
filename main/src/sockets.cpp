@@ -28,6 +28,8 @@
 #include <fcntl.h> // fcntl()
 #include <poll.h> // poll()
 
+#include "btutil.hpp"
+
 // Windows API functions remapped to Berkeley Sockets API functions
 #define WSAPoll poll
 #define GetAddrInfoW getaddrinfo
@@ -89,6 +91,7 @@ int Sockets::init() {
     WSADATA wsaData;
     return WSAStartup(MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
 #else
+    BTUtil::glibInit();
     return NO_ERROR;
 #endif
 }
@@ -96,6 +99,8 @@ int Sockets::init() {
 void Sockets::cleanup() {
 #ifdef _WIN32
     WSACleanup();
+#else
+    BTUtil::glibStop();
 #endif
 }
 
@@ -163,11 +168,9 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
             .port = data.port
         };
 #else
-        sockaddr_rc addr{
-            .rc_family = AF_BLUETOOTH,
-            .rc_bdaddr = data.btAddr,
-            .rc_channel = static_cast<uint8_t>(data.port)
-        };
+        bdaddr_t bdaddr;
+        str2ba(data.address.c_str(), &bdaddr);
+        sockaddr_rc addr{ AF_BLUETOOTH, bdaddr, static_cast<uint8_t>(data.port) };
 #endif
 
         // Connect

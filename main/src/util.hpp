@@ -24,13 +24,7 @@ struct DeviceData {
     std::string name; // Name of device (Bluetooth only)
     std::string address; // Address of device (IP address for TCP/UDP, MAC address for Bluetooth)
     uint16_t port; // Port/channel of device
-
-    // Bluetooth address (platform-specific)
-#ifdef _WIN32
-    uint64_t btAddr; // Bluetooth address as a 64-bit unsigned integer
-#else
-    bdaddr_t btAddr; // Bluetooth address as a bdaddr_t structure
-#endif
+    uint64_t btAddr; // Bluetooth address as a 64-bit unsigned integer (used on Windows only)
 };
 
 /// <summary>
