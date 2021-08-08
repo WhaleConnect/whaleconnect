@@ -39,6 +39,7 @@
 
 #include <gdbus/gdbus.h>
 
+#define SOCKET_ERROR -1
 #define NO_ERROR 0
 
 // A Bluetooth adapter
@@ -204,7 +205,7 @@ int BTUtil::getPaired(std::vector<DeviceData>& deviceList) {
     BLUETOOTH_DEVICE_INFO btDeviceInfo{ .dwSize = sizeof(btDeviceInfo) };
     HBLUETOOTH_DEVICE_FIND foundDevice = BluetoothFindFirstDevice(&searchCriteria, &btDeviceInfo);
 
-    if (!foundDevice) return WSAGetLastError();
+    if (!foundDevice) return SOCKET_ERROR;
 
     // Loop through each found device
     do {
@@ -220,7 +221,10 @@ int BTUtil::getPaired(std::vector<DeviceData>& deviceList) {
         deviceList.push_back({ Bluetooth, fromWide(btDeviceInfo.szName), mac, 0, btDeviceInfo.Address.ullLong });
     } while (BluetoothFindNextDevice(foundDevice, &btDeviceInfo));
 #else
-    if (!defaultCtrl) return ENODEV;
+    if (!defaultCtrl) {
+        errno = ENODEV;
+        return SOCKET_ERROR;
+    }
 
     for (GList* ll = g_list_first(defaultCtrl->devices); ll; ll = g_list_next(ll)) {
         GDBusProxy* proxy = reinterpret_cast<GDBusProxy*>(ll->data);

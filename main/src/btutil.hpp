@@ -42,6 +42,6 @@ namespace BTUtil {
     /// Get the Bluetooth devices that are paired to this computer.
     /// </summary>
     /// <param name="deviceList">The vector that will be populated with the paired devices</param>
-    /// <returns>NO_ERROR on success, the last error code on failure</returns>
+    /// <returns>NO_ERROR on success, SOCKET_ERROR on failure</returns>
     int getPaired(std::vector<DeviceData>& deviceList);
 }

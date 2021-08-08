@@ -174,7 +174,7 @@ void drawBTConnectionTab() {
         if (pairedDevices.empty() && btInitDone) ImGui::TextUnformatted("No paired devices.");
     } else {
         // Error occurred
-        Sockets::NamedError ne = Sockets::getErr(err);
+        Sockets::NamedError ne = Sockets::getErr(Sockets::getLastErr());
         ImGui::Text("[ERROR] %s (%d): %s", ne.name, err, ne.desc);
     }
     ImGui::EndChild();
