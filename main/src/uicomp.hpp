@@ -48,9 +48,8 @@ namespace UIHelpers {
     /// Format a DeviceData instance into a readable title string.
     /// </summary>
     /// <param name="data">The DeviceData instance to format</param>
-    /// <param name="useName">If the device's name should be substituted for its address for Bluetooth</param>
     /// <returns>The formatted string, see this function's definition for details</returns>
-    std::string makeClientString(const DeviceData& data, bool useName);
+    std::string makeClientString(const DeviceData& data);
 }
 
 /// <summary>
@@ -150,7 +149,6 @@ class ConnWindow {
     int _lastRecvErr = 0; // The last error encountered by the receiving thread
 
     const std::string _title; // Title of window
-    const std::string _id; // Identifier of window
     bool _open = true; // If the window is open (affected by the close button)
     Console _output; // The output of the window, will hold system messages and data received from the server
     std::string _recvBuf; // Receive buffer
@@ -188,11 +186,10 @@ public:
     /// <typeparam name="...Args">Additional arguments passed to the connector function</typeparam>
     /// <typeparam name="Fn">The connector function, see comment at the bottom of the file for details</typeparam>
     /// <param name="title">The title of the window, shown in the title bar</param>
-    /// <param name="id">The unique identifier string for the window, made up of the address and port</param>
     /// <param name="fn">A function which connects and returns the socket fd and the last error code</param>
     /// <param name="...args">Additional arguments passed to the connector function</param>
     template<class Fn, class... Args>
-    ConnWindow(const std::string& title, const std::string& id, Fn&& fn, Args&&... args);
+    ConnWindow(const std::string& title, Fn&& fn, Args&&... args);
 
     /// <summary>
     /// Check if the window is open. Returns the internal `_open` member.
@@ -200,10 +197,10 @@ public:
     operator bool() const;
 
     /// <summary>
-    /// Compare this window's id to another given id.
+    /// Compare this window's title to another given title.
     /// </summary>
-    /// <param name="s">The id to compare with</param>
-    /// <returns>If this window's id and the given id are equal</returns>
+    /// <param name="s">The title to compare with</param>
+    /// <returns>If this window's title and the given title are equal</returns>
     bool operator==(const std::string& s) const;
 
     /// <summary>
@@ -218,8 +215,7 @@ public:
 };
 
 template<class Fn, class... Args>
-ConnWindow::ConnWindow(const std::string& title, const std::string& id, Fn&& fn, Args&&... args)
-    : _title(title), _id(id) {
+ConnWindow::ConnWindow(const std::string& title, Fn&& fn, Args&&... args) : _title(title) {
     try {
         _connFut = std::async(std::launch::async, [&, args...]() -> ConnectResult {
             // Small delay to prevent the function from finishing too fast

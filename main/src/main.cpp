@@ -64,11 +64,11 @@ int MAIN_FUNC(MAIN_ARGS) {
 /// <param name="data">The remote host to connect to</param>
 /// <returns>If the connection window was created (true if created, false if it already exists)</returns>
 bool openNewConnection(const DeviceData& data) {
-    // Format the DeviceData into a usable id
-    std::string id = UIHelpers::makeClientString(data, false);
+    // Format the DeviceData into a usable title
+    std::string title = UIHelpers::makeClientString(data);
 
-    // Iterate through all open windows, check if the id matches
-    for (const auto& i : connections) if (*i == id) return false;
+    // Iterate through all open windows, check if the title matches
+    for (const auto& i : connections) if (*i == title) return false;
 
     // If this point is reached it means that the window is unique, it is okay to create it
 
@@ -80,8 +80,7 @@ bool openNewConnection(const DeviceData& data) {
     };
 
     // Append the ConnWindow to the vector
-    std::string title = UIHelpers::makeClientString(data, true);
-    connections.push_back(std::make_unique<ConnWindow>(title, id, connFunc, data));
+    connections.push_back(std::make_unique<ConnWindow>(title, connFunc, data));
     return true;
 }
 
