@@ -32,9 +32,7 @@ struct DeviceData {
 /// </summary>
 namespace Settings {
     inline uint8_t fontSize = 13; // Application font height in pixels
-    inline uint8_t maxRecents = 10; // Number of recent connection entries allowed
     inline uint8_t connectTimeout = 5; // Number of seconds to allow for connection before it aborts
-    inline uint8_t btSearchTime = 5; // Duration of Bluetooth search in seconds
     inline uint8_t connectPollTime = 100; // Milliseconds between poll checks while connecting
     inline bool showFPScounter = false; // If a framerate counter is shown in the top-right corner
 }
