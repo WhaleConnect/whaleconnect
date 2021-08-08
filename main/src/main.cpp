@@ -46,7 +46,7 @@ int MAIN_FUNC(MAIN_ARGS) {
 
         // Update all client windows
         for (size_t i = 0; i < connections.size(); i++) {
-            if (connections[i]->open) connections[i]->update(); // Window is open, update it
+            if (*connections[i]) connections[i]->update(); // Window is open, update it
             else connections.erase(connections.begin() + i); // Window is closed, remove it from vector
         }
 
@@ -68,7 +68,7 @@ bool openNewConnection(const DeviceData& data) {
     std::string id = UIHelpers::makeClientString(data, false);
 
     // Iterate through all open windows, check if the id matches
-    for (const auto& i : connections) if (i->id == id) return false;
+    for (const auto& i : connections) if (*i == id) return false;
 
     // If this point is reached it means that the window is unique, it is okay to create it
 

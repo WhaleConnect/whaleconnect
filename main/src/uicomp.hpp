@@ -149,7 +149,9 @@ class ConnWindow {
     std::atomic<bool> _recvNew = false; // If new data has been received
     int _lastRecvErr = 0; // The last error encountered by the receiving thread
 
-    std::string _title; // Title of window
+    const std::string _title; // Title of window
+    const std::string _id; // Identifier of window
+    bool _open = true; // If the window is open (affected by the close button)
     Console _output; // The output of the window, will hold system messages and data received from the server
     std::string _recvBuf; // Receive buffer
 
@@ -180,9 +182,6 @@ class ConnWindow {
     void _updateOutput();
 
 public:
-    std::string id; // Identifier of the window
-    bool open = true; // If the window is open (affected by the close button)
-
     /// <summary>
     /// ConnWindow constructor, initialize a new object that can send/receive data across a socket file descriptor.
     /// </summary>
@@ -194,6 +193,18 @@ public:
     /// <param name="...args">Additional arguments passed to the connector function</param>
     template<class Fn, class... Args>
     ConnWindow(const std::string& title, const std::string& id, Fn&& fn, Args&&... args);
+
+    /// <summary>
+    /// Check if the window is open. Returns the internal `_open` member.
+    /// </summary>
+    operator bool() const;
+
+    /// <summary>
+    /// Compare this window's id to another given id.
+    /// </summary>
+    /// <param name="s">The id to compare with</param>
+    /// <returns>If this window's id and the given id are equal</returns>
+    bool operator==(const std::string& s) const;
 
     /// <summary>
     /// ConnWindow destructor, close the socket file descriptor.
@@ -208,7 +219,7 @@ public:
 
 template<class Fn, class... Args>
 ConnWindow::ConnWindow(const std::string& title, const std::string& id, Fn&& fn, Args&&... args)
-    : _title(title), id(id) {
+    : _title(title), _id(id) {
     try {
         _connFut = std::async(std::launch::async, [&, args...]() -> ConnectResult {
             // Small delay to prevent the function from finishing too fast

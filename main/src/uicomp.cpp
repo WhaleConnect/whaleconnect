@@ -169,6 +169,14 @@ void Console::clear() {
     _items.clear();
 }
 
+ConnWindow::operator bool() const {
+    return _open;
+}
+
+bool ConnWindow::operator==(const std::string& s) const {
+    return _id == s;
+}
+
 ConnWindow::~ConnWindow() {
     _closeConnection();
 
@@ -293,7 +301,7 @@ void ConnWindow::_updateOutput() {
 
 void ConnWindow::update() {
     ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin(_title.c_str(), &open)) {
+    if (!ImGui::Begin(_title.c_str(), &_open)) {
         ImGui::End();
         return;
     }
