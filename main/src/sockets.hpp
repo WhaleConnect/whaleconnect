@@ -19,7 +19,7 @@
 typedef int SOCKET;
 #endif
 
-#include "util.hpp"
+#include "utils.hpp"
 
 /// <summary>
 /// Namespace containing functions for handling network sockets.

@@ -16,7 +16,7 @@
 
 #include "mainhandle.hpp"
 #include "imguiext.hpp"
-#include "util.hpp"
+#include "utils.hpp"
 
 // The GUI window of the app
 static GLFWwindow* window = nullptr;

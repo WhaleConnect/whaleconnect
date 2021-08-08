@@ -7,7 +7,8 @@ Each entry below has both a \*.cpp file and an \*.hpp file unless either extensi
 
 Name | Short for | Contains
 --- | --- | ---
-`btutil` | Bluetooth Utilities | Various Bluetooth functions for Windows and Linux
+`btutils` | Bluetooth Utilities | Various Bluetooth functions for Windows and Linux
+`coreutils` | Core Utilities | Wrappers around API/standard library functions
 `error` | - | Facilities to convert error codes to descriptions, used with `errorlist.cpp`
 `errorlist.cpp`\* | - | A lookup table which maps numeric error codes to their readable descriptions
 `formatcompat.hpp` | Format Compatibility | Polyfill for `std::format` with {fmt} for non-C++20 complete compilers
@@ -16,7 +17,6 @@ Name | Short for | Contains
 `mainhandle` | Main Handler | Main window handling functions (e.g. create/destroy, render)
 `sockets` | - | High-level, cross-platform socket functions
 `uicomp` | User Interface Components | Reusable classes to represent frequently-used GUI elements
-`util.hpp` | Utilities | Definitions for anything used by multiple files
-`winutf8` | Windows UTF-8 | Helpers to convert strings between UTF-8/UTF-16 on Windows
+`utils.hpp` | Utilities | Definitions for anything used by multiple files
 
 \*: This file is *automatically generated*, do not edit it. Instead, edit the files in the `error_gen` directory. See its README for details.

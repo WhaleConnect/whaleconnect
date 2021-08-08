@@ -6,6 +6,11 @@
 #include <string>
 
 #ifdef _WIN32
+// Convert an integer type to a wstring.
+// std::to_(w)string() has too many overloads to make a proper function wrapper
+// So use a macro to do so instead
+#define I_TO_WIDE std::to_wstring
+
 typedef std::wstring widestr;
 
 /// <summary>
@@ -22,7 +27,8 @@ std::wstring toWide(const std::string& from);
 /// <returns>The converted output string</returns>
 std::string fromWide(const std::wstring& from);
 #else
-// No wide strings on other platforms, these have no meaning
+// No wide strings on other platforms
+#define I_TO_WIDE std::to_string
 #define toWide(from) from
 #define fromWide(from) from
 

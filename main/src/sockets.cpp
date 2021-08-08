@@ -27,7 +27,7 @@
 #include <fcntl.h> // fcntl()
 #include <poll.h> // poll()
 
-#include "btutil.hpp"
+#include "btutils.hpp"
 
 // Windows API functions remapped to Berkeley Sockets API functions
 #define WSAPoll poll
@@ -48,7 +48,7 @@ typedef addrinfo ADDRINFOW;
 
 #include "sockets.hpp"
 #include "error.hpp"
-#include "winutf8.hpp"
+#include "coreutils.hpp"
 
 int Sockets::getLastErr() {
 #ifdef _WIN32
@@ -90,7 +90,7 @@ int Sockets::init() {
     WSADATA wsaData;
     return WSAStartup(MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
 #else
-    BTUtil::glibInit();
+    BTUtils::glibInit();
     return NO_ERROR;
 #endif
 }
@@ -99,7 +99,7 @@ void Sockets::cleanup() {
 #ifdef _WIN32
     WSACleanup();
 #else
-    BTUtil::glibStop();
+    BTUtils::glibStop();
 #endif
 }
 
@@ -204,7 +204,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
         // These are stored in their own variables to prevent them from being temporaries and destroyed later.
         // If we were to call `.c_str()` and then have these destroyed, `.c_str()` would be a dangling pointer.
         widestr addrWide = toWide(data.address);
-        widestr portWide = toWide(std::to_string(data.port));
+        widestr portWide = I_TO_WIDE(data.port);
 
         // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
         int gaiResult = GetAddrInfoW(addrWide.c_str(), portWide.c_str(), &hints, &addr);

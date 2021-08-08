@@ -6,10 +6,10 @@
 
 #include <imgui/imgui.h>
 
-#include "btutil.hpp"
+#include "btutils.hpp"
 #include "error.hpp"
 #include "uicomp.hpp"
-#include "util.hpp"
+#include "utils.hpp"
 #include "imguiext.hpp"
 #include "mainhandle.hpp"
 #include "formatcompat.hpp"
@@ -28,7 +28,7 @@ int MAIN_FUNC(MAIN_ARGS) {
     // Main loop
     while (MainHandler::isActive()) {
         MainHandler::handleNewFrame();
-        BTUtil::glibMainContextIteration(); // (This only does stuff on Linux)
+        BTUtils::glibMainContextIteration(); // (This only does stuff on Linux)
 
         // Show error overlay if socket startup failed
         if (init != NO_ERROR) ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner_TopLeft, "Startup failed (%d).", init);
@@ -138,14 +138,14 @@ void drawBTConnectionTab() {
 #ifdef _WIN32
     bool btInitDone = true; // No Bluetooth initialization on Windows
 #else
-    bool btInitDone = BTUtil::glibConnected;
-    if (!btInitDone) ImGui::TextUnformatted(BTUtil::glibDisconnectedMessage);
+    bool btInitDone = BTUtils::glibConnected;
+    if (!btInitDone) ImGui::TextUnformatted(BTUtils::glibDisconnectedMessage);
     ImGui::PushDisabled(!btInitDone);
 #endif
 
     // Get the paired devices when this tab is first clicked or if the "Refresh" button is clicked
     if (ImGui::Button("Refresh") || !firstRun && btInitDone) {
-        err = BTUtil::getPaired(pairedDevices);
+        err = BTUtils::getPaired(pairedDevices);
         firstRun = true;
     }
 

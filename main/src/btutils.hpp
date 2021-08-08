@@ -5,12 +5,12 @@
 
 #include <vector> // std::vector
 
-#include "util.hpp"
+#include "utils.hpp"
 
 /// <summary>
 /// Namespace containing various Bluetooth utilities.
 /// </summary>
-namespace BTUtil {
+namespace BTUtils {
 #ifndef _WIN32
     /// <summary>
     /// Initialize GDBus and attempt to connect to bluetoothd (the Linux Bluetooth daemon) via DBus.

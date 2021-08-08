@@ -24,13 +24,13 @@
 
 #include <cstring> // std::strcmp(), std::snprintf()
 
-#include "btutil.hpp"
+#include "btutils.hpp"
 
 #ifdef _WIN32
 #include <WinSock2.h>
 #include <bluetoothapis.h>
 
-#include "winutf8.hpp"
+#include "coreutils.hpp"
 
 // Link with Bluetooth lib
 #pragma comment(lib, "Bthprops.lib")
@@ -57,7 +57,7 @@ static GDBusClient* client;
 
 static void connectHandler(DBusConnection*, void*) {
     // Once connected, notify the rest of the app by setting this flag
-    BTUtil::glibConnected = true;
+    BTUtils::glibConnected = true;
 }
 
 static void disconnectHandler(DBusConnection*, void*) {
@@ -65,7 +65,7 @@ static void disconnectHandler(DBusConnection*, void*) {
     g_list_free(ctrlList);
     ctrlList = nullptr;
     defaultCtrl = nullptr;
-    BTUtil::glibConnected = false;
+    BTUtils::glibConnected = false;
 }
 
 static gboolean deviceIsChild(GDBusProxy* device, GDBusProxy* master) {
@@ -157,7 +157,7 @@ static void propertyChanged(GDBusProxy* proxy, const char* name, DBusMessageIter
     }
 }
 
-void BTUtil::glibInit() {
+void BTUtils::glibInit() {
     // Create a new connection and client to bluetoothd
     dbusConn = g_dbus_setup_bus(DBUS_BUS_SYSTEM, nullptr, nullptr);
     g_dbus_attach_object_manager(dbusConn);
@@ -169,7 +169,7 @@ void BTUtil::glibInit() {
     g_dbus_client_set_proxy_handlers(client, proxyAdded, proxyRemoved, propertyChanged, nullptr);
 }
 
-void BTUtil::glibStop() {
+void BTUtils::glibStop() {
     // Shut down the client and DBus connection
     g_dbus_client_unref(client);
     dbus_connection_unref(dbusConn);
@@ -177,7 +177,7 @@ void BTUtil::glibStop() {
 }
 #endif
 
-void BTUtil::glibMainContextIteration() {
+void BTUtils::glibMainContextIteration() {
 #ifndef _WIN32
     // The below line of code is used to poll GLib events without using its main loop facilities.
     // https://stackoverflow.com/a/64580893 (See comments)
@@ -185,7 +185,7 @@ void BTUtil::glibMainContextIteration() {
 #endif
 }
 
-int BTUtil::getPaired(std::vector<DeviceData>& deviceList) {
+int BTUtils::getPaired(std::vector<DeviceData>& deviceList) {
     // Clear the vector
     deviceList.clear();
 

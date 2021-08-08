@@ -87,7 +87,7 @@
     <ClCompile Include="3rdparty\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="3rdparty\imgui\imgui_tables.cpp" />
     <ClCompile Include="3rdparty\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\btutil.cpp" />
+    <ClCompile Include="src\btutils.cpp" />
     <ClCompile Include="src\errorlist.cpp" />
     <ClCompile Include="src\error.cpp" />
     <ClCompile Include="src\imguiext.cpp" />
@@ -95,7 +95,7 @@
     <ClCompile Include="src\mainhandle.cpp" />
     <ClCompile Include="src\sockets.cpp" />
     <ClCompile Include="src\uicomp.cpp" />
-    <ClCompile Include="src\winutf8.cpp" />
+    <ClCompile Include="src\coreutils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdparty\fmt\chrono.h" />
@@ -114,15 +114,15 @@
     <ClInclude Include="3rdparty\imgui\imstb_rectpack.h" />
     <ClInclude Include="3rdparty\imgui\imstb_textedit.h" />
     <ClInclude Include="3rdparty\imgui\imstb_truetype.h" />
-    <ClInclude Include="src\btutil.hpp" />
+    <ClInclude Include="src\btutils.hpp" />
     <ClInclude Include="src\error.hpp" />
     <ClInclude Include="src\imguiext.hpp" />
     <ClInclude Include="src\mainhandle.hpp" />
     <ClInclude Include="src\formatcompat.hpp" />
     <ClInclude Include="src\sockets.hpp" />
     <ClInclude Include="src\uicomp.hpp" />
-    <ClInclude Include="src\util.hpp" />
-    <ClInclude Include="src\winutf8.hpp" />
+    <ClInclude Include="src\utils.hpp" />
+    <ClInclude Include="src\coreutils.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
