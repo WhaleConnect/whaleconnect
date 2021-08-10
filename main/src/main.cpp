@@ -144,7 +144,7 @@ void drawBTConnectionTab() {
 #endif
 
     // Get the paired devices when this tab is first clicked or if the "Refresh" button is clicked
-    if (ImGui::Button("Refresh") || !firstRun && btInitDone) {
+    if ((ImGui::Button("Refresh") || !firstRun) && btInitDone) {
         err = BTUtils::getPaired(pairedDevices);
         firstRun = true;
     }
