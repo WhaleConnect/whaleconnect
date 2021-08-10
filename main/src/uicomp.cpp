@@ -243,11 +243,9 @@ void ConnWindow::_errHandler(int err) {
 }
 
 void ConnWindow::_checkConnectionStatus() {
-    // The && should short-circuit here - wait_for() should not execute if valid() returns false.
-    // This is the desired and expected behavior, since waiting on an invalid future throws an exception.
-    if (_connFut.valid() && (_connFut.wait_for(std::chrono::microseconds(0)) == std::future_status::ready)) {
+    if (_connAsync.ready()) {
         // If the socket is ready, get its file descriptor
-        ConnectResult res = _connFut.get();
+        ConnectResult res = _connAsync.getValue();
         _sockfd = res.fd;
 
         if (_sockfd == INVALID_SOCKET) {
@@ -261,9 +259,11 @@ void ConnWindow::_checkConnectionStatus() {
         }
     } else {
         // Still connecting, display a message
-        if (_connectInitialized && !_connectPrinted) {
+        // We're using the AsyncFunction's user data variable as a flag to use to check if the "Connecting..." message
+        // has been printed.
+        if (!_connAsync.error() && !_connAsync.userData()) {
             _output.addInfo("Connecting...");
-            _connectPrinted = true;
+            _connAsync.userData() = true;
         }
     }
 }

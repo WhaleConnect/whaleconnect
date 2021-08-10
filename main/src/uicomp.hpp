@@ -5,7 +5,6 @@
 
 #include <sstream> // std::ostringstream
 #include <chrono> // std::chrono
-#include <future> // std::future, std::async()
 #include <vector> // std::vector
 #include <thread> // std::thread
 #include <atomic> // std::atomic
@@ -13,6 +12,7 @@
 
 #include <imgui/imgui.h>
 
+#include "coreutils.hpp"
 #include "utils.hpp"
 #include "imguiext.hpp"
 #include "sockets.hpp"
@@ -136,11 +136,9 @@ void Console::update(Fn fn) {
 /// </summary>
 class ConnWindow {
     std::atomic<SOCKET> _sockfd = INVALID_SOCKET; // Socket for connections
-    std::future<ConnectResult> _connFut; // The future object responsible for connecting asynchronously
+    AsyncFunction<ConnectResult, bool> _connAsync; // Asynchronous connection function
     std::atomic<bool> _connected = false; // If the window has an active connection
     std::atomic<bool> _connectStop = false; // If the connection should be canceled
-    bool _connectInitialized = false; // If the connecting async function has been started successfully
-    bool _connectPrinted = false; // If the "Connecting..." message has been printed
 
     std::thread _recvThread; // Thread responsible for receiving data from the server
     std::mutex _recvAccess; // Mutex to ensure only one thread can access the recv buffer at a time
@@ -216,19 +214,16 @@ public:
 
 template<class Fn, class... Args>
 ConnWindow::ConnWindow(const std::string& title, Fn&& fn, Args&&... args) : _title(title) {
-    try {
-        _connFut = std::async(std::launch::async, [&, args...]() -> ConnectResult {
-            // Small delay to prevent the function from finishing too fast
-            std::this_thread::sleep_for(std::chrono::microseconds(100));
+    _connAsync.run([&, args...]() -> ConnectResult {
+        // Small delay to prevent the function from finishing too fast
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
 
-            // Call the provided function with the stop flag and additional arguments
-            return fn(_connectStop, args...);
-        });
-        _connectInitialized = true;
-    } catch (const std::system_error&) {
-        // Failed to start the function - usually because something happened in the system.
-        _output.addError("System error - Failed to start connecting.");
-    }
+        // Call the provided function with the stop flag and additional arguments
+        return fn(_connectStop, args...);
+    });
+
+    // Failed to start the function - usually because something happened in the system.
+    if (_connAsync.error()) _output.addError("System error - Failed to start connecting.");
 }
 
 // The ConnWindow connector function:
