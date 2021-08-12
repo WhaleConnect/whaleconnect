@@ -232,7 +232,7 @@ void ConnWindow::_closeConnection() {
 }
 
 void ConnWindow::_errHandler(int err) {
-    if (err == 0) return; // "[ERROR] 0: The operation completed successfully"
+    if (err == NO_ERROR) return; // "[ERROR] 0: The operation completed successfully"
 
     // Socket errors are fatal
     _closeConnection();
