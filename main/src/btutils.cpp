@@ -28,6 +28,7 @@
 
 #ifdef _WIN32
 #include <WinSock2.h>
+#include <ws2bth.h>
 #include <bluetoothapis.h>
 
 #include "coreutils.hpp"
@@ -37,6 +38,8 @@
 #else
 #include <cerrno> // ENODEV
 
+#include <bluetooth/sdp.h>
+#include <bluetooth/sdp_lib.h>
 #include <gdbus/gdbus.h>
 
 #define SOCKET_ERROR -1
@@ -255,4 +258,116 @@ int BTUtils::getPaired(std::vector<DeviceData>& deviceList) {
 
     // The enumeration of devices was successful
     return NO_ERROR;
+}
+
+uint8_t BTUtils::getSDPChannel(const char* addr) {
+    // Return value
+    uint8_t ret = 0;
+
+#ifdef _WIN32
+    std::wstring tmp = toWide(addr);
+    LPWSTR addrWide = const_cast<LPWSTR>(tmp.c_str());
+
+    // Set up the queryset restrictions
+    WSAQUERYSET wsaQuery{
+        .dwSize = sizeof(WSAQUERYSET),
+        .lpServiceClassId = const_cast<LPGUID>(&RFCOMM_PROTOCOL_UUID),
+        .dwNameSpace = NS_BTH,
+        .lpszContext = addrWide,
+        .dwNumberOfCsAddrs = 0
+    };
+
+    // Start the lookup
+    HANDLE hLookup{};
+    DWORD flags = LUP_RETURN_ADDR;
+    if (WSALookupServiceBegin(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) return 0;
+
+    // Continue the lookup
+    DWORD size = 4096;
+    LPWSAQUERYSET results = reinterpret_cast<LPWSAQUERYSET>(new char[size]);
+    results->dwSize = size;
+    results->dwNameSpace = NS_BTH;
+
+    // Get the channel
+    if (WSALookupServiceNext(hLookup, flags, &size, results) == NO_ERROR)
+        ret = static_cast<uint8_t>(reinterpret_cast<PSOCKADDR_BTH>(results->lpcsaBuffer->RemoteAddr.lpSockaddr)->port);
+
+    // Free buffer
+    delete[] results;
+
+    // End the lookup
+    WSALookupServiceEnd(hLookup);
+#else
+    bdaddr_t deviceAddr;
+    str2ba(addr, &deviceAddr);
+
+    // Bluetooth SDP UUID
+    // "The UUID for the SPP Serial Port service is defined by the Bluetooth SIG to be 0x1101."
+    // https://stackoverflow.com/a/4637749
+    uuid_t serviceUUID;
+    uint16_t serviceClass = 0x1101;
+    sdp_uuid16_create(&serviceUUID, serviceClass);
+
+    // Search list
+    sdp_list_t* searchList = sdp_list_append(nullptr, &serviceUUID);
+
+    uint32_t range = 0x0000ffff;
+    sdp_list_t* attridList = sdp_list_append(nullptr, &range);
+
+    // Initialize SDP session
+    // We can't directly pass BDADDR_ANY to sdp_connect() because a "taking the address of an rvalue" error is thrown.
+    bdaddr_t addrAny = { { 0, 0, 0, 0, 0, 0} };
+    sdp_session_t* session = sdp_connect(&addrAny, &deviceAddr, SDP_RETRY_IF_BUSY);
+    if (!session) return 0; // Failed to connect to SDP session
+
+    // Start SDP service search
+    sdp_list_t* responseList = nullptr;
+    int err = sdp_service_search_attr_req(session, searchList, SDP_ATTR_REQ_RANGE, attridList, &responseList);
+    if (err != NO_ERROR) {
+        // Failed to initialize service search, free all lists and stop session
+        sdp_list_free(responseList, 0);
+        sdp_list_free(searchList, 0);
+        sdp_list_free(attridList, 0);
+        sdp_close(session);
+        return 0;
+    }
+
+    // Iterate through each of the service records
+    // Unfortunately, there is no simple way to interpret the results of an SDP search, so we will have to use
+    // this large mass of loops and conditionals to get the singular value that we want (the channel number)
+    for (sdp_list_t* r = responseList; r; r = r->next) {
+        sdp_record_t* rec = reinterpret_cast<sdp_record_t*>(r->data);
+        sdp_list_t* protoList;
+
+        // Get a list of the protocol sequences
+        if (sdp_get_access_protos(rec, &protoList) == NO_ERROR) {
+            // Iterate through each protocol sequence
+            for (sdp_list_t* p = protoList; p; p = p->next) {
+                // Iterate through each protocol list of the protocol sequence
+                for (sdp_list_t* pds = reinterpret_cast<sdp_list_t*>(p->data); pds; pds = pds->next) {
+                    int proto = 0; // Bluetooth protocol
+
+                    // Check protocol attributes
+                    for (sdp_data_t* d = reinterpret_cast<sdp_data_t*>(pds->data); d; d = d->next) {
+                        if (d->dtd == SDP_UINT8) {
+                            if (proto == RFCOMM_UUID) {
+                                ret = d->val.int8; // Finally, get the channel
+                                break;
+                            }
+                        } else {
+                            proto = sdp_uuid_to_proto(&d->val.uuid);
+                        }
+                    }
+                }
+                sdp_list_free(reinterpret_cast<sdp_list_t*>(p->data), 0);
+            }
+            sdp_list_free(protoList, 0);
+        }
+        sdp_record_free(rec);
+    }
+    sdp_close(session);
+#endif
+
+    // Return result
+    return ret;
 }

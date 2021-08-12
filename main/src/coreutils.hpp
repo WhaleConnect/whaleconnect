@@ -50,6 +50,7 @@ class AsyncFunction {
     std::future<T> _fut; // The future object
     bool _firstRun = false; // If a successful run() call occurred at least once
     bool _error = false; // If an error occurred during calling run()
+    bool _done = false; // If the function has completed (NOT if it can return a value)
 
 public:
     /// <summary>
@@ -62,13 +63,27 @@ public:
     template <class Fn, class... Args>
     void run(Fn&& fn, Args... args) {
         try {
-            _firstRun = true;
             _fut = std::async(std::launch::async, fn, args...);
-            _error = false;
+            _firstRun = true;
+            _error = _done = false;
         } catch (const std::system_error&) {
             // Something happened (thread failed to start)
-            _error = true;
+            _error = _done = true;
         }
+    }
+
+    /// <summary>
+    /// Run a function asynchronously.
+    /// </summary>
+    /// <typeparam name="Fn">The function to run</typeparam>
+    /// <typeparam name="...Args">Additional arguments to pass to the function</typeparam>
+    /// <param name="userData">A value to set the user data variable to</param>
+    /// <param name="fn">The function to run</param>
+    /// <param name="...args">Additional arguments to pass to the function</param>
+    template <class Fn, class... Args>
+    void run(const U& userData, Fn&& fn, Args... args) {
+        _userData = userData;
+        run(fn, args...);
     }
 
     /// <summary>
@@ -82,11 +97,25 @@ public:
     /// <summary>
     /// Check the ready state.
     /// </summary>
-    /// <returns>If the function has finished executing</returns>
+    /// <returns>If the function can return a value</returns>
+    /// <remarks>
+    /// This function's state is invalidated by a call to getValue() - if this function returns true, then getValue()
+    /// is called, the next call to this function will return false (get() can only be called once on a future object).
+    /// To check if the function has finished executing, use checkDone().
+    /// </remarks>
     bool ready() {
         // The && should short-circuit here - wait_for() should not execute if valid() returns false.
         // This is the desired and expected behavior, since waiting on an invalid future throws an exception.
         return _fut.valid() && (_fut.wait_for(std::chrono::seconds(0)) == std::future_status::ready);
+    }
+
+    /// <summary>
+    /// Check the finished state.
+    /// </summary>
+    /// <returns>If the function has finished executing</returns>
+    bool checkDone() {
+        if (ready()) _done = true;
+        return _done;
     }
 
     /// <summary>
@@ -100,7 +129,11 @@ public:
     /// <summary>
     /// Get the value returned from the function.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The function return value</returns>
+    /// <remarks>
+    /// This function caches the result of std::future::get(). A value can still be obtained even if the internal
+    /// future is no longer ready, given a successful retreival of a prior run. (This will be returned.)
+    /// </remarks>
     T getValue() {
         if (ready()) _value = _fut.get();
         return _value;

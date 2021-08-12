@@ -126,29 +126,53 @@ void drawIPConnectionTab() {
 /// </summary>
 void drawBTConnectionTab() {
     if (!ImGui::BeginTabItemNoSpacing("Bluetooth")) return;
-
-    static bool firstRun = false; // If device enumeration has completed at least once
-    static bool showAddrs = false; // If device addresses are shown
-    static bool isNew = true; // If the attempted connection is unique
-    static int err = NO_ERROR; // Error that occurred during device enumeration
-    static std::vector<DeviceData> pairedDevices; // Vector of paired devices
-
     ImGui::TextUnformatted("Paired Devices");
 
-#ifdef _WIN32
-    bool btInitDone = true; // No Bluetooth initialization on Windows
-#else
-    bool btInitDone = BTUtils::glibConnected;
-    if (!btInitDone) ImGui::TextUnformatted(BTUtils::glibDisconnectedMessage);
-    ImGui::PushDisabled(!btInitDone);
+    static bool isNew = true; // If the attempted connection is unique
+    static bool shouldOpenNew = true; // If a new connection should be opened
+    static AsyncFunction<uint8_t, DeviceData> sdpInq; // Asynchronous SDP inquiry to get channel
+    bool disableMenu = false; // If the selection menu is disabled (affected by various factors)
+
+#ifndef _WIN32
+    // Check if the application's DBus is connected to bluetoothd on Linux
+    disableMenu = !BTUtils::glibConnected;
+    if (disableMenu) ImGui::TextUnformatted(BTUtils::glibDisconnectedMessage);
 #endif
 
+    // Check status of SDP inquiry
+    if (sdpInq.error()) {
+        // Error occurred
+        ImGui::TextUnformatted("System error - Failed to launch thread.");
+    } else if (sdpInq.checkDone()) {
+        // Done and no error, get the stored DeviceData (the one corresponding to the button the user clicked)
+        static bool channelValid = false;
+        DeviceData data = sdpInq.userData();
+        if (shouldOpenNew) {
+            data.port = sdpInq.getValue(); // Set the port
+            channelValid = (data.port != 0);
+            if (channelValid) isNew = openNewConnection(data);
+            shouldOpenNew = false;
+        }
+        if (!channelValid) ImGui::Text("Failed to get SDP channel for \"%s\".", data.name.c_str());
+        disableMenu = false;
+    } else if (sdpInq.firstRun()) {
+        // Running, display a spinner
+        ImGui::LoadingSpinner("Running SDP inquiry");
+        disableMenu = true;
+    }
+
+    ImGui::PushDisabled(disableMenu);
+
     // Get the paired devices when this tab is first clicked or if the "Refresh" button is clicked
-    if ((ImGui::Button("Refresh") || !firstRun) && btInitDone) {
+    static bool firstRun = false; // If device enumeration has completed at least once
+    static std::vector<DeviceData> pairedDevices; // Vector of paired devices
+    static int err = NO_ERROR; // Error that occurred during device enumeration
+    if ((ImGui::Button("Refresh") || !firstRun) && !disableMenu) {
         err = BTUtils::getPaired(pairedDevices);
         firstRun = true;
     }
 
+    static bool showAddrs = false; // If device addresses are shown
     ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x * 4);
     ImGui::Checkbox("Show Addresses", &showAddrs);
     ImGui::Spacing();
@@ -162,25 +186,26 @@ void drawBTConnectionTab() {
             std::string buttonText = i.name; // Button text
             if (showAddrs) buttonText += std::format(" ({})", i.address); // Format the address into the entry
 
-            ImGui::PushID(i.address.c_str()); // Set the address as the id for when devices have the same name
-            if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) isNew = openNewConnection(i);
+            const char* addrCStr = i.address.c_str();
+            ImGui::PushID(addrCStr); // Set the address as the id for when devices have the same name
+            if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) {
+                sdpInq.run(i, BTUtils::getSDPChannel, addrCStr);
+                shouldOpenNew = true;
+            }
             ImGui::PopID();
         }
         ImGui::PopStyleVar();
 
         // If there are no paired devices, display a message
         // (The above loop won't run if the vector is empty, so it's not in an if-condition.)
-        if (pairedDevices.empty() && btInitDone) ImGui::TextUnformatted("No paired devices.");
+        if (pairedDevices.empty() && !disableMenu) ImGui::TextUnformatted("No paired devices.");
     } else {
         // Error occurred
         Sockets::NamedError ne = Sockets::getErr(Sockets::getLastErr());
         ImGui::Text("[ERROR] %s (%d): %s", ne.name, err, ne.desc);
     }
     ImGui::EndChild();
-
-#ifndef WIN32
     ImGui::PopDisabled();
-#endif
 
     // If the connection exists, show a message
     if (!isNew) {
