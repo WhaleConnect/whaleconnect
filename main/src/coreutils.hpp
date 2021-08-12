@@ -61,7 +61,7 @@ public:
     /// <param name="fn">The function to run</param>
     /// <param name="...args">Additional arguments to pass to the function</param>
     template <class Fn, class... Args>
-    void run(Fn&& fn, Args... args) {
+    void run(Fn&& fn, Args&&... args) {
         try {
             _fut = std::async(std::launch::async, fn, args...);
             _firstRun = true;
@@ -70,20 +70,6 @@ public:
             // Something happened (thread failed to start)
             _error = _done = true;
         }
-    }
-
-    /// <summary>
-    /// Run a function asynchronously.
-    /// </summary>
-    /// <typeparam name="Fn">The function to run</typeparam>
-    /// <typeparam name="...Args">Additional arguments to pass to the function</typeparam>
-    /// <param name="userData">A value to set the user data variable to</param>
-    /// <param name="fn">The function to run</param>
-    /// <param name="...args">Additional arguments to pass to the function</param>
-    template <class Fn, class... Args>
-    void run(const U& userData, Fn&& fn, Args... args) {
-        _userData = userData;
-        run(fn, args...);
     }
 
     /// <summary>

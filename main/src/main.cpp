@@ -189,7 +189,8 @@ void drawBTConnectionTab() {
             const char* addrCStr = i.address.c_str();
             ImGui::PushID(addrCStr); // Set the address as the id for when devices have the same name
             if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) {
-                sdpInq.run(i, BTUtils::getSDPChannel, addrCStr);
+                sdpInq.userData() = i;
+                sdpInq.run(BTUtils::getSDPChannel, addrCStr);
                 shouldOpenNew = true;
             }
             ImGui::PopID();
