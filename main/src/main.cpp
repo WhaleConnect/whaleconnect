@@ -131,12 +131,12 @@ void drawBTConnectionTab() {
     static bool isNew = true; // If the attempted connection is unique
     static bool shouldOpenNew = true; // If a new connection should be opened
     static AsyncFunction<uint8_t, DeviceData> sdpInq; // Asynchronous SDP inquiry to get channel
-    bool disableMenu = false; // If the selection menu is disabled (affected by various factors)
+    bool btInitDone = BTUtils::initialized();
+    bool sdpRunning = false; // If the SDP inquiry is still running
 
 #ifndef _WIN32
     // Check if the application's DBus is connected to bluetoothd on Linux
-    disableMenu = !BTUtils::glibConnected;
-    if (disableMenu) ImGui::TextUnformatted(BTUtils::glibDisconnectedMessage);
+    if (!btInitDone) ImGui::TextUnformatted(BTUtils::glibDisconnectedMessage);
 #endif
 
     // Check status of SDP inquiry
@@ -154,20 +154,20 @@ void drawBTConnectionTab() {
             shouldOpenNew = false;
         }
         if (!channelValid) ImGui::Text("Failed to get SDP channel for \"%s\".", data.name.c_str());
-        disableMenu = false;
+        sdpRunning = false;
     } else if (sdpInq.firstRun()) {
         // Running, display a spinner
         ImGui::LoadingSpinner("Running SDP inquiry");
-        disableMenu = true;
+        sdpRunning = true;
     }
 
-    ImGui::PushDisabled(disableMenu);
+    ImGui::PushDisabled(!btInitDone || sdpRunning);
 
     // Get the paired devices when this tab is first clicked or if the "Refresh" button is clicked
     static bool firstRun = false; // If device enumeration has completed at least once
     static std::vector<DeviceData> pairedDevices; // Vector of paired devices
     static int err = NO_ERROR; // Error that occurred during device enumeration
-    if ((ImGui::Button("Refresh") || !firstRun) && !disableMenu) {
+    if ((ImGui::Button("Refresh") || !firstRun) && btInitDone) {
         err = BTUtils::getPaired(pairedDevices);
         firstRun = true;
     }
@@ -199,7 +199,7 @@ void drawBTConnectionTab() {
 
         // If there are no paired devices, display a message
         // (The above loop won't run if the vector is empty, so it's not in an if-condition.)
-        if (pairedDevices.empty() && !disableMenu) ImGui::TextUnformatted("No paired devices.");
+        if (pairedDevices.empty() && btInitDone) ImGui::TextUnformatted("No paired devices.");
     } else {
         // Error occurred
         Sockets::NamedError ne = Sockets::getErr(Sockets::getLastErr());

@@ -57,10 +57,11 @@ static GList* ctrlList;
 
 static DBusConnection* dbusConn;
 static GDBusClient* client;
+static bool dbusConnected = false;
 
 static void connectHandler(DBusConnection*, void*) {
     // Once connected, notify the rest of the app by setting this flag
-    BTUtils::glibConnected = true;
+    dbusConnected = true;
 }
 
 static void disconnectHandler(DBusConnection*, void*) {
@@ -68,7 +69,7 @@ static void disconnectHandler(DBusConnection*, void*) {
     g_list_free(ctrlList);
     ctrlList = nullptr;
     defaultCtrl = nullptr;
-    BTUtils::glibConnected = false;
+    dbusConnected = false;
 }
 
 static gboolean deviceIsChild(GDBusProxy* device, GDBusProxy* master) {
@@ -179,6 +180,14 @@ void BTUtils::glibStop() {
     g_list_free(ctrlList);
 }
 #endif
+
+bool BTUtils::initialized() {
+#ifdef _WIN32
+    return true;
+#else
+    return dbusConnected;
+#endif
+}
 
 void BTUtils::glibMainContextIteration() {
 #ifndef _WIN32

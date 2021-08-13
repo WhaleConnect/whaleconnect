@@ -22,12 +22,16 @@ namespace BTUtils {
     /// </summary>
     void glibStop();
 
-    // If the app is connected to bluetoothd
-    inline bool glibConnected = false;
-
     // A message to display while waiting to connect to bluetoothd
     inline const char* glibDisconnectedMessage = "Waiting to connect to bluetoothd...";
 #endif
+    /// <summary>
+    /// Check if Bluetooth is initialized.
+    /// </summary>
+    /// <returns>
+    /// On Linux: If the app has a DBus connection to bluetoothd, on Windows: true (no init on Windows)
+    /// </returns>
+    bool initialized();
 
     /// <summary>
     /// Poll GLib events in a non-blocking manner on Linux. Do nothing on Windows.
