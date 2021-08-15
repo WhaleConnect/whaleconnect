@@ -28,6 +28,6 @@ if (NOT WIN32)
     # GDBus
     file(GLOB GDBUS_SOURCES "gdbus/*.c")
 
-    target_sources(terminalLibs PUBLIC ${GDBUS_SOURCES})
+    target_sources(terminalLibs PRIVATE ${GDBUS_SOURCES})
     target_link_libraries(terminalLibs ${DBUS_STATIC_LIBRARIES} ${GLIB_STATIC_LIBRARIES})
 endif()
