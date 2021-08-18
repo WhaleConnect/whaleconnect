@@ -12,32 +12,29 @@ repo_url = ""
 
 
 def make_dir(name):
-    """Ensure that a directory exists by creating it if it doesn't.
+    """Create a directory if it doesn't already exist.
 
     Parameters
     ----------
     name : str
-        The name of the directory to create. Allows for creating nested
-        dirs, for example, "a/b/c".
+        The name of the directory to create (nested paths allowed)
     """
     if not os.path.exists(name):
         os.makedirs(name)
 
 
 def set_repo(name, branch, out_name=""):
-    """Configure the script to download files from a repository.
+    """Configure the script to download files from a GitHub repository.
 
     Parameters
     ----------
     name : str
-        The repository's identifier, in the format
-        [owner name]/[repo name]. This is displayed at the top of its
-        GitHub page.
+        The repository's identifier, in the format [owner]/[repo]
     branch : str
         The branch to download from: "master", "main", etc.
     out_name : str, optional
-        The name of the output directory to places the files in. By
-        default, this is the name of the repository.
+        The name of the output directory to places the files in, by
+        default the repository name
     """
 
     global repo_url
@@ -63,8 +60,7 @@ def set_repo(name, branch, out_name=""):
 
 
 def calc_out_path(name):
-    """Get the name of a file appended to the output directory. Used
-    for finding the absolute path of a soon-to-be-created file.
+    """Get the name of a file appended to the output directory.
 
     Parameters
     ----------
@@ -74,22 +70,27 @@ def calc_out_path(name):
     Returns
     -------
     str
-        The given name joined to the end of the output directory path.
+        The given name joined to the end of the output directory path
     """
     return os.path.join(out_dir, name)
 
 
 def download_file(name, flatten=True):
-    """Download a file from the GitHub repo.
+    """Download a file from the specified GitHub repository.
 
     Parameters
     ----------
     name : str
-        The file to download, relative to the base path of the repo.
+        The file to download, relative to the repository's base path
     flatten : bool, optional
-        When set to True (the default), all files will be placed in the
-        output directory, not respecting their original pathnames. When
-        set to False, these pathnames will be retained.
+        If the download is directly placed into the output directory
+        (not maintaining the repo's original file structure),
+        by default True
+
+    Raises
+    ------
+    ValueError
+        If the repository has not been specified
     """
 
     if repo_url == "" or out_dir == "":

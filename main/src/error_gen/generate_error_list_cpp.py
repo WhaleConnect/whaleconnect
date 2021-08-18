@@ -16,10 +16,9 @@ def write_errs(f, err_list):
     Parameters
     ----------
     f : file object
-        The file to write to.
+        The file to write to
     err_list : dict
-        The set of errors to write - the key is the error name and its
-        value is the message string.
+        The error list to write (key: error name, value: message string)
     """
     for err in err_list:
         err_name = err
@@ -32,10 +31,10 @@ def write_errs(f, err_list):
         f.write(f"\n    E({err_name}, \"{err_list[err]}\"),")
 
 
-# What separates an error and its remapped name
+# What separates an error and its remapped name in the JSON file
 delim = ":"
 
-# Where we are in the filesystem
+# Where this script is in the filesystem
 current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.dirname(current_dir)
 
