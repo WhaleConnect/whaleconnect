@@ -24,7 +24,7 @@ add_executable(terminal WIN32 ${SOURCES})
 add_subdirectory(3rdparty)
 target_include_directories(terminal PRIVATE 3rdparty src)
 
-# Link bundled third-party libraries
+# Link third-party library sources
 target_link_libraries(terminal terminalLibs)
 
 # Compiler-dependent options

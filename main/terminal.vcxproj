@@ -110,6 +110,7 @@
     <ClInclude Include="3rdparty\imgui\imgui.h" />
     <ClInclude Include="3rdparty\imgui\imgui_impl_glfw.h" />
     <ClInclude Include="3rdparty\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="3rdparty\imgui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="3rdparty\imgui\imgui_internal.h" />
     <ClInclude Include="3rdparty\imgui\imstb_rectpack.h" />
     <ClInclude Include="3rdparty\imgui\imstb_textedit.h" />

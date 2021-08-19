@@ -6,9 +6,8 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
+#include <imgui/imgui_impl_opengl3_loader.h>
 
-#define GLAD_GL_IMPLEMENTATION
-#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
 #include <fmt/os.h>
@@ -73,9 +72,6 @@ bool MainHandler::initApp() {
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
-
-    // Set glad loader
-    gladSetGLOnDemandLoader(glfwGetProcAddress);
 
     // Setup Dear ImGui context and backends/renderers
     IMGUI_CHECKVERSION();

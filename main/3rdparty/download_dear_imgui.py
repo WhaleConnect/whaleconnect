@@ -29,6 +29,9 @@ for file in backend_files:
     download_file(f"backends/{file}.cpp")
     download_file(f"backends/{file}.h")
 
+# Download Dear ImGui built-in OpenGL loader (NEW: 8/19/2021)
+download_file("backends/imgui_impl_opengl3_loader.h")
+
 # Generate imconfig.h if it doesn't exist
 imconfig_path = calc_out_path("imconfig.h")
 if not os.path.exists(imconfig_path):
