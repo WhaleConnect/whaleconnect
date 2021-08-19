@@ -1,15 +1,20 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+//
+// Main definitions, functions, and utilities for network communication
 
 #pragma once
 
 #include <string> // std::string
 #include <atomic> // std::atomic
+#include <unordered_map> // std::unordered_map
 
 #ifdef _WIN32
 // Winsock header
 #include <WinSock2.h>
 #else
+#include <netinet/in.h> // sockaddr
+
 // Error status codes
 #define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
@@ -19,12 +24,44 @@
 typedef int SOCKET;
 #endif
 
-#include "utils.hpp"
+/// <summary>
+/// Structure containing metadata about a device (type, name, address, port) to provide information on how to connect to
+/// it and how to describe it.
+/// </summary>
+struct DeviceData {
+    int type; // Type of connection
+    std::string name; // Name of device (Bluetooth only)
+    std::string address; // Address of device (IP address for TCP/UDP, MAC address for Bluetooth)
+    uint16_t port; // Port/channel of device
+    uint64_t btAddr; // Bluetooth address as a 64-bit unsigned integer (used on Windows only)
+};
 
 /// <summary>
 /// Namespace containing functions for handling network sockets.
 /// </summary>
 namespace Sockets {
+    // Enum of all possible connection types
+    enum ConnectionType { TCP, UDP, Bluetooth };
+
+    // String representations of connection types
+    inline const char* connectionTypesStr[] = { "TCP", "UDP", "Bluetooth" };
+
+    /// <summary>
+    /// A structure to represent an error with a symbolic name and a description.
+    /// </summary>
+    /// <remarks>
+    /// A symbolic name is a human-readable identifier for the error (e.g. "ENOMEM").
+    /// A description is a short string describing the error (e.g. "No more memory").
+    /// </remarks>
+    struct NamedError {
+        const char* name; // Symbolic name
+        const char* desc; // Description
+    };
+
+    // The data structure to act as a lookup table for error codes. It maps numeric codes to NamedErrors.
+    // It is an unordered_map to store key/value pairs and to provide constant O(1) access time complexity.
+    extern const std::unordered_map<long, NamedError> errors;
+
     /// <summary>
     /// Get the error code of the last socket error.
     /// </summary>
@@ -34,6 +71,13 @@ namespace Sockets {
     /// Set the last socket error code.
     /// </summary>
     void setLastErr(int err);
+
+    /// <summary>
+    /// Get the corresponding NamedError from a numeric code.
+    /// </summary>
+    /// <param name="code">The numeric error code</param>
+    /// <returns>The NamedError describing the error specified by the code</returns>
+    NamedError getErr(int code);
 
     /// <summary>
     /// Prepare the OS sockets for use by the application.
@@ -47,26 +91,28 @@ namespace Sockets {
     void cleanup();
 
     /// <summary>
-    /// Connect a socket to a server with the timeout specified in Settings.
+    /// Connect a socket to a server with a specified timeout.
     /// </summary>
     /// <param name="sockfd">The socket file descriptor to perform the connection on</param>
     /// <param name="sig">Atomic bool signal, set to true in another thread to abort this function</param>
     /// <param name="addr">The sockaddr* describing the connection</param>
     /// <param name="addrlen">The size of the "addr" parameter</param>
+    /// <param name="timeout">Timeout in seconds (set to negative for no timeout, this is the default)</param>
     /// <returns>Failure/abort/timeout: SOCKET_ERROR, Success: NO_ERROR</returns>
     /// <remarks>
     /// This function should not be used outside of createClientSocket(), since that handles most of the error checking
     /// and parameter evaluation involved in connecting.
     /// </remarks>
-    int connectWithTimeout(SOCKET sockfd, const std::atomic<bool>& sig, sockaddr* addr, size_t addrlen);
+    int connect(SOCKET sockfd, const std::atomic<bool>& sig, sockaddr* addr, size_t addrlen, int timeout = -1);
 
     /// <summary>
     /// Resolve the remote device and attempt to connect to it.
     /// </summary>
     /// <param name="data">The DeviceData structure describing what to connect to and how to do so</param>
     /// <param name="sig">Atomic bool signal, set to true in another thread to abort this function (optional)</param>
+    /// <param name="timeout">Timeout in seconds (set to negative for no timeout, this is the default)</param>
     /// <returns>Failure/abort: INVALID_SOCKET, Success: The newly-created socket file descriptor</returns>
-    SOCKET createClientSocket(const DeviceData& data, const std::atomic<bool>& sig = false);
+    SOCKET createClientSocket(const DeviceData& data, const std::atomic<bool>& sig = false, int timeout = -1);
 
     /// <summary>
     /// Shutdown both directions (Send and Receive) of a socket and close it.

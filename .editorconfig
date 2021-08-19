@@ -23,7 +23,7 @@ end_of_line = crlf
 end_of_line = lf
 
 ## App source files
-[main/src/*]
+[main/src/**.{c,h}pp]
 # Set guidelines length for source files (120-char limit)
 # Requires Visual Studio Extension "Editor Guidelines":
 # https://marketplace.visualstudio.com/items?itemName=PaulHarrington.EditorGuidelines

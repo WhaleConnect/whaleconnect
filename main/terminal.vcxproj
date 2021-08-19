@@ -46,9 +46,9 @@
   </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>3rdparty</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>3rdparty;src</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -63,9 +63,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <AdditionalIncludeDirectories>3rdparty</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>3rdparty;src</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level4</WarningLevel>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -87,15 +87,15 @@
     <ClCompile Include="3rdparty\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="3rdparty\imgui\imgui_tables.cpp" />
     <ClCompile Include="3rdparty\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\btutils.cpp" />
-    <ClCompile Include="src\errorlist.cpp" />
-    <ClCompile Include="src\error.cpp" />
-    <ClCompile Include="src\imguiext.cpp" />
+    <ClCompile Include="src\app\mainhandle.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\mainhandle.cpp" />
-    <ClCompile Include="src\sockets.cpp" />
-    <ClCompile Include="src\uicomp.cpp" />
-    <ClCompile Include="src\coreutils.cpp" />
+    <ClCompile Include="src\net\btutils.cpp" />
+    <ClCompile Include="src\net\errorlist.cpp" />
+    <ClCompile Include="src\net\sockets.cpp" />
+    <ClCompile Include="src\gui\connwindow.cpp" />
+    <ClCompile Include="src\gui\console.cpp" />
+    <ClCompile Include="src\util\imguiext.cpp" />
+    <ClCompile Include="src\util\winutf8.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdparty\fmt\chrono.h" />
@@ -114,15 +114,16 @@
     <ClInclude Include="3rdparty\imgui\imstb_rectpack.h" />
     <ClInclude Include="3rdparty\imgui\imstb_textedit.h" />
     <ClInclude Include="3rdparty\imgui\imstb_truetype.h" />
-    <ClInclude Include="src\btutils.hpp" />
-    <ClInclude Include="src\error.hpp" />
-    <ClInclude Include="src\imguiext.hpp" />
-    <ClInclude Include="src\mainhandle.hpp" />
-    <ClInclude Include="src\formatcompat.hpp" />
-    <ClInclude Include="src\sockets.hpp" />
-    <ClInclude Include="src\uicomp.hpp" />
-    <ClInclude Include="src\utils.hpp" />
-    <ClInclude Include="src\coreutils.hpp" />
+    <ClInclude Include="src\app\mainhandle.hpp" />
+    <ClInclude Include="src\app\settings.hpp" />
+    <ClInclude Include="src\net\btutils.hpp" />
+    <ClInclude Include="src\net\sockets.hpp" />
+    <ClInclude Include="src\gui\connwindow.hpp" />
+    <ClInclude Include="src\gui\console.hpp" />
+    <ClInclude Include="src\util\asyncfunction.hpp" />
+    <ClInclude Include="src\util\formatcompat.hpp" />
+    <ClInclude Include="src\util\imguiext.hpp" />
+    <ClInclude Include="src\util\winutf8.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

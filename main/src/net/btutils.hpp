@@ -1,11 +1,13 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+//
+// Bluetooth utility functions for Windows and Linux
 
 #pragma once
 
 #include <vector> // std::vector
 
-#include "utils.hpp"
+#include "sockets.hpp"
 
 /// <summary>
 /// Namespace containing various Bluetooth utilities.

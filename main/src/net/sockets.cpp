@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <chrono> // std::chrono
+#include <stdexcept> // std::out_of_range
 
 #ifdef _WIN32
 // Winsock headers for Windows
@@ -20,7 +21,7 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 
-#include <netinet/in.h> // sockaddr, sockaddr_in, sockaddr_in6
+#include <netinet/in.h> // sockaddr
 #include <sys/socket.h> // Socket definitions
 #include <netdb.h> // addrinfo/getaddrinfo() related indentifiers
 #include <unistd.h> // close()
@@ -47,8 +48,7 @@ typedef addrinfo ADDRINFOW;
 #endif
 
 #include "sockets.hpp"
-#include "error.hpp"
-#include "coreutils.hpp"
+#include "util/winutf8.hpp"
 
 int Sockets::getLastErr() {
 #ifdef _WIN32
@@ -64,6 +64,17 @@ void Sockets::setLastErr(int err) {
 #else
     errno = err;
 #endif
+}
+
+Sockets::NamedError Sockets::getErr(int code) {
+    try {
+        // Attempt to get the element specified by the given code.
+        return errors.at(code);
+    } catch (const std::out_of_range&) {
+        // std::unordered_map::at() throws an exception when the key is invalid.
+        // This means the error code is not contained in the data structure and no NamedError corresponds to it.
+        return { "UNKNOWN ERROR CODE", "No string is implemented for this error code." };
+    }
 }
 
 /// <summary>
@@ -103,12 +114,21 @@ void Sockets::cleanup() {
 #endif
 }
 
-int Sockets::connectWithTimeout(SOCKET sockfd, const std::atomic<bool>& sig, sockaddr* addr, size_t addrlen) {
-    // Make the socket non-blocking, abort if this action fails.
-    if (setBlocking(sockfd, false) == SOCKET_ERROR) return SOCKET_ERROR;
+int Sockets::connect(SOCKET sockfd, const std::atomic<bool>& sig, sockaddr* addr, size_t addrlen, int timeout) {
+    bool hasTimeout = (timeout > 0);
+    if (hasTimeout) {
+        // Make the socket non-blocking, abort if this action fails.
+        int blockingRet = setBlocking(sockfd, false);
+        if (blockingRet == SOCKET_ERROR) return SOCKET_ERROR;
+    }
 
     // Start connecting on the non-blocking socket
-    connect(sockfd, addr, static_cast<int>(addrlen));
+    int ret = ::connect(sockfd, addr, static_cast<int>(addrlen));
+
+    // If we don't have a timeout set, we are done
+    if (!hasTimeout) return ret;
+
+    // We do have a timeout set
     bool success = false;
 
     // Get the last socket error
@@ -128,14 +148,14 @@ int Sockets::connectWithTimeout(SOCKET sockfd, const std::atomic<bool>& sig, soc
             pollfd pfds[] = { { sockfd, POLLOUT, 0 } };
 
             // Poll for a short amount of time
-            if (WSAPoll(pfds, 1, Settings::connectPollTime) > 0) {
+            if (WSAPoll(pfds, 1, 100) > 0) {
                 // Return value greater than 0, this means the socket was connected successfully so break
                 success = true;
                 break;
             }
 
             // Check if the timeout value has been reached
-            if (std::chrono::steady_clock::now() - start > std::chrono::seconds(Settings::connectTimeout)) break;
+            if ((std::chrono::steady_clock::now() - start > std::chrono::seconds(timeout))) break;
         }
 
         // If the connect was not successful, set the last error to be "Timed Out" and exit
@@ -149,9 +169,9 @@ int Sockets::connectWithTimeout(SOCKET sockfd, const std::atomic<bool>& sig, soc
     return setBlocking(sockfd, true);
 }
 
-SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<bool>& sig) {
+SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<bool>& sig, int timeout) {
     SOCKET sockfd = INVALID_SOCKET; // Socket file descriptor
-    bool success = false; // If the connection was successful
+    int connectRet = false; // If the connection was successful
 
     if (data.type == Bluetooth) {
         // Bluetooth connection - set up socket
@@ -173,7 +193,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
 #endif
 
         // Connect
-        success = connectWithTimeout(sockfd, sig, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != SOCKET_ERROR;
+        connectRet = connect(sockfd, sig, reinterpret_cast<sockaddr*>(&addr), sizeof(addr), timeout);
     } else {
         // Internet protocol - Set up hints for getaddrinfo()
         // Ignore "missing initializer" warnings on GCC and clang
@@ -185,11 +205,12 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #endif
+        bool isTCP = (data.type == TCP);
         ADDRINFOW hints{
             .ai_flags = AI_NUMERICHOST,
             .ai_family = AF_UNSPEC,
-            .ai_socktype = (data.type == TCP) ? SOCK_STREAM : SOCK_DGRAM,
-            .ai_protocol = (data.type == TCP) ? IPPROTO_TCP : IPPROTO_UDP
+            .ai_socktype = isTCP ? SOCK_STREAM : SOCK_DGRAM,
+            .ai_protocol = isTCP ? IPPROTO_TCP : IPPROTO_UDP
         };
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
@@ -198,8 +219,6 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
 #pragma clang diagnostic pop
 #endif
 
-        ADDRINFOW* addr;
-
         // Wide encoding conversions for Windows
         // These are stored in their own variables to prevent them from being temporaries and destroyed later.
         // If we were to call `.c_str()` and then have these destroyed, `.c_str()` would be a dangling pointer.
@@ -207,6 +226,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
         widestr portWide = I_TO_WIDE(data.port);
 
         // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
+        ADDRINFOW* addr;
         int gaiResult = GetAddrInfoW(addrWide.c_str(), portWide.c_str(), &hints, &addr);
         if (gaiResult == NO_ERROR) {
             // getaddrinfo() succeeded, initialize socket file descriptor with values created by GAI
@@ -214,10 +234,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
 
             if (sockfd != INVALID_SOCKET) {
                 // TCP may need a timeout, UDP does not
-                if (data.type == TCP)
-                    success = connectWithTimeout(sockfd, sig, addr->ai_addr, addr->ai_addrlen) != SOCKET_ERROR;
-                else
-                    success = connect(sockfd, addr->ai_addr, static_cast<int>(addr->ai_addrlen)) != SOCKET_ERROR;
+                connectRet = connect(sockfd, sig, addr->ai_addr, addr->ai_addrlen, (isTCP) ? timeout : -1);
 
                 // Release the resources
                 FreeAddrInfoW(addr);
@@ -232,7 +249,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
     }
 
     // Check if connection failed
-    if (!success) {
+    if (connectRet == SOCKET_ERROR) {
         // Destroy the socket:
         destroySocket(sockfd);
         sockfd = INVALID_SOCKET;

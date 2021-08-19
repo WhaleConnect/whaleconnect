@@ -58,7 +58,7 @@ with open(os.path.join(parent_dir, "errorlist.cpp"), "w") as f:
 // This file was generated with {os.path.basename(__file__)}.
 // DO NOT MODIFY THIS FILE, edit the generator script/JSON data instead.
 
-#include "error.hpp"
+#include "sockets.hpp"
 
 #ifdef _WIN32
 #include <WinSock2.h>""")

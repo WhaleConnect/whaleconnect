@@ -4,7 +4,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 
-#include "coreutils.hpp"
+#include "winutf8.hpp"
 
 std::wstring toWide(const std::string& from) {
     // Size of UTF-8 string in UTF-16 wide encoding

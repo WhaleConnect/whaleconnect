@@ -4,7 +4,7 @@
 // This file was generated with generate_error_list_cpp.py.
 // DO NOT MODIFY THIS FILE, edit the generator script/JSON data instead.
 
-#include "error.hpp"
+#include "sockets.hpp"
 
 #ifdef _WIN32
 #include <WinSock2.h>

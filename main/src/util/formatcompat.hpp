@@ -1,5 +1,7 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+//
+// Compatibility layer for C++20 std::format()
 
 // TODO: Remove this fallback file and just use `#include <format>` when all major compilers implement it
 

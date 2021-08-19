@@ -6,13 +6,13 @@
 
 #include <imgui/imgui.h>
 
-#include "btutils.hpp"
-#include "error.hpp"
-#include "uicomp.hpp"
-#include "utils.hpp"
-#include "imguiext.hpp"
-#include "mainhandle.hpp"
-#include "formatcompat.hpp"
+#include "app/settings.hpp"
+#include "app/mainhandle.hpp"
+#include "gui/connwindow.hpp"
+#include "net/btutils.hpp"
+#include "util/imguiext.hpp"
+#include "util/formatcompat.hpp"
+#include "util/asyncfunction.hpp"
 
 // Vector of open windows
 std::vector<std::unique_ptr<ConnWindow>> connections;
@@ -64,8 +64,24 @@ int MAIN_FUNC(MAIN_ARGS) {
 /// <param name="data">The remote host to connect to</param>
 /// <returns>If the connection window was created (true if created, false if it already exists)</returns>
 bool openNewConnection(const DeviceData& data) {
-    // Format the DeviceData into a usable title
-    std::string title = UIHelpers::makeClientString(data);
+    // Type of the connection
+    const char* type = Sockets::connectionTypesStr[data.type];
+    bool isBluetooth = (data.type == Sockets::Bluetooth);
+
+    // Bluetooth connections are described using the device's name (e.g. "MyESP32"),
+    // IP connections (TCP/UDP) use the device's IP address (e.g. 192.168.0.178).
+    std::string deviceString = (isBluetooth) ? data.name : data.address;
+
+    // Newlines may be present in a Bluetooth device name, and if they get into a window's title, anything after the
+    // first one will get cut off (the title bar can only hold one line). Replace them with spaces to keep everything on
+    // one line.
+    std::replace(deviceString.begin(), deviceString.end(), '\n', ' ');
+
+    // Format the values into a string as the title
+    // The address is always part of the id hash.
+    // The port is not visible for a Bluetooth connection, instead, it is part of the id hash.
+    const char* fmtStr = (isBluetooth) ? "{} Connection - {}##{} {}" : "{} Connection - {} port {}##{}";
+    std::string title = std::format(fmtStr, type, deviceString, data.port, data.address);
 
     // Iterate through all open windows, check if the title matches
     for (const auto& i : connections) if (*i == title) return false;
@@ -75,7 +91,7 @@ bool openNewConnection(const DeviceData& data) {
     // The connector function for the ConnWindow
     auto connFunc = [](const std::atomic<bool>& sig, const DeviceData& _data) -> ConnectResult {
         // Create the client socket with the given DeviceData and stop signal
-        SOCKET sockfd = Sockets::createClientSocket(_data, sig);
+        SOCKET sockfd = Sockets::createClientSocket(_data, sig, Settings::connectTimeout);
         return { sockfd, Sockets::getLastErr() };
     };
 

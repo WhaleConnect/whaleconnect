@@ -17,12 +17,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_definitions(-DCMAKE_EXPORT_COMPILE_COMMANDS=ON)
 
 # Source files to compile
-file(GLOB SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
 add_executable(terminal WIN32 ${SOURCES})
 
 # Bundled libraries location
 add_subdirectory(3rdparty)
-include_directories(3rdparty)
+target_include_directories(terminal PRIVATE 3rdparty src)
 
 # Link bundled third-party libraries
 target_link_libraries(terminal terminalLibs)

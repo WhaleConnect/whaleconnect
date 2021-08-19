@@ -25,13 +25,14 @@
 #include <cstring> // std::strcmp(), std::snprintf()
 
 #include "btutils.hpp"
+#include "sockets.hpp"
 
 #ifdef _WIN32
 #include <WinSock2.h>
 #include <ws2bth.h>
 #include <bluetoothapis.h>
 
-#include "coreutils.hpp"
+#include "util/winutf8.hpp"
 
 // Link with Bluetooth lib
 #pragma comment(lib, "Bthprops.lib")
@@ -41,9 +42,6 @@
 #include <bluetooth/sdp.h>
 #include <bluetooth/sdp_lib.h>
 #include <gdbus/gdbus.h>
-
-#define SOCKET_ERROR -1
-#define NO_ERROR 0
 
 // A Bluetooth adapter
 struct adapter {
@@ -214,15 +212,15 @@ int BTUtils::getPaired(std::vector<DeviceData>& deviceList) {
     };
 
     // Find the first device
-    BLUETOOTH_DEVICE_INFO btDeviceInfo{ .dwSize = sizeof(btDeviceInfo) };
-    HBLUETOOTH_DEVICE_FIND foundDevice = BluetoothFindFirstDevice(&searchCriteria, &btDeviceInfo);
+    BLUETOOTH_DEVICE_INFO deviceInfo{ .dwSize = sizeof(BLUETOOTH_DEVICE_INFO) };
+    HBLUETOOTH_DEVICE_FIND foundDevice = BluetoothFindFirstDevice(&searchCriteria, &deviceInfo);
 
     if (!foundDevice) return SOCKET_ERROR;
 
     // Loop through each found device
     do {
         // Device MAC address broken into six octets
-        BYTE* addr = btDeviceInfo.Address.rgBytes;
+        BYTE* addr = deviceInfo.Address.rgBytes;
 
         // Format address array into MAC address
         constexpr size_t len = 18;
@@ -230,8 +228,8 @@ int BTUtils::getPaired(std::vector<DeviceData>& deviceList) {
         std::snprintf(mac, len, "%02X:%02X:%02X:%02X:%02X:%02X", addr[5], addr[4], addr[3], addr[2], addr[1], addr[0]);
 
         // Push back
-        deviceList.push_back({ Bluetooth, fromWide(btDeviceInfo.szName), mac, 0, btDeviceInfo.Address.ullLong });
-    } while (BluetoothFindNextDevice(foundDevice, &btDeviceInfo));
+        deviceList.push_back({ Sockets::Bluetooth, fromWide(deviceInfo.szName), mac, 0, deviceInfo.Address.ullLong });
+    } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
 #else
     if (!defaultCtrl) {
         errno = ENODEV;
@@ -261,7 +259,7 @@ int BTUtils::getPaired(std::vector<DeviceData>& deviceList) {
         dbus_message_iter_get_basic(&iter, &name);
 
         // Push back
-        deviceList.push_back({ Bluetooth, name, address, 0, 0 });
+        deviceList.push_back({ Sockets::Bluetooth, name, address, 0, 0 });
     }
 #endif
 

@@ -1,5 +1,7 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+//
+// Main window handling functions (e.g. create/destroy, render)
 
 #pragma once
 

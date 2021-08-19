@@ -15,8 +15,8 @@
 #include <fmt/chrono.h>
 
 #include "mainhandle.hpp"
-#include "imguiext.hpp"
-#include "utils.hpp"
+#include "settings.hpp"
+#include "util/imguiext.hpp"
 
 // The GUI window of the app
 static GLFWwindow* window = nullptr;

@@ -2,21 +2,12 @@
 
 ## The Source Files
 
-This directory contains the C++ source code for Network Socket Terminal. A description of each file is given below.\
-Each entry below has both a \*.cpp file and an \*.hpp file unless either extension is explicitly given.
+This directory contains the C++ source code for Network Socket Terminal, organized into subdirectories.\
+Descriptions of each subdirectory are given below:
 
-Name | Short for | Contains
---- | --- | ---
-`btutils` | Bluetooth Utilities | Various Bluetooth functions for Windows and Linux
-`coreutils` | Core Utilities | Wrappers around API/standard library functions
-`error` | - | Facilities to convert error codes to descriptions, used with `errorlist.cpp`
-`errorlist.cpp`\* | - | A lookup table which maps numeric error codes to their readable descriptions
-`formatcompat.hpp` | Format Compatibility | Polyfill for `std::format` with {fmt} for non-C++20 complete compilers
-`imguiext` | Dear ImGui Extensions | Functions to extend and add on to Dear ImGui
-`main.cpp` | - | Implementation of the entry point and core application logic
-`mainhandle` | Main Handler | Main window handling functions (e.g. create/destroy, render)
-`sockets` | - | High-level, cross-platform socket functions
-`uicomp` | User Interface Components | Reusable classes to represent frequently-used GUI elements
-`utils.hpp` | Utilities | Definitions for anything used by multiple files
+- `app` (Application): Core application components and handlers
+- `gui` (Graphical User Interface): Reusable classes to represent commonly-used GUI elements
+- `net` (Network): Base definitions for network communication (and management)
+- `util` (Utilities): Helpers and add-on functions for ease of programming
 
-\*: This file is *automatically generated*, do not edit it. Instead, edit the files in the `error_gen` directory. See its README for details.
+Short descriptions are given at the top of each header. A header's description also applies to its corresponding `.cpp` file.

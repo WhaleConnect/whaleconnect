@@ -1,5 +1,7 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
+//
+// Extension functions for Dear ImGui
 
 #pragma once
 
