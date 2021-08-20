@@ -124,9 +124,9 @@ void drawIPConnectionTab() {
     if (ImGui::RadioButton("UDP", !isTCP)) isTCP = false;
 
     // Connect button
-    ImGui::PushDisabled(addr.empty());
+    ImGui::BeginDisabled(addr.empty());
     if (ImGui::Button("Connect")) isNew = openNewConnection({ !isTCP, "", addr, port, 0 });
-    ImGui::PopDisabled();
+    ImGui::EndDisabled();
 
     // If the connection exists, show a message
     if (!isNew) {
@@ -177,7 +177,7 @@ void drawBTConnectionTab() {
         sdpRunning = true;
     }
 
-    ImGui::PushDisabled(!btInitDone || sdpRunning);
+    ImGui::BeginDisabled(!btInitDone || sdpRunning);
 
     // Get the paired devices when this tab is first clicked or if the "Refresh" button is clicked
     static bool firstRun = false; // If device enumeration has completed at least once
@@ -222,7 +222,7 @@ void drawBTConnectionTab() {
         ImGui::Text("[ERROR] %s (%d): %s", ne.name, err, ne.desc);
     }
     ImGui::EndChild();
-    ImGui::PopDisabled();
+    ImGui::EndDisabled();
 
     // If the connection exists, show a message
     if (!isNew) {
