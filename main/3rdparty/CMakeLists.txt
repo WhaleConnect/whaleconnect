@@ -6,6 +6,7 @@
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 include("../cmake/debug_macros.cmake")
+include("../cmake/utf_8.cmake")
 
 # Add Dear ImGui and {fmt} source files:
 file(GLOB DEAR_IMGUI_SOURCES "imgui/*.cpp")

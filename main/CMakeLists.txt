@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.17)
 project(terminal VERSION 1.0)
 
 include("cmake/debug_macros.cmake")
+include("cmake/utf_8.cmake")
 
 # C++ language standard
 set(CMAKE_CXX_STANDARD 20)
@@ -30,7 +31,6 @@ target_link_libraries(terminal terminalLibs)
 # Compiler-dependent options
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # MSVC options
-    target_compile_options(terminal PRIVATE /utf-8)
     set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS "/W4")
 
     # Use MSVC's Unicode character set
