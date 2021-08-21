@@ -116,7 +116,6 @@
     <ClInclude Include="3rdparty\fmt\format-inl.h" />
     <ClInclude Include="3rdparty\fmt\format.h" />
     <ClInclude Include="3rdparty\fmt\os.h" />
-    <ClInclude Include="3rdparty\glad\gl.h" />
     <ClInclude Include="3rdparty\GLFW\glfw3.h" />
     <ClInclude Include="3rdparty\GLFW\glfw3native.h" />
     <ClInclude Include="3rdparty\imgui\imconfig.h" />

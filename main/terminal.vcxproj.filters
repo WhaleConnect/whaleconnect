@@ -35,9 +35,6 @@
     <Filter Include="Third Party Libraries\Dear ImGui Source Files">
       <UniqueIdentifier>{04f00034-3be0-4664-8953-4db38c38817d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Third Party Libraries\Glad Header Files">
-      <UniqueIdentifier>{0a768da3-651f-413f-a335-b6a4eaa61f50}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Third Party Libraries\GLFW Header Files">
       <UniqueIdentifier>{782b64c2-d308-4491-ba34-4a8f79accc6d}</UniqueIdentifier>
     </Filter>
@@ -102,9 +99,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="3rdparty\glad\gl.h">
-      <Filter>Third Party Libraries\Glad Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="3rdparty\GLFW\glfw3.h">
       <Filter>Third Party Libraries\GLFW Header Files</Filter>
     </ClInclude>
