@@ -100,6 +100,7 @@
     <ClCompile Include="3rdparty\imgui\imgui_tables.cpp" />
     <ClCompile Include="3rdparty\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\app\mainhandle.cpp" />
+    <ClCompile Include="src\gui\connwindowlist.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\net\btutils.cpp" />
     <ClCompile Include="src\net\errorlist.cpp" />
@@ -129,6 +130,7 @@
     <ClInclude Include="3rdparty\imgui\imstb_truetype.h" />
     <ClInclude Include="src\app\mainhandle.hpp" />
     <ClInclude Include="src\app\settings.hpp" />
+    <ClInclude Include="src\gui\connwindowlist.hpp" />
     <ClInclude Include="src\net\btutils.hpp" />
     <ClInclude Include="src\net\sockets.hpp" />
     <ClInclude Include="src\gui\connwindow.hpp" />

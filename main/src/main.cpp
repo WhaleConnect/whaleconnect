@@ -1,23 +1,20 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <vector> // std::vector
-#include <memory> // std::unique_ptr
-
 #include <imgui/imgui.h>
 
 #include "app/settings.hpp"
 #include "app/mainhandle.hpp"
 #include "gui/connwindow.hpp"
+#include "gui/connwindowlist.hpp"
 #include "net/btutils.hpp"
 #include "util/imguiext.hpp"
 #include "util/formatcompat.hpp"
 #include "util/asyncfunction.hpp"
 
-// Vector of open windows
-std::vector<std::unique_ptr<ConnWindow>> connections;
+// List of open windows
+ConnWindowList connections;
 
-bool openNewConnection(const DeviceData& data);
 void drawIPConnectionTab();
 void drawBTConnectionTab();
 
@@ -44,12 +41,7 @@ int MAIN_FUNC(MAIN_ARGS) {
         }
         ImGui::End();
 
-        // Update all client windows
-        for (size_t i = 0; i < connections.size(); i++) {
-            if (*connections[i]) connections[i]->update(); // Window is open, update it
-            else connections.erase(connections.begin() + i); // Window is closed, remove it from vector
-        }
-
+        connections.update();
         MainHandler::renderWindow();
     }
 
@@ -64,30 +56,6 @@ int MAIN_FUNC(MAIN_ARGS) {
 /// <param name="data">The remote host to connect to</param>
 /// <returns>If the connection window was created (true if created, false if it already exists)</returns>
 bool openNewConnection(const DeviceData& data) {
-    // Type of the connection
-    const char* type = Sockets::connectionTypesStr[data.type];
-    bool isBluetooth = (data.type == Sockets::Bluetooth);
-
-    // Bluetooth connections are described using the device's name (e.g. "MyESP32"),
-    // IP connections (TCP/UDP) use the device's IP address (e.g. 192.168.0.178).
-    std::string deviceString = (isBluetooth) ? data.name : data.address;
-
-    // Newlines may be present in a Bluetooth device name, and if they get into a window's title, anything after the
-    // first one will get cut off (the title bar can only hold one line). Replace them with spaces to keep everything on
-    // one line.
-    std::replace(deviceString.begin(), deviceString.end(), '\n', ' ');
-
-    // Format the values into a string as the title
-    // The address is always part of the id hash.
-    // The port is not visible for a Bluetooth connection, instead, it is part of the id hash.
-    const char* fmtStr = (isBluetooth) ? "{} Connection - {}##{} {}" : "{} Connection - {} port {}##{}";
-    std::string title = std::format(fmtStr, type, deviceString, data.port, data.address);
-
-    // Iterate through all open windows, check if the title matches
-    for (const auto& i : connections) if (*i == title) return false;
-
-    // If this point is reached it means that the window is unique, it is okay to create it
-
     // The connector function for the ConnWindow
     auto connFunc = [](const std::atomic<bool>& sig, const DeviceData& _data) -> ConnectResult {
         // Create the client socket with the given DeviceData and stop signal
@@ -95,9 +63,8 @@ bool openNewConnection(const DeviceData& data) {
         return { sockfd, Sockets::getLastErr() };
     };
 
-    // Append the ConnWindow to the vector
-    connections.push_back(std::make_unique<ConnWindow>(title, connFunc, data));
-    return true;
+    // Attempt to add, then return the result
+    return connections.add(data, connFunc, data);
 }
 
 /// <summary>
