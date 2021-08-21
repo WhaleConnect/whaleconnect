@@ -9,7 +9,7 @@
 /// Namespace containing mutable variables to configure the application.
 /// </summary>
 namespace Settings {
-    inline uint8_t fontSize = 13; // Application font height in pixels
-    inline uint8_t connectTimeout = 5; // Number of seconds to allow for connection before it aborts
+    inline unsigned char fontSize = 13; // Application font height in pixels
+    inline unsigned char connectTimeout = 5; // Number of seconds to allow for connection before it aborts
     inline bool showFPScounter = false; // If a framerate counter is shown in the top-right corner
 }
