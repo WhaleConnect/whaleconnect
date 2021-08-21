@@ -1,21 +1,18 @@
 ## Top-most EditorConfig file
 root = true
 
-## Everything
+## All source files
 [*]
-charset = utf-8
-
-# Extra whitespace
-trim_trailing_whitespace = true
-
-## Everything except VS projects
-[!*{.vcxproj,.filters}]
 # Indentation
 indent_size = 4
 indent_style = space
 
-# Final newline
+# Basic file properties
+charset = utf-8
+
+# Extra whitespace
 insert_final_newline = true
+trim_trailing_whitespace = true
 
 ## Everything except Python files
 [!*.py]
