@@ -54,6 +54,19 @@ namespace ImGui {
     bool InputText(const char* label, std::string& s, ImGuiInputTextFlags flags = 0);
 
     /// <summary>
+    /// An adapter InputTextMultiline() to use a std::string passed by reference.
+    /// </summary>
+    /// <param name="label">The text to show next to the input</param>
+    /// <param name="s">The std::string buffer to use</param>
+    /// <param name="size">The size of the textbox</param>
+    /// <param name="flags">A set of ImGuiInputTextFlags to change how the textbox behaves</param>
+    /// <returns>The value from InputText() called internally</returns>
+    /// <remarks>
+    /// Adapted from imgui_stdlib.cpp.
+    /// </remarks>
+    bool InputTextMultiline(const char* label, std::string& s, const ImVec2& size = {}, ImGuiInputTextFlags flags = 0);
+
+    /// <summary>
     /// Create a (?) mark which shows a tooltip on hover. Placed next to an element to provide more details about it.
     /// </summary>
     /// <param name="desc">The text in the tooltip</param>

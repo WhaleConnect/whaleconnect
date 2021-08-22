@@ -11,6 +11,7 @@
 #include <imgui/imgui.h>
 
 #include "util/imguiext.hpp"
+#include "util/stringutils.hpp"
 
 /// <summary>
 /// A structure representing an item in a Console object's output.
@@ -32,6 +33,7 @@ class Console {
     bool _showTimestamps = false; // If timestamps are shown in the output
     bool _showHex = false; // If items are shown in hexadecimal
     bool _clearTextboxOnSend = true; // If the textbox is cleared on each send
+    bool _addFinalLineEnding = false; // If a final line ending is added before sending
 
     std::vector<ConsoleItem> _items; // Items in console output
     std::string _textBuf; // Buffer for the texbox
@@ -85,13 +87,23 @@ public:
 
 template<class Fn>
 void Console::update(Fn fn) {
-    // Send textbox
-    ImGui::SetNextItemWidth(-FLT_MIN); // Make the textbox full width
-    if (ImGui::InputText("##ConsoleInput", _textBuf, ImGuiInputTextFlags_EnterReturnsTrue)) {
-        // Construct the string to send by adding the line ending to the end of the string
-        const char* endings[] = { "", "\n", "\r", "\r\n" };
-        std::string sendString = _textBuf + endings[_currentLE];
+    // Textbox flags
+    ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
+        | ImGuiInputTextFlags_AllowTabInput;
 
+    // Textbox
+    if (ImGui::InputTextMultiline("##ConsoleInput", _textBuf, { -FLT_MIN, ImGui::GetTextLineHeight() * 4 }, flags)) {
+        // Line ending
+        const char* endings[] = { "\n", "\r", "\r\n" };
+        const char* selectedEnding = endings[_currentLE];
+
+        // InputTextMultiline() always uses \n as a line ending, replace all occurences of \n with the selected ending
+        std::string sendString = StringUtils::replaceAll(_textBuf, "\n", selectedEnding);
+
+        // Add a final line ending if set
+        if (_addFinalLineEnding) sendString += selectedEnding;
+
+        // Invoke the callback function if the string is not empty
         if (sendString != "") fn(sendString);
 
         if (_clearTextboxOnSend) _textBuf = ""; // Blank out input textbox

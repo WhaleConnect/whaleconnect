@@ -70,6 +70,8 @@ void Console::_updateOutput() {
 
         ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSend);
 
+        ImGui::MenuItem("Add final line ending", nullptr, &_addFinalLineEnding);
+
         ImGui::EndPopup();
     }
 
@@ -82,7 +84,7 @@ void Console::_updateOutput() {
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
 
     ImGui::SetNextItemWidth(comboWidth);
-    ImGui::Combo("##lineEnding", &_currentLE, "None\0Newline\0Carriage return\0Both\0");
+    ImGui::Combo("##lineEnding", &_currentLE, "Newline\0Carriage return\0Both\0");
 }
 
 void Console::addText(const std::string& s, ImVec4 color, bool canUseHex) {
