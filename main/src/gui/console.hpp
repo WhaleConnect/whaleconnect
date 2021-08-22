@@ -10,6 +10,7 @@
 
 #include <imgui/imgui.h>
 
+#include "app/settings.hpp"
 #include "util/imguiext.hpp"
 #include "util/stringutils.hpp"
 
@@ -92,7 +93,8 @@ void Console::update(Fn fn) {
         | ImGuiInputTextFlags_AllowTabInput;
 
     // Textbox
-    if (ImGui::InputTextMultiline("##ConsoleInput", _textBuf, { -FLT_MIN, ImGui::GetTextLineHeight() * 4 }, flags)) {
+    ImVec2 size{ -FLT_MIN, ImGui::GetTextLineHeight() * Settings::sendTextboxHeight };
+    if (ImGui::InputTextMultiline("##ConsoleInput", _textBuf, size, flags)) {
         // Line ending
         const char* endings[] = { "\n", "\r", "\r\n" };
         const char* selectedEnding = endings[_currentLE];
