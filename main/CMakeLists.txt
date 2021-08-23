@@ -41,7 +41,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
     # This prevents LNK4098 in Debug mode, but causes LNK2001 in Release mode.
     # This is because the GLFW pre-built binaries were built in Release mode.
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    # Look for the "Rel" substring indicating a release build.
+    if(NOT CMAKE_BUILD_TYPE MATCHES "Rel")
         target_link_options(terminal PRIVATE /NODEFAULTLIB:MSVCRT)
     endif()
 else()
