@@ -41,6 +41,11 @@
 - [GitHub](https://github.com/)
 - [GitHub Desktop](https://desktop.github.com/)
 
+## File Compression
+
+- [Compress PNG](https://compresspng.com/)
+- [Compress GIF](https://www.iloveimg.com/compress-image/compress-gif)
+
 ## Other
 
 - [Python](https://www.python.org/)

@@ -4,10 +4,11 @@
 
 *Note: This software is currently in alpha status. All feedback/feature requests welcome.*
 
-![Screenshot](docs/img/shot1.png)
+![Screenshot](/docs/img/shot1.png)
 
 ## Documentation Links
 
+- [Screenshots](/docs/SCREENSHOTS.md)
 - [Building from Source](/docs/BUILDING.md)
 - [Software Used](/docs/SOFTWARE.md)
 - [Todo List](/docs/TODO.txt)
