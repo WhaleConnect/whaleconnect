@@ -27,7 +27,7 @@
         "${workspaceFolder}/main/3rdparty"
     ],
     "todo-tree.filtering.excludeGlobs": [
-        "**/3rdparty"
+        "**/3rdparty/**"
     ],
     "cmake.configureOnOpen": true,
     "cmake.configureOnEdit": true,
