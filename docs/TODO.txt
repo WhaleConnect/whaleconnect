@@ -1,3 +1,5 @@
+This is a list of the tasks to complete before each release.
+
 Alpha 1:
   [ ] Add support for L2CAP over Bluetooth
   [ ] Unicode username support
@@ -40,12 +42,15 @@ Beta:
   [ ] TEST EVERYTHING
 
 1.0:
+  [ ] Add relevant topics to repository
+  [ ] Create issue/PR templates
   [ ] List features in main README
   [ ] UI reskin
     [ ] Change the app's colors from the default Dear ImGui styles
     [ ] Light and dark mode
     [ ] Figure out how to hide the spaces between tabs: https://github.com/ocornut/imgui/issues/4368
   [ ] Make app icon
+  [ ] Update screenshots in repository
   [ ] Create an installer executable
   [ ] Obtain a code signing certificate
 
