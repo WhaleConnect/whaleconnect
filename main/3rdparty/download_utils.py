@@ -3,6 +3,7 @@
 #
 # This script contains the definitions needed to download a file from
 # GitHub.
+# This is not a runnable script; it does nothing by itself.
 
 import os
 import urllib.request

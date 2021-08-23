@@ -1,0 +1,77 @@
+Alpha 1:
+  [ ] Add support for L2CAP over Bluetooth
+  [ ] Unicode username support
+  [ ] Add option to export Console output to a file in the user's Documents folder
+  [ ] Export the GLFW error file (mainhandle.cpp) in a better location
+  [ ] Rework the Bluetooth selection menu UI
+  [ ] Remove threads from ConnWindow, handle socket events in ConnWindowList instead
+  [ ] Fix dependency mess
+    [ ] Add scripts to download BlueZ/GDBus
+    [ ] Compile GLFW from sources
+      [ ] Adjust CMake scripts/VS projects as necessary
+      [ ] Add download_glfw.py
+      [ ] Remove libglfw3-dev from BUILDING.md
+    [ ] Make fork of GNU Unifont
+      [ ] Remove the characters which aren't loaded by the application
+      [ ] Turn forked TTF into a source file with Dear ImGui's binary_to_compressed_c
+      [ ] Put this on GitHub
+      [ ] Add a download script
+    [ ] Remove all third-party code from this repository
+      - The Python scripts will handle downloading them all.
+        [ ] Document them
+
+Alpha 2:
+  [ ] Implement the server-side
+    - This will get more detailed in the future when we get there.
+
+Beta:
+  [ ] In-app table of socket error codes/descriptions
+  [ ] Pre-defined window dimensions
+  [ ] Screenshot helper
+    - On the Dear ImGui wiki: https://github.com/ocornut/imgui/wiki/screenshot_tool
+    - Add stb_image.h: https://github.com/nothings/stb
+  [ ] Make settings configurable
+    [ ] Settings UI (like in VSCode)
+    [ ] Save in JSON format
+      - Add JSON for Modern C++: https://github.com/nlohmann/json
+  [ ] Display first-party (GPLv3) and third-party licenses in app
+  [ ] Display version/build information (build date/platform/compiler etc.)
+    [ ] Display library versions (Dear ImGui/OpenGL/GLFW etc.) if applicable
+  [ ] TEST EVERYTHING
+
+1.0:
+  [ ] List features in main README
+  [ ] UI reskin
+    [ ] Change the app's colors from the default Dear ImGui styles
+    [ ] Light and dark mode
+    [ ] Figure out how to hide the spaces between tabs: https://github.com/ocornut/imgui/issues/4368
+  [ ] Make app icon
+  [ ] Create an installer executable
+  [ ] Obtain a code signing certificate
+
+1.1:
+  [ ] Raw sockets
+  [ ] Send data in hex format in addition to the existing UTF-8 textbox
+    - imgui_club Memory Editor https://github.com/ocornut/imgui_club should be helpful here (make a modification of it?)
+
+Some time in Fall/Winter 2022:
+  [ ] Buy an Apple Mac with new 3nm processor
+    [ ] Add macOS support
+
+Various small optimizations:
+  [ ] Use std::string_view (C++17) over `const std::string&`
+  [ ] Use vector::find in ConnWindowList
+
+Other things:
+  [ ] Setup GitHub Actions (whenever)
+  - Profile application
+    - Visual Studio debug tools on Windows
+    - Valgrind on Linux (check for memory leaks)
+    - Task Manager (CPU/GPU/Memory/Network use)
+  [ ] When GCC and Clang are C++20 complete:
+    [ ] Remove #if checks for chrono timezones (console.cpp)
+    [ ] Drop formatcompat.hpp and {fmt}, use std::format()
+  [ ] Upgrade to VS2022
+  - Probably not going to adopt the C++23 Networking TS into this codebase.
+   - Would require massive refactoring
+   - No Bluetooth in the TS
