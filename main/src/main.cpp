@@ -5,7 +5,6 @@
 
 #include "app/settings.hpp"
 #include "app/mainhandle.hpp"
-#include "gui/connwindow.hpp"
 #include "gui/connwindowlist.hpp"
 #include "net/btutils.hpp"
 #include "util/imguiext.hpp"
@@ -15,8 +14,8 @@
 // List of open windows
 ConnWindowList connections;
 
-void drawIPConnectionTab();
-void drawBTConnectionTab();
+static void drawIPConnectionTab();
+static void drawBTConnectionTab();
 
 int MAIN_FUNC(MAIN_ARGS) {
     if (!MainHandler::initApp()) return EXIT_FAILURE; // Create a main application window
@@ -51,11 +50,20 @@ int MAIN_FUNC(MAIN_ARGS) {
 }
 
 /// <summary>
+/// Begin a child window with optional spacing at the bottom.
+/// </summary>
+/// <param name="spacing">If the spacing is present</param>
+static void beginChildWithSpacing(bool spacing) {
+    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_HorizontalScrollbar;
+    ImGui::BeginChild("Output", { 0, (spacing) ? 0 : -ImGui::GetFrameHeightWithSpacing() }, false, windowFlags);
+}
+
+/// <summary>
 /// Create a new connection window with given address, port, and type.
 /// </summary>
 /// <param name="data">The remote host to connect to</param>
 /// <returns>If the connection window was created (true if created, false if it already exists)</returns>
-bool openNewConnection(const DeviceData& data) {
+static bool openNewConnection(const DeviceData& data) {
     // The connector function for the ConnWindow
     auto connFunc = [](const std::atomic<bool>& sig, const DeviceData& _data) -> ConnectResult {
         // Create the client socket with the given DeviceData and stop signal
@@ -70,13 +78,15 @@ bool openNewConnection(const DeviceData& data) {
 /// <summary>
 /// Render the "New Connection" window for Internet Protocol connections (TCP/UDP).
 /// </summary>
-void drawIPConnectionTab() {
+static void drawIPConnectionTab() {
     if (!ImGui::BeginTabItemNoSpacing("Internet Protocol")) return;
 
     static std::string addr = ""; // Server address
     static uint16_t port = 0; // Server port
     static bool isTCP = true; // Type of connection to create (default is TCP)
     static bool isNew = true; // If the attempted connection is unique
+
+    beginChildWithSpacing(isNew);
 
     // Server address
     ImGui::SetNextItemWidth(340);
@@ -94,6 +104,7 @@ void drawIPConnectionTab() {
     ImGui::BeginDisabled(addr.empty());
     if (ImGui::Button("Connect")) isNew = openNewConnection({ !isTCP, "", addr, port, 0 });
     ImGui::EndDisabled();
+    ImGui::EndChild();
 
     // If the connection exists, show a message
     if (!isNew) {
@@ -107,7 +118,7 @@ void drawIPConnectionTab() {
 /// <summary>
 /// Render the "New Connection" window for Bluetooth connections.
 /// </summary>
-void drawBTConnectionTab() {
+static void drawBTConnectionTab() {
     if (!ImGui::BeginTabItemNoSpacing("Bluetooth")) return;
     ImGui::TextUnformatted("Paired Devices");
 
@@ -160,8 +171,7 @@ void drawBTConnectionTab() {
     ImGui::Checkbox("Show Addresses", &showAddrs);
     ImGui::Spacing();
 
-    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_HorizontalScrollbar;
-    ImGui::BeginChild("Output", { 0, (isNew) ? 0 : -ImGui::GetFrameHeightWithSpacing() }, false, windowFlags);
+    beginChildWithSpacing(isNew);
     if (err == NO_ERROR) {
         // Search succeeded, display all devices found
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 5, 5 }); // Larger padding
