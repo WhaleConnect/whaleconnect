@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <vector> // std::vector
+#include <map> // std::map
 #include <string> // std::string
 #include <memory> // std::unique_ptr
 
@@ -16,7 +16,7 @@
 /// A class to manage multiple ConnWindow objects.
 /// </summary>
 class ConnWindowList {
-	std::vector<std::unique_ptr<ConnWindow>> _windows; // Vector of all windows
+	std::map<std::string, std::unique_ptr<ConnWindow>> _windows; // Vector of all windows
 
 	/// <summary>
 	/// Format a DeviceData into a string.
@@ -52,10 +52,10 @@ bool ConnWindowList::add(const DeviceData& data, Fn&& fn, Args&&... args) {
 	// Title of the ConnWindow
     std::string title = _formatDeviceData(data);
 
-    // Iterate through all open windows, check if the title matches
-    for (const auto& i : _windows) if (*i == title) return false;
+    // Check if the title already exists (std::map::contains() is C++20)
+    bool isNew = !_windows.contains(title);
 
-    // If this point is reached it means that the window is unique, push it to the vector
-    _windows.push_back(std::make_unique<ConnWindow>(title, fn, args...));
-    return true;
+    // Add the window to the list
+    if (isNew) _windows.insert({ title, std::make_unique<ConnWindow>(title, fn, args...) });
+    return isNew;
 }

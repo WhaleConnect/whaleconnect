@@ -26,8 +26,16 @@ std::string ConnWindowList::_formatDeviceData(const DeviceData& data) {
 }
 
 void ConnWindowList::update() {
-    for (size_t i = 0; i < _windows.size(); i++) {
-        if (*_windows[i]) _windows[i]->update(); // Window is open, update it
-        else _windows.erase(_windows.begin() + i); // Window is closed, remove it from vector
+    for (auto& [title, window] : _windows) {
+        if (*window) {
+            // Window is open, update it
+            window->update();
+        } else {
+            // Window is closed, remove it from vector
+            _windows.erase(title);
+
+            // After erasing, the iters are now invalid and we have to exit the loop and wait for the next iteration:
+            break;
+        }
     }
 }

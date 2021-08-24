@@ -93,13 +93,6 @@ public:
     operator bool() const;
 
     /// <summary>
-    /// Compare this window's title to another given title.
-    /// </summary>
-    /// <param name="s">The title to compare with</param>
-    /// <returns>If this window's title and the given title are equal</returns>
-    bool operator==(const std::string& s) const;
-
-    /// <summary>
     /// ConnWindow destructor, close the socket file descriptor.
     /// </summary>
     ~ConnWindow();

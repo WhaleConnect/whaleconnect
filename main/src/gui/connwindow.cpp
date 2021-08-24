@@ -16,10 +16,6 @@ ConnWindow::operator bool() const {
     return _open;
 }
 
-bool ConnWindow::operator==(const std::string& s) const {
-    return _title == s;
-}
-
 ConnWindow::~ConnWindow() {
     _closeConnection();
 
