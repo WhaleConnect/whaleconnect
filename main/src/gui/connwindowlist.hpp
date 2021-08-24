@@ -16,7 +16,7 @@
 /// A class to manage multiple ConnWindow objects.
 /// </summary>
 class ConnWindowList {
-	std::map<std::string, std::unique_ptr<ConnWindow>> _windows; // Vector of all windows
+	std::map<std::string, std::unique_ptr<ConnWindow>> _windows; // All window pointers and their corresponding titles
 
 	/// <summary>
 	/// Format a DeviceData into a string.
