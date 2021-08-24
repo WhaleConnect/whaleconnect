@@ -27,6 +27,7 @@ Alpha 2:
     - This will get more detailed in the future when we get there.
 
 Beta:
+  [ ] System of saving IP addresses+names to make a "contacts list"
   [ ] In-app table of socket error codes/descriptions
   [ ] Pre-defined window dimensions
   [ ] Screenshot helper
@@ -65,7 +66,6 @@ Some time in Fall/Winter 2022:
 
 Various small optimizations:
   [ ] Use std::string_view (C++17) over `const std::string&`
-  [ ] Use vector::find in ConnWindowList
 
 Other things:
   [ ] Setup GitHub Actions (whenever)
