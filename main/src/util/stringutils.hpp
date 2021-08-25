@@ -17,6 +17,7 @@ namespace StringUtils {
     /// <returns>The original string with all occurrences of `from` replaced with `to`</returns>
 	/// <remarks>
 	/// This function is adapted from https://stackoverflow.com/a/3418285
+    /// `str` has to be copied so it's not passed by const reference.
 	/// </remarks>
-	std::string replaceAll(const std::string& str, const std::string& from, const std::string& to);
+	std::string replaceAll(std::string str, const std::string& from, const std::string& to);
 }
