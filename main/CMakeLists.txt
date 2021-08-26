@@ -7,7 +7,6 @@ cmake_minimum_required(VERSION 3.17)
 
 project(terminal VERSION 1.0)
 
-include("cmake/debug_macros.cmake")
 include("cmake/utf_8.cmake")
 
 # C++ language standard
