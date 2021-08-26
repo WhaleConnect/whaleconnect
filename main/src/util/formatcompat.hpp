@@ -27,7 +27,7 @@ namespace std {
     /// <returns>The formatted string</returns>
     template<class... Args>
     inline string format(const string_view fString, const Args&... args) {
-        return fmt::format(fString, args...);
+        return fmt::format(fmt::runtime(fString), args...);
     }
 }
 
