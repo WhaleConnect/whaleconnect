@@ -223,7 +223,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
         // These are stored in their own variables to prevent them from being temporaries and destroyed later.
         // If we were to call `.c_str()` and then have these destroyed, `.c_str()` would be a dangling pointer.
         widestr addrWide = toWide(data.address);
-        widestr portWide = I_TO_WIDE(data.port);
+        widestr portWide = toWide(data.port);
 
         // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
         ADDRINFOW* addr;

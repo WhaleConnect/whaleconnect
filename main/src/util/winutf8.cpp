@@ -3,10 +3,12 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#endif
 
 #include "winutf8.hpp"
 
-std::wstring toWide(const std::string& from) {
+widestr toWide(const std::string& from) {
+#ifdef _WIN32
     // Size of UTF-8 string in UTF-16 wide encoding
     int stringSize = MultiByteToWideChar(CP_UTF8, 0, from.c_str(), -1, nullptr, 0);
 
@@ -17,12 +19,16 @@ std::wstring toWide(const std::string& from) {
     MultiByteToWideChar(CP_UTF8, 0, from.c_str(), -1, tmpBuf, stringSize);
 
     // Copy buffer into string object, free original buffer, and return
-    std::wstring ret = tmpBuf;
+    widestr ret = tmpBuf;
     delete[] tmpBuf;
     return ret;
+#else
+    return from;
+#endif
 }
 
-std::string fromWide(const std::wstring& from) {
+std::string fromWide(const widestr& from) {
+#ifdef _WIN32
     // Size of UTF-16 wide string in UTF-8 encoding
     int stringSize = WideCharToMultiByte(CP_UTF8, 0, from.c_str(), -1, 0, 0, nullptr, nullptr);
 
@@ -36,5 +42,7 @@ std::string fromWide(const std::wstring& from) {
     std::string ret = tmpBuf;
     delete[] tmpBuf;
     return ret;
-}
+#else
+    return from;
 #endif
+}

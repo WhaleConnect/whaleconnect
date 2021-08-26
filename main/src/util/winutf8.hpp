@@ -5,34 +5,45 @@
 
 #pragma once
 
-#include <string> // std::string
+#include <string> // std::string, std::wstring
+#include <concepts> // std::integral, std::floating_point
 
 #ifdef _WIN32
-// Convert an integer type to a wstring.
-// std::to_(w)string() has too many overloads to make a proper function wrapper.
-// So use a macro to do so instead
-#define I_TO_WIDE std::to_wstring
-
+// Wide strings are used on Windows
 typedef std::wstring widestr;
+#else
+// Normal strings are used on other platforms
+typedef std::string widestr;
+#endif
 
 /// <summary>
 /// Convert a UTF-8 string into a UTF-16 string.
 /// </summary>
 /// <param name="from">The input string</param>
 /// <returns>The converted output string</returns>
-std::wstring toWide(const std::string& from);
+widestr toWide(const std::string& from);
 
 /// <summary>
 /// Convert a UTF-16 string into a UTF-8 string.
 /// </summary>
 /// <param name="from">The input string</param>
 /// <returns>The converted output string</returns>
-std::string fromWide(const std::wstring& from);
-#else
-// No wide strings on other platforms
-#define I_TO_WIDE std::to_string
-#define toWide(from) from
-#define fromWide(from) from
+std::string fromWide(const widestr& from);
 
-typedef std::string widestr;
+/// <summary>
+/// Convert an integer value to a platform-dependent wide string type.
+/// </summary>
+/// <typeparam name="T">The integer type</typeparam>
+/// <param name="val">The integer value</param>
+/// <returns>The converted string</returns>
+/// <remarks>
+/// This template uses C++20 concepts.
+/// </remarks>
+template <class T>
+inline widestr toWide(T val) requires std::integral<T> || std::floating_point<T> {
+#ifdef _WIN32
+    return std::to_wstring(val);
+#else
+    return std::to_string(val);
 #endif
+}
