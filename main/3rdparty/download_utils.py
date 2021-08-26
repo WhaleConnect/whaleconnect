@@ -59,6 +59,9 @@ def set_repo(name, branch, out_name=""):
     # If the output directory doesn't exist, create it
     make_dir(out_dir)
 
+    # Print an information message
+    print(f"Downloading branch '{branch}' of '{name}' to '{out_name}'")
+
 
 def calc_out_path(name):
     """Get the name of a file appended to the output directory.
