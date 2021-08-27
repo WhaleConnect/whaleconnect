@@ -1,4 +1,8 @@
-# Software Used to Create Network Socket Terminal
+# Software Used
+
+This is a list of all the software used in the development of Network Socket Terminal.
+
+*Most of the items in this list aren't needed for building from source. See [BUILDING.md](BUILDING.md) for build requirements.*
 
 ## IDEs and Editors
 
