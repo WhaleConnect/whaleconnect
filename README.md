@@ -24,14 +24,14 @@ The [MIT license](/docs/MIT_LICENSE.txt) applies to all utility scripts that are
 
 NST uses the following third-party libraries and dependencies:
 
-- {fmt} (MIT License) [Website](https://fmt.dev/) | [GitHub](https://github.com/fmtlib/fmt)
-- GLFW (Zlib License) [Website](https://glfw.org/) | [GitHub](https://github.com/glfw/glfw)
-- Dear ImGui (MIT License) [GitHub](https://github.com/ocornut/imgui)
-- GNU Unifont (Dual-Licensed) [Website](https://unifoundry.com/unifont/index.html) | [Sources](https://unifoundry.com/unifont/unifont-utilities.html)
-- BlueZ and GDBus (GPL v2+) [BlueZ Website](https://bluez.org/) | [GitHub](https://github.com/bluez/bluez)
+- {fmt} (MIT License) [Website](https://fmt.dev/) | [GitHub](https://www.github.com/fmtlib/fmt)
+- GLFW (Zlib License) [Website](https://www.glfw.org/) | [GitHub](https://www.github.com/glfw/glfw)
+- Dear ImGui (MIT License) [GitHub](https://www.github.com/ocornut/imgui)
+- GNU Unifont (Dual-Licensed) [Website](https://www.unifoundry.com/unifont/index.html) | [Sources](https://www.unifoundry.com/unifont/unifont-utilities.html)
+- BlueZ and GDBus (GNU GPL v2+) [BlueZ Website](http://www.bluez.org/) | [GitHub](https://www.github.com/bluez/bluez)
 
 *GNU Unifont is dual-licensed under the GNU GPLv2+ with font embedding exception, and the SIL OFL v1.1.*
 
 NST also used the following dependencies in the past:
 
-- glad (Public Domain) [Webservice for v2](https://gen.glad.sh/) | [GitHub](https://github.com/Dav1dde/glad) **Dropped 8/19/2021**
+- glad (Public Domain) [Webservice for v2](https://gen.glad.sh/) | [GitHub](https://www.github.com/Dav1dde/glad) **Dropped 8/19/2021**
