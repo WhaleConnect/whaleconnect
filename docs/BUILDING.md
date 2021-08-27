@@ -43,7 +43,11 @@ TODO: Add install commands for Fedora and similar distros
 
 ## Compiling
 
-(This project uses C++20 features, so be sure to update your compiler(s) if needed.)
+This project uses C++20 features, so be sure to update your compiler(s) if needed. Compilation has been tested successfully with the following compiler versions:
+
+- GCC 10
+- Clang 10
+- MSVC 19.29
 
 ### Command Line
 
