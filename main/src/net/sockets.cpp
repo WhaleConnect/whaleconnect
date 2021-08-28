@@ -1,7 +1,6 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <chrono> // std::chrono
 #include <stdexcept> // std::out_of_range
 
 #ifdef _WIN32
@@ -14,6 +13,8 @@
 // These don't exist on Windows
 #define EAI_SYSTEM 0
 #define MSG_NOSIGNAL 0
+
+typedef ULONG nfds_t;
 #else
 #include <cerrno> // errno
 
@@ -38,7 +39,6 @@
 // Socket errors
 #define WSAEWOULDBLOCK EWOULDBLOCK
 #define WSAEINPROGRESS EINPROGRESS
-#define WSAETIMEDOUT ETIMEDOUT
 
 // Bluetooth definitions
 #define AF_BTH AF_BLUETOOTH
@@ -49,6 +49,13 @@ typedef addrinfo ADDRINFOW;
 
 #include "sockets.hpp"
 #include "util/winutf8.hpp"
+
+int Sockets::getSocketErr(SOCKET sockfd) {
+    int err;
+    int errlen = sizeof(err);
+    getsockopt(sockfd, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&err), &errlen);
+    return err;
+}
 
 int Sockets::getLastErr() {
 #ifdef _WIN32
@@ -77,22 +84,22 @@ Sockets::NamedError Sockets::getErr(int code) {
     }
 }
 
-/// <summary>
-/// Set the blocking status of a socket.
-/// </summary>
-/// <param name="sockfd">The socket file descriptor for which to set the blocking state</param>
-/// <param name="blocking">If the socket blocks</param>
-/// <returns>The return value of the function called internally [Windows: ioctlsocket(), Unix: fcntl()]</returns>
-static int setBlocking(SOCKET sockfd, bool blocking) {
-#ifdef _WIN32
-    ULONG mode = !blocking;
-    return ioctlsocket(sockfd, FIONBIO, &mode);
-#else
-    int flags = fcntl(sockfd, F_GETFL, 0);
-    if (flags == SOCKET_ERROR) return SOCKET_ERROR; // If flag read failed, abort
-    flags = (blocking) ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
-    return fcntl(sockfd, F_SETFL, flags);
+bool Sockets::isFatal(int code, bool allowNonBlock) {
+    // Check if the code is actually an error
+    if (code == NO_ERROR) return false;
+
+    if (allowNonBlock) {
+        // These two errors indicate that a non-blocking operation can't complete right now and are non-fatal
+        // Tell the calling function that there's no error, and it should check back later.
+        if ((code == WSAEINPROGRESS) || (code == WSAEWOULDBLOCK)) return false;
+#ifndef _WIN32
+        // EAGAIN on *nix should be treated as the above codes for portability
+        if (code == EAGAIN) return false;
 #endif
+    }
+
+    // The error is fatal
+    return true;
 }
 
 int Sockets::init() {
@@ -101,6 +108,7 @@ int Sockets::init() {
     WSADATA wsaData;
     return WSAStartup(MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
 #else
+    // Start GLib on Linux
     BTUtils::glibInit();
     return NO_ERROR;
 #endif
@@ -108,74 +116,51 @@ int Sockets::init() {
 
 void Sockets::cleanup() {
 #ifdef _WIN32
+    // Cleanup Winsock on Windows
     WSACleanup();
 #else
+    // Stop GLib on Linux
     BTUtils::glibStop();
 #endif
 }
 
-int Sockets::connect(SOCKET sockfd, const std::atomic<bool>& sig, sockaddr* addr, size_t addrlen, int timeout) {
-    bool hasTimeout = (timeout > 0);
-    if (hasTimeout) {
-        // Make the socket non-blocking, abort if this action fails.
-        int blockingRet = setBlocking(sockfd, false);
-        if (blockingRet == SOCKET_ERROR) return SOCKET_ERROR;
+/// <summary>
+/// Create a non-blocking socket.
+/// </summary>
+/// <param name="af">Socket address family</param>
+/// <param name="type">Socket type</param>
+/// <param name="proto">Socket protocol</param>
+/// <returns>The socket descriptor on success, INVALID_SOCKET on failure</returns>
+static SOCKET nonBlockSocket(int af, int type, int proto) {
+    // Construct the socket
+    SOCKET sockfd = socket(af, type, proto);
+    if (sockfd == INVALID_SOCKET) return INVALID_SOCKET;
+
+    // Set the socket's non-blocking mode
+    int nonBlockRet;
+
+#ifdef _WIN32
+    ULONG mode = 1;
+    nonBlockRet = ioctlsocket(sockfd, FIONBIO, &mode);
+#else
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    nonBlockRet = (flags == SOCKET_ERROR) ? SOCKET_ERROR : fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+#endif
+
+    if (nonBlockRet == SOCKET_ERROR) {
+        // Non-blocking set failed, close the socket
+        Sockets::closeSocket(sockfd);
+        sockfd = INVALID_SOCKET;
     }
-
-    // Start connecting on the non-blocking socket
-    int ret = ::connect(sockfd, addr, static_cast<int>(addrlen));
-
-    // If we don't have a timeout set, we are done
-    if (!hasTimeout) return ret;
-
-    // We do have a timeout set
-    bool success = false;
-
-    // Get the last socket error
-    int lastErr = getLastErr();
-    if ((lastErr != WSAEWOULDBLOCK) && (lastErr != WSAEINPROGRESS)) {
-        // Check if the last socket error is not (WSA)EWOULDBLOCK or (WSA)EINPROGRESS, these are non-fatal errors that
-        // may be thrown with a non-blocking socket. If it's anything else, set return code to indicate failure.
-        return SOCKET_ERROR;
-    } else {
-        setLastErr(NO_ERROR);
-        auto start = std::chrono::steady_clock::now(); // When the loop started
-
-        // We're not using (WSA)poll() directly because we need to periodically check for the signal.
-        // (WSA)poll() blocks for the entirety of its execution, preventing the thread from checking anything else.
-        while (!sig) {
-            // Set up array of pollfd structures (we only need one here)
-            pollfd pfds[] = { { sockfd, POLLOUT, 0 } };
-
-            // Poll for a short amount of time
-            if (WSAPoll(pfds, 1, 100) > 0) {
-                // Return value greater than 0, this means the socket was connected successfully so break
-                success = true;
-                break;
-            }
-
-            // Check if the timeout value has been reached
-            if ((std::chrono::steady_clock::now() - start > std::chrono::seconds(timeout))) break;
-        }
-
-        // If the connect was not successful, set the last error to be "Timed Out" and exit
-        if (!success) {
-            setLastErr(WSAETIMEDOUT);
-            return SOCKET_ERROR;
-        }
-    }
-
-    // Make socket blocking again
-    return setBlocking(sockfd, true);
+    return sockfd;
 }
 
-SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<bool>& sig, int timeout) {
+SOCKET Sockets::createClientSocket(const DeviceData& data) {
     SOCKET sockfd = INVALID_SOCKET; // Socket file descriptor
-    int connectRet = false; // If the connection was successful
 
     if (data.type == Bluetooth) {
         // Bluetooth connection - set up socket
-        sockfd = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
+        sockfd = nonBlockSocket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
         if (sockfd == INVALID_SOCKET) return INVALID_SOCKET;
 
         // Set up server address structure
@@ -193,7 +178,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
 #endif
 
         // Connect
-        connectRet = connect(sockfd, sig, reinterpret_cast<sockaddr*>(&addr), sizeof(addr), timeout);
+        connect(sockfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
     } else {
         // Internet protocol - Set up hints for getaddrinfo()
         // Ignore "missing initializer" warnings on GCC and clang
@@ -209,8 +194,8 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
         ADDRINFOW hints{
             .ai_flags = AI_NUMERICHOST,
             .ai_family = AF_UNSPEC,
-            .ai_socktype = isTCP ? SOCK_STREAM : SOCK_DGRAM,
-            .ai_protocol = isTCP ? IPPROTO_TCP : IPPROTO_UDP
+            .ai_socktype = (isTCP) ? SOCK_STREAM : SOCK_DGRAM,
+            .ai_protocol = (isTCP) ? IPPROTO_TCP : IPPROTO_UDP
         };
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
@@ -230,47 +215,37 @@ SOCKET Sockets::createClientSocket(const DeviceData& data, const std::atomic<boo
         int gaiResult = GetAddrInfoW(addrWide.c_str(), portWide.c_str(), &hints, &addr);
         if (gaiResult == NO_ERROR) {
             // getaddrinfo() succeeded, initialize socket file descriptor with values created by GAI
-            sockfd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
-
-            if (sockfd != INVALID_SOCKET) {
-                // TCP may need a timeout, UDP does not
-                connectRet = connect(sockfd, sig, addr->ai_addr, addr->ai_addrlen, (isTCP) ? timeout : -1);
-
-                // Release the resources
-                FreeAddrInfoW(addr);
-            }
-        } else {
-            // Because we're using our own implementation of strerror() and getaddrinfo() errors differ from standard
-            // ones (on Unix they're negative while errnos are all positive, and on Windows all the errors are in one
-            // category and guaranteed not to clash) we can directly set errno to the result of getaddrinfo() and let
-            // the application handle the error.
-            if (gaiResult != EAI_SYSTEM) setLastErr(gaiResult);
+            sockfd = nonBlockSocket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+            if (sockfd != INVALID_SOCKET) connect(sockfd, addr->ai_addr, addr->ai_addrlen);
+            FreeAddrInfoW(addr); // Release the resources
+        } else if (gaiResult != EAI_SYSTEM) {
+            // The last error can be set to the getaddrinfo() error, the error-checking functions will handle it
+            setLastErr(gaiResult);
         }
     }
 
     // Check if connection failed
-    if (connectRet == SOCKET_ERROR) {
+    if (isFatal(getLastErr(), true)) {
         // Destroy the socket:
-        destroySocket(sockfd);
+        closeSocket(sockfd);
         sockfd = INVALID_SOCKET;
     }
 
     return sockfd;
 }
 
-void Sockets::destroySocket(SOCKET sockfd) {
+void Sockets::closeSocket(SOCKET sockfd) {
+    // Can't close an invalid socket
+    if (sockfd == INVALID_SOCKET) return;
+
     // This may reset the last error code to 0, save it first:
     int lastErrBackup = getLastErr();
 
-    if (sockfd != INVALID_SOCKET) {
 #ifdef _WIN32
-        shutdown(sockfd, SD_BOTH);
-        closesocket(sockfd);
+    closesocket(sockfd);
 #else
-        shutdown(sockfd, SHUT_RDWR);
-        close(sockfd);
+    close(sockfd);
 #endif
-    }
 
     // Restore the last error code:
     setLastErr(lastErrBackup);
@@ -302,4 +277,8 @@ int Sockets::recvData(SOCKET sockfd, std::string& data) {
         data = buf;
     }
     return ret;
+}
+
+int Sockets::poll(std::vector<pollfd>& pfds, int timeout) {
+    return WSAPoll(pfds.data(), static_cast<nfds_t>(pfds.size()), timeout);
 }

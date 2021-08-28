@@ -12,7 +12,7 @@
 #include "util/asyncfunction.hpp"
 
 // List of open windows
-ConnWindowList connections;
+ConnWindowList connections(Sockets::createClientSocket);
 
 static void drawIPConnectionTab();
 static void drawBTConnectionTab();
@@ -59,23 +59,6 @@ static void beginChildWithSpacing(bool spacing) {
 }
 
 /// <summary>
-/// Create a new connection window with given address, port, and type.
-/// </summary>
-/// <param name="data">The remote host to connect to</param>
-/// <returns>If the connection window was created (true if created, false if it already exists)</returns>
-static bool openNewConnection(const DeviceData& data) {
-    // The connector function for the ConnWindow
-    auto connFunc = [](const std::atomic<bool>& sig, const DeviceData& _data) -> ConnectResult {
-        // Create the client socket with the given DeviceData and stop signal
-        SOCKET sockfd = Sockets::createClientSocket(_data, sig, Settings::connectTimeout);
-        return { sockfd, Sockets::getLastErr() };
-    };
-
-    // Attempt to add, then return the result
-    return connections.add(data, connFunc, data);
-}
-
-/// <summary>
 /// Render the "New Connection" window for Internet Protocol connections (TCP/UDP).
 /// </summary>
 static void drawIPConnectionTab() {
@@ -102,7 +85,7 @@ static void drawIPConnectionTab() {
 
     // Connect button
     ImGui::BeginDisabled(addr.empty());
-    if (ImGui::Button("Connect")) isNew = openNewConnection({ !isTCP, "", addr, port, 0 });
+    if (ImGui::Button("Connect")) isNew = connections.add({ !isTCP, "", addr, port, 0 });
     ImGui::EndDisabled();
     ImGui::EndChild();
 
@@ -144,7 +127,7 @@ static void drawBTConnectionTab() {
         if (shouldOpenNew) {
             data.port = sdpInq.getValue(); // Set the port
             channelValid = (data.port != 0);
-            if (channelValid) isNew = openNewConnection(data);
+            if (channelValid) isNew = connections.add(data);
             shouldOpenNew = false;
         }
         if (!channelValid) ImGui::Text("Failed to get SDP channel for \"%s\".", data.name.c_str());

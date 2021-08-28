@@ -66,6 +66,7 @@ Some time in Fall/Winter 2022:
 
 Various small optimizations:
   [ ] Use std::string_view (C++17) over `const std::string&`
+  [X] Use vector::find in ConnWindowList
 
 Other things:
   [ ] Setup GitHub Actions (whenever)

@@ -6,14 +6,13 @@
 #pragma once
 
 #include <string> // std::string
-#include <atomic> // std::atomic
 #include <unordered_map> // std::unordered_map
 
 #ifdef _WIN32
 // Winsock header
 #include <WinSock2.h>
 #else
-#include <netinet/in.h> // sockaddr
+#include <poll.h> // pollfd
 
 // Error status codes
 #define INVALID_SOCKET -1
@@ -62,6 +61,8 @@ namespace Sockets {
     // It is an unordered_map to store key/value pairs and to provide constant O(1) access time complexity.
     extern const std::unordered_map<long, NamedError> errors;
 
+    int getSocketErr(SOCKET sockfd);
+
     /// <summary>
     /// Get the error code of the last socket error.
     /// </summary>
@@ -80,6 +81,14 @@ namespace Sockets {
     NamedError getErr(int code);
 
     /// <summary>
+    /// Check if a given error code is fatal (i.e. should follow in a socket close/termination).
+    /// </summary>
+    /// <param name="code">The code to check</param>
+    /// <param name="allowNonBlock">If "non-blocking in progress" type errors are permitted as non-fatal</param>
+    /// <returns>If the code is a fatal socket error</returns>
+    bool isFatal(int code, bool allowNonBlock = false);
+
+    /// <summary>
     /// Prepare the OS sockets for use by the application.
     /// </summary>
     /// <returns>Windows only: The return value of WSAStartup()</returns>
@@ -91,34 +100,17 @@ namespace Sockets {
     void cleanup();
 
     /// <summary>
-    /// Connect a socket to a server with a specified timeout.
-    /// </summary>
-    /// <param name="sockfd">The socket file descriptor to perform the connection on</param>
-    /// <param name="sig">Atomic bool signal, set to true in another thread to abort this function</param>
-    /// <param name="addr">The sockaddr* describing the connection</param>
-    /// <param name="addrlen">The size of the "addr" parameter</param>
-    /// <param name="timeout">Timeout in seconds (set to negative for no timeout, this is the default)</param>
-    /// <returns>Failure/abort/timeout: SOCKET_ERROR, Success: NO_ERROR</returns>
-    /// <remarks>
-    /// This function should not be used outside of createClientSocket(), since that handles most of the error checking
-    /// and parameter evaluation involved in connecting.
-    /// </remarks>
-    int connect(SOCKET sockfd, const std::atomic<bool>& sig, sockaddr* addr, size_t addrlen, int timeout = -1);
-
-    /// <summary>
-    /// Resolve the remote device and attempt to connect to it.
+    /// Resolve the remote device and attempt to connect to it. The socket created is non-blocking.
     /// </summary>
     /// <param name="data">The DeviceData structure describing what to connect to and how to do so</param>
-    /// <param name="sig">Atomic bool signal, set to true in another thread to abort this function (optional)</param>
-    /// <param name="timeout">Timeout in seconds (set to negative for no timeout, this is the default)</param>
     /// <returns>Failure/abort: INVALID_SOCKET, Success: The newly-created socket file descriptor</returns>
-    SOCKET createClientSocket(const DeviceData& data, const std::atomic<bool>& sig = false, int timeout = -1);
+    SOCKET createClientSocket(const DeviceData& data);
 
     /// <summary>
-    /// Shutdown both directions (Send and Receive) of a socket and close it.
+    /// Close a socket.
     /// </summary>
     /// <param name="sockfd">The file descriptor of the socket</param>
-    void destroySocket(SOCKET sockfd);
+    void closeSocket(SOCKET sockfd);
 
     /// <summary>
     /// Send a string through the socket.
@@ -135,4 +127,12 @@ namespace Sockets {
     /// <param name="data">The string to hold the data received (passed by reference)</param>
     /// <returns>The value returned from recv() - -1: failure, 0: disconnection of remote host, >= 1: success</returns>
     int recvData(SOCKET sockfd, std::string& data);
+
+    /// <summary>
+    /// Poll a set of sockets for events.
+    /// </summary>
+    /// <param name="pfds">A vector of pollfd structures listing each socket and the events to listen for</param>
+    /// <param name="timeout">The maximum milliseconds the function should block for</param>
+    /// <returns>The number of sockets which have an event (or 0 if none) on success, SOCKET_ERROR on failure</returns>
+    int poll(std::vector<pollfd>& pfds, int timeout);
 }
