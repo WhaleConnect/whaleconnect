@@ -49,10 +49,10 @@ public:
     /// <summary>
     /// Draw the console output.
     /// </summary>
-    /// <typeparam name="Fn">The function to call when the input textbox is activated</typeparam>
-    /// <param name="fn">A function which takes a string which is the textbox contents at the time</param>
+    /// <typeparam name="Fn">A function which takes a string which is the textbox contents at the time</typeparam>
+    /// <param name="fn">The function to call when the input textbox is activated</param>
     template<class Fn>
-    void update(Fn fn);
+    void update(Fn&& fn);
 
     /// <summary>
     /// Add text to the console. Does not make it go on its own line.
@@ -66,28 +66,44 @@ public:
     /// Add a red error message. Does make it go on its own line.
     /// </summary>
     /// <param name="s">The string to add to the output</param>
-    void addError(const std::string& s);
+    void addError(const std::string& s) {
+        // Error messages in red
+        forceNextLine();
+        addText(std::format("[ERROR] {}\n", s), { 1.0f, 0.4f, 0.4f, 1.0f }, false);
+    }
 
     /// <summary>
     /// Add a yellow information message. Does make it go on its own line.
     /// </summary>
     /// <param name="s">The string to add to the output</param>
-    void addInfo(const std::string& s);
+    void addInfo(const std::string& s) {
+        // Information in yellow
+        forceNextLine();
+        addText(std::format("[INFO ] {}\n", s), { 1.0f, 0.8f, 0.6f, 1.0f }, false);
+    }
 
     /// <summary>
     /// Add a newline to the last line of the output (if it doesn't already end with one). This causes the next item to
     /// go on a new line.
     /// </summary>
-    void forceNextLine();
+    void forceNextLine() {
+        // If the deque is empty, the item will have to be on its own line.
+        if (_items.empty()) return;
+
+        std::string& lastItem = _items.back().text;
+        if (lastItem.back() != '\n') lastItem += '\n';
+    }
 
     /// <summary>
     /// Clear the console output.
     /// </summary>
-    void clear();
+    void clear() {
+        _items.clear();
+    }
 };
 
 template<class Fn>
-void Console::update(Fn fn) {
+void Console::update(Fn&& fn) {
     // Textbox flags
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
         | ImGuiInputTextFlags_AllowTabInput;

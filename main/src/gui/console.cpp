@@ -130,27 +130,3 @@ void Console::addText(const std::string& s, ImVec4 color, bool canUseHex) {
 
     _scrollToEnd = _autoscroll; // Scroll to the end if autoscroll is enabled
 }
-
-void Console::addError(const std::string& s) {
-    // Error messages in red
-    forceNextLine();
-    addText(std::format("[ERROR] {}\n", s), { 1.0f, 0.4f, 0.4f, 1.0f }, false);
-}
-
-void Console::addInfo(const std::string& s) {
-    // Information in yellow
-    forceNextLine();
-    addText(std::format("[INFO ] {}\n", s), { 1.0f, 0.8f, 0.6f, 1.0f }, false);
-}
-
-void Console::forceNextLine() {
-    // If the deque is empty, the item will have to be on its own line.
-    if (_items.empty()) return;
-
-    std::string& lastItem = _items.back().text;
-    if (lastItem.back() != '\n') lastItem += '\n';
-}
-
-void Console::clear() {
-    _items.clear();
-}
