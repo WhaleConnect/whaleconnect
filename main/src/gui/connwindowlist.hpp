@@ -19,7 +19,7 @@ typedef std::unique_ptr<ConnWindow> ConnWindowPtr;
 /// </summary>
 class ConnWindowList {
     std::function<SOCKET(DeviceData)> _connectFunction;
-	std::vector<ConnWindowPtr> _windows; // All window pointers and their corresponding titles
+    std::vector<ConnWindowPtr> _windows; // All window pointers and their corresponding titles
 
     std::vector<pollfd> _pfds;
 
@@ -29,10 +29,10 @@ public:
     template <class Fn>
     ConnWindowList(Fn&& fn) : _connectFunction(fn) {}
 
-	bool add(const DeviceData& data);
+    bool add(const DeviceData& data);
 
-	/// <summary>
-	/// Redraw all contained windows and delete any that have been closed.
-	/// </summary>
-	void update();
+    /// <summary>
+    /// Redraw all contained windows and delete any that have been closed.
+    /// </summary>
+    void update();
 };
