@@ -34,7 +34,7 @@ public:
     template <class Fn, class... Args>
     void run(Fn&& fn, Args&&... args) {
         try {
-            _fut = std::async(std::launch::async, fn, args...);
+            _fut = std::async(std::launch::async, fn, std::forward<Args>(args)...);
             _firstRun = true;
             _error = _done = false;
         } catch (const std::system_error&) {

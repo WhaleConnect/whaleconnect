@@ -11,6 +11,7 @@
 #include <imgui/imgui.h>
 
 #include "app/settings.hpp"
+#include "util/formatcompat.hpp"
 #include "util/imguiext.hpp"
 #include "util/stringutils.hpp"
 
