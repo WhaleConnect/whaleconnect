@@ -41,6 +41,18 @@
         "${workspaceFolder}/main/3rdparty"
     ],
     "autoDocstring.docstringFormat": "numpy",
+    "doxdocgen.c.commentPrefix": "/// ",
+    "doxdocgen.c.firstLine": "",
+    "doxdocgen.c.lastLine": "",
+    "doxdocgen.c.triggerSequence": "///",
+    "doxdocgen.cpp.ctorText": "{name} constructor",
+    "doxdocgen.cpp.dtorText": "{name} destructor",
+    "doxdocgen.cpp.tparamTemplate": "<typeparam name=\"{param}\"></typeparam>",
+    "doxdocgen.generic.briefTemplate": "<summary>\n{text}\n</summary>",
+    "doxdocgen.generic.includeTypeAtReturn": false,
+    "doxdocgen.generic.paramTemplate": "<param name=\"{param}\"></param>",
+    "doxdocgen.generic.returnTemplate": "<returns></returns>",
+    "doxdocgen.generic.commandSuggestion": false,
     "files.associations": {
         "algorithm": "cpp",
         "atomic": "cpp",
@@ -120,6 +132,8 @@
         "xtree": "cpp",
         "mutex": "cpp",
         "list": "cpp",
-        "xhash": "cpp"
+        "xhash": "cpp",
+        "condition_variable": "cpp",
+        "future": "cpp"
     }
 }

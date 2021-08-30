@@ -22,6 +22,7 @@ This is a list of all the software used in the development of Network Socket Ter
       - [C/C++ Themes](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-themes)
       - [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
       - [CMake](https://marketplace.visualstudio.com/items?itemName=twxs.cmake)
+      - [Doxygen Documentation Generator](https://marketplace.visualstudio.com/items?itemName=cschlosser.doxdocgen)
     - **Workflow**:
       - [Todo Tree](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree)
       - [Git History](https://marketplace.visualstudio.com/items?itemName=donjayamanne.githistory)
