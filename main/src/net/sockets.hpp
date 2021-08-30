@@ -61,6 +61,11 @@ namespace Sockets {
     // It is an unordered_map to store key/value pairs and to provide constant O(1) access time complexity.
     extern const std::unordered_map<long, NamedError> errors;
 
+    /// <summary>
+    /// Get the error that occurred on a given socket descriptor.
+    /// </summary>
+    /// <param name="sockfd">The socket to check</param>
+    /// <returns>The error code (or NO_ERROR if there's no error)</returns>
     int getSocketErr(SOCKET sockfd);
 
     /// <summary>

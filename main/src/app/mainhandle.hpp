@@ -15,6 +15,9 @@
 #define MAIN_ARGS
 #endif
 
+/// <summary>
+/// Namespace containing functions to handle the app's main GUI window.
+/// </summary>
 namespace MainHandler {
     /// <summary>
     /// Set up backends/context, configure Dear ImGui, and create a main application window.
