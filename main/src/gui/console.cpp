@@ -11,6 +11,7 @@
 #include <imgui/imgui.h>
 
 #include "console.hpp"
+#include "app/settings.hpp"
 #include "util/imguiext.hpp"
 #include "util/formatcompat.hpp"
 
@@ -127,6 +128,9 @@ void Console::addText(const std::string& s, ImVec4 color, bool canUseHex) {
                 << " ";                // Separate octets with a single space
         }
     }
+
+    // If there are too many items we start removing the older ones to increase performance
+    if (_items.size() > Settings::maxConsoleItems) _items.pop_front();
 
     _scrollToEnd = _autoscroll; // Scroll to the end if autoscroll is enabled
 }
