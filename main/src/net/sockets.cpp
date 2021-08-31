@@ -51,7 +51,7 @@ typedef addrinfo ADDRINFOW;
 #include "util/winutf8.hpp"
 
 int Sockets::getSocketErr(SOCKET sockfd) {
-    int err;
+    int err = NO_ERROR; // Initialized in case `getsockopt()` doesn't return anything
     int errlen = sizeof(err);
     getsockopt(sockfd, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&err), &errlen);
     return err;

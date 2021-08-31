@@ -36,6 +36,7 @@ static std::string formatDeviceData(const DeviceData& data) {
 }
 
 void ConnWindowList::_populateFds() {
+    // Clear the file descriptors vector, then populate it with the data in the `_windows` vector
     _pfds.clear();
     for (const auto& window : _windows) _pfds.push_back({ window->getSocket(), POLLIN | POLLOUT, 0 });
 }
@@ -51,33 +52,51 @@ bool ConnWindowList::add(const DeviceData& data) {
 
     // Add the window to the list
     if (isNew) {
-        _windows.push_back(std::make_unique<ConnWindow>(title, _connectFunction(data)));
-        _populateFds();
+        SOCKET sockfd = _connectFunction(data); // Create the socket
+        int lastErr = Sockets::getLastErr(); // Get the error immediately
+        _windows.push_back(std::make_unique<ConnWindow>(title, sockfd, lastErr));
+        _populateFds(); // Update the vector for polling
     }
     return isNew;
 }
 
 void ConnWindowList::update() {
+    // Iterate through the windows vector
     for (size_t i = 0; i < _windows.size(); i++) {
+        // The current window
         auto& current = _windows[i];
+
         if (*current) {
-            current->update(); // Window is open, update it
+            // Window is open, update it
+            current->update();
         } else {
-            _windows.erase(_windows.begin() + i); // Window is closed, remove it from vector
-            _populateFds(); // Update file descriptor poll vector
-            break; // Iterators are invalid, wait until the next iteration
+            // Window is closed, remove it from vector
+            _windows.erase(_windows.begin() + i);
+
+            // Update file descriptor poll vector
+            _populateFds();
+
+            // Iterators are invalid, wait until the next iteration
+            break;
         }
     }
 
+    // Make sure that the two vectors of windows and sockets are equal in size
     assert(_windows.size() == _pfds.size());
+
+    // Check all sockets for events
     Sockets::poll(_pfds, 0);
 
     for (size_t i = 0; i < _pfds.size(); i++) {
         auto revents = _pfds[i].revents;
         auto& current = _windows[i];
 
+        // A signal for input indicates the socket has data to read
+        // A signal for hangup indicates the peer has disconnected
+        // Both events are handled in `inputHandler()`.
         if ((revents & POLLIN) || (revents & POLLHUP)) current->inputHandler();
+
+        // A signal for output indicates the socket has connected
         if (revents & POLLOUT) current->connectHandler();
-        if (revents & POLLERR) current->errorHandler();
     }
 }
