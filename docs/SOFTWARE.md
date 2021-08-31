@@ -7,29 +7,30 @@ This is a list of all the software used in the development of Network Socket Ter
 ## IDEs and Editors
 
 - [Visual Studio](https://visualstudio.microsoft.com/)
-  - **Extensions**:
+  - **Extensions**
     - [Editor Guidelines](https://marketplace.visualstudio.com/items?itemName=PaulHarrington.EditorGuidelines)
     - [Trailing Whitespace Visualizer](https://marketplace.visualstudio.com/items?itemName=MadsKristensen.TrailingWhitespaceVisualizer)
 - [Visual Studio Code](https://code.visualstudio.com/)
-  - **Extensions**:
-    - **Languages:**
-      - [Visual Studio IntelliCode](https://marketplace.visualstudio.com/items?itemName=VisualStudioExptTeam.vscodeintellicode)
+  - **Extensions**
+    - **Language Support**
       - [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)
       - [Pylance](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance)
-      - [Python Docstring Generator](https://marketplace.visualstudio.com/items?itemName=njpwerner.autodocstring)
       - [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
       - [Better C++ Syntax](https://marketplace.visualstudio.com/items?itemName=jeff-hykin.better-cpp-syntax)
-      - [C/C++ Themes](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-themes)
       - [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
       - [CMake](https://marketplace.visualstudio.com/items?itemName=twxs.cmake)
+    - **Source Generation/Autocompletion**
+      - [Visual Studio IntelliCode](https://marketplace.visualstudio.com/items?itemName=VisualStudioExptTeam.vscodeintellicode)
+      - [Python Docstring Generator](https://marketplace.visualstudio.com/items?itemName=njpwerner.autodocstring)
       - [Doxygen Documentation Generator](https://marketplace.visualstudio.com/items?itemName=cschlosser.doxdocgen)
-    - **Workflow**:
+    - **Workflow**
       - [Todo Tree](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree)
       - [Git History](https://marketplace.visualstudio.com/items?itemName=donjayamanne.githistory)
       - [GitHub Pull Requests and Issues](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-pull-request-github)
       - [Remote - SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh)
-    - **Other Tools**:
+    - **Other**
       - [Remote - WSL](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl)
+      - [C/C++ Themes](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-themes)
       - [EditorConfig for VS Code](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
       - [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
 
