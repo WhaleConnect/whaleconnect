@@ -1371,10 +1371,10 @@ template <typename Context> struct arg_mapper {
   }
 
   template <typename T, typename U = remove_cvref_t<T>>
-  using formattable =
-      bool_constant<is_const_formattable<U, Context>() ||
-                    !std::is_const<remove_reference_t<T>>::value ||
-                    has_fallback_formatter<U, char_type>::value>;
+  struct formattable
+      : bool_constant<is_const_formattable<U, Context>() ||
+                      !std::is_const<remove_reference_t<T>>::value ||
+                      has_fallback_formatter<U, char_type>::value> {};
 
 #if FMT_MSC_VER != 0 && FMT_MSC_VER < 1910
   // Workaround a bug in MSVC.
@@ -2917,6 +2917,7 @@ struct formatter<T, Char,
 
 template <typename Char> struct basic_runtime { basic_string_view<Char> str; };
 
+/** A compile-time format string. */
 template <typename Char, typename... Args> class basic_format_string {
  private:
   basic_string_view<Char> str_;
@@ -2955,7 +2956,16 @@ template <typename S> auto runtime(const S& s) -> basic_string_view<char_t<S>> {
 #else
 template <typename... Args>
 using format_string = basic_format_string<char, type_identity_t<Args>...>;
-// Creates a runtime format string.
+/**
+  \rst
+  Creates a runtime format string.
+
+  **Example**::
+
+    // Check format string at runtime instead of compile-time.
+    fmt::print(fmt::runtime("{:d}"), "I am not a number");
+  \endrst
+ */
 template <typename S> auto runtime(const S& s) -> basic_runtime<char_t<S>> {
   return {{s}};
 }
@@ -2971,7 +2981,7 @@ FMT_API auto vformat(string_view fmt, format_args args) -> std::string;
   **Example**::
 
     #include <fmt/core.h>
-    std::string message = fmt::format("The answer is {}", 42);
+    std::string message = fmt::format("The answer is {}.", 42);
   \endrst
 */
 template <typename... T>
@@ -2993,7 +3003,7 @@ auto vformat_to(OutputIt out, string_view fmt, format_args args) -> OutputIt {
  \rst
  Formats ``args`` according to specifications in ``fmt``, writes the result to
  the output iterator ``out`` and returns the iterator past the end of the output
- range.
+ range. `format_to` does not append a terminating null character.
 
  **Example**::
 
@@ -3031,6 +3041,7 @@ auto vformat_to_n(OutputIt out, size_t n, string_view fmt, format_args args)
   Formats ``args`` according to specifications in ``fmt``, writes up to ``n``
   characters of the result to the output iterator ``out`` and returns the total
   (not truncated) output size and the iterator past the end of the output range.
+  `format_to_n` does not append a terminating null character.
   \endrst
  */
 template <typename OutputIt, typename... T,
