@@ -21,21 +21,27 @@ void Console::_updateOutput() {
     ImGui::BeginChild("ConsoleOutput", { 0, reservedSpace }, true, ImGuiWindowFlags_HorizontalScrollbar);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 4, 1 }); // Tighten line spacing
 
-    // Add each item in the deque
-    for (const auto& i : _items) {
-        // Only color tuples with the last value set to 1 are considered
-        bool hasColor = (i.color.w == 1.0f);
+    // Add each item
+    ImGuiListClipper clipper;
+    clipper.Begin(static_cast<int>(_items.size()));
+    while (clipper.Step()) {
+        for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
+            const auto& item = _items[i];
 
-        // Timestamps
-        if (_showTimestamps) {
-            ImGui::TextUnformatted(i.timestamp);
-            ImGui::SameLine();
+            // Only color tuples with the last value set to 1 are considered
+            bool hasColor = (item.color.w == 1.0f);
+
+            // Timestamps
+            if (_showTimestamps) {
+                ImGui::TextUnformatted(item.timestamp);
+                ImGui::SameLine();
+            }
+
+            // Apply color if needed
+            if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, item.color);
+            ImGui::TextUnformatted((_showHex && item.canUseHex) ? item.textHex.str() : item.text);
+            if (hasColor) ImGui::PopStyleColor();
         }
-
-        // Apply color if needed
-        if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, i.color);
-        ImGui::TextUnformatted((_showHex && i.canUseHex) ? i.textHex.str() : i.text);
-        if (hasColor) ImGui::PopStyleColor();
     }
 
     // Scroll to end if autoscroll is set
@@ -128,9 +134,6 @@ void Console::addText(const std::string& s, ImVec4 color, bool canUseHex) {
                 << " ";                // Separate octets with a single space
         }
     }
-
-    // If there are too many items we start removing the older ones to increase performance
-    if (_items.size() > Settings::maxConsoleItems) _items.pop_front();
 
     _scrollToEnd = _autoscroll; // Scroll to the end if autoscroll is enabled
 }

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <deque> // std::deque
+#include <vector> // std::vector
 #include <sstream> // std::ostringstream
 
 #include <imgui/imgui.h>
@@ -37,7 +37,7 @@ class Console {
     bool _clearTextboxOnSend = true; // If the textbox is cleared on each send
     bool _addFinalLineEnding = false; // If a final line ending is added before sending
 
-    std::deque<ConsoleItem> _items; // Items in console output
+    std::vector<ConsoleItem> _items; // Items in console output
     std::string _textBuf; // Buffer for the texbox
     int _currentLE = 0; // The index of the line ending selected
 
