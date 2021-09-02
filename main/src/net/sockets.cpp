@@ -14,7 +14,9 @@
 #define EAI_SYSTEM 0
 #define MSG_NOSIGNAL 0
 
+// Unix int types
 typedef ULONG nfds_t;
+typedef int socklen_t;
 #else
 #include <cerrno> // errno
 
@@ -216,7 +218,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
         if (gaiResult == NO_ERROR) {
             // getaddrinfo() succeeded, initialize socket file descriptor with values created by GAI
             sockfd = nonBlockSocket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
-            if (sockfd != INVALID_SOCKET) connect(sockfd, addr->ai_addr, addr->ai_addrlen);
+            if (sockfd != INVALID_SOCKET) connect(sockfd, addr->ai_addr, static_cast<socklen_t>(addr->ai_addrlen));
             FreeAddrInfoW(addr); // Release the resources
         } else if (gaiResult != EAI_SYSTEM) {
             // The last error can be set to the getaddrinfo() error, the error-checking functions will handle it
