@@ -21,6 +21,9 @@ void ConnWindow::_errorHandler(int err) {
 }
 
 void ConnWindow::connectHandler() {
+    // No need to check for this again
+    _pollFlags &= ~POLLOUT;
+
     // Make sure the non-blocking connection REALLY succeeded
     // [`Sockets::getSocketErr()` calls `getsockopt(_sockfd, SOL_SOCKET, SO_ERROR, ...)` internally]
     // The error handling approach used in ConnWindow is taken from https://stackoverflow.com/a/17770524
@@ -32,9 +35,9 @@ void ConnWindow::connectHandler() {
     // If any of these flags are set we don't continue on in the function.
     if (_error || _connected) return;
 
-    // Add information message and set flag
-    _output.addInfo("Connected.");
-    _connected = true;
+    _output.addInfo("Connected."); // Add information message
+    _connected = true; // Done connecting
+    _pollFlags |= POLLIN; // Ready for data input
 }
 
 void ConnWindow::inputHandler() {

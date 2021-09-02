@@ -17,6 +17,7 @@ class ConnWindow {
     const SOCKET _sockfd; // Socket for connections
     bool _connected = false; // If the window has an active connection
     bool _error = false; // If a fatal error occurred
+    short _pollFlags = POLLOUT;
 
     const std::string _title; // Title of window
     bool _open = true; // If the window is open (affected by the close button)
@@ -41,6 +42,7 @@ class ConnWindow {
     void _closeConnection() {
         Sockets::closeSocket(_sockfd);
         _connected = false;
+        _pollFlags = 0;
     }
 
 public:
@@ -68,6 +70,14 @@ public:
     /// <returns>The file descriptor of the managed socket</returns>
     SOCKET getSocket() const {
         return _sockfd;
+    }
+
+    /// <summary>
+    /// Get the desired flags for polling this window's socket with (WSA)poll().
+    /// </summary>
+    /// <returns>The polling flags, set `pollfd::events` to this</returns>
+    short getPollFlags() {
+        return _pollFlags;
     }
 
     /// <summary>

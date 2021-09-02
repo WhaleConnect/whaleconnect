@@ -38,7 +38,7 @@ static std::string formatDeviceData(const DeviceData& data) {
 void ConnWindowList::_populateFds() {
     // Clear the file descriptors vector, then populate it with the data in the `_windows` vector
     _pfds.clear();
-    for (const auto& window : _windows) _pfds.push_back({ window->getSocket(), POLLIN | POLLOUT, 0 });
+    for (const auto& window : _windows) _pfds.push_back({ window->getSocket(), window->getPollFlags(), 0 });
 }
 
 bool ConnWindowList::add(const DeviceData& data) {
@@ -98,5 +98,8 @@ void ConnWindowList::update() {
 
         // A signal for output indicates the socket has connected
         if (revents & POLLOUT) current->connectHandler();
+
+        // Update events if they've changed
+        _pfds[i].events = current->getPollFlags();
     }
 }
