@@ -73,13 +73,13 @@
         // Winsock-specific getaddrinfo errors
         "WSATYPE_NOT_FOUND": "The specified class type was not found.",
         "WSAHOST_NOT_FOUND": "The name or service is unknown.",
-        "WSATRY_AGAIN": "Temporary error in name resolution.",
-        "WSANO_RECOVERY": "Non-recoverable error in name resolution."
+        "WSATRY_AGAIN": "Temporary error in host name resolution.",
+        "WSANO_RECOVERY": "Non-recoverable error in host name resolution."
     },
     "unix": {
         "EPERM": "Operation not permitted.",
         "EBUSY": "The device or resource is currently in use.",
-        "EPIPE": "Broken pipe - the socket has been shut down and/or closed.",
+        "EPIPE": "An operation was attempted on a socket that was shut down.",
         "EPROTO": "The protocol encountered an unrecoverable error.",
         "ENODEV": "No such device - check that you have a suitable hardware device and its driver.",
         "ENXIO": "No such device or address - check that you have a suitable hardware device and its driver.",
@@ -87,13 +87,13 @@
 
         // Unix-specific getaddrinfo errors
         "EAI_ADDRFAMILY": "The host does not have any network addresses in the requested address family.",
-        "EAI_AGAIN": "Temporary error in name resolution.",
+        "EAI_AGAIN": "Temporary error in host name resolution.",
         "EAI_BADFLAGS": "Invalid flags value.",
-        "EAI_FAIL": "Non-recoverable error in name resolution.",
+        "EAI_FAIL": "Non-recoverable error in host name resolution.",
         "EAI_FAMILY": "The requested address family is not supported.",
         "EAI_MEMORY": "No more memory available.",
         "EAI_NODATA": "The host does not have any network addresses defined.",
-        "EAI_NONAME": "The name and/or service is unknown.",
+        "EAI_NONAME": "The name or service is unknown.",
         "EAI_SERVICE": "The service or port is not supported by the socket type.",
         "EAI_SOCKTYPE": "The socket type is not supported.",
         "EAI_SYSTEM": "A system error occurred."

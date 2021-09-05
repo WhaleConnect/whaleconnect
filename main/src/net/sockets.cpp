@@ -83,7 +83,7 @@ Sockets::NamedError Sockets::getErr(int code) {
     } catch (const std::out_of_range&) {
         // std::unordered_map::at() throws an exception when the key is invalid.
         // This means the error code is not contained in the data structure and no NamedError corresponds to it.
-        return { "UNKNOWN ERROR CODE", "No string is implemented for this error code." };
+        return { "System error", "Unknown system error code" };
     }
 }
 
