@@ -6,6 +6,11 @@
 #include "connwindowlist.hpp"
 #include "util/formatcompat.hpp"
 
+#ifndef _WIN32
+#define WSAEINVAL EINVAL
+#define WSAENOTSOCK ENOTSOCK
+#endif
+
 /// <summary>
 /// Format a DeviceData into a string.
 /// </summary>

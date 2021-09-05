@@ -6,6 +6,7 @@
 #pragma once
 
 #include <string> // std::string
+#include <vector> // std::vector
 #include <unordered_map> // std::unordered_map
 
 #ifdef _WIN32

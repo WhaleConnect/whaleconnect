@@ -52,7 +52,7 @@ public:
     /// <param name="title">The title of the window, shown in the title bar</param>
     /// <param name="sockfd">The socket file descriptor to use</param>
     /// <param name="lastErr">The error that occurred, taken right after the socket has been created</param>
-    ConnWindow(const std::string& title, SOCKET sockfd, int lastErr) : _title(title), _sockfd(sockfd) {
+    ConnWindow(const std::string& title, SOCKET sockfd, int lastErr) : _sockfd(sockfd), _title(title) {
         // Initialize the internal Console object to send data when the textbox is submitted (i.e. Enter pressed)
         // This overloaded version of the constructor (taking a function which takes a `const std::string&`) enables
         // the textbox and its related config options.
