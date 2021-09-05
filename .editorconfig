@@ -10,13 +10,10 @@ indent_style = space
 # Basic file properties
 charset = utf-8
 
-# Extra whitespace
+# Whitespace
+end_of_line = crlf
 insert_final_newline = true
 trim_trailing_whitespace = true
-
-## Everything except Python files
-[!*.py]
-end_of_line = crlf
 
 ## Python files
 [*.py]
