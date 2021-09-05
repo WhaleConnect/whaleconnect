@@ -22,6 +22,7 @@ class ConnWindowList {
     std::function<SOCKET(DeviceData)> _connectFunction; // The function to call when creating a new window
     std::vector<ConnWindowPtr> _windows; // All window pointers and their corresponding titles
     std::vector<pollfd> _pfds; // Vector of socket fds to poll
+    int _pollRet = NO_ERROR; // The result of Sockets::poll()
 
     /// <summary>
     /// Refill the `_pfds` vector with the sockets from the `_windows` vector.
@@ -47,5 +48,6 @@ public:
     /// <summary>
     /// Redraw all contained windows and delete any that have been closed.
     /// </summary>
-    void update();
+    /// <returns>NO_ERROR if socket polling was successful, SOCKET_ERROR if it failed</returns>
+    int update();
 };

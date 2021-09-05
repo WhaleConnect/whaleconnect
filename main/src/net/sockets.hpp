@@ -86,6 +86,19 @@ namespace Sockets {
     NamedError getErr(int code);
 
     /// <summary>
+    /// Format an error code into a readable string.
+    /// </summary>
+    /// <param name="code">The error code to format</param>
+    /// <returns>The formatted string with the code, symbolic name, and description</returns>
+    std::string formatErr(int code);
+
+    /// <summary>
+    /// Format the last error code into a readable string.
+    /// </summary>
+    /// <returns>The formatted string with the code, symbolic name, and description</returns>
+    std::string formatLastErr();
+
+    /// <summary>
     /// Check if a given error code is fatal (i.e. should follow in a socket close/termination).
     /// </summary>
     /// <param name="code">The code to check</param>

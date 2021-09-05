@@ -5,6 +5,7 @@
 
 #include "app/settings.hpp"
 #include "app/mainhandle.hpp"
+#include "gui/console.hpp"
 #include "gui/connwindowlist.hpp"
 #include "net/btutils.hpp"
 #include "util/imguiext.hpp"
@@ -12,22 +13,35 @@
 #include "util/asyncfunction.hpp"
 
 // List of open windows
-ConnWindowList connections(Sockets::createClientSocket);
+static ConnWindowList connections(Sockets::createClientSocket);
 
+// Console containing error/info items
+static Console errorOutput;
+
+/// <summary>
+/// Render the "New Connection" window for Internet Protocol connections (TCP/UDP).
+/// </summary>
 static void drawIPConnectionTab();
+
+/// <summary>
+/// Render the "New Connection" window for Bluetooth connections.
+/// </summary>
 static void drawBTConnectionTab();
+
+/// <summary>
+/// Render the tab containing information and error messages.
+/// </summary>
+static void drawErrorOutputTab();
 
 int MAIN_FUNC(MAIN_ARGS) {
     if (!MainHandler::initApp()) return EXIT_FAILURE; // Create a main application window
     int init = Sockets::init(); // Initialize sockets
+    if (init != NO_ERROR) errorOutput.addError("WSAStartup failed - " + Sockets::formatErr(init));
 
     // Main loop
     while (MainHandler::isActive()) {
         MainHandler::handleNewFrame();
         BTUtils::glibMainContextIteration(); // (This only does stuff on Linux)
-
-        // Show error overlay if socket startup failed
-        if (init != NO_ERROR) ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner_TopLeft, "Startup failed (%d).", init);
 
         // "New Connection" window
         ImGui::SetNextWindowSize({ 600, 250 }, ImGuiCond_FirstUseEver);
@@ -35,12 +49,20 @@ int MAIN_FUNC(MAIN_ARGS) {
             if (ImGui::BeginTabBar("ConnectionTypes")) {
                 drawIPConnectionTab();
                 drawBTConnectionTab();
+                drawErrorOutputTab();
                 ImGui::EndTabBar();
             }
         }
         ImGui::End();
 
-        connections.update();
+        // Poll sockets if startup was successful
+        if (init == NO_ERROR) {
+            int pollRet = connections.update();
+
+            // Check for errors
+            if (pollRet == SOCKET_ERROR) errorOutput.addError("Client polling failed - " + Sockets::formatLastErr());
+        }
+
         MainHandler::renderWindow();
     }
 
@@ -58,9 +80,6 @@ static void beginChildWithSpacing(bool spacing) {
     ImGui::BeginChild("Output", { 0, (spacing) ? 0 : -ImGui::GetFrameHeightWithSpacing() }, false, windowFlags);
 }
 
-/// <summary>
-/// Render the "New Connection" window for Internet Protocol connections (TCP/UDP).
-/// </summary>
 static void drawIPConnectionTab() {
     if (!ImGui::BeginTabItemNoSpacing("Internet Protocol")) return;
 
@@ -98,9 +117,6 @@ static void drawIPConnectionTab() {
     ImGui::EndTabItem();
 }
 
-/// <summary>
-/// Render the "New Connection" window for Bluetooth connections.
-/// </summary>
 static void drawBTConnectionTab() {
     if (!ImGui::BeginTabItemNoSpacing("Bluetooth")) return;
     ImGui::TextUnformatted("Paired Devices");
@@ -142,11 +158,19 @@ static void drawBTConnectionTab() {
 
     // Get the paired devices when this tab is first clicked or if the "Refresh" button is clicked
     static bool firstRun = false; // If device enumeration has completed at least once
+    static int pairedRet = NO_ERROR; // The return value of BTUtils::getPaired()
     static std::vector<DeviceData> pairedDevices; // Vector of paired devices
-    static int err = NO_ERROR; // Error that occurred during device enumeration
+    static std::string errStr; // Error string that occurred during device enumeration (cached)
     if ((ImGui::Button("Refresh") || !firstRun) && btInitDone) {
-        err = BTUtils::getPaired(pairedDevices);
         firstRun = true;
+        pairedRet = BTUtils::getPaired(pairedDevices);
+
+        // Set the error string if the operation failed
+        // Not only does having a cache prevent extra operations from running each frame, but it minimizes the chances
+        // of getting a wrong error value since every socket operation uses getLastErr() as a means of error checking.
+        // If this string were to be reevaluated every frame, it might eventually pick up a wrong or misleading
+        // getLastErr() value caused by some other failed action.
+        if (pairedRet == SOCKET_ERROR) errStr = "[ERROR] " + Sockets::formatLastErr();
     }
 
     static bool showAddrs = false; // If device addresses are shown
@@ -155,7 +179,7 @@ static void drawBTConnectionTab() {
     ImGui::Spacing();
 
     beginChildWithSpacing(isNew);
-    if (err == NO_ERROR) {
+    if (pairedRet == NO_ERROR) {
         // Search succeeded, display all devices found
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 5, 5 }); // Larger padding
         for (const auto& i : pairedDevices) {
@@ -178,8 +202,7 @@ static void drawBTConnectionTab() {
         if (pairedDevices.empty() && btInitDone) ImGui::TextUnformatted("No paired devices.");
     } else {
         // Error occurred
-        Sockets::NamedError ne = Sockets::getErr(Sockets::getLastErr());
-        ImGui::Text("[ERROR] %s (%d): %s", ne.name, err, ne.desc);
+        ImGui::TextUnformatted(errStr.c_str());
     }
     ImGui::EndChild();
     ImGui::EndDisabled();
@@ -189,6 +212,13 @@ static void drawBTConnectionTab() {
         ImGui::Separator();
         ImGui::TextUnformatted("A connection to this device is already open.");
     }
+
+    ImGui::EndTabItem();
+}
+
+static void drawErrorOutputTab() {
+    if (!ImGui::BeginTabItemNoSpacing("Error List")) return;
+    errorOutput.update();
 
     ImGui::EndTabItem();
 }

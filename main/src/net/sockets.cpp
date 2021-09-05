@@ -50,6 +50,7 @@ typedef addrinfo ADDRINFOW;
 #endif
 
 #include "sockets.hpp"
+#include "util/formatcompat.hpp"
 #include "util/winutf8.hpp"
 
 int Sockets::getSocketErr(SOCKET sockfd) {
@@ -84,6 +85,15 @@ Sockets::NamedError Sockets::getErr(int code) {
         // This means the error code is not contained in the data structure and no NamedError corresponds to it.
         return { "UNKNOWN ERROR CODE", "No string is implemented for this error code." };
     }
+}
+
+std::string Sockets::formatErr(int code) {
+    NamedError ne = getErr(code);
+    return std::format("{} ({}): {}", ne.name, code, ne.desc);
+}
+
+std::string Sockets::formatLastErr() {
+    return formatErr(getLastErr());
 }
 
 bool Sockets::isFatal(int code, bool allowNonBlock) {

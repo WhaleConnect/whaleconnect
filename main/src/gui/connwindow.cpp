@@ -16,8 +16,7 @@ void ConnWindow::_errorHandler(int err) {
     _error = true;
 
     // Add error line to console
-    Sockets::NamedError ne = Sockets::getErr(err);
-    _output.addError(std::format("{} ({}): {}", ne.name, err, ne.desc));
+    _output.addError(Sockets::formatErr(err));
 }
 
 void ConnWindow::connectHandler() {
@@ -79,22 +78,11 @@ void ConnWindow::inputHandler() {
 }
 
 void ConnWindow::update() {
-    // Begin GUI window with the specified initial size
+    // Set window size
     ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin(_title.c_str(), &_open)) {
-        ImGui::End();
-        return;
-    }
 
-    // Draw console output
-    _output.update([&](const std::string& text) {
-        if (_connected) {
-            int ret = Sockets::sendData(_sockfd, text);
-            if (ret == SOCKET_ERROR) _errorHandler();
-        } else {
-            _output.addInfo("The socket is not connected.");
-        }
-    });
+    // Begin window, draw console outputs
+    if (ImGui::Begin(_title.c_str(), &_open)) _output.update();
 
     // End window
     ImGui::End();

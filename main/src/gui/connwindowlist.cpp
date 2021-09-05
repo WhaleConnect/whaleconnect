@@ -60,7 +60,7 @@ bool ConnWindowList::add(const DeviceData& data) {
     return isNew;
 }
 
-void ConnWindowList::update() {
+int ConnWindowList::update() {
     // Iterate through the windows vector
     for (size_t i = 0; i < _windows.size(); i++) {
         // The current window
@@ -81,12 +81,32 @@ void ConnWindowList::update() {
         }
     }
 
+    // Polling code starts below
+    // If a previous poll failed, abort prematurely
+    // NO_ERROR is returned to prevent duplicate error checking, i.e. the code checks for SOCKET_ERROR returned, so it
+    // is only returned when the error actually occurs, not on subsequent operations.
+    if (_pollRet == SOCKET_ERROR) return NO_ERROR;
+
     // Make sure that the two vectors of windows and sockets are equal in size
     assert(_windows.size() == _pfds.size());
 
     // Check all sockets for events
-    Sockets::poll(_pfds, 0);
+    _pollRet = Sockets::poll(_pfds, 0);
+    if (_pollRet == SOCKET_ERROR) {
+        // Get the last error if poll failed
+        int lastErr = Sockets::getLastErr();
 
+        // (WSA)EINVAL and (WSA)ENOTSOCK are non-fatal errors that indicate an operation occurred on an invalid socket
+        // which happens when a socket disconnects or when the program starts up with nothing to poll.
+        if ((lastErr == WSAEINVAL) || (lastErr == WSAENOTSOCK)) {
+            _pollRet = NO_ERROR;
+            Sockets::setLastErr(NO_ERROR);
+        } else {
+            return SOCKET_ERROR; // A fatal error occurred
+        }
+    }
+
+    // Poll was successful, call the appropriate handlers on each window
     for (size_t i = 0; i < _pfds.size(); i++) {
         auto revents = _pfds[i].revents;
         auto& current = _windows[i];
@@ -102,4 +122,5 @@ void ConnWindowList::update() {
         // Update events if they've changed
         _pfds[i].events = current->getPollFlags();
     }
+    return NO_ERROR;
 }

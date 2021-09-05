@@ -73,25 +73,57 @@ void Console::_updateOutput() {
 
         ImGui::MenuItem("Show hexadecimal", nullptr, &_showHex);
 
-        ImGui::Separator();
+        // Options for the input textbox
+        if (_hasInput) {
+            ImGui::Separator();
 
-        ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSend);
+            ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSend);
 
-        ImGui::MenuItem("Add final line ending", nullptr, &_addFinalLineEnding);
+            ImGui::MenuItem("Add final line ending", nullptr, &_addFinalLineEnding);
+        }
 
         ImGui::EndPopup();
     }
 
-    // Line ending combobox
-    ImGui::SameLine();
+    // Line ending combobox, don't draw this if there's no input textbox
+    if (_hasInput) {
+        // The code used to calculate where to put the combobox is derived from
+        // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
+        float comboWidth = 150.0f;
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
+        ImGui::SetNextItemWidth(comboWidth);
+        ImGui::Combo("##lineEnding", &_currentLE, "Newline\0Carriage return\0Both\0");
+    }
+}
 
-    // The code used to calculate where to put the combobox is derived from
-    // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
-    float comboWidth = 150.0f;
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
+void Console::update() {
+    // Textbox flags
+    ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
+        | ImGuiInputTextFlags_AllowTabInput;
 
-    ImGui::SetNextItemWidth(comboWidth);
-    ImGui::Combo("##lineEnding", &_currentLE, "Newline\0Carriage return\0Both\0");
+    // Textbox (but check for input enable first with short-circuiting &&)
+    ImVec2 size{ -FLT_MIN, ImGui::GetTextLineHeight() * Settings::sendTextboxHeight };
+    if (_hasInput && ImGui::InputTextMultiline("##consoleInput", _textBuf, size, flags)) {
+        // Line ending
+        const char* endings[] = { "\n", "\r", "\r\n" };
+        const char* selectedEnding = endings[_currentLE];
+
+        // InputTextMultiline() always uses \n as a line ending, replace all occurences of \n with the selected ending
+        std::string sendString = StringUtils::replaceAll(_textBuf, "\n", selectedEnding);
+
+        // Add a final line ending if set
+        if (_addFinalLineEnding) sendString += selectedEnding;
+
+        // Invoke the callback function if the string is not empty
+        if (sendString != "") _inputCallback(sendString);
+
+        if (_clearTextboxOnSend) _textBuf = ""; // Blank out input textbox
+        ImGui::SetItemDefaultFocus();
+        ImGui::SetKeyboardFocusHere(-1); // Auto focus on input textbox
+    }
+
+    _updateOutput();
 }
 
 void Console::addText(const std::string& s, ImVec4 color, bool canUseHex) {

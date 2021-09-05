@@ -53,6 +53,21 @@ public:
     /// <param name="sockfd">The socket file descriptor to use</param>
     /// <param name="lastErr">The error that occurred, taken right after the socket has been created</param>
     ConnWindow(const std::string& title, SOCKET sockfd, int lastErr) : _title(title), _sockfd(sockfd) {
+        // Initialize the internal Console object to send data when the textbox is submitted (i.e. Enter pressed)
+        // This overloaded version of the constructor (taking a function which takes a `const std::string&`) enables
+        // the textbox and its related config options.
+        // (This is not put in the initializer list because of its large size.)
+        _output = Console([&](const std::string& s) {
+            if (_connected) {
+                // Connected, send data and check for errors
+                int ret = Sockets::sendData(_sockfd, s);
+                if (ret == SOCKET_ERROR) _errorHandler();
+            } else {
+                // Not connected, output a message
+                _output.addInfo("The socket is not connected.");
+            }
+        });
+
         _output.addInfo("Connecting...");
         _errorHandler(lastErr); // Handle the error, this function does nothing if the operation was successful
     }

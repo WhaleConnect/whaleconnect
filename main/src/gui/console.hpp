@@ -7,6 +7,7 @@
 
 #include <vector> // std::vector
 #include <sstream> // std::ostringstream
+#include <functional> // std::function
 
 #include <imgui/imgui.h>
 
@@ -27,9 +28,10 @@ struct ConsoleItem {
 };
 
 /// <summary>
-/// A class to represent a scrollable panel of output text with an input textbox.
+/// A class to represent a scrollable panel of output text with an optional input textbox.
 /// </summary>
 class Console {
+    bool _hasInput; // If the input textbox is displayed
     bool _scrollToEnd = false; // If the console is force-scrolled to the end
     bool _autoscroll = true; // If console autoscrolls when new data is put
     bool _showTimestamps = false; // If timestamps are shown in the output
@@ -37,23 +39,34 @@ class Console {
     bool _clearTextboxOnSend = true; // If the textbox is cleared on each send
     bool _addFinalLineEnding = false; // If a final line ending is added before sending
 
+    std::function<void(const std::string&)> _inputCallback; // Input textbox submit callback function
     std::vector<ConsoleItem> _items; // Items in console output
     std::string _textBuf; // Buffer for the texbox
     int _currentLE = 0; // The index of the line ending selected
 
     /// <summary>
-    /// Draw all elements below the textbox.
+    /// Draw all elements, excluding the textbox.
     /// </summary>
     void _updateOutput();
 
 public:
     /// <summary>
-    /// Draw the console output.
+    /// Console constructor, disables the input textbox.
+    /// </summary>
+    Console() : _hasInput(false), _inputCallback([](const std::string&) {}) {}
+
+    /// <summary>
+    /// Console constructor, set the text input callback function (enables the input textbox).
     /// </summary>
     /// <typeparam name="Fn">A function which takes a string which is the textbox contents at the time</typeparam>
-    /// <param name="fn">The function to call when the input textbox is activated</param>
-    template<class Fn>
-    void update(Fn&& fn);
+    /// <param name="fn">The function to call when the input textbox contents are submitted</param>
+    template <class Fn>
+    Console(Fn&& fn) : _hasInput(true), _inputCallback(fn) {}
+
+    /// <summary>
+    /// Draw the console output.
+    /// </summary>
+    void update();
 
     /// <summary>
     /// Add text to the console. Does not make it go on its own line.
@@ -102,33 +115,3 @@ public:
         _items.clear();
     }
 };
-
-template<class Fn>
-void Console::update(Fn&& fn) {
-    // Textbox flags
-    ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
-        | ImGuiInputTextFlags_AllowTabInput;
-
-    // Textbox
-    ImVec2 size{ -FLT_MIN, ImGui::GetTextLineHeight() * Settings::sendTextboxHeight };
-    if (ImGui::InputTextMultiline("##ConsoleInput", _textBuf, size, flags)) {
-        // Line ending
-        const char* endings[] = { "\n", "\r", "\r\n" };
-        const char* selectedEnding = endings[_currentLE];
-
-        // InputTextMultiline() always uses \n as a line ending, replace all occurences of \n with the selected ending
-        std::string sendString = StringUtils::replaceAll(_textBuf, "\n", selectedEnding);
-
-        // Add a final line ending if set
-        if (_addFinalLineEnding) sendString += selectedEnding;
-
-        // Invoke the callback function if the string is not empty
-        if (sendString != "") fn(sendString);
-
-        if (_clearTextboxOnSend) _textBuf = ""; // Blank out input textbox
-        ImGui::SetItemDefaultFocus();
-        ImGui::SetKeyboardFocusHere(-1); // Auto focus on input textbox
-    }
-
-    _updateOutput();
-}
