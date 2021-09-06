@@ -51,7 +51,7 @@ typedef addrinfo ADDRINFOW;
 
 #include "sockets.hpp"
 #include "util/formatcompat.hpp"
-#include "util/winutf8.hpp"
+#include "util/strings.hpp"
 
 int Sockets::getSocketErr(SOCKET sockfd) {
     int err = NO_ERROR; // Initialized in case `getsockopt()` doesn't return anything
@@ -219,8 +219,8 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
         // Wide encoding conversions for Windows
         // These are stored in their own variables to prevent them from being temporaries and destroyed later.
         // If we were to call `.c_str()` and then have these destroyed, `.c_str()` would be a dangling pointer.
-        widestr addrWide = toWide(data.address);
-        widestr portWide = toWide(data.port);
+        Strings::widestr addrWide = Strings::toWide(data.address);
+        Strings::widestr portWide = Strings::toWide(data.port);
 
         // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
         ADDRINFOW* addr;

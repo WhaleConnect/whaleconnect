@@ -13,8 +13,7 @@
 
 #include "app/settings.hpp"
 #include "util/formatcompat.hpp"
-#include "util/imguiext.hpp"
-#include "util/stringutils.hpp"
+#include "util/strings.hpp"
 
 /// <summary>
 /// A structure representing an item in a Console object's output.
@@ -45,6 +44,14 @@ class Console {
     int _currentLE = 0; // The index of the line ending selected
 
     /// <summary>
+    /// Add text to the console. Does not make it go on its own line.
+    /// </summary>
+    /// <param name="s">The string to add to the output</param>
+    /// <param name="color">The color of the text (optional, default is uncolored)</param>
+    /// <param name="canUseHex">If the string gets displayed as hexadecimal when set (optional, default is true)</param>
+    void _add(const std::string& s, ImVec4 color, bool canUseHex);
+
+    /// <summary>
     /// Draw all elements, excluding the textbox.
     /// </summary>
     void _updateOutput();
@@ -69,31 +76,40 @@ public:
     void update();
 
     /// <summary>
-    /// Add text to the console. Does not make it go on its own line.
+    /// Add text to the console. Accepts multi-line strings (i.e. strings with multiple newlines)
     /// </summary>
     /// <param name="s">The string to add to the output</param>
     /// <param name="color">The color of the text (optional, default is uncolored)</param>
+    /// <param name="prefix">A string to add before each line (optional, default is none)</param>
     /// <param name="canUseHex">If the string gets displayed as hexadecimal when set (optional, default is true)</param>
-    void addText(const std::string& s, ImVec4 color = {}, bool canUseHex = true);
+    void addText(const std::string& s, const std::string& prefix = "", ImVec4 color = {}, bool canUseHex = true) {
+        // Split the string by the '\n' character to get each line
+        std::vector<std::string> lines = Strings::split(s, '\n');
+
+        // Add each line
+        for (const auto& line : lines) _add(prefix + line, color, canUseHex);
+    }
 
     /// <summary>
-    /// Add a red error message. Does make it go on its own line.
+    /// Add a red error message.
     /// </summary>
     /// <param name="s">The string to add to the output</param>
     void addError(const std::string& s) {
         // Error messages in red
         forceNextLine();
-        addText(std::format("[ERROR] {}\n", s), { 1.0f, 0.4f, 0.4f, 1.0f }, false);
+        addText(s, "[ERROR] ", {1.0f, 0.4f, 0.4f, 1.0f}, false);
+        forceNextLine();
     }
 
     /// <summary>
-    /// Add a yellow information message. Does make it go on its own line.
+    /// Add a yellow information message.
     /// </summary>
     /// <param name="s">The string to add to the output</param>
     void addInfo(const std::string& s) {
         // Information in yellow
         forceNextLine();
-        addText(std::format("[INFO ] {}\n", s), { 1.0f, 0.8f, 0.6f, 1.0f }, false);
+        addText(s, "[INFO ] ", { 1.0f, 0.8f, 0.6f, 1.0f }, false);
+        forceNextLine();
     }
 
     /// <summary>

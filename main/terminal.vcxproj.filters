@@ -91,13 +91,10 @@
     <ClCompile Include="src\util\imguiext.cpp">
       <Filter>Source Files\util</Filter>
     </ClCompile>
-    <ClCompile Include="src\util\winutf8.cpp">
-      <Filter>Source Files\util</Filter>
-    </ClCompile>
     <ClCompile Include="src\gui\connwindowlist.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
-    <ClCompile Include="src\util\stringutils.cpp">
+    <ClCompile Include="src\util\strings.cpp">
       <Filter>Source Files\util</Filter>
     </ClCompile>
   </ItemGroup>
@@ -177,13 +174,10 @@
     <ClInclude Include="src\util\asyncfunction.hpp">
       <Filter>Source Files\util</Filter>
     </ClInclude>
-    <ClInclude Include="src\util\winutf8.hpp">
-      <Filter>Source Files\util</Filter>
-    </ClInclude>
     <ClInclude Include="src\gui\connwindowlist.hpp">
       <Filter>Source Files\gui</Filter>
     </ClInclude>
-    <ClInclude Include="src\util\stringutils.hpp">
+    <ClInclude Include="src\util\strings.hpp">
       <Filter>Source Files\util</Filter>
     </ClInclude>
   </ItemGroup>

@@ -59,20 +59,7 @@ void ConnWindow::inputHandler() {
         _closeConnection();
         break;
     default:
-        // Receiving done successfully, add each line of the buffer into the vector
-        size_t pos = 0;
-        std::string sub = "";
-
-        // Find each newline-delimited substring in the buffer to extract each individual line
-        while ((pos = recvBuf.find('\n')) != std::string::npos) {
-            pos++; // Increment position to include the newline in the substring
-            sub = recvBuf.substr(0, pos); // Get the substring
-            _output.addText(sub); // Add the substring to the output
-            recvBuf.erase(0, pos); // Erase the substring from the buffer
-        }
-
-        // Add the last substring to the output (all other substrings have been erased from the buffer, the only one
-        // left is the one after the last \n, or the whole string if there are no \n's present)
+        // Receive successful, add the buffer to the Console to display
         _output.addText(recvBuf);
     }
 }

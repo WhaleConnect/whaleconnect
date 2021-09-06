@@ -32,7 +32,7 @@
 #include <ws2bth.h>
 #include <bluetoothapis.h>
 
-#include "util/winutf8.hpp"
+#include "util/strings.hpp"
 
 // Link with Bluetooth lib
 #pragma comment(lib, "Bthprops.lib")
@@ -228,7 +228,8 @@ int BTUtils::getPaired(std::vector<Sockets::DeviceData>& deviceList) {
         std::snprintf(mac, len, "%02X:%02X:%02X:%02X:%02X:%02X", addr[5], addr[4], addr[3], addr[2], addr[1], addr[0]);
 
         // Push back
-        deviceList.push_back({ Sockets::Bluetooth, fromWide(deviceInfo.szName), mac, 0, deviceInfo.Address.ullLong });
+        std::string name = Strings::fromWide(deviceInfo.szName);
+        deviceList.push_back({ Sockets::Bluetooth, name, mac, 0, deviceInfo.Address.ullLong });
     } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
 #else
     if (!defaultCtrl) {
@@ -272,7 +273,7 @@ uint8_t BTUtils::getSDPChannel(const char* addr) {
     uint8_t ret = 0;
 
 #ifdef _WIN32
-    std::wstring tmp = toWide(addr);
+    Strings::widestr tmp = Strings::toWide(addr);
     LPWSTR addrWide = const_cast<LPWSTR>(tmp.c_str());
 
     // Set up the queryset restrictions

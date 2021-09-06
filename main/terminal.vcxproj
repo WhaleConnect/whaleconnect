@@ -108,8 +108,7 @@
     <ClCompile Include="src\gui\connwindow.cpp" />
     <ClCompile Include="src\gui\console.cpp" />
     <ClCompile Include="src\util\imguiext.cpp" />
-    <ClCompile Include="src\util\stringutils.cpp" />
-    <ClCompile Include="src\util\winutf8.cpp" />
+    <ClCompile Include="src\util\strings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdparty\fmt\chrono.h" />
@@ -138,8 +137,7 @@
     <ClInclude Include="src\util\asyncfunction.hpp" />
     <ClInclude Include="src\util\formatcompat.hpp" />
     <ClInclude Include="src\util\imguiext.hpp" />
-    <ClInclude Include="src\util\stringutils.hpp" />
-    <ClInclude Include="src\util\winutf8.hpp" />
+    <ClInclude Include="src\util\strings.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
