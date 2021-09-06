@@ -195,7 +195,7 @@ void BTUtils::glibMainContextIteration() {
 #endif
 }
 
-int BTUtils::getPaired(std::vector<DeviceData>& deviceList) {
+int BTUtils::getPaired(std::vector<Sockets::DeviceData>& deviceList) {
     // Clear the vector
     deviceList.clear();
 

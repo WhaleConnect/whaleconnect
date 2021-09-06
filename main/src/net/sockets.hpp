@@ -25,18 +25,6 @@ typedef int SOCKET;
 #endif
 
 /// <summary>
-/// Structure containing metadata about a device (type, name, address, port) to provide information on how to connect to
-/// it and how to describe it.
-/// </summary>
-struct DeviceData {
-    int type; // Type of connection
-    std::string name; // Name of device (Bluetooth only)
-    std::string address; // Address of device (IP address for TCP/UDP, MAC address for Bluetooth)
-    uint16_t port; // Port/channel of device
-    uint64_t btAddr; // Bluetooth address as a 64-bit unsigned integer (used on Windows only)
-};
-
-/// <summary>
 /// Namespace containing functions for handling network sockets.
 /// </summary>
 namespace Sockets {
@@ -56,6 +44,17 @@ namespace Sockets {
     struct NamedError {
         const char* name; // Symbolic name
         const char* desc; // Description
+    };
+
+    /// <summary>
+    /// Structure containing metadata about a device (type, name, address, port).
+    /// </summary>
+    struct DeviceData {
+        int type; // Type of connection
+        std::string name; // Name of device (Bluetooth only)
+        std::string address; // Address of device (IP address for TCP/UDP, MAC address for Bluetooth)
+        uint16_t port; // Port/channel of device
+        uint64_t btAddr; // Bluetooth address as a 64-bit unsigned integer (used on Windows only)
     };
 
     // The data structure to act as a lookup table for error codes. It maps numeric codes to NamedErrors.

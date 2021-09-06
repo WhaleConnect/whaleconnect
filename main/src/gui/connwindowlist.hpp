@@ -19,7 +19,7 @@ typedef std::unique_ptr<ConnWindow> ConnWindowPtr;
 /// A class to manage multiple ConnWindow objects.
 /// </summary>
 class ConnWindowList {
-    std::function<SOCKET(DeviceData)> _connectFunction; // The function to call when creating a new window
+    std::function<SOCKET(Sockets::DeviceData)> _connectFunction; // The function to call when creating a new window
     std::vector<ConnWindowPtr> _windows; // All window pointers and their corresponding titles
     std::vector<pollfd> _pfds; // Vector of socket fds to poll
     int _pollRet = NO_ERROR; // The result of Sockets::poll()
@@ -43,7 +43,7 @@ public:
     /// </summary>
     /// <param name="data">The DeviceData to initialize the window with</param>
     /// <returns>If the window is unique and added</returns>
-    bool add(const DeviceData& data);
+    bool add(const Sockets::DeviceData& data);
 
     /// <summary>
     /// Redraw all contained windows and delete any that have been closed.

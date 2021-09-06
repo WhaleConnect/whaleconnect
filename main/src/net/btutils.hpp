@@ -49,7 +49,7 @@ namespace BTUtils {
     /// </summary>
     /// <param name="deviceList">The vector that will be populated with the paired devices</param>
     /// <returns>NO_ERROR on success, SOCKET_ERROR on failure</returns>
-    int getPaired(std::vector<DeviceData>& deviceList);
+    int getPaired(std::vector<Sockets::DeviceData>& deviceList);
 
     /// <summary>
     /// Get the channel of a Bluetooth server via Service Discovery Protocol (SDP).

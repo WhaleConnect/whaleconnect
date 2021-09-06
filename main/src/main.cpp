@@ -121,6 +121,8 @@ static void drawBTConnectionTab() {
     if (!ImGui::BeginTabItemNoSpacing("Bluetooth")) return;
     ImGui::TextUnformatted("Paired Devices");
 
+    using Sockets::DeviceData;
+
     static bool isNew = true; // If the attempted connection is unique
     static bool shouldOpenNew = true; // If a new connection should be opened
     static AsyncFunction<uint8_t, DeviceData> sdpInq; // Asynchronous SDP inquiry to get channel

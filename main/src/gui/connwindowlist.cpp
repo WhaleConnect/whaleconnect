@@ -19,7 +19,7 @@
 /// <remarks>
 /// This function is used to get a usable title+id for a ConnWindow using the passed DeviceData's variable fields.
 /// </remarks>
-static std::string formatDeviceData(const DeviceData& data) {
+static std::string formatDeviceData(const Sockets::DeviceData& data) {
     // Type of the connection
     const char* type = Sockets::connectionTypesStr[data.type];
     bool isBluetooth = (data.type == Sockets::Bluetooth);
@@ -46,7 +46,7 @@ void ConnWindowList::_populateFds() {
     for (const auto& window : _windows) _pfds.push_back({ window->getSocket(), window->getPollFlags(), 0 });
 }
 
-bool ConnWindowList::add(const DeviceData& data) {
+bool ConnWindowList::add(const Sockets::DeviceData& data) {
     // Title of the ConnWindow
     std::string title = formatDeviceData(data);
 
