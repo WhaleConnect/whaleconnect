@@ -13,6 +13,9 @@
 // Creating a copy is intentional (not a mistake) when a parameter is prefixed with this macro.
 #define NO_CONST_REF
 
+/// <summary>
+/// Namespace containing general utility functions for string manipuation.
+/// </summary>
 namespace Strings {
 #ifdef _WIN32
     // Wide strings are used on Windows

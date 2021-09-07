@@ -118,7 +118,7 @@ namespace Sockets {
     void cleanup();
 
     /// <summary>
-    /// Resolve the remote device and attempt to connect to it. The socket created is non-blocking.
+    /// Connect to a remote server. The socket created is non-blocking.
     /// </summary>
     /// <param name="data">The DeviceData structure describing what to connect to and how to do so</param>
     /// <returns>Failure/abort: INVALID_SOCKET, Success: The newly-created socket file descriptor</returns>

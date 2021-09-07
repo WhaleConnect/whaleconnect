@@ -54,7 +54,7 @@ typedef addrinfo ADDRINFOW;
 #include "util/strings.hpp"
 
 int Sockets::getSocketErr(SOCKET sockfd) {
-    int err = NO_ERROR; // Initialized in case `getsockopt()` doesn't return anything
+    int err = NO_ERROR; // Initialized in case `getsockopt()` doesn't modify this variable
     socklen_t errlen = sizeof(err);
     getsockopt(sockfd, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&err), &errlen);
     return err;

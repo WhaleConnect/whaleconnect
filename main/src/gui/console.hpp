@@ -97,7 +97,7 @@ public:
     void addError(const std::string& s) {
         // Error messages in red
         forceNextLine();
-        addText(s, "[ERROR] ", {1.0f, 0.4f, 0.4f, 1.0f}, false);
+        addText(s, "[ERROR] ", { 1.0f, 0.4f, 0.4f, 1.0f }, false);
         forceNextLine();
     }
 
