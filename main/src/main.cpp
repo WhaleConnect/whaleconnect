@@ -206,7 +206,7 @@ static void drawBTConnectionTab() {
         if (pairedDevices.empty() && btInitDone) ImGui::TextUnformatted("No paired devices.");
     } else {
         // Error occurred
-        ImGui::TextUnformatted(errStr.c_str());
+        ImGui::TextUnformatted(errStr);
     }
     ImGui::EndChild();
     ImGui::EndDisabled();
