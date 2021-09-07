@@ -125,8 +125,10 @@ static void drawBTConnectionTab() {
 
     static bool isNew = true; // If the attempted connection is unique
     static bool shouldOpenNew = true; // If a new connection should be opened
-    static AsyncFunction<uint8_t, DeviceData> sdpInq; // Asynchronous SDP inquiry to get channel
-    bool btInitDone = BTUtils::initialized();
+    static DeviceData selected{}; // The device selected in the menu
+    static AsyncFunction<uint8_t> sdpInq; // Asynchronous SDP inquiry to get channel
+
+    bool btInitDone = BTUtils::initialized(); // If Bluetooth initialization completed
     bool sdpRunning = false; // If the SDP inquiry is still running
 
 #ifndef _WIN32
@@ -139,17 +141,17 @@ static void drawBTConnectionTab() {
         // Error occurred
         ImGui::TextUnformatted("System error - Failed to launch thread.");
     } else if (sdpInq.checkDone()) {
-        // Done and no error, get the stored DeviceData (the one corresponding to the button the user clicked)
+        // Done successfully
+        sdpRunning = false;
+
         static bool channelValid = false;
-        DeviceData data = sdpInq.userData();
         if (shouldOpenNew) {
-            data.port = sdpInq.getValue(); // Set the port
-            channelValid = (data.port != 0);
-            if (channelValid) isNew = connections.add(data);
+            selected.port = sdpInq.value(); // Set the port
+            channelValid = (selected.port != 0);
+            if (channelValid) isNew = connections.add(selected);
             shouldOpenNew = false;
         }
-        if (!channelValid) ImGui::Text("Failed to get SDP channel for \"%s\".", data.name.c_str());
-        sdpRunning = false;
+        if (!channelValid) ImGui::Text("Failed to get SDP channel for \"%s\".", selected.name.c_str());
     } else if (sdpInq.firstRun()) {
         // Running, display a spinner
         ImGui::LoadingSpinner("Running SDP inquiry");
@@ -191,7 +193,7 @@ static void drawBTConnectionTab() {
             const char* addrCStr = i.address.c_str();
             ImGui::PushID(addrCStr); // Set the address as the id for when devices have the same name
             if (ImGui::Button(buttonText.c_str(), { -FLT_MIN, 0 })) {
-                sdpInq.userData() = i;
+                selected = i;
                 sdpInq.run(BTUtils::getSDPChannel, addrCStr);
                 shouldOpenNew = true;
             }

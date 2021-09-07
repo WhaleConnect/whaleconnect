@@ -13,11 +13,9 @@
 /// A wrapper class for std::async().
 /// </summary>
 /// <typeparam name="T">The type of the value returned asynchronously</typeparam>
-/// <typeparam name="U">The type of the user data variable</typeparam>
-template <class T, class U>
+template <class T>
 class AsyncFunction {
     T _value{}; // The value that will be returned
-    U _userData{}; // Extra variable for storing anything
     std::future<T> _fut; // The future object
     bool _firstRun = false; // If a successful run() call occurred at least once
     bool _error = false; // If an error occurred during calling run()
@@ -56,7 +54,7 @@ public:
     /// </summary>
     /// <returns>If the function can return a value</returns>
     /// <remarks>
-    /// This function's state is invalidated by a call to getValue() - if this function returns true, then getValue()
+    /// This function's state is invalidated by a call to value() - if this function returns true, then value()
     /// is called, the next call to this function will return false (get() can only be called once on a future object).
     /// To check if the function has finished executing, use checkDone().
     /// </remarks>
@@ -91,16 +89,8 @@ public:
     /// This function caches the result of std::future::get(). A value can still be obtained even if the internal
     /// future is no longer ready, given a successful retreival of a prior run. (This will be returned.)
     /// </remarks>
-    T getValue() {
+    T value() {
         if (ready()) _value = _fut.get();
         return _value;
-    }
-
-    /// <summary>
-    /// Get the user data variable.
-    /// </summary>
-    /// <returns>The user data (modifiable)</returns>
-    U& userData() {
-        return _userData;
     }
 };
