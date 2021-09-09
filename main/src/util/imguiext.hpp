@@ -28,7 +28,9 @@ namespace ImGui {
     /// Wrapper function for ImGui::TextUnformatted() to allow a std::string parameter.
     /// </summary>
     /// <param name="s">The string to display</param>
-    void TextUnformatted(const std::string& s);
+    inline void TextUnformatted(const std::string& s) {
+        TextUnformatted(s.c_str());
+    }
 
     /// <summary>
     /// An adapted InputScalar() function with operator handling removed. Only works with uint8_t/uint16_t types.
@@ -96,17 +98,9 @@ namespace ImGui {
     /// <remarks>
     /// Taken from https://github.com/ocornut/imgui/issues/1901#issuecomment-400563921.
     /// </remarks>
-    void LoadingSpinner(const char* label);
-
-    /// <summary>
-    /// Create a tab item, but with no spacing around the top tab button.
-    /// </summary>
-    /// <param name="label">The text to display in the tab</param>
-    /// <returns>If the tab is active and selected</returns>
-    /// <remarks>
-    /// Taken from https://github.com/ocornut/imgui/issues/4368#issuecomment-887209351.
-    /// </remarks>
-    bool BeginTabItemNoSpacing(const char* label);
+    inline void LoadingSpinner(const char* label) {
+        Text("%s... %c", label, "|/-\\"[static_cast<int>(ImGui::GetTime() / 0.05f) & 3]);
+    }
 }
 
 template<class T>

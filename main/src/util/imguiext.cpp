@@ -23,10 +23,6 @@ static int stringCallback(ImGuiInputTextCallbackData* data) {
     return 0;
 }
 
-void ImGui::TextUnformatted(const std::string& s) {
-    TextUnformatted(s.c_str());
-}
-
 bool ImGui::InputText(const char* label, std::string& s, ImGuiInputTextFlags flags) {
     flags |= ImGuiInputTextFlags_CallbackResize;
     return InputText(label, const_cast<char*>(s.c_str()), s.capacity() + 1, flags, stringCallback, &s);
@@ -47,15 +43,4 @@ void ImGui::HelpMarker(const char* desc) {
         PopTextWrapPos();
         EndTooltip();
     }
-}
-
-void ImGui::LoadingSpinner(const char* label) {
-    Text("%s... %c", label, "|/-\\"[static_cast<int>(ImGui::GetTime() / 0.05f) & 3]);
-}
-
-bool ImGui::BeginTabItemNoSpacing(const char* label) {
-    PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, { 0, 0 });
-    bool result = BeginTabItem(label);
-    PopStyleVar();
-    return result;
 }

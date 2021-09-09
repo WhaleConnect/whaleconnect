@@ -81,7 +81,7 @@ static void beginChildWithSpacing(bool spacing) {
 }
 
 static void drawIPConnectionTab() {
-    if (!ImGui::BeginTabItemNoSpacing("Internet Protocol")) return;
+    if (!ImGui::BeginTabItem("Internet Protocol")) return;
 
     static std::string addr = ""; // Server address
     static uint16_t port = 0; // Server port
@@ -118,7 +118,7 @@ static void drawIPConnectionTab() {
 }
 
 static void drawBTConnectionTab() {
-    if (!ImGui::BeginTabItemNoSpacing("Bluetooth")) return;
+    if (!ImGui::BeginTabItem("Bluetooth")) return;
     ImGui::TextUnformatted("Paired Devices");
 
     using Sockets::DeviceData;
@@ -221,8 +221,9 @@ static void drawBTConnectionTab() {
 }
 
 static void drawErrorOutputTab() {
-    if (!ImGui::BeginTabItemNoSpacing("Error List")) return;
-    errorOutput.update();
+    if (ImGui::BeginTabItem("Error List")) {
+        errorOutput.update();
 
-    ImGui::EndTabItem();
+        ImGui::EndTabItem();
+    }
 }
