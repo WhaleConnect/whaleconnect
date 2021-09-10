@@ -32,12 +32,6 @@
 #  define FMT_GCC_PRAGMA(arg)
 #endif
 
-#if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
-#  define FMT_HAS_GXX_CXX11 FMT_GCC_VERSION
-#else
-#  define FMT_HAS_GXX_CXX11 0
-#endif
-
 #if defined(__INTEL_COMPILER)
 #  define FMT_ICC_VERSION __INTEL_COMPILER
 #else
@@ -88,7 +82,7 @@
 // GCC doesn't allow throw in constexpr until version 6 (bug 67371).
 #ifndef FMT_USE_CONSTEXPR
 #  define FMT_USE_CONSTEXPR                                           \
-    (FMT_HAS_FEATURE(cxx_relaxed_constexpr) || FMT_MSC_VER >= 1910 || \
+    (FMT_HAS_FEATURE(cxx_relaxed_constexpr) || FMT_MSC_VER >= 1912 || \
      (FMT_GCC_VERSION >= 600 && __cplusplus >= 201402L)) &&           \
         !FMT_NVCC && !FMT_ICC_VERSION
 #endif
@@ -100,7 +94,8 @@
 #  define FMT_CONSTEXPR_DECL
 #endif
 
-#if __cplusplus >= 202002L || \
+#if ((__cplusplus >= 202002L) &&                              \
+     (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE > 9)) || \
     (__cplusplus >= 201709L && FMT_GCC_VERSION >= 1002)
 #  define FMT_CONSTEXPR20 constexpr
 #else
@@ -123,15 +118,6 @@
 #  define FMT_CONSTEXPR_CHAR_TRAITS
 #endif
 
-#ifndef FMT_OVERRIDE
-#  if FMT_HAS_FEATURE(cxx_override_control) || \
-      (FMT_GCC_VERSION >= 408 && FMT_HAS_GXX_CXX11) || FMT_MSC_VER >= 1900
-#    define FMT_OVERRIDE override
-#  else
-#    define FMT_OVERRIDE
-#  endif
-#endif
-
 // Check if exceptions are disabled.
 #ifndef FMT_EXCEPTIONS
 #  if (defined(__GNUC__) && !defined(__EXCEPTIONS)) || \
@@ -148,7 +134,7 @@
 #endif
 
 #if FMT_USE_NOEXCEPT || FMT_HAS_FEATURE(cxx_noexcept) || \
-    (FMT_GCC_VERSION >= 408 && FMT_HAS_GXX_CXX11) || FMT_MSC_VER >= 1900
+    FMT_GCC_VERSION >= 408 || FMT_MSC_VER >= 1900
 #  define FMT_DETECTED_NOEXCEPT noexcept
 #  define FMT_HAS_CXX11_NOEXCEPT 1
 #else
@@ -217,31 +203,13 @@
 #  endif
 #endif
 
-#ifndef FMT_USE_INLINE_NAMESPACES
-#  if FMT_HAS_FEATURE(cxx_inline_namespaces) || FMT_GCC_VERSION >= 404 || \
-      (FMT_MSC_VER >= 1900 && (!defined(_MANAGED) || !_MANAGED))
-#    define FMT_USE_INLINE_NAMESPACES 1
-#  else
-#    define FMT_USE_INLINE_NAMESPACES 0
-#  endif
-#endif
-
 #ifndef FMT_BEGIN_NAMESPACE
-#  if FMT_USE_INLINE_NAMESPACES
-#    define FMT_INLINE_NAMESPACE inline namespace
-#    define FMT_END_NAMESPACE \
-      }                       \
-      }
-#  else
-#    define FMT_INLINE_NAMESPACE namespace
-#    define FMT_END_NAMESPACE \
-      }                       \
-      using namespace v8;     \
-      }
-#  endif
 #  define FMT_BEGIN_NAMESPACE \
     namespace fmt {           \
-    FMT_INLINE_NAMESPACE v8 {
+    inline namespace v8 {
+#  define FMT_END_NAMESPACE \
+    }                       \
+    }
 #endif
 
 #ifndef FMT_MODULE_EXPORT
@@ -269,12 +237,6 @@
 #endif
 #ifndef FMT_API
 #  define FMT_API
-#endif
-
-#if FMT_GCC_VERSION
-#  define FMT_GCC_VISIBILITY_HIDDEN __attribute__((visibility("hidden")))
-#else
-#  define FMT_GCC_VISIBILITY_HIDDEN
 #endif
 
 // libc++ supports string_view in pre-c++17.
@@ -331,6 +293,8 @@ using conditional_t = typename std::conditional<B, T, F>::type;
 template <bool B> using bool_constant = std::integral_constant<bool, B>;
 template <typename T>
 using remove_reference_t = typename std::remove_reference<T>::type;
+template <typename T>
+using remove_const_t = typename std::remove_const<T>::type;
 template <typename T>
 using remove_cvref_t = typename std::remove_cv<remove_reference_t<T>>::type;
 template <typename T> struct type_identity { using type = T; };
@@ -606,12 +570,14 @@ FMT_INLINE void check_format_string(const S&) {
 template <typename..., typename S, FMT_ENABLE_IF(is_compile_string<S>::value)>
 void check_format_string(S);
 
+FMT_NORETURN FMT_API void throw_format_error(const char* message);
+
 struct error_handler {
   constexpr error_handler() = default;
   constexpr error_handler(const error_handler&) = default;
 
   // This function is intentionally not constexpr to give a compile-time error.
-  FMT_NORETURN FMT_API void on_error(const char* message);
+  void on_error(const char* message) { throw_format_error(message); }
 };
 FMT_END_DETAIL_NAMESPACE
 
@@ -721,19 +687,19 @@ class appender;
 FMT_BEGIN_DETAIL_NAMESPACE
 
 template <typename Context, typename T>
-constexpr auto is_const_formattable_impl(T*)
+constexpr auto has_const_formatter_impl(T*)
     -> decltype(typename Context::template formatter_type<T>().format(
                     std::declval<const T&>(), std::declval<Context&>()),
                 true) {
   return true;
 }
 template <typename Context>
-constexpr auto is_const_formattable_impl(...) -> bool {
+constexpr auto has_const_formatter_impl(...) -> bool {
   return false;
 }
 template <typename T, typename Context>
-constexpr auto is_const_formattable() -> bool {
-  return is_const_formattable_impl<Context>(static_cast<T*>(nullptr));
+constexpr auto has_const_formatter() -> bool {
+  return has_const_formatter_impl<Context>(static_cast<T*>(nullptr));
 }
 
 // Extracts a reference to the container from back_insert_iterator.
@@ -755,13 +721,13 @@ FMT_CONSTEXPR auto copy_str(InputIt begin, InputIt end, OutputIt out)
   return out;
 }
 
-template <typename Char, FMT_ENABLE_IF(std::is_same<Char, char>::value)>
-FMT_CONSTEXPR auto copy_str(const Char* begin, const Char* end, Char* out)
-    -> Char* {
-  if (is_constant_evaluated())
-    return copy_str<Char, const Char*, Char*>(begin, end, out);
+template <typename Char, typename T, typename U,
+          FMT_ENABLE_IF(
+              std::is_same<remove_const_t<T>, U>::value&& is_char<U>::value)>
+FMT_CONSTEXPR auto copy_str(T* begin, T* end, U* out) -> U* {
+  if (is_constant_evaluated()) return copy_str<Char, T*, U*>(begin, end, out);
   auto size = to_unsigned(end - begin);
-  memcpy(out, begin, size);
+  memcpy(out, begin, size * sizeof(U));
   return out + size;
 }
 
@@ -889,7 +855,7 @@ class iterator_buffer final : public Traits, public buffer<T> {
   T data_[buffer_size];
 
  protected:
-  void grow(size_t) final FMT_OVERRIDE {
+  void grow(size_t) override {
     if (this->size() == buffer_size) flush();
   }
 
@@ -913,9 +879,49 @@ class iterator_buffer final : public Traits, public buffer<T> {
   auto count() const -> size_t { return Traits::count() + this->size(); }
 };
 
+template <typename T>
+class iterator_buffer<T*, T, fixed_buffer_traits> final : public fixed_buffer_traits, public buffer<T> {
+ private:
+  T* out_;
+  enum { buffer_size = 256 };
+  T data_[buffer_size];
+
+ protected:
+  void grow(size_t) override {
+    if (this->size() == this->capacity()) flush();
+  }
+
+  void flush() {
+    size_t n = this->limit(this->size());
+    if (this->data() == out_) {
+      out_ += n;
+      this->set(data_, buffer_size);
+    }
+    this->clear();
+  }
+
+ public:
+  explicit iterator_buffer(T* out, size_t n = buffer_size)
+      : fixed_buffer_traits(n), buffer<T>(out, 0, n), out_(out) {}
+  iterator_buffer(iterator_buffer&& other)
+      : fixed_buffer_traits(other), buffer<T>(std::move(other)), out_(other.out_) {
+    if (this->data() != out_) {
+      this->set(data_, buffer_size);
+      this->clear();
+    }
+  }
+  ~iterator_buffer() { flush(); }
+
+  auto out() -> T* {
+    flush();
+    return out_;
+  }
+  auto count() const -> size_t { return fixed_buffer_traits::count() + this->size(); }
+};
+
 template <typename T> class iterator_buffer<T*, T> final : public buffer<T> {
  protected:
-  void grow(size_t) final FMT_OVERRIDE {}
+  void grow(size_t) override {}
 
  public:
   explicit iterator_buffer(T* out, size_t = 0) : buffer<T>(out, 0, ~size_t()) {}
@@ -933,7 +939,7 @@ class iterator_buffer<std::back_insert_iterator<Container>,
   Container& container_;
 
  protected:
-  void grow(size_t capacity) final FMT_OVERRIDE {
+  void grow(size_t capacity) override {
     container_.resize(capacity);
     this->set(&container_[0], capacity);
   }
@@ -956,7 +962,7 @@ template <typename T = char> class counting_buffer final : public buffer<T> {
   size_t count_ = 0;
 
  protected:
-  void grow(size_t) final FMT_OVERRIDE {
+  void grow(size_t) override {
     if (this->size() != buffer_size) return;
     count_ += this->size();
     this->clear();
@@ -1223,7 +1229,7 @@ template <typename Context> class value {
     auto f = Formatter();
     parse_ctx.advance_to(f.parse(parse_ctx));
     using qualified_type =
-        conditional_t<is_const_formattable<T, Context>(), const T, T>;
+        conditional_t<has_const_formatter<T, Context>(), const T, T>;
     ctx.advance_to(f.format(*static_cast<qualified_type*>(arg), ctx));
   }
 };
@@ -1372,7 +1378,7 @@ template <typename Context> struct arg_mapper {
 
   template <typename T, typename U = remove_cvref_t<T>>
   struct formattable
-      : bool_constant<is_const_formattable<U, Context>() ||
+      : bool_constant<has_const_formatter<U, Context>() ||
                       !std::is_const<remove_reference_t<T>>::value ||
                       has_fallback_formatter<U, char_type>::value> {};
 
@@ -1959,8 +1965,6 @@ using sign_t = sign::type;
 
 FMT_BEGIN_DETAIL_NAMESPACE
 
-void throw_format_error(const char* message);
-
 // Workaround an array initialization issue in gcc 4.8.
 template <typename Char> struct fill_t {
  private:
@@ -1986,11 +1990,33 @@ template <typename Char> struct fill_t {
 };
 FMT_END_DETAIL_NAMESPACE
 
+enum class presentation_type : unsigned char {
+  none,
+  // Integer types should go first,
+  dec,             // 'd'
+  oct,             // 'o'
+  hex_lower,       // 'x'
+  hex_upper,       // 'X'
+  bin_lower,       // 'b'
+  bin_upper,       // 'B'
+  hexfloat_lower,  // 'a'
+  hexfloat_upper,  // 'A'
+  exp_lower,       // 'e'
+  exp_upper,       // 'E'
+  fixed_lower,     // 'f'
+  fixed_upper,     // 'F'
+  general_lower,   // 'g'
+  general_upper,   // 'G'
+  chr,             // 'c'
+  string,          // 's'
+  pointer          // 'p'
+};
+
 // Format specifiers for built-in and string types.
 template <typename Char> struct basic_format_specs {
   int width;
   int precision;
-  char type;
+  presentation_type type;
   align_t align : 4;
   sign_t sign : 3;
   bool alt : 1;  // Alternate form ('#').
@@ -2000,7 +2026,7 @@ template <typename Char> struct basic_format_specs {
   constexpr basic_format_specs()
       : width(0),
         precision(-1),
-        type(0),
+        type(presentation_type::none),
         align(align::none),
         sign(sign::none),
         alt(false),
@@ -2080,9 +2106,7 @@ template <typename Char> class specs_setter {
   }
   FMT_CONSTEXPR void end_precision() {}
 
-  FMT_CONSTEXPR void on_type(Char type) {
-    specs_.type = static_cast<char>(type);
-  }
+  FMT_CONSTEXPR void on_type(presentation_type type) { specs_.type = type; }
 };
 
 // Format spec handler that saves references to arguments representing dynamic
@@ -2156,8 +2180,8 @@ constexpr auto to_ascii(Char value) ->
 template <typename Char>
 FMT_CONSTEXPR auto code_point_length(const Char* begin) -> int {
   if (const_check(sizeof(Char) != 1)) return 1;
-  constexpr char lengths[] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                              0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 3, 3, 4, 0};
+  auto lengths =
+      "\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\0\0\0\0\0\0\0\0\2\2\2\2\3\3\4";
   int len = lengths[static_cast<unsigned char>(*begin) >> 3];
 
   // Compute the pointer to the next character early so that the next
@@ -2364,6 +2388,48 @@ FMT_CONSTEXPR auto parse_precision(const Char* begin, const Char* end,
   return begin;
 }
 
+template <typename Char>
+FMT_CONSTEXPR auto parse_presentation_type(Char type) -> presentation_type {
+  switch (to_ascii(type)) {
+  case 'd':
+    return presentation_type::dec;
+  case 'o':
+    return presentation_type::oct;
+  case 'x':
+    return presentation_type::hex_lower;
+  case 'X':
+    return presentation_type::hex_upper;
+  case 'b':
+    return presentation_type::bin_lower;
+  case 'B':
+    return presentation_type::bin_upper;
+  case 'a':
+    return presentation_type::hexfloat_lower;
+  case 'A':
+    return presentation_type::hexfloat_upper;
+  case 'e':
+    return presentation_type::exp_lower;
+  case 'E':
+    return presentation_type::exp_upper;
+  case 'f':
+    return presentation_type::fixed_lower;
+  case 'F':
+    return presentation_type::fixed_upper;
+  case 'g':
+    return presentation_type::general_lower;
+  case 'G':
+    return presentation_type::general_upper;
+  case 'c':
+    return presentation_type::chr;
+  case 's':
+    return presentation_type::string;
+  case 'p':
+    return presentation_type::pointer;
+  default:
+    return presentation_type::none;
+  }
+}
+
 // Parses standard format specifiers and sends notifications about parsed
 // components to handler.
 template <typename Char, typename SpecHandler>
@@ -2373,7 +2439,10 @@ FMT_CONSTEXPR FMT_INLINE auto parse_format_specs(const Char* begin,
     -> const Char* {
   if (begin + 1 < end && begin[1] == '}' && is_ascii_letter(*begin) &&
       *begin != 'L') {
-    handler.on_type(*begin++);
+    presentation_type type = parse_presentation_type(*begin++);
+    if (type == presentation_type::none)
+      handler.on_error("invalid type specifier");
+    handler.on_type(type);
     return begin;
   }
 
@@ -2427,7 +2496,12 @@ FMT_CONSTEXPR FMT_INLINE auto parse_format_specs(const Char* begin,
   }
 
   // Parse type.
-  if (begin != end && *begin != '}') handler.on_type(*begin++);
+  if (begin != end && *begin != '}') {
+    presentation_type type = parse_presentation_type(*begin++);
+    if (type == presentation_type::none)
+      handler.on_error("invalid type specifier");
+    handler.on_type(type);
+  }
   return begin;
 }
 
@@ -2474,7 +2548,7 @@ FMT_CONSTEXPR auto parse_replacement_field(const Char* begin, const Char* end,
 template <bool IS_CONSTEXPR, typename Char, typename Handler>
 FMT_CONSTEXPR FMT_INLINE void parse_format_string(
     basic_string_view<Char> format_str, Handler&& handler) {
-  // this is most likely a name-lookup defect in msvc's modules implementation
+  // Workaround a name-lookup bug in MSVC's modules implementation.
   using detail::find;
 
   auto begin = format_str.data();
@@ -2569,28 +2643,18 @@ class compile_parse_context
 };
 
 template <typename ErrorHandler>
-FMT_CONSTEXPR void check_int_type_spec(char spec, ErrorHandler&& eh) {
-  switch (spec) {
-  case 0:
-  case 'd':
-  case 'x':
-  case 'X':
-  case 'b':
-  case 'B':
-  case 'o':
-  case 'c':
-    break;
-  default:
+FMT_CONSTEXPR void check_int_type_spec(presentation_type type,
+                                       ErrorHandler&& eh) {
+  if (type > presentation_type::bin_upper && type != presentation_type::chr)
     eh.on_error("invalid type specifier");
-    break;
-  }
 }
 
 // Checks char specs and returns true if the type spec is char (and not int).
 template <typename Char, typename ErrorHandler = error_handler>
 FMT_CONSTEXPR auto check_char_specs(const basic_format_specs<Char>& specs,
                                     ErrorHandler&& eh = {}) -> bool {
-  if (specs.type && specs.type != 'c') {
+  if (specs.type != presentation_type::none &&
+      specs.type != presentation_type::chr) {
     check_int_type_spec(specs.type, eh);
     return false;
   }
@@ -2626,33 +2690,33 @@ FMT_CONSTEXPR auto parse_float_type_spec(const basic_format_specs<Char>& specs,
   result.showpoint = specs.alt;
   result.locale = specs.localized;
   switch (specs.type) {
-  case 0:
+  case presentation_type::none:
     result.format = float_format::general;
     break;
-  case 'G':
+  case presentation_type::general_upper:
     result.upper = true;
     FMT_FALLTHROUGH;
-  case 'g':
+  case presentation_type::general_lower:
     result.format = float_format::general;
     break;
-  case 'E':
+  case presentation_type::exp_upper:
     result.upper = true;
     FMT_FALLTHROUGH;
-  case 'e':
+  case presentation_type::exp_lower:
     result.format = float_format::exp;
     result.showpoint |= specs.precision != 0;
     break;
-  case 'F':
+  case presentation_type::fixed_upper:
     result.upper = true;
     FMT_FALLTHROUGH;
-  case 'f':
+  case presentation_type::fixed_lower:
     result.format = float_format::fixed;
     result.showpoint |= specs.precision != 0;
     break;
-  case 'A':
+  case presentation_type::hexfloat_upper:
     result.upper = true;
     FMT_FALLTHROUGH;
-  case 'a':
+  case presentation_type::hexfloat_lower:
     result.format = float_format::hex;
     break;
   default:
@@ -2662,22 +2726,27 @@ FMT_CONSTEXPR auto parse_float_type_spec(const basic_format_specs<Char>& specs,
   return result;
 }
 
-template <typename Char, typename ErrorHandler = error_handler>
-FMT_CONSTEXPR auto check_cstring_type_spec(Char spec, ErrorHandler&& eh = {})
-    -> bool {
-  if (spec == 0 || spec == 's') return true;
-  if (spec != 'p') eh.on_error("invalid type specifier");
+template <typename ErrorHandler = error_handler>
+FMT_CONSTEXPR auto check_cstring_type_spec(presentation_type type,
+                                           ErrorHandler&& eh = {}) -> bool {
+  if (type == presentation_type::none || type == presentation_type::string)
+    return true;
+  if (type != presentation_type::pointer) eh.on_error("invalid type specifier");
   return false;
 }
 
-template <typename Char, typename ErrorHandler = error_handler>
-FMT_CONSTEXPR void check_string_type_spec(Char spec, ErrorHandler&& eh = {}) {
-  if (spec != 0 && spec != 's') eh.on_error("invalid type specifier");
+template <typename ErrorHandler = error_handler>
+FMT_CONSTEXPR void check_string_type_spec(presentation_type type,
+                                          ErrorHandler&& eh = {}) {
+  if (type != presentation_type::none && type != presentation_type::string)
+    eh.on_error("invalid type specifier");
 }
 
-template <typename Char, typename ErrorHandler>
-FMT_CONSTEXPR void check_pointer_type_spec(Char spec, ErrorHandler&& eh) {
-  if (spec != 0 && spec != 'p') eh.on_error("invalid type specifier");
+template <typename ErrorHandler>
+FMT_CONSTEXPR void check_pointer_type_spec(presentation_type type,
+                                           ErrorHandler&& eh) {
+  if (type != presentation_type::none && type != presentation_type::pointer)
+    eh.on_error("invalid type specifier");
 }
 
 // A parse_format_specs handler that checks if specifiers are consistent with
@@ -2738,28 +2807,21 @@ constexpr auto get_arg_index_by_name(basic_string_view<Char> name) -> int {
   if constexpr (detail::is_statically_named_arg<T>()) {
     if (name == T::name) return N;
   }
-  if constexpr (sizeof...(Args) > 0) {
+  if constexpr (sizeof...(Args) > 0)
     return get_arg_index_by_name<N + 1, Args...>(name);
-  } else {
-    (void)name;  // Workaround an MSVC bug about "unused" parameter.
-    return invalid_arg_index;
-  }
+  (void)name;  // Workaround an MSVC bug about "unused" parameter.
+  return invalid_arg_index;
 }
 #endif
 
 template <typename... Args, typename Char>
 FMT_CONSTEXPR auto get_arg_index_by_name(basic_string_view<Char> name) -> int {
 #if FMT_USE_NONTYPE_TEMPLATE_PARAMETERS
-  if constexpr (sizeof...(Args) > 0) {
+  if constexpr (sizeof...(Args) > 0)
     return get_arg_index_by_name<0, Args...>(name);
-  } else {
-    (void)name;
-    return invalid_arg_index;
-  }
-#else
+#endif
   (void)name;
   return invalid_arg_index;
-#endif
 }
 
 template <typename Char, typename ErrorHandler, typename... Args>
@@ -2862,7 +2924,10 @@ struct formatter<T, Char,
       FMT_ASSERT(false, "invalid argument type");
       break;
     case detail::type::bool_type:
-      if (!specs_.type || specs_.type == 's') break;
+      if (specs_.type == presentation_type::none ||
+          specs_.type == presentation_type::string) {
+        break;
+      }
       FMT_FALLTHROUGH;
     case detail::type::int_type:
     case detail::type::uint_type:
@@ -2995,7 +3060,7 @@ template <typename OutputIt,
 auto vformat_to(OutputIt out, string_view fmt, format_args args) -> OutputIt {
   using detail::get_buffer;
   auto&& buf = get_buffer<char>(out);
-  detail::vformat_to(buf, string_view(fmt), args, {});
+  detail::vformat_to(buf, fmt, args, {});
   return detail::get_iterator(buf);
 }
 
@@ -3029,9 +3094,8 @@ template <typename OutputIt, typename... T,
           FMT_ENABLE_IF(detail::is_output_iterator<OutputIt, char>::value)>
 auto vformat_to_n(OutputIt out, size_t n, string_view fmt, format_args args)
     -> format_to_n_result<OutputIt> {
-  using buffer =
-      detail::iterator_buffer<OutputIt, char, detail::fixed_buffer_traits>;
-  auto buf = buffer(out, n);
+  using traits = detail::fixed_buffer_traits;
+  auto buf = detail::iterator_buffer<OutputIt, char, traits>(out, n);
   detail::vformat_to(buf, fmt, args, {});
   return {buf.out(), buf.count()};
 }
