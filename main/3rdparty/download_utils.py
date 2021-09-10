@@ -42,7 +42,7 @@ def set_repo(name, branch, out_name=""):
     global out_dir
 
     # Repository URL
-    repo_url = f"https://raw.githubusercontent.com/{name}/{branch}/"
+    repo_url = f"http://raw.githubusercontent.com/{name}/{branch}/"
 
     # The working directory of this file
     file_dir = os.path.dirname(os.path.realpath(__file__))
