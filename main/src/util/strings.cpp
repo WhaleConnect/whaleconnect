@@ -1,3 +1,6 @@
+// Copyright 2021 the Network Socket Terminal contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #ifdef _WIN32
 #include <Windows.h>
 #endif
