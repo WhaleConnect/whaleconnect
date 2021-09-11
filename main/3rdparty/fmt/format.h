@@ -885,9 +885,6 @@ using uint64_or_128_t = conditional_t<num_bits<T>() <= 64, uint64_t, uint128_t>;
 
 // Static data is placed in this class template for the header-only config.
 template <typename T = void> struct basic_data {
-  // log10(2) = 0x0.4d104d427de7fbcc...
-  static const uint64_t log10_2_significand = 0x4d104d427de7fbcc;
-
   // GCC generates slightly better code for pairs than chars.
   FMT_API static constexpr const char digits[100][2] = {
       {'0', '0'}, {'0', '1'}, {'0', '2'}, {'0', '3'}, {'0', '4'}, {'0', '5'},
@@ -909,7 +906,6 @@ template <typename T = void> struct basic_data {
       {'9', '6'}, {'9', '7'}, {'9', '8'}, {'9', '9'}};
 
   FMT_API static constexpr const char hex_digits[] = "0123456789abcdef";
-  FMT_API static constexpr const char signs[4] = {0, '-', '+', ' '};
   FMT_API static constexpr const unsigned prefixes[4] = {0, 0, 0x1000000u | '+',
                                                          0x1000000u | ' '};
 };
@@ -921,6 +917,14 @@ extern template struct basic_data<void>;
 
 // This is a struct rather than an alias to avoid shadowing warnings in gcc.
 struct data : basic_data<> {};
+
+// Sign is a template parameter to workaround a bug in gcc 4.8.
+template <typename Char, typename Sign> constexpr Char sign(Sign s) {
+#if !FMT_GCC_VERSION || FMT_GCC_VERSION > 408
+  static_assert(std::is_same<Sign, sign_t>::value, "");
+#endif
+  return static_cast<Char>("\0-+ "[s]);
+}
 
 template <typename T> FMT_CONSTEXPR auto count_digits_fallback(T n) -> int {
   int count = 1;
@@ -1676,7 +1680,7 @@ auto write_nonfinite(OutputIt out, bool isinf, basic_format_specs<Char> specs,
       specs.fill.size() == 1 && *specs.fill.data() == static_cast<Char>('0');
   if (is_zero_fill) specs.fill[0] = static_cast<Char>(' ');
   return write_padded(out, specs, size, [=](reserve_iterator<OutputIt> it) {
-    if (sign) *it++ = static_cast<Char>(data::signs[sign]);
+    if (sign) *it++ = detail::sign<Char>(sign);
     return copy_str<Char>(str, str + str_size, it);
   });
 }
@@ -1820,7 +1824,7 @@ auto write_float(OutputIt out, const DecimalFP& fp,
     size += to_unsigned((decimal_point ? 1 : 0) + 2 + exp_digits);
     char exp_char = fspecs.upper ? 'E' : 'e';
     auto write = [=](iterator it) {
-      if (sign) *it++ = static_cast<Char>(data::signs[sign]);
+      if (sign) *it++ = detail::sign<Char>(sign);
       // Insert a decimal point after the first digit and add an exponent.
       it = write_significand(it, significand, significand_size, 1,
                              decimal_point);
@@ -1848,7 +1852,7 @@ auto write_float(OutputIt out, const DecimalFP& fp,
     auto grouping = digit_grouping<Char>(loc, fspecs.locale);
     size += to_unsigned(grouping.count_separators(significand_size));
     return write_padded<align::right>(out, specs, size, [&](iterator it) {
-      if (sign) *it++ = static_cast<Char>(data::signs[sign]);
+      if (sign) *it++ = detail::sign<Char>(sign);
       it = write_significand<Char>(it, significand, significand_size,
                                    fp.exponent, grouping);
       if (!fspecs.showpoint) return it;
@@ -1862,7 +1866,7 @@ auto write_float(OutputIt out, const DecimalFP& fp,
     auto grouping = digit_grouping<Char>(loc, fspecs.locale);
     size += to_unsigned(grouping.count_separators(significand_size));
     return write_padded<align::right>(out, specs, size, [&](iterator it) {
-      if (sign) *it++ = static_cast<Char>(data::signs[sign]);
+      if (sign) *it++ = detail::sign<Char>(sign);
       it = write_significand(it, significand, significand_size, exp,
                              decimal_point, grouping);
       return num_zeros > 0 ? detail::fill_n(it, num_zeros, zero) : it;
@@ -1877,7 +1881,7 @@ auto write_float(OutputIt out, const DecimalFP& fp,
   bool pointy = num_zeros != 0 || significand_size != 0 || fspecs.showpoint;
   size += 1 + (pointy ? 1 : 0) + to_unsigned(num_zeros);
   return write_padded<align::right>(out, specs, size, [&](iterator it) {
-    if (sign) *it++ = static_cast<Char>(data::signs[sign]);
+    if (sign) *it++ = detail::sign<Char>(sign);
     *it++ = zero;
     if (!pointy) return it;
     *it++ = decimal_point;
@@ -1905,7 +1909,7 @@ auto write(OutputIt out, T value, basic_format_specs<Char> specs,
 
   if (specs.align == align::numeric && fspecs.sign) {
     auto it = reserve(out, 1);
-    *it++ = static_cast<Char>(data::signs[fspecs.sign]);
+    *it++ = detail::sign<Char>(fspecs.sign);
     out = base_iterator(out, it);
     fspecs.sign = sign::none;
     if (specs.width != 0) --specs.width;
@@ -1913,7 +1917,7 @@ auto write(OutputIt out, T value, basic_format_specs<Char> specs,
 
   memory_buffer buffer;
   if (fspecs.format == float_format::hex) {
-    if (fspecs.sign) buffer.push_back(data::signs[fspecs.sign]);
+    if (fspecs.sign) buffer.push_back(detail::sign<char>(fspecs.sign));
     snprintf_float(promote_float(value), specs.precision, fspecs, buffer);
     return write_bytes<align::right>(out, {buffer.data(), buffer.size()},
                                      specs);
