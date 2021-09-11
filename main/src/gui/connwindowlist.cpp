@@ -43,7 +43,7 @@ static std::string formatDeviceData(const Sockets::DeviceData& data) {
 void ConnWindowList::_populateFds() {
     // Clear the file descriptors vector, then populate it with the data in the `_windows` vector
     _pfds.clear();
-    for (const auto& window : _windows) _pfds.push_back({ window->getSocket(), window->getPollFlags(), 0 });
+    for (const auto& window : _windows) _pfds.emplace_back(window->getSocket(), window->getPollFlags(), 0);
 }
 
 bool ConnWindowList::add(const Sockets::DeviceData& data) {

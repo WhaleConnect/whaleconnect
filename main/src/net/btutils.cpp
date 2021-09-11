@@ -229,7 +229,7 @@ int BTUtils::getPaired(std::vector<Sockets::DeviceData>& deviceList) {
 
         // Push back
         std::string name = Strings::fromWide(deviceInfo.szName);
-        deviceList.push_back({ Sockets::Bluetooth, name, mac, 0, deviceInfo.Address.ullLong });
+        deviceList.emplace_back(Sockets::Bluetooth, name, mac, 0, deviceInfo.Address.ullLong);
     } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
 #else
     if (!defaultCtrl) {
@@ -260,7 +260,7 @@ int BTUtils::getPaired(std::vector<Sockets::DeviceData>& deviceList) {
         dbus_message_iter_get_basic(&iter, &name);
 
         // Push back
-        deviceList.push_back({ Sockets::Bluetooth, name, address, 0, 0 });
+        deviceList.emplace_back(Sockets::Bluetooth, name, address, 0, 0);
     }
 #endif
 

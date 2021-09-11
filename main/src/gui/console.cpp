@@ -31,9 +31,14 @@ void Console::_add(const std::string& s, ImVec4 color, bool canUseHex) {
     std::string timestamp = "";
 #endif
 
-    // Text goes on its own line if deque is empty or the last line ends with a newline
-    if (_items.empty() || (_items.back().text.back() == '\n')) _items.push_back({ canUseHex, s, {}, color, timestamp });
-    else _items.back().text += s; // Text goes on the last line (append)
+    if (_items.empty() || (_items.back().text.back() == '\n')) {
+        // Text goes on its own line if there are no items or the last line ends with a newline
+        // We need to explicitly specify the ostringstream constructor so the compiler knows what type the argument is.
+        _items.emplace_back(canUseHex, s, std::ostringstream(), color, timestamp);
+    } else {
+        // Text goes on the last line (append)
+        _items.back().text += s;
+    }
 
     // The code block below is located here as a "caching" mechanism - the hex representation is only computed when the
     // item is added. It is simply retreived in the main loop.
