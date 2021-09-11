@@ -165,11 +165,11 @@ void ImGui::Overlay(ImVec2 padding, ImGuiOverlayCorner corner, const char* text,
         | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize;
 
     // Get main viewport
-    const ImGuiViewport* viewport = GetMainViewport();
+    ImGuiViewport& viewport = *GetMainViewport();
 
     // Use work area to avoid any menubars or taskbars
-    ImVec2 workPos = viewport->WorkPos;
-    ImVec2 workSize = viewport->WorkSize;
+    ImVec2 workPos = viewport.WorkPos;
+    ImVec2 workSize = viewport.WorkSize;
     bool isRight = (corner == ImGuiOverlayCorner_TopRight) || (corner == ImGuiOverlayCorner_BottomRight);
     bool isBottom = (corner == ImGuiOverlayCorner_BottomLeft) || (corner == ImGuiOverlayCorner_BottomRight);
 
@@ -184,7 +184,7 @@ void ImGui::Overlay(ImVec2 padding, ImGuiOverlayCorner corner, const char* text,
     // Window configuration
     SetNextWindowBgAlpha(0.5f);
     SetNextWindowPos(windowPos, ImGuiCond_Always, windowPosPivot);
-    SetNextWindowViewport(viewport->ID);
+    SetNextWindowViewport(viewport.ID);
 
     // Draw the window - we're passing the text as the window name (which doesn't show). This function will work as
     // long as every call has a different text value.
