@@ -19,18 +19,18 @@ static int stringCallback(ImGuiInputTextCallbackData* data) {
 
     // Resize the string, then set the callback data buffer
     str.resize(data->BufTextLen);
-    data->Buf = const_cast<char*>(str.c_str());
+    data->Buf = str.data();
     return 0;
 }
 
 bool ImGui::InputText(const char* label, std::string& s, ImGuiInputTextFlags flags) {
     flags |= ImGuiInputTextFlags_CallbackResize;
-    return InputText(label, const_cast<char*>(s.c_str()), s.capacity() + 1, flags, stringCallback, &s);
+    return InputText(label, s.data(), s.capacity() + 1, flags, stringCallback, &s);
 }
 
 bool ImGui::InputTextMultiline(const char* label, std::string& s, const ImVec2& size, ImGuiInputTextFlags flags) {
     flags |= ImGuiInputTextFlags_CallbackResize;
-    return InputTextMultiline(label, const_cast<char*>(s.c_str()), s.capacity() + 1, size, flags, stringCallback, &s);
+    return InputTextMultiline(label, s.data(), s.capacity() + 1, size, flags, stringCallback, &s);
 }
 
 void ImGui::HelpMarker(const char* desc) {
