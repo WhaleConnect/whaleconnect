@@ -549,6 +549,7 @@ template <typename Char> struct formatter<std::tm, Char> {
   enum class spec {
     unknown,
     year_month_day,
+    hh_mm_ss,
   };
   spec spec_ = spec::unknown;
 
@@ -563,7 +564,13 @@ template <typename Char> struct formatter<std::tm, Char> {
     while (end != ctx.end() && *end != '}') ++end;
     auto size = detail::to_unsigned(end - it);
     specs = {it, size};
-    if (specs == string_view("%F", 2)) spec_ = spec::year_month_day;
+    // basic_string_view<>::compare isn't constexpr before C++17
+    if (specs.size() == 2 && specs[0] == Char('%')) {
+      if (specs[1] == Char('F'))
+        spec_ = spec::year_month_day;
+      else if (specs[1] == Char('T'))
+        spec_ = spec::hh_mm_ss;
+    }
     return end;
   }
 
@@ -573,10 +580,16 @@ template <typename Char> struct formatter<std::tm, Char> {
     auto year = 1900 + tm.tm_year;
     if (spec_ == spec::year_month_day && year >= 0 && year < 10000) {
       char buf[10];
-      detail::copy2(buf, detail::data::digits[year / 100]);
+      detail::copy2(buf, detail::digits2(detail::to_unsigned(year / 100)));
       detail::write_digit2_separated(buf + 2, year % 100,
                                      detail::to_unsigned(tm.tm_mon + 1),
                                      detail::to_unsigned(tm.tm_mday), '-');
+      return std::copy_n(buf, sizeof(buf), ctx.out());
+    } else if (spec_ == spec::hh_mm_ss) {
+      char buf[8];
+      detail::write_digit2_separated(buf, detail::to_unsigned(tm.tm_hour),
+                                     detail::to_unsigned(tm.tm_min),
+                                     detail::to_unsigned(tm.tm_sec), ':');
       return std::copy_n(buf, sizeof(buf), ctx.out());
     }
     basic_memory_buffer<Char> tm_format;
