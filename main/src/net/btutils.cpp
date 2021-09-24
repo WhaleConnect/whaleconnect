@@ -215,7 +215,13 @@ int BTUtils::getPaired(std::vector<Sockets::DeviceData>& deviceList) {
     BLUETOOTH_DEVICE_INFO deviceInfo{ .dwSize = sizeof(BLUETOOTH_DEVICE_INFO) };
     HBLUETOOTH_DEVICE_FIND foundDevice = BluetoothFindFirstDevice(&searchCriteria, &deviceInfo);
 
-    if (!foundDevice) return SOCKET_ERROR;
+    // Error 259 ("no more data") indicates that no Bluetooth devices are paired.
+    // This can be handled with a `return NO_ERROR`.
+    // Other errors are fatal, return a `SOCKET_ERROR`.
+    //
+    // WSAGetLastError() and GetLastError() are the same. The latter is typically used more outside of Winsock
+    // programming like in this function. https://stackoverflow.com/a/15586393
+    if (!foundDevice) return (GetLastError() == 259) ? NO_ERROR : SOCKET_ERROR;
 
     // Loop through each found device
     do {
