@@ -25,9 +25,11 @@
 ; Osage
 ; Elbasan
 ; Caucasian Albanian
-010570 0105FF
+; Vithkuqi
+0105C0 0105FF
 ; Linear A
-010780 0107FF
+; Latin Extended-F
+0107C0 0107FF
 ; Cypriot Syllabary
 ; Imperial Aramaic
 ; Palmyrene
@@ -59,7 +61,7 @@
 010EC0 010EFF 
 ; Old Sogdian
 ; Sogdian
-010F70 010FAF
+; Old Uyghur
 ; Chorasmian
 ; Elymaic
 ; Brahmi
@@ -93,7 +95,7 @@
 ; Nandinagari
 ; Zanabazar Square
 ; Soyombo
-011AB0 011ABF
+; Unified Canadian Aboriginal Syllables Extended-A
 ; Pau Cin Hau
 011B00 011AFF
 ; Bhaiksuki
@@ -109,7 +111,8 @@
 ; Cuneiform
 ; Cuneiform Numbers and Punctuation
 ; Early Dynastic Cuneiform
-012550 012FFF
+012550 012F8F
+; Cypro-Minoan
 ; Egyptian Hieroglyphs
 ; Egyptian Hieroglyph Format Controls
 013440 0143FF
@@ -117,7 +120,7 @@
 014680 0167FF
 ; Bamum Supplement
 ; Mro
-016A70 016ACF
+; Tangsa
 ; Bassa Vah
 ; Pahawh Hmong
 016B90 016E3F
@@ -138,7 +141,9 @@
 01B300 01BBFF
 ; Duployan
 ; Shorthand Format Controls
-01BCB0 01CFFF
+01BCB0 01CEFF
+; Znamenny Musical Notation
+01CFD0 01CFFF
 ; Byzantine Musical Symbols
 ; Musical Symbols
 ; Ancient Greek Musical Notation
@@ -149,13 +154,16 @@
 01D380 01D3FF
 ; Mathematical Alphanumeric Symbols
 ; Sutton SignWriting
-01DAB0 01DFFF
+01DAB0 01DEFF
+; Latin Extended-G
 ; Glagolitic Supplement
 01E030 01E0FF
 ; Nyiakeng Puachue Hmong
-01E150 01E2BF
+01E150 01E28F
+; Toto
 ; Wancho
-01E300 01E7FF
+01E300 01E7DF
+; Ethiopic Extended-B
 ; Mende Kikakui
 01E8E0 01E8FF
 ; Adlam

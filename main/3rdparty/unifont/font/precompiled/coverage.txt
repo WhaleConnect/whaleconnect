@@ -585,7 +585,7 @@ Covered      Range       Script
 
  100.0%  U+11700..U+1173F  Ahom
 
- 100.0%  U+11740..U+117FF  Unassigned
+ 108.3%  U+11740..U+117FF  Unassigned
 
  100.0%  U+11800..U+1184F  Dogra
 
@@ -677,7 +677,7 @@ Covered      Range       Script
 
   43.8%  U+18D00..U+18D0F  Tangut Supplement
 
- 100.0%  U+18D10..U+1AFFF  Unassigned
+ 100.2%  U+18D10..U+1AFFF  Unassigned
 
  100.0%  U+1B000..U+1B0FF  Kana Supplement
 
@@ -777,7 +777,7 @@ Covered      Range       Script
 
  100.0%  U+1FA00..U+1FA6F  Chess Symbols
 
- 100.0%  U+1FA70..U+1FAFF  Symbols and Pictographs Extended - A
+ 102.1%  U+1FA70..U+1FAFF  Symbols and Pictographs Extended - A
 
  100.0%  U+1FB00..U+1FBFF  Symbols for Legacy Computing
 

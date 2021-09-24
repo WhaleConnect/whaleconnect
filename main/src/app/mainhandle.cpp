@@ -48,7 +48,7 @@ static void configImGui() {
     // Include all in Unicode plane 0 except for control characters (U+0000 - U+0019), surrogates (U+D800 - U+DFFF),
     // private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
     static const ImWchar ranges[] = { 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
-    static const char* fontFile = "3rdparty/unifont/font/precompiled/unifont-13.0.06.ttf";
+    static const char* fontFile = "3rdparty/unifont/font/precompiled/unifont-14.0.01.ttf";
     fonts.AddFontFromFileTTF(fontFile, Settings::fontSize, nullptr, &ranges[0]);
 }
 

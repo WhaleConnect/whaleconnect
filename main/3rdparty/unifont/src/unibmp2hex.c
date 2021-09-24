@@ -27,6 +27,11 @@
 */
 
 /*
+   6 September 2021 [Paul Hardy]:
+      - Set U+12F90..U+12FFF (Cypro-Minoan) to be double width.
+      - Set U+1CF00..U+1CFCF (Znamenny Musical Notation) to be double width.
+      - Set U+1AFF0..U+1AFFF (Kana Extended-B) to be double width.
+
    20 June 2017 [Paul Hardy]:
       - Modify to allow hard-coding of quadruple-width hex glyphs.
         The 32nd column (rightmost column) is cleared to zero, because
@@ -287,6 +292,7 @@ main (int argc, char *argv[])
    for (i = 0x011C70; i <= 0x011CBF; i++) wide[i] = 1; /* Marchen            */
    for (i = 0x011D00; i <= 0x011D5F; i++) wide[i] = 1; /* Masaram Gondi      */
    for (i = 0x011EE0; i <= 0x011EFF; i++) wide[i] = 1; /* Makasar            */
+   for (i = 0x012F90; i <= 0x012FFF; i++) wide[i] = 1; /* Cypro-Minoan       */
    /* Make Bassa Vah all single width or all double width */
    for (i = 0x016AD0; i <= 0x016AFF; i++) wide[i] = 1; /* Bassa Vah          */
    for (i = 0x016B00; i <= 0x016B8F; i++) wide[i] = 1; /* Pahawh Hmong       */
@@ -294,9 +300,11 @@ main (int argc, char *argv[])
    for (i = 0x016FE0; i <= 0x016FFF; i++) wide[i] = 1; /* Ideograph Sym/Punct*/
    for (i = 0x017000; i <= 0x0187FF; i++) wide[i] = 1; /* Tangut             */
    for (i = 0x018800; i <= 0x018AFF; i++) wide[i] = 1; /* Tangut Components  */
+   for (i = 0x01AFF0; i <= 0x01AFFF; i++) wide[i] = 1; /* Kana Extended-B    */
    for (i = 0x01B000; i <= 0x01B0FF; i++) wide[i] = 1; /* Kana Supplement    */
    for (i = 0x01B100; i <= 0x01B12F; i++) wide[i] = 1; /* Kana Extended-A    */
    for (i = 0x01B170; i <= 0x01B2FF; i++) wide[i] = 1; /* Nushu              */
+   for (i = 0x01CF00; i <= 0x01CFCF; i++) wide[i] = 1; /* Znamenny Musical   */
    for (i = 0x01D100; i <= 0x01D1FF; i++) wide[i] = 1; /* Musical Symbols    */
    for (i = 0x01D800; i <= 0x01DAAF; i++) wide[i] = 1; /* Sutton SignWriting */
    for (i = 0x01E2C0; i <= 0x01E2FF; i++) wide[i] = 1; /* Wancho             */
