@@ -116,6 +116,8 @@ static void drawIPConnectionTab() {
         ImGui::Separator();
         ImGui::TextUnformatted("This connection is already open.");
     }
+
+    ImGui::EndTabItem();
 }
 
 static void drawBTConnectionTab() {
