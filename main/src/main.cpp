@@ -83,9 +83,11 @@ static void beginChildWithSpacing(bool spacing) {
 static void drawIPConnectionTab() {
     if (!ImGui::BeginTabItem("Internet Protocol")) return;
 
+    using Sockets::ConnectionType::TCP, Sockets::ConnectionType::UDP;
+
     static std::string addr = ""; // Server address
     static uint16_t port = 0; // Server port
-    static bool isTCP = true; // Type of connection to create (default is TCP)
+    static Sockets::ConnectionType type = TCP; // Type of connection to create
     static bool isNew = true; // If the attempted connection is unique
 
     beginChildWithSpacing(isNew);
@@ -99,12 +101,13 @@ static void drawIPConnectionTab() {
     ImGui::UnsignedInputScalar("Port", port);
 
     // Connection type selection
-    if (ImGui::RadioButton("TCP", isTCP)) isTCP = true;
-    if (ImGui::RadioButton("UDP", !isTCP)) isTCP = false;
+    if (ImGui::RadioButton("TCP", type == TCP)) type = TCP;
+    if (ImGui::RadioButton("UDP", type == UDP)) type = UDP;
 
     // Connect button
+    ImGui::Spacing();
     ImGui::BeginDisabled(addr.empty());
-    if (ImGui::Button("Connect")) isNew = connections.add({ !isTCP, "", addr, port, 0 });
+    if (ImGui::Button("Connect")) isNew = connections.add({ type, "", addr, port, 0 });
     ImGui::EndDisabled();
     ImGui::EndChild();
 
@@ -113,8 +116,6 @@ static void drawIPConnectionTab() {
         ImGui::Separator();
         ImGui::TextUnformatted("This connection is already open.");
     }
-
-    ImGui::EndTabItem();
 }
 
 static void drawBTConnectionTab() {

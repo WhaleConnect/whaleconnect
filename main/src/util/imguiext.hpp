@@ -15,7 +15,7 @@ enum ImGuiOverlayCorner_ {
     ImGuiOverlayCorner_BottomLeft,
     ImGuiOverlayCorner_BottomRight
 };
-typedef int ImGuiOverlayCorner;
+using ImGuiOverlayCorner = int;
 
 /// <summary>
 /// Namespace containing add-on functions for Dear ImGui.
@@ -99,7 +99,7 @@ namespace ImGui {
     /// Taken from https://github.com/ocornut/imgui/issues/1901#issuecomment-400563921.
     /// </remarks>
     inline void LoadingSpinner(const char* label) {
-        Text("%s... %c", label, "|/-\\"[static_cast<int>(ImGui::GetTime() / 0.05f) & 3]);
+        Text("%s... %c", label, "|/-\\"[static_cast<int>(GetTime() / 0.05f) & 3]);
     }
 }
 

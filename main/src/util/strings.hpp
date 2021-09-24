@@ -19,10 +19,10 @@
 namespace Strings {
 #ifdef _WIN32
     // Wide strings are used on Windows
-    typedef std::wstring widestr;
+    using widestr = std::wstring;
 #else
     // Ordinary strings are used on other platforms
-    typedef std::string widestr;
+    using widestr = std::string;
 #endif
 
     /// <summary>

@@ -11,12 +11,12 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 // These don't exist on Windows
-#define EAI_SYSTEM 0
-#define MSG_NOSIGNAL 0
+constexpr int EAI_SYSTEM = 0;
+constexpr int MSG_NOSIGNAL = 0;
 
 // Unix int types
-typedef ULONG nfds_t;
-typedef int socklen_t;
+using nfds_t = ULONG;
+using socklen_t = int;
 #else
 #include <cerrno> // errno
 
@@ -33,20 +33,19 @@ typedef int socklen_t;
 
 #include "btutils.hpp"
 
-// Windows API functions remapped to Berkeley Sockets API functions
-#define WSAPoll poll
-#define GetAddrInfoW getaddrinfo
-#define FreeAddrInfoW freeaddrinfo
+// Winsock-specific definitions and their Berkeley equivalents
+constexpr auto WSAPoll = poll;
+constexpr auto GetAddrInfoW = getaddrinfo;
+constexpr auto FreeAddrInfoW = freeaddrinfo;
+using ADDRINFOW = addrinfo;
 
 // Socket errors
-#define WSAEWOULDBLOCK EWOULDBLOCK
-#define WSAEINPROGRESS EINPROGRESS
+constexpr int WSAEWOULDBLOCK = EWOULDBLOCK;
+constexpr int WSAEINPROGRESS = EINPROGRESS;
 
 // Bluetooth definitions
-#define AF_BTH AF_BLUETOOTH
-#define BTHPROTO_RFCOMM BTPROTO_RFCOMM
-
-typedef addrinfo ADDRINFOW;
+constexpr int AF_BTH = AF_BLUETOOTH;
+constexpr int BTHPROTO_RFCOMM = BTPROTO_RFCOMM;
 #endif
 
 #include "sockets.hpp"
@@ -170,7 +169,7 @@ static SOCKET nonBlockSocket(int af, int type, int proto) {
 SOCKET Sockets::createClientSocket(const DeviceData& data) {
     SOCKET sockfd = INVALID_SOCKET; // Socket file descriptor
 
-    if (data.type == Bluetooth) {
+    if (data.type == ConnectionType::Bluetooth) {
         // Bluetooth connection - set up socket
         sockfd = nonBlockSocket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
         if (sockfd == INVALID_SOCKET) return INVALID_SOCKET;
@@ -202,7 +201,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #endif
-        bool isTCP = (data.type == TCP);
+        bool isTCP = (data.type == ConnectionType::TCP);
         ADDRINFOW hints{
             .ai_flags = AI_NUMERICHOST,
             .ai_family = AF_UNSPEC,

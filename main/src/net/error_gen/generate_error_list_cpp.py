@@ -66,6 +66,12 @@ with open(os.path.join(parent_dir, "errorlist.cpp"), "w") as f:
     # On Windows, Unix error identifiers (e.g. EMSGSIZE) are already
     # defined. This loop will go through each, undefine them, then
     # redefine them to their Winsock equivalents.
+    #
+    # Generally in C++ (especially modern C++) use of macros is
+    # discouraged, but here, each error name must be known at
+    # preprocessing time so a smaller output file can be generated.
+    # The preprocessor then takes the file and expands it for
+    # compilation.
     for err in cross_platform_errs:
         # Undefine, then redefine the error
         if delim in err:

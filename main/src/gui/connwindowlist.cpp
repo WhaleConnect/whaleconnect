@@ -7,9 +7,30 @@
 #include "util/formatcompat.hpp"
 
 #ifndef _WIN32
-#define WSAEINVAL EINVAL
-#define WSAENOTSOCK ENOTSOCK
+constexpr int WSAEINVAL = EINVAL;
+constexpr int WSAENOTSOCK = ENOTSOCK;
 #endif
+
+/// <summary>
+/// Get the string representation of a ConnectionType.
+/// </summary>
+/// <param name="type">The ConnectionType</param>
+/// <returns>The string representation as a const char*</returns>
+static constexpr const char* connTypeToStr(Sockets::ConnectionType type) {
+    // TODO: Use this with GCC 11 and Clang 13 (P1099R5):
+    //using enum Sockets::ConnectionType;
+
+    switch (type) {
+    case Sockets::ConnectionType::TCP:
+        return "TCP";
+    case Sockets::ConnectionType::UDP:
+        return "UDP";
+    case Sockets::ConnectionType::Bluetooth:
+        return "Bluetooth";
+    default:
+        return "Unknown";
+    }
+}
 
 /// <summary>
 /// Format a DeviceData into a string.
@@ -21,8 +42,8 @@
 /// </remarks>
 static std::string formatDeviceData(const Sockets::DeviceData& data) {
     // Type of the connection
-    const char* type = Sockets::connectionTypesStr[data.type];
-    bool isBluetooth = (data.type == Sockets::Bluetooth);
+    Sockets::ConnectionType type = data.type;
+    bool isBluetooth = (type == Sockets::ConnectionType::Bluetooth);
 
     // Bluetooth connections are described using the device's name (e.g. "MyESP32"),
     // IP connections (TCP/UDP) use the device's IP address (e.g. 192.168.0.178).
@@ -37,7 +58,7 @@ static std::string formatDeviceData(const Sockets::DeviceData& data) {
     // The address is always part of the id hash.
     // The port is not visible for a Bluetooth connection, instead, it is part of the id hash.
     const char* fmtStr = (isBluetooth) ? "{} Connection - {}##{} {}" : "{} Connection - {} port {}##{}";
-    return std::format(fmtStr, type, deviceString, data.port, data.address);
+    return std::format(fmtStr, connTypeToStr(type), deviceString, data.port, data.address);
 }
 
 void ConnWindowList::_populateFds() {

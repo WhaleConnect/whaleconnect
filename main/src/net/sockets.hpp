@@ -16,23 +16,20 @@
 #include <poll.h> // pollfd
 
 // Error status codes
-#define INVALID_SOCKET -1
-#define SOCKET_ERROR -1
-#define NO_ERROR 0
+constexpr int INVALID_SOCKET = -1; // An invalid socket descriptor
+constexpr int SOCKET_ERROR = -1; // An error has occurred (returned from a function)
+constexpr int NO_ERROR = 0; // Done successfully (returned from a function)
 
 // Windows-style SOCKET equals int on Unix for file descriptors
-typedef int SOCKET;
+using SOCKET = int;
 #endif
 
 /// <summary>
 /// Namespace containing functions for handling network sockets.
 /// </summary>
 namespace Sockets {
-    // Enum of all possible connection types
-    enum ConnectionType { TCP, UDP, Bluetooth };
-
-    // String representations of connection types
-    inline const char* connectionTypesStr[] = { "TCP", "UDP", "Bluetooth" };
+    // All possible connection types
+    enum class ConnectionType { TCP, UDP, Bluetooth };
 
     /// <summary>
     /// A structure to represent an error with a symbolic name and a description.
@@ -50,7 +47,7 @@ namespace Sockets {
     /// Structure containing metadata about a device (type, name, address, port).
     /// </summary>
     struct DeviceData {
-        int type; // Type of connection
+        ConnectionType type; // Type of connection
         std::string name; // Name of device (Bluetooth only)
         std::string address; // Address of device (IP address for TCP/UDP, MAC address for Bluetooth)
         uint16_t port; // Port/channel of device

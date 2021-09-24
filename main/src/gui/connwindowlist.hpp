@@ -13,7 +13,7 @@
 #include "net/sockets.hpp"
 
 // A unique_ptr pointing to a managed ConnWindow object
-typedef std::unique_ptr<ConnWindow> ConnWindowPtr;
+using ConnWindowPtr = std::unique_ptr<ConnWindow>;
 
 /// <summary>
 /// A class to manage multiple ConnWindow objects.
