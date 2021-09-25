@@ -25,7 +25,7 @@ namespace BTUtils {
     void glibStop();
 
     // A message to display while waiting to connect to bluetoothd
-    inline const char* glibDisconnectedMessage = "Waiting to connect to bluetoothd...";
+    inline const char* glibDisconnectedMessage = "Waiting to connect to bluetoothd";
 #endif
     /// <summary>
     /// Check if Bluetooth is initialized.

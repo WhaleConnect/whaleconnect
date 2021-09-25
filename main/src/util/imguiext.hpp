@@ -7,6 +7,8 @@
 
 #include <string> // std::string
 #include <cstring> // std::strchr()
+#include <type_traits> // std::is_same_v
+
 #include <imgui/imgui_internal.h>
 
 enum ImGuiOverlayCorner_ {
@@ -33,15 +35,34 @@ namespace ImGui {
     }
 
     /// <summary>
-    /// An adapted InputScalar() function with operator handling removed. Only works with uint8_t/uint16_t types.
+    /// Get the width of a rendered string added with the item inner spacing specified in the Dear ImGui style.
     /// </summary>
-    /// <typeparam name="T">The type of the integer passed to the function (8- or 16-bit uint)</typeparam>
-    /// <param name="label">The text to show next to the input</param>
-    /// <param name="val">The variable to pass to the internal InputText()</param>
-    /// <param name="min">The minimum value to allow (optional)</param>
-    /// <param name="max">The maximum value to allow (optional)</param>
-    template<class T>
-    void UnsignedInputScalar(const char* label, T& val, unsigned long min = 0, unsigned long max = 0);
+    /// <param name="text">The string to calculate the width from</param>
+    /// <returns>The width of the string with the current font and item inner spacing settings</returns>
+    inline float CalcTextWidthWithSpacing(const char* text) {
+        return GetStyle().ItemInnerSpacing.x + CalcTextSize(text).x;
+    }
+
+    template <class T>
+    constexpr ImGuiDataType GetDataType(T val);
+
+    /// <summary>
+    /// An easy-to-use InputScalar() function with automatic type detection.
+    /// </summary>
+    /// <typeparam name="T">The type of the buffer</typeparam>
+    /// <typeparam name="U">The type of the step variables</typeparam>
+    /// <param name="label">The widget label</param>
+    /// <param name="data">The integer buffer to use</param>
+    /// <param name="step">Value change when the step buttons are clicked (0 to disable the buttons)</param>
+    /// <param name="stepFast">Value change when the step buttons are Ctrl-clicked (0 to disable this option)</param>
+    template <class T, class U = int>
+    inline void InputScalar(const char* label, T& data, U step = 0, U stepFast = 0) {
+        // Any negative step value is considered invalid and nullptr is passed to disable the step buttons
+        U* stepPtr = (step > 0) ? &step : nullptr;
+        U* stepFastPtr = (stepFast > 0) ? &stepFast : nullptr;
+
+        InputScalar(label, GetDataType(data), &data, stepPtr, stepFastPtr);
+    }
 
     /// <summary>
     /// An adapted InputText() to use a std::string passed by reference.
@@ -103,62 +124,34 @@ namespace ImGui {
     }
 }
 
-template<class T>
-void ImGui::UnsignedInputScalar(const char* label, T& val, unsigned long min, unsigned long max) {
-    // Decide parameter datatype
-    constexpr bool is8bit = std::is_same_v<uint8_t, T>;
-    constexpr bool is16bit = std::is_same_v<uint16_t, T>;
-    static_assert(is8bit || is16bit, "This function only supports uint8_t/uint16_t data types");
-
-    // Set maximum
-    if (max == 0) max = (is8bit) ? 255UL : 65535UL;
-
-    // Char buffer to hold input
-    constexpr int bufLen = 6;
-    char buf[bufLen] = "";
-    std::snprintf(buf, bufLen, "%d", val);
-
-    BeginGroup();
-    PushID(label);
-
-    // Text filtering callback - only allow numeric digits (not including operators with InputCharsDecimal)
-    auto filter = [](ImGuiInputTextCallbackData* data) -> int {
-        return !(data->EventChar < 256 && std::strchr("0123456789", static_cast<char>(data->EventChar)));
-    };
-
-    // InputText widget
-    SetNextItemWidth(50);
-    if (InputText("", buf, bufLen, ImGuiInputTextFlags_CallbackCharFilter, filter)) {
-        try {
-            // Convert buffer to the appropriate datatype
-            val = static_cast<T>(ImClamp(std::stoul(buf), min, max));
-        } catch (std::exception&) {
-            // Exception thrown during conversion, set variable to minimum
-            val = static_cast<T>(min);
-        }
+template <class T>
+constexpr ImGuiDataType ImGui::GetDataType([[maybe_unused]] T val) {
+    if constexpr (std::is_same_v<T, int8_t>) {
+        return ImGuiDataType_S8;
+    } else if constexpr (std::is_same_v<T, uint8_t>) {
+        return ImGuiDataType_U8;
+    } else if constexpr (std::is_same_v<T, int16_t>) {
+        return ImGuiDataType_S16;
+    } else if constexpr (std::is_same_v<T, uint16_t>) {
+        return ImGuiDataType_U16;
+    } else if constexpr (std::is_same_v<T, int32_t>) {
+        return ImGuiDataType_S32;
+    } else if constexpr (std::is_same_v<T, uint32_t>) {
+        return ImGuiDataType_U32;
+    } else if constexpr (std::is_same_v<T, int64_t>) {
+        return ImGuiDataType_S64;
+    } else if constexpr (std::is_same_v<T, uint64_t>) {
+        return ImGuiDataType_U64;
+    } else if constexpr (std::is_same_v<T, float>) {
+        return ImGuiDataType_Float;
+    } else if constexpr (std::is_same_v<T, double>) {
+        return ImGuiDataType_Double;
+    } else {
+        return ImGuiDataType_COUNT;
     }
-
-    // Style config
-    const float spacing = 2; // Space between widgets
-    const ImVec2 sz{ GetFrameHeight(), GetFrameHeight() }; // Button size
-
-    // "-" button
-    SameLine(0, spacing);
-    if (ButtonEx("-", sz, ImGuiButtonFlags_Repeat)) if (val > min) val--;
-
-    // "+" button
-    SameLine(0, spacing);
-    if (ButtonEx("+", sz, ImGuiButtonFlags_Repeat)) if (val < max) val++;
-
-    // Label
-    SameLine(0, spacing);
-    TextUnformatted(label);
-
-    PopID();
-    EndGroup();
 }
 
-template<class... Args>
+template <class... Args>
 void ImGui::Overlay(ImVec2 padding, ImGuiOverlayCorner corner, const char* text, Args... args) {
     // Window flags to make the overlay be fixed, immobile, and have no decoration
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav

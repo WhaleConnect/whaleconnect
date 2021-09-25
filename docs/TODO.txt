@@ -5,7 +5,7 @@ Alpha 1:
   [ ] Unicode username support
   [ ] Add option to export Console output to a file in the user's Documents folder
   [ ] Export the GLFW error file (mainhandle.cpp) in a better location
-  [ ] Rework the Bluetooth selection menu UI
+  [X] Rework the Bluetooth selection menu UI
   [X] Remove threads from ConnWindow, handle socket events in ConnWindowList instead
   [ ] Fix dependency mess
     [ ] Add scripts to download BlueZ/GDBus
