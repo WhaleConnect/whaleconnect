@@ -110,7 +110,7 @@ namespace ImGui {
     /// Adapted from imgui_demo.cpp.
     /// </remarks>
     template<class... Args>
-    void Overlay(ImVec2 padding, ImGuiOverlayCorner corner, const char* text, Args... args);
+    void Overlay(const ImVec2& padding, ImGuiOverlayCorner corner, const char* text, Args... args);
 
     /// <summary>
     /// Display a basic spinner which rotates every few frames.
@@ -152,7 +152,7 @@ constexpr ImGuiDataType ImGui::GetDataType([[maybe_unused]] T val) {
 }
 
 template <class... Args>
-void ImGui::Overlay(ImVec2 padding, ImGuiOverlayCorner corner, const char* text, Args... args) {
+void ImGui::Overlay(const ImVec2& padding, ImGuiOverlayCorner corner, const char* text, Args... args) {
     // Window flags to make the overlay be fixed, immobile, and have no decoration
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav
         | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize;

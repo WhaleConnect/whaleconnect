@@ -49,7 +49,7 @@ class Console {
     /// <param name="s">The string to add to the output</param>
     /// <param name="color">The color of the text (optional, default is uncolored)</param>
     /// <param name="canUseHex">If the string gets displayed as hexadecimal when set (optional, default is true)</param>
-    void _add(const std::string& s, ImVec4 color, bool canUseHex);
+    void _add(const std::string& s, const ImVec4& color, bool canUseHex);
 
     /// <summary>
     /// Draw all elements, excluding the textbox.
@@ -80,14 +80,14 @@ public:
     /// </summary>
     /// <param name="s">The string to add to the output</param>
     /// <param name="color">The color of the text (optional, default is uncolored)</param>
-    /// <param name="prefix">A string to add before each line (optional, default is none)</param>
+    /// <param name="pre">A string to add before each line (optional, default is none)</param>
     /// <param name="canUseHex">If the string gets displayed as hexadecimal when set (optional, default is true)</param>
-    void addText(const std::string& s, const std::string& prefix = "", ImVec4 color = {}, bool canUseHex = true) {
+    void addText(const std::string& s, const std::string& pre = "", const ImVec4& color = {}, bool canUseHex = true) {
         // Split the string by the '\n' character to get each line
         std::vector<std::string> lines = Strings::split(s, '\n');
 
         // Add each line
-        for (const auto& line : lines) _add(prefix + line, color, canUseHex);
+        for (const auto& line : lines) _add(pre + line, color, canUseHex);
     }
 
     /// <summary>

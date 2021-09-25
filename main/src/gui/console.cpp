@@ -15,7 +15,7 @@
 #include "util/imguiext.hpp"
 #include "util/formatcompat.hpp"
 
-void Console::_add(const std::string& s, ImVec4 color, bool canUseHex) {
+void Console::_add(const std::string& s, const ImVec4& color, bool canUseHex) {
     // Don't add an empty string
     // (highly unlikely, but still check as string::back() called on an empty string throws a fatal exception)
     if (s.empty()) return;
