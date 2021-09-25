@@ -29,8 +29,8 @@ namespace std {
     /// Uses the {fmt} library internally.
     /// </remarks>
     template<class... Args>
-    inline string format(const string_view fString, const Args&... args) {
-        return fmt::format(fmt::runtime(fString), args...);
+    inline string format(const string_view fString, Args&&... args) {
+        return fmt::format(fmt::runtime(fString), forward<Args>(args)...);
     }
 }
 
