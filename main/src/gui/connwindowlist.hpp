@@ -25,7 +25,7 @@ class ConnWindowList {
     int _pollRet = NO_ERROR; // The result of Sockets::poll()
 
     /// <summary>
-    /// Refill the `_pfds` vector with the sockets from the `_windows` vector.
+    /// Overwrite the list of poll sockets with the managed ConnWindow objects' socket descriptors.
     /// </summary>
     void _populateFds();
 

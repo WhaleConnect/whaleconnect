@@ -21,7 +21,7 @@
 static GLFWwindow* window = nullptr;
 
 /// <summary>
-/// Set the configuration for Dear ImGui.
+/// Set Dear ImGui's configuration for use by the application.
 /// </summary>
 static void configImGui() {
     ImGuiIO& io = ImGui::GetIO();
@@ -53,6 +53,7 @@ static void configImGui() {
 }
 
 bool MainHandler::initApp() {
+    // Set an error callback for GLFW so we know when something goes wrong
     glfwSetErrorCallback([](int error, const char* description) {
         // Error file for logging GLFW errors
         auto file = fmt::output_file("err.txt", fmt::file::CREATE | fmt::file::APPEND | fmt::file::WRONLY);
@@ -125,6 +126,7 @@ void MainHandler::handleNewFrame() {
 }
 
 void MainHandler::renderWindow() {
+    // Render the main application window
     ImGui::Render();
     int w, h;
     glfwGetFramebufferSize(window, &w, &h);

@@ -7,9 +7,9 @@
 
 #include <string> // std::string
 #include <vector> // std::vector
-#include <concepts> // std::integral, std::floating_point
+#include <concepts> // std::integral, std::floating_point [C++20]
 
-// Explicitly annotate parameters passed by value, not by const-qualified reference, which goes against copy elision.
+// Explicitly annotate parameters passed by value, not by const-qualified reference, which does not elide copies.
 // Creating a copy is intentional (not a mistake) when a parameter is prefixed with this macro.
 #define NO_CONST_REF
 
@@ -21,7 +21,7 @@ namespace Strings {
     // Wide strings are used on Windows
     using widestr = std::wstring;
 #else
-    // Ordinary strings are used on other platforms
+    // Standard strings are used on other platforms
     using widestr = std::string;
 #endif
 
@@ -40,10 +40,10 @@ namespace Strings {
     std::string fromWide(const widestr& from);
 
     /// <summary>
-    /// Convert an integer value to a platform-dependent wide string type.
+    /// Convert an integer or decimal value to a platform-dependent wide string type.
     /// </summary>
-    /// <typeparam name="T">The integer type</typeparam>
-    /// <param name="val">The integer value</param>
+    /// <typeparam name="T">A numeric type (e.g. int, long, double)</typeparam>
+    /// <param name="val">The numeric value to convert</param>
     /// <returns>The converted string</returns>
     template <class T>
     inline widestr toWide(T val) requires std::integral<T> || std::floating_point<T> {

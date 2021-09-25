@@ -1,12 +1,12 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
-// Application configuration variables
+// Application configuration
 
 #pragma once
 
 /// <summary>
-/// Namespace containing mutable variables to configure the application.
+/// Namespace containing application configuration parameters.
 /// </summary>
 namespace Settings {
     inline unsigned char fontSize = 13; // Application font height in pixels

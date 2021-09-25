@@ -19,12 +19,15 @@
 
 namespace std {
     /// <summary>
-    /// Compatibility layer for C++20's std::format. Uses the {fmt} library internally.
+    /// Polyfill function for `std::format` [C++20].
     /// </summary>
     /// <typeparam name="...Args">Variadic arguments to format</typeparam>
     /// <param name="fString">The format string with formatting templates</param>
     /// <param name="...args">Arguments to format into the string</param>
     /// <returns>The formatted string</returns>
+    /// <remarks>
+    /// Uses the {fmt} library internally.
+    /// </remarks>
     template<class... Args>
     inline string format(const string_view fString, const Args&... args) {
         return fmt::format(fmt::runtime(fString), args...);

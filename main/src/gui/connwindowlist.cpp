@@ -12,10 +12,14 @@ constexpr int WSAENOTSOCK = ENOTSOCK;
 #endif
 
 /// <summary>
-/// Get the string representation of a ConnectionType.
+/// Get the textual name of a ConnectionType.
 /// </summary>
 /// <param name="type">The ConnectionType</param>
-/// <returns>The string representation as a const char*</returns>
+/// <returns>The textual name as a const char*</returns>
+/// <remarks>
+/// Returning a const char* is safe for this function since there are no local variables that are being returned,
+/// just string literals.
+/// </remarks>
 static constexpr const char* connTypeToStr(Sockets::ConnectionType type) {
     // TODO: Use this with GCC 11 and Clang 13 (P1099R5):
     //using enum Sockets::ConnectionType;
@@ -33,13 +37,10 @@ static constexpr const char* connTypeToStr(Sockets::ConnectionType type) {
 }
 
 /// <summary>
-/// Format a DeviceData into a string.
+/// Format a DeviceData instance into a string for use in a ConnWindow title.
 /// </summary>
 /// <param name="data">The DeviceData to format</param>
 /// <returns>The resultant string</returns>
-/// <remarks>
-/// This function is used to get a usable title+id for a ConnWindow using the passed DeviceData's variable fields.
-/// </remarks>
 static std::string formatDeviceData(const Sockets::DeviceData& data) {
     // Type of the connection
     Sockets::ConnectionType type = data.type;
@@ -50,8 +51,8 @@ static std::string formatDeviceData(const Sockets::DeviceData& data) {
     std::string deviceString = (isBluetooth) ? data.name : data.address;
 
     // Newlines may be present in a Bluetooth device name, and if they get into a window's title, anything after the
-    // first one will get cut off (the title bar can only hold one line). Replace them with spaces to keep everything on
-    // one line.
+    // first one will get cut off (the title bar can only hold one line). Replace them with spaces to keep everything
+    // on one line.
     std::replace(deviceString.begin(), deviceString.end(), '\n', ' ');
 
     // Format the values into a string as the title
@@ -83,6 +84,7 @@ bool ConnWindowList::add(const Sockets::DeviceData& data) {
         _windows.push_back(std::make_unique<ConnWindow>(title, sockfd, lastErr));
         _populateFds(); // Update the vector for polling
     }
+
     return isNew;
 }
 
@@ -122,8 +124,8 @@ int ConnWindowList::update() {
         // Get the last error if poll failed
         int lastErr = Sockets::getLastErr();
 
-        // (WSA)EINVAL and (WSA)ENOTSOCK are non-fatal errors that indicate an operation occurred on an invalid socket
-        // which happens when a socket disconnects or when the program starts up with nothing to poll.
+        // (WSA)EINVAL and (WSA)ENOTSOCK are non-fatal errors that indicate an operation occurred on an invalid socket.
+        // These are thrown when a socket in the list disconnects or when the program starts up with nothing to poll.
         if ((lastErr == WSAEINVAL) || (lastErr == WSAENOTSOCK)) {
             _pollRet = NO_ERROR;
             Sockets::setLastErr(NO_ERROR);
@@ -148,5 +150,6 @@ int ConnWindowList::update() {
         // Update events if they've changed
         _pfds[i].events = current->getPollFlags();
     }
+
     return NO_ERROR;
 }

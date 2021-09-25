@@ -10,7 +10,7 @@
 #include <system_error> // std::system_error
 
 /// <summary>
-/// A wrapper class for std::async().
+/// A wrapper class for `std::async()`.
 /// </summary>
 /// <typeparam name="T">The type of the value returned asynchronously</typeparam>
 template <class T>
@@ -76,7 +76,7 @@ public:
     /// <summary>
     /// Check if the run() call failed.
     /// </summary>
-    /// <returns>If run() failed</returns>
+    /// <returns>If the function failed to run</returns>
     bool error() {
         return _error;
     }
@@ -86,8 +86,8 @@ public:
     /// </summary>
     /// <returns>The function return value</returns>
     /// <remarks>
-    /// This function caches the result of std::future::get(). A value can still be obtained even if the internal
-    /// future is no longer ready, given a successful retreival of a prior run. (This will be returned.)
+    /// This function caches the result of `std::future::get()`. A value can still be obtained even if the internal
+    /// future is no longer ready, given the successful retreival of a prior run, which will be returned.
     /// </remarks>
     T value() {
         if (ready()) _value = _fut.get();
