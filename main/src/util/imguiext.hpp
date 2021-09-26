@@ -43,6 +43,12 @@ namespace ImGui {
         return GetStyle().ItemInnerSpacing.x + CalcTextSize(text).x;
     }
 
+    /// <summary>
+    /// Get the ImGuiDataType of a given variable. Evaluated at compile-time.
+    /// </summary>
+    /// <typeparam name="T">A signed or unsigned numeric type</typeparam>
+    /// <param name="val">The variable to get the type of</param>
+    /// <returns>The corresponding ImGuiDataType enum for the given variable</returns>
     template <class T>
     constexpr ImGuiDataType GetDataType(T val);
 
