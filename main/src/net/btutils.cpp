@@ -315,12 +315,20 @@ uint8_t BTUtils::getSDPChannel(const char* addr) {
     bdaddr_t deviceAddr;
     str2ba(addr, &deviceAddr);
 
-    // Bluetooth SDP UUID
-    // "The UUID for the SPP Serial Port service is defined by the Bluetooth SIG to be 0x1101."
-    // https://stackoverflow.com/a/4637749
+    // `RFCOMM_UUID` is a 16-bit UUID for the RFCOMM protocol.
+    // To turn this into a 128-bit UUID:
+    //   | The 16-bit Attribute UUID replaces the x’s in the following:
+    //   | 0000xxxx - 0000 - 1000 - 8000 - 00805F9B34FB
+    // https://stackoverflow.com/a/36212021
+    uint8_t uuidInt[] = {
+        0x00, 0x00,
+        0x00, RFCOMM_UUID, // Equals `0x00, 0x03` after preprocessing
+        0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB // The Bluetooth base UUID
+    };
+
+    // Create the UUID
     uuid_t serviceUUID;
-    uint16_t serviceClass = 0x1101;
-    sdp_uuid16_create(&serviceUUID, serviceClass);
+    sdp_uuid128_create(&serviceUUID, uuidInt);
 
     // Search list
     sdp_list_t* searchList = sdp_list_append(nullptr, &serviceUUID);
@@ -330,7 +338,7 @@ uint8_t BTUtils::getSDPChannel(const char* addr) {
 
     // Initialize SDP session
     // We can't directly pass BDADDR_ANY to sdp_connect() because a "taking the address of an rvalue" error is thrown.
-    bdaddr_t addrAny = { { 0, 0, 0, 0, 0, 0} };
+    bdaddr_t addrAny = { { 0, 0, 0, 0, 0, 0 } };
     sdp_session_t* session = sdp_connect(&addrAny, &deviceAddr, SDP_RETRY_IF_BUSY);
     if (!session) return 0; // Failed to connect to SDP session
 
@@ -349,6 +357,7 @@ uint8_t BTUtils::getSDPChannel(const char* addr) {
     // Iterate through each of the service records
     // Unfortunately, there is no simple way to interpret the results of an SDP search, so we will have to use
     // this large mass of loops and conditionals to get the singular value that we want (the channel number)
+    // Adapted from https://people.csail.mit.edu/albert/bluez-intro/x604.html (Example 4-8).
     for (sdp_list_t* r = responseList; r; r = r->next) {
         sdp_record_t* rec = reinterpret_cast<sdp_record_t*>(r->data);
         sdp_list_t* protoList;
