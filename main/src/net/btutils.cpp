@@ -279,15 +279,14 @@ uint8_t BTUtils::getSDPChannel(const char* addr) {
     uint8_t ret = 0;
 
 #ifdef _WIN32
-    Strings::widestr tmp = Strings::toWide(addr);
-    LPWSTR addrWide = const_cast<LPWSTR>(tmp.c_str());
+    Strings::widestr addrWide = Strings::toWide(addr);
 
     // Set up the queryset restrictions
     WSAQUERYSET wsaQuery{
         .dwSize = sizeof(WSAQUERYSET),
         .lpServiceClassId = const_cast<LPGUID>(&RFCOMM_PROTOCOL_UUID),
         .dwNameSpace = NS_BTH,
-        .lpszContext = addrWide,
+        .lpszContext = addrWide.data(),
         .dwNumberOfCsAddrs = 0
     };
 

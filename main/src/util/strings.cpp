@@ -9,12 +9,14 @@
 
 Strings::widestr Strings::toWide(const std::string& from) {
 #ifdef _WIN32
+    // Nothing to convert in an empty string
+    if (from.empty()) return {};
+
     // Size of UTF-8 string in UTF-16 wide encoding
-    int stringSize = MultiByteToWideChar(CP_UTF8, 0, from.c_str(), -1, nullptr, 0);
+    int stringSize = MultiByteToWideChar(CP_UTF8, 0, from.c_str(), static_cast<int>(from.size()), 0, 0);
 
     // Buffer to contain new string
-    std::wstring buf;
-    buf.resize(stringSize);
+    std::wstring buf(stringSize, '\0');
 
     // Convert the string from UTF-8 and return the converted buffer
     MultiByteToWideChar(CP_UTF8, 0, from.c_str(), -1, buf.data(), stringSize);
@@ -26,12 +28,14 @@ Strings::widestr Strings::toWide(const std::string& from) {
 
 std::string Strings::fromWide(const Strings::widestr& from) {
 #ifdef _WIN32
+    // Nothing to convert in an empty string
+    if (from.empty()) return {};
+
     // Size of UTF-16 wide string in UTF-8 encoding
-    int stringSize = WideCharToMultiByte(CP_UTF8, 0, from.c_str(), -1, 0, 0, nullptr, nullptr);
+    int stringSize = WideCharToMultiByte(CP_UTF8, 0, from.c_str(), static_cast<int>(from.size()), 0, 0, 0, 0);
 
     // Buffer to contain new string
-    std::string buf;
-    buf.resize(stringSize);
+    std::string buf(stringSize, '\0');
 
     // Convert the string to UTF-8 and return the converted buffer
     WideCharToMultiByte(CP_UTF8, 0, from.c_str(), -1, buf.data(), stringSize, nullptr, nullptr);
@@ -50,8 +54,8 @@ std::string Strings::replaceAll(NO_CONST_REF std::string str, const std::string&
 
     size_t start_pos = 0;
     while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+        str.replace(start_pos, from.size(), to);
+        start_pos += to.size(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
     }
 
     return str;
