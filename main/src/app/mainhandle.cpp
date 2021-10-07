@@ -115,11 +115,14 @@ void MainHandler::handleNewFrame() {
 
         static bool showDemoWindow = false;
         static bool showMetricsWindow = false;
+        static bool showStackToolWindow = false;
         ImGui::Checkbox("Show Demo Window", &showDemoWindow);
         ImGui::Checkbox("Show Metrics Window", &showMetricsWindow);
+        ImGui::Checkbox("Show Stack Tool Window", &showStackToolWindow);
 
         if (showDemoWindow) ImGui::ShowDemoWindow(&showDemoWindow);
         if (showMetricsWindow) ImGui::ShowMetricsWindow(&showMetricsWindow);
+        if (showStackToolWindow) ImGui::ShowStackToolWindow(&showStackToolWindow);
         ImGui::End();
     }
 #endif
