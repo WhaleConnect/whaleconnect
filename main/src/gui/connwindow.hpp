@@ -17,7 +17,7 @@ class ConnWindow {
     const SOCKET _sockfd; // Socket for connections
     bool _connected = false; // If the window has an active connection
     bool _error = false; // If a fatal error occurred
-    short _pollFlags = POLLOUT;
+    short _pollFlags = POLLOUT; // What to check for when polling the socket
 
     const std::string _title; // Title of window
     bool _open = true; // If the window is open (affected by the close button)
