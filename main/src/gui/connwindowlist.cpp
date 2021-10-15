@@ -21,15 +21,14 @@ constexpr int WSAENOTSOCK = ENOTSOCK;
 /// just string literals.
 /// </remarks>
 static constexpr const char* connTypeToStr(Sockets::ConnectionType type) {
-    // TODO: Use this with GCC 11 and Clang 13 (P1099R5):
-    //using enum Sockets::ConnectionType;
+    using enum Sockets::ConnectionType;
 
     switch (type) {
-    case Sockets::ConnectionType::TCP:
+    case TCP:
         return "TCP";
-    case Sockets::ConnectionType::UDP:
+    case UDP:
         return "UDP";
-    case Sockets::ConnectionType::Bluetooth:
+    case Bluetooth:
         return "Bluetooth";
     default:
         return "Unknown";

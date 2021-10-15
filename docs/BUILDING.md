@@ -45,9 +45,10 @@ TODO: Add install commands for Fedora and similar distros
 
 This project uses C++20 features, so be sure to update your compiler(s) if needed. Compilation has been tested successfully with the following compiler versions:
 
-- GCC 10
-- Clang 10
+- GCC 11.2.0
 - MSVC 19.29
+
+*Clang is currently not supported because it does not yet implement P0960R3 (Parenthesized initialization of aggregates) used in `std::vector::emplace_back()`.*
 
 ### Command Line
 
