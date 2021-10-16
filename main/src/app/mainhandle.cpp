@@ -41,6 +41,17 @@ static void configImGui() {
     style.Colors[ImGuiCol_WindowBg].w = 1;
     style.Colors[ImGuiCol_Tab].w = 0;
 
+    // Set corner rounding
+    style.WindowRounding = (Settings::roundedCorners) ? 8.0f : 0.0f;
+
+    style.ChildRounding
+        = style.FrameRounding
+        = style.PopupRounding
+        = style.ScrollbarRounding
+        = style.GrabRounding
+        = style.TabRounding
+        = (Settings::roundedCorners) ? 4.0f : 0.0f;
+
     // Load font file
     ImFontAtlas& fonts = *io.Fonts;
 
