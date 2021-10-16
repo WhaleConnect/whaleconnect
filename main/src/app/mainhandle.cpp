@@ -35,9 +35,6 @@ static void configImGui() {
 
     // Set styles
     ImGuiStyle& style = ImGui::GetStyle();
-    style.WindowRounding = 0;
-    style.TabRounding = 0;
-    style.ScrollbarRounding = 0;
     style.Colors[ImGuiCol_WindowBg].w = 1;
     style.Colors[ImGuiCol_Tab].w = 0;
 
