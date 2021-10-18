@@ -6,6 +6,7 @@
 #pragma once
 
 #include <string> // std::string
+#include <functional> // std::bind()
 
 #include "console.hpp"
 #include "net/sockets.hpp"
@@ -22,6 +23,12 @@ class ConnWindow {
     const std::string _title; // Title of window
     bool _open = true; // If the window is open (affected by the close button)
     Console _output; // Console output with send textbox
+
+    /// <summary>
+    /// Send a string through the socket if it's connected.
+    /// </summary>
+    /// <param name="s">The string to send</param>
+    void _sendHandler(const std::string& s);
 
     /// <summary>
     /// Print a given error code (and its description), then close the socket.
@@ -52,21 +59,11 @@ public:
     /// <param name="title">The title of the window, shown in the title bar</param>
     /// <param name="sockfd">The socket file descriptor to use</param>
     /// <param name="lastErr">The error that occurred, taken right after the socket has been created</param>
-    ConnWindow(const std::string& title, SOCKET sockfd, int lastErr) : _sockfd(sockfd), _title(title) {
-        // Initialize the internal Console object to send data when the textbox is submitted (i.e. Enter pressed)
+    ConnWindow(const std::string& title, SOCKET sockfd, int lastErr) : _sockfd(sockfd), _title(title),
+        _output(std::bind(&ConnWindow::_sendHandler, this, std::placeholders::_1)) {
+        // The internal Console object is intialized to send data when the textbox is submitted (i.e. Enter pressed)
         // This overloaded version of the constructor (taking a function which takes a `const std::string&`) enables
         // the textbox and its related config options.
-        // (This is not put in the initializer list because of its large size.)
-        _output = Console([&](const std::string& s) {
-            if (_connected) {
-                // Connected, send data and check for errors
-                int ret = Sockets::sendData(_sockfd, s);
-                if (ret == SOCKET_ERROR) _errorHandler();
-            } else {
-                // Not connected, output a message
-                _output.addInfo("The socket is not connected.");
-            }
-        });
 
         _output.addInfo("Connecting...");
         _errorHandler(lastErr); // Handle the error, this function does nothing if the operation was successful

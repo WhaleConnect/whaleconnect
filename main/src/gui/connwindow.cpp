@@ -8,6 +8,16 @@
 #include "util/imguiext.hpp"
 #include "util/formatcompat.hpp"
 
+void ConnWindow::_sendHandler(const std::string& s) {
+    if (_connected) {
+        // Connected, send data and check for errors
+        if (Sockets::sendData(_sockfd, s) == SOCKET_ERROR) _errorHandler();
+    } else {
+        // Not connected, output a message
+        _output.addInfo("The socket is not connected.");
+    }
+}
+
 void ConnWindow::_errorHandler(int err) {
     // Check for non-fatal errors with a non-blocking socket
     if (!Sockets::isFatal(err, true)) return;
