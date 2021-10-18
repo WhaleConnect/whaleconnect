@@ -86,7 +86,8 @@ FMT_CONSTEXPR To lossless_integral_conversion(const From from, int& ec) {
     }
   }
 
-  if (detail::const_check(!F::is_signed && T::is_signed && F::digits >= T::digits) &&
+  if (detail::const_check(!F::is_signed && T::is_signed &&
+                          F::digits >= T::digits) &&
       from > static_cast<From>(detail::max_value<To>())) {
     ec = 1;
     return {};
@@ -508,114 +509,6 @@ inline void write_digit2_separated(char* buf, unsigned a, unsigned b,
   memcpy(buf, &digits, 8);
 }
 
-FMT_END_DETAIL_NAMESPACE
-
-template <typename Char, typename Duration>
-struct formatter<std::chrono::time_point<std::chrono::system_clock, Duration>,
-                 Char> : formatter<std::tm, Char> {
-  FMT_CONSTEXPR formatter() {
-    this->specs = {default_specs, sizeof(default_specs) / sizeof(Char)};
-  }
-
-  template <typename ParseContext>
-  FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
-    auto it = ctx.begin();
-    if (it != ctx.end() && *it == ':') ++it;
-    auto end = it;
-    while (end != ctx.end() && *end != '}') ++end;
-    if (end != it) this->specs = {it, detail::to_unsigned(end - it)};
-    return end;
-  }
-
-  template <typename FormatContext>
-  auto format(std::chrono::time_point<std::chrono::system_clock> val,
-              FormatContext& ctx) -> decltype(ctx.out()) {
-    std::tm time = localtime(val);
-    return formatter<std::tm, Char>::format(time, ctx);
-  }
-
-  static constexpr Char default_specs[] = {'%', 'F', ' ', '%', 'T'};
-};
-
-template <typename Char, typename Duration>
-constexpr Char
-    formatter<std::chrono::time_point<std::chrono::system_clock, Duration>,
-              Char>::default_specs[];
-
-template <typename Char> struct formatter<std::tm, Char> {
- private:
-  enum class spec {
-    unknown,
-    year_month_day,
-    hh_mm_ss,
-  };
-  spec spec_ = spec::unknown;
-
- public:
-  basic_string_view<Char> specs;
-
-  template <typename ParseContext>
-  FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
-    auto it = ctx.begin();
-    if (it != ctx.end() && *it == ':') ++it;
-    auto end = it;
-    while (end != ctx.end() && *end != '}') ++end;
-    auto size = detail::to_unsigned(end - it);
-    specs = {it, size};
-    // basic_string_view<>::compare isn't constexpr before C++17
-    if (specs.size() == 2 && specs[0] == Char('%')) {
-      if (specs[1] == Char('F'))
-        spec_ = spec::year_month_day;
-      else if (specs[1] == Char('T'))
-        spec_ = spec::hh_mm_ss;
-    }
-    return end;
-  }
-
-  template <typename FormatContext>
-  auto format(const std::tm& tm, FormatContext& ctx) const
-      -> decltype(ctx.out()) {
-    auto year = 1900 + tm.tm_year;
-    if (spec_ == spec::year_month_day && year >= 0 && year < 10000) {
-      char buf[10];
-      detail::copy2(buf, detail::digits2(detail::to_unsigned(year / 100)));
-      detail::write_digit2_separated(buf + 2, year % 100,
-                                     detail::to_unsigned(tm.tm_mon + 1),
-                                     detail::to_unsigned(tm.tm_mday), '-');
-      return std::copy_n(buf, sizeof(buf), ctx.out());
-    } else if (spec_ == spec::hh_mm_ss) {
-      char buf[8];
-      detail::write_digit2_separated(buf, detail::to_unsigned(tm.tm_hour),
-                                     detail::to_unsigned(tm.tm_min),
-                                     detail::to_unsigned(tm.tm_sec), ':');
-      return std::copy_n(buf, sizeof(buf), ctx.out());
-    }
-    basic_memory_buffer<Char> tm_format;
-    tm_format.append(specs.begin(), specs.end());
-    // By appending an extra space we can distinguish an empty result that
-    // indicates insufficient buffer size from a guaranteed non-empty result
-    // https://github.com/fmtlib/fmt/issues/2238
-    tm_format.push_back(' ');
-    tm_format.push_back('\0');
-    basic_memory_buffer<Char> buf;
-    size_t start = buf.size();
-    for (;;) {
-      size_t size = buf.capacity() - start;
-      size_t count = detail::strftime(&buf[start], size, &tm_format[0], &tm);
-      if (count != 0) {
-        buf.resize(start + count);
-        break;
-      }
-      const size_t MIN_GROWTH = 10;
-      buf.reserve(buf.capacity() + (size > MIN_GROWTH ? size : MIN_GROWTH));
-    }
-    // Remove the extra space.
-    return std::copy(buf.begin(), buf.end() - 1, ctx.out());
-  }
-};
-
-FMT_BEGIN_DETAIL_NAMESPACE
-
 template <typename Period> FMT_CONSTEXPR inline const char* get_units() {
   if (std::is_same<Period, std::atto>::value) return "as";
   if (std::is_same<Period, std::femto>::value) return "fs";
@@ -676,6 +569,22 @@ FMT_CONSTEXPR const Char* parse_chrono_format(const Char* begin,
       handler.on_text(tab, tab + 1);
       break;
     }
+    // Year:
+    case 'Y':
+      handler.on_year(numeric_system::standard);
+      break;
+    case 'y':
+      handler.on_short_year(numeric_system::standard);
+      break;
+    case 'C':
+      handler.on_century(numeric_system::standard);
+      break;
+    case 'G':
+      handler.on_iso_week_based_year();
+      break;
+    case 'g':
+      handler.on_iso_week_based_short_year();
+      break;
     // Day of the week:
     case 'a':
       handler.on_abbr_weekday();
@@ -691,10 +600,33 @@ FMT_CONSTEXPR const Char* parse_chrono_format(const Char* begin,
       break;
     // Month:
     case 'b':
+    case 'h':
       handler.on_abbr_month();
       break;
     case 'B':
       handler.on_full_month();
+      break;
+    case 'm':
+      handler.on_dec_month(numeric_system::standard);
+      break;
+    // Day of the year/month:
+    case 'U':
+      handler.on_dec0_week_of_year(numeric_system::standard);
+      break;
+    case 'W':
+      handler.on_dec1_week_of_year(numeric_system::standard);
+      break;
+    case 'V':
+      handler.on_iso_week_of_year(numeric_system::standard);
+      break;
+    case 'j':
+      handler.on_day_of_year();
+      break;
+    case 'd':
+      handler.on_day_of_month(numeric_system::standard);
+      break;
+    case 'e':
+      handler.on_day_of_month_space(numeric_system::standard);
       break;
     // Hour, minute, second:
     case 'H':
@@ -754,6 +686,15 @@ FMT_CONSTEXPR const Char* parse_chrono_format(const Char* begin,
       if (ptr == end) FMT_THROW(format_error("invalid format"));
       c = *ptr++;
       switch (c) {
+      case 'Y':
+        handler.on_year(numeric_system::alternative);
+        break;
+      case 'y':
+        handler.on_offset_year();
+        break;
+      case 'C':
+        handler.on_century(numeric_system::alternative);
+        break;
       case 'c':
         handler.on_datetime(numeric_system::alternative);
         break;
@@ -772,6 +713,27 @@ FMT_CONSTEXPR const Char* parse_chrono_format(const Char* begin,
       if (ptr == end) FMT_THROW(format_error("invalid format"));
       c = *ptr++;
       switch (c) {
+      case 'y':
+        handler.on_short_year(numeric_system::alternative);
+        break;
+      case 'm':
+        handler.on_dec_month(numeric_system::alternative);
+        break;
+      case 'U':
+        handler.on_dec0_week_of_year(numeric_system::alternative);
+        break;
+      case 'W':
+        handler.on_dec1_week_of_year(numeric_system::alternative);
+        break;
+      case 'V':
+        handler.on_iso_week_of_year(numeric_system::alternative);
+        break;
+      case 'd':
+        handler.on_day_of_month(numeric_system::alternative);
+        break;
+      case 'e':
+        handler.on_day_of_month_space(numeric_system::alternative);
+        break;
       case 'w':
         handler.on_dec0_weekday(numeric_system::alternative);
         break;
@@ -807,12 +769,25 @@ template <typename Derived> struct null_chrono_spec_handler {
   FMT_CONSTEXPR void unsupported() {
     static_cast<Derived*>(this)->unsupported();
   }
+  FMT_CONSTEXPR void on_year(numeric_system) { unsupported(); }
+  FMT_CONSTEXPR void on_short_year(numeric_system) { unsupported(); }
+  FMT_CONSTEXPR void on_offset_year() { unsupported(); }
+  FMT_CONSTEXPR void on_century(numeric_system) { unsupported(); }
+  FMT_CONSTEXPR void on_iso_week_based_year() { unsupported(); }
+  FMT_CONSTEXPR void on_iso_week_based_short_year() { unsupported(); }
   FMT_CONSTEXPR void on_abbr_weekday() { unsupported(); }
   FMT_CONSTEXPR void on_full_weekday() { unsupported(); }
   FMT_CONSTEXPR void on_dec0_weekday(numeric_system) { unsupported(); }
   FMT_CONSTEXPR void on_dec1_weekday(numeric_system) { unsupported(); }
   FMT_CONSTEXPR void on_abbr_month() { unsupported(); }
   FMT_CONSTEXPR void on_full_month() { unsupported(); }
+  FMT_CONSTEXPR void on_dec_month(numeric_system) { unsupported(); }
+  FMT_CONSTEXPR void on_dec0_week_of_year(numeric_system) { unsupported(); }
+  FMT_CONSTEXPR void on_dec1_week_of_year(numeric_system) { unsupported(); }
+  FMT_CONSTEXPR void on_iso_week_of_year(numeric_system) { unsupported(); }
+  FMT_CONSTEXPR void on_day_of_year() { unsupported(); }
+  FMT_CONSTEXPR void on_day_of_month(numeric_system) { unsupported(); }
+  FMT_CONSTEXPR void on_day_of_month_space(numeric_system) { unsupported(); }
   FMT_CONSTEXPR void on_24_hour(numeric_system) { unsupported(); }
   FMT_CONSTEXPR void on_12_hour(numeric_system) { unsupported(); }
   FMT_CONSTEXPR void on_minute(numeric_system) { unsupported(); }
@@ -1113,6 +1088,19 @@ struct chrono_formatter {
   void on_iso_date() {}
   void on_utc_offset() {}
   void on_tz_name() {}
+  void on_year(numeric_system) {}
+  void on_short_year(numeric_system) {}
+  void on_offset_year() {}
+  void on_century(numeric_system) {}
+  void on_iso_week_based_year() {}
+  void on_iso_week_based_short_year() {}
+  void on_dec_month(numeric_system) {}
+  void on_dec0_week_of_year(numeric_system) {}
+  void on_dec1_week_of_year(numeric_system) {}
+  void on_iso_week_of_year(numeric_system) {}
+  void on_day_of_year() {}
+  void on_day_of_month(numeric_system) {}
+  void on_day_of_month_space(numeric_system) {}
 
   void on_24_hour(numeric_system ns) {
     if (handle_nan_inf()) return;
@@ -1325,7 +1313,8 @@ struct formatter<std::chrono::duration<Rep, Period>, Char> {
       ++begin;
       localized = true;
     }
-    end = parse_chrono_format(begin, end, detail::chrono_format_checker());
+    end = detail::parse_chrono_format(begin, end,
+                                      detail::chrono_format_checker());
     return {begin, end};
   }
 
@@ -1364,6 +1353,397 @@ struct formatter<std::chrono::duration<Rep, Period>, Char> {
     }
     return detail::write(
         ctx.out(), basic_string_view<Char>(buf.data(), buf.size()), specs_copy);
+  }
+};
+
+FMT_BEGIN_DETAIL_NAMESPACE
+
+struct tm_format_checker : null_chrono_spec_handler<tm_format_checker> {
+  FMT_NORETURN void unsupported() { FMT_THROW(format_error("no format")); }
+
+  template <typename Char>
+  FMT_CONSTEXPR void on_text(const Char*, const Char*) {}
+  FMT_CONSTEXPR void on_year(numeric_system) {}
+  FMT_CONSTEXPR void on_short_year(numeric_system) {}
+  FMT_CONSTEXPR void on_offset_year() {}
+  FMT_CONSTEXPR void on_century(numeric_system) {}
+  FMT_CONSTEXPR void on_iso_week_based_year() {}
+  FMT_CONSTEXPR void on_iso_week_based_short_year() {}
+  FMT_CONSTEXPR void on_abbr_weekday() {}
+  FMT_CONSTEXPR void on_full_weekday() {}
+  FMT_CONSTEXPR void on_dec0_weekday(numeric_system) {}
+  FMT_CONSTEXPR void on_dec1_weekday(numeric_system) {}
+  FMT_CONSTEXPR void on_abbr_month() {}
+  FMT_CONSTEXPR void on_full_month() {}
+  FMT_CONSTEXPR void on_dec_month(numeric_system) {}
+  FMT_CONSTEXPR void on_dec0_week_of_year(numeric_system) {}
+  FMT_CONSTEXPR void on_dec1_week_of_year(numeric_system) {}
+  FMT_CONSTEXPR void on_iso_week_of_year(numeric_system) {}
+  FMT_CONSTEXPR void on_day_of_year() {}
+  FMT_CONSTEXPR void on_day_of_month(numeric_system) {}
+  FMT_CONSTEXPR void on_day_of_month_space(numeric_system) {}
+  FMT_CONSTEXPR void on_24_hour(numeric_system) {}
+  FMT_CONSTEXPR void on_12_hour(numeric_system) {}
+  FMT_CONSTEXPR void on_minute(numeric_system) {}
+  FMT_CONSTEXPR void on_second(numeric_system) {}
+  FMT_CONSTEXPR void on_datetime(numeric_system) {}
+  FMT_CONSTEXPR void on_loc_date(numeric_system) {}
+  FMT_CONSTEXPR void on_loc_time(numeric_system) {}
+  FMT_CONSTEXPR void on_us_date() {}
+  FMT_CONSTEXPR void on_iso_date() {}
+  FMT_CONSTEXPR void on_12_hour_time() {}
+  FMT_CONSTEXPR void on_24_hour_time() {}
+  FMT_CONSTEXPR void on_iso_time() {}
+  FMT_CONSTEXPR void on_am_pm() {}
+  FMT_CONSTEXPR void on_utc_offset() {}
+  FMT_CONSTEXPR void on_tz_name() {}
+};
+
+template <typename OutputIt, typename Char> class tm_writer {
+ private:
+  static constexpr int days_per_week = 7;
+
+  OutputIt out_;
+  const std::tm& tm_;
+
+  auto tm_year() const noexcept -> int { return 1900 + tm_.tm_year; }
+
+  // POSIX and the C Standard are unclear or inconsistent about what %C and %y
+  // do if the year is negative or exceeds 9999. Use the convention that %C
+  // concatenated with %y yields the same output as %Y, and that %Y contains at
+  // least 4 characters, with more only if necessary.
+  auto split_year_lower(int year) const noexcept -> int {
+    auto l = year % 100;
+    if (l < 0) l = -l;  // l in [0, 99]
+    return l;
+  }
+
+  // Algorithm:
+  // https://en.wikipedia.org/wiki/ISO_week_date#Calculating_the_week_number_from_a_month_and_day_of_the_month_or_ordinal_date
+  auto iso_year_weeks(const int curr_year) const noexcept -> int {
+    const int prev_year = curr_year - 1;
+    const int curr_p =
+        (curr_year + curr_year / 4 - curr_year / 100 + curr_year / 400) %
+        days_per_week;
+    const int prev_p =
+        (prev_year + prev_year / 4 - prev_year / 100 + prev_year / 400) %
+        days_per_week;
+    return 52 + ((curr_p == 4 || prev_p == 3) ? 1 : 0);
+  }
+  auto iso_week_num(int tm_yday, int tm_wday) const noexcept -> int {
+    return (tm_yday + 11 - (tm_wday == 0 ? days_per_week : tm_wday)) /
+           days_per_week;
+  }
+  auto tm_iso_week_year() const noexcept -> int {
+    const auto year = tm_year();
+    const int w = iso_week_num(tm_.tm_yday, tm_.tm_wday);
+    if (w < 1) return year - 1;
+    if (w > iso_year_weeks(year)) return year + 1;
+    return year;
+  }
+  auto tm_iso_week_of_year() const noexcept -> int {
+    const auto year = tm_year();
+    const int w = iso_week_num(tm_.tm_yday, tm_.tm_wday);
+    if (w < 1) return iso_year_weeks(year - 1);
+    if (w > iso_year_weeks(year)) return 1;
+    return w;
+  }
+
+  auto tm_hour12() const noexcept -> int {
+    auto hour = tm_.tm_hour % 12;
+    return hour == 0 ? 12 : hour;
+  }
+
+  void write1(int value) { *out_++ = static_cast<char>('0' + value % 10); }
+  void write2(int value) {
+    const char* d = digits2(to_unsigned(value));
+    *out_++ = *d++;
+    *out_++ = *d;
+  }
+
+  void write_year(int year) {
+    if (year >= 0 && year < 10000) {
+      write2(year / 100);
+      write2(year % 100);
+    } else {
+      // At least 4 characters.
+      int width = 4;
+      if (year < 0) {
+        *out_++ = '-';
+        year = 0 - year;
+        --width;
+      }
+      uint32_or_64_or_128_t<int> n =
+          to_unsigned(to_nonnegative_int(year, max_value<int>()));
+      const int num_digits = count_digits(n);
+      if (width > num_digits) out_ = std::fill_n(out_, width - num_digits, '0');
+      out_ = format_decimal<Char>(out_, n, num_digits).end;
+    }
+  }
+
+  void format_localized(char format, char modifier = 0) {
+    // By prepending an extra space we can distinguish an empty result that
+    // indicates insufficient buffer size from a guaranteed non-empty result
+    // https://github.com/fmtlib/fmt/issues/2238
+    Char tm_format[5] = {' ', '%', 'x', '\0', '\0'};
+    if (modifier) {
+      tm_format[2] = modifier;
+      tm_format[3] = format;
+    } else {
+      tm_format[2] = format;
+    }
+
+    basic_memory_buffer<Char> buf;
+    for (;;) {
+      size_t size = buf.capacity();
+      size_t count = detail::strftime(buf.data(), size, tm_format, &tm_);
+      if (count != 0) {
+        buf.resize(count);
+        break;
+      }
+      const size_t min_growth = 10;
+      buf.reserve(buf.capacity() + (size > min_growth ? size : min_growth));
+    }
+    // Remove the extra space.
+    out_ = copy_str<Char>(buf.begin() + 1, buf.end(), out_);
+  }
+
+ public:
+  explicit tm_writer(OutputIt out, const std::tm& tm) : out_(out), tm_(tm) {}
+
+  OutputIt out() const { return out_; }
+
+  FMT_CONSTEXPR void on_text(const Char* begin, const Char* end) {
+    out_ = copy_str<Char>(begin, end, out_);
+  }
+
+  void on_abbr_weekday() { format_localized('a'); }
+  void on_full_weekday() { format_localized('A'); }
+  void on_dec0_weekday(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('w', 'O');
+    write1(tm_.tm_wday);
+  }
+  void on_dec1_weekday(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('u', 'O');
+    write1(tm_.tm_wday == 0 ? days_per_week : tm_.tm_wday);
+  }
+
+  void on_abbr_month() { format_localized('b'); }
+  void on_full_month() { format_localized('B'); }
+
+  void on_datetime(numeric_system ns) {
+    format_localized('c', ns == numeric_system::standard ? '\0' : 'E');
+  }
+  void on_loc_date(numeric_system ns) {
+    format_localized('x', ns == numeric_system::standard ? '\0' : 'E');
+  }
+  void on_loc_time(numeric_system ns) {
+    format_localized('X', ns == numeric_system::standard ? '\0' : 'E');
+  }
+  void on_us_date() {
+    char buf[8];
+    write_digit2_separated(buf, to_unsigned(tm_.tm_mon + 1),
+                           to_unsigned(tm_.tm_mday),
+                           to_unsigned(split_year_lower(tm_year())), '/');
+    out_ = copy_str<Char>(std::begin(buf), std::end(buf), out_);
+  }
+  void on_iso_date() {
+    auto year = tm_year();
+    char buf[10];
+    size_t offset = 0;
+    if (year >= 0 && year < 10000) {
+      copy2(buf, digits2(to_unsigned(year / 100)));
+    } else {
+      offset = 4;
+      write_year(year);
+      year = 0;
+    }
+    write_digit2_separated(buf + 2, year % 100, to_unsigned(tm_.tm_mon + 1),
+                           to_unsigned(tm_.tm_mday), '-');
+    out_ = copy_str<Char>(std::begin(buf) + offset, std::end(buf), out_);
+  }
+
+  void on_utc_offset() { format_localized('z'); }
+  void on_tz_name() { format_localized('Z'); }
+
+  void on_year(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('Y', 'E');
+    write_year(tm_year());
+  }
+  void on_short_year(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('y', 'O');
+    write2(split_year_lower(tm_year()));
+  }
+  void on_offset_year() { format_localized('y', 'E'); }
+
+  void on_century(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('C', 'E');
+    auto year = tm_year();
+    auto upper = year / 100;
+    if (year >= -99 && year < 0) {
+      // Zero upper on negative year.
+      *out_++ = '-';
+      *out_++ = '0';
+    } else if (upper >= 0 && upper < 100) {
+      write2(upper);
+    } else {
+      out_ = write<Char>(out_, upper);
+    }
+  }
+
+  void on_dec_month(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('m', 'O');
+    write2(tm_.tm_mon + 1);
+  }
+
+  void on_dec0_week_of_year(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('U', 'O');
+    write2((tm_.tm_yday + days_per_week - tm_.tm_wday) / days_per_week);
+  }
+  void on_dec1_week_of_year(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('W', 'O');
+    write2((tm_.tm_yday + days_per_week -
+            (tm_.tm_wday == 0 ? (days_per_week - 1) : (tm_.tm_wday - 1))) /
+           days_per_week);
+  }
+  void on_iso_week_of_year(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('V', 'O');
+    write2(tm_iso_week_of_year());
+  }
+
+  void on_iso_week_based_year() { write_year(tm_iso_week_year()); }
+  void on_iso_week_based_short_year() {
+    write2(split_year_lower(tm_iso_week_year()));
+  }
+
+  void on_day_of_year() {
+    auto yday = tm_.tm_yday + 1;
+    write1(yday / 100);
+    write2(yday % 100);
+  }
+  void on_day_of_month(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('d', 'O');
+    write2(tm_.tm_mday);
+  }
+  void on_day_of_month_space(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('e', 'O');
+    const char* d2 = digits2(to_unsigned(tm_.tm_mday));
+    *out_++ = tm_.tm_mday < 10 ? ' ' : d2[0];
+    *out_++ = d2[1];
+  }
+
+  void on_24_hour(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('H', 'O');
+    write2(tm_.tm_hour);
+  }
+  void on_12_hour(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('I', 'O');
+    write2(tm_hour12());
+  }
+  void on_minute(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('M', 'O');
+    write2(tm_.tm_min);
+  }
+  void on_second(numeric_system ns) {
+    if (ns != numeric_system::standard) return format_localized('S', 'O');
+    write2(tm_.tm_sec);
+  }
+
+  void on_12_hour_time() { format_localized('r'); }
+  void on_24_hour_time() {
+    write2(tm_.tm_hour);
+    *out_++ = ':';
+    write2(tm_.tm_min);
+  }
+  void on_iso_time() {
+    char buf[8];
+    write_digit2_separated(buf, to_unsigned(tm_.tm_hour),
+                           to_unsigned(tm_.tm_min), to_unsigned(tm_.tm_sec),
+                           ':');
+    out_ = copy_str<Char>(std::begin(buf), std::end(buf), out_);
+  }
+
+  void on_am_pm() { format_localized('p'); }
+
+  // These apply to chrono durations but not tm.
+  void on_duration_value() {}
+  void on_duration_unit() {}
+};
+
+FMT_END_DETAIL_NAMESPACE
+
+template <typename Char, typename Duration>
+struct formatter<std::chrono::time_point<std::chrono::system_clock, Duration>,
+                 Char> : formatter<std::tm, Char> {
+  FMT_CONSTEXPR formatter() {
+    this->do_parse(default_specs,
+                   default_specs + sizeof(default_specs) / sizeof(Char));
+  }
+
+  template <typename ParseContext>
+  FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
+    return this->do_parse(ctx.begin(), ctx.end(), true);
+  }
+
+  template <typename FormatContext>
+  auto format(std::chrono::time_point<std::chrono::system_clock> val,
+              FormatContext& ctx) -> decltype(ctx.out()) {
+    return formatter<std::tm, Char>::format(localtime(val), ctx);
+  }
+
+  static constexpr const Char default_specs[] = {'%', 'F', ' ', '%', 'T'};
+};
+
+template <typename Char, typename Duration>
+constexpr const Char
+    formatter<std::chrono::time_point<std::chrono::system_clock, Duration>,
+              Char>::default_specs[];
+
+template <typename Char> struct formatter<std::tm, Char> {
+ private:
+  enum class spec {
+    unknown,
+    year_month_day,
+    hh_mm_ss,
+  };
+  spec spec_ = spec::unknown;
+  basic_string_view<Char> specs;
+
+ protected:
+  template <typename It>
+  FMT_CONSTEXPR auto do_parse(It begin, It end, bool with_default = false)
+      -> It {
+    if (begin != end && *begin == ':') ++begin;
+    end = detail::parse_chrono_format(begin, end, detail::tm_format_checker());
+    if (!with_default || end != begin)
+      specs = {begin, detail::to_unsigned(end - begin)};
+    // basic_string_view<>::compare isn't constexpr before C++17.
+    if (specs.size() == 2 && specs[0] == Char('%')) {
+      if (specs[1] == Char('F'))
+        spec_ = spec::year_month_day;
+      else if (specs[1] == Char('T'))
+        spec_ = spec::hh_mm_ss;
+    }
+    return end;
+  }
+
+ public:
+  template <typename ParseContext>
+  FMT_CONSTEXPR auto parse(ParseContext& ctx) -> decltype(ctx.begin()) {
+    return this->do_parse(ctx.begin(), ctx.end());
+  }
+
+  template <typename FormatContext>
+  auto format(const std::tm& tm, FormatContext& ctx) const
+      -> decltype(ctx.out()) {
+    auto w = detail::tm_writer<decltype(ctx.out()), Char>(ctx.out(), tm);
+    if (spec_ == spec::year_month_day)
+      w.on_iso_date();
+    else if (spec_ == spec::hh_mm_ss)
+      w.on_iso_time();
+    else
+      detail::parse_chrono_format(specs.begin(), specs.end(), w);
+    return w.out();
   }
 };
 
