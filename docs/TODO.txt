@@ -1,6 +1,7 @@
 This is a list of the tasks to complete before each release.
 
 Alpha 1:
+  [ ] Split btutils - Put Linux GDBus functions in a separate file
   [ ] Add support for L2CAP over Bluetooth
   [ ] Unicode username support
   [ ] Add option to export Console output to a file in the user's Documents folder
@@ -13,10 +14,7 @@ Alpha 1:
       [ ] Adjust CMake scripts/VS projects as necessary
       [ ] Add download_glfw.py
       [ ] Remove libglfw3-dev from BUILDING.md
-    [ ] Make fork of GNU Unifont
-      [ ] Remove the characters which aren't loaded by the application
-      [ ] Turn forked TTF into a source file with Dear ImGui's binary_to_compressed_c
-      [ ] Put this on GitHub
+    [ ] Make fork of GNU Unifont on GitHub
       [ ] Add a download script
     [ ] Remove all third-party code from this repository
       - The Python scripts will handle downloading them all.
@@ -65,6 +63,12 @@ Various small optimizations:
   [ ] Use std::string_view (C++17) over `const std::string&` (Optional)
   [X] Use vector::find in ConnWindowList
   [X] Don't poll sockets that have been closed (modify relevant parts in ConnWindowList)
+  [ ] Add a `Socket` class
+    - Constructor takes a SOCKET parameter
+    - Copy/move constructors deleted, sockets are always unique
+    - send(), recv(), etc. member functions
+    - Keep track of errors and open/closed state
+    - Close managed socket fd on destruction as RAII
 
 Other things:
   [ ] Setup GitHub Actions (whenever)
@@ -76,6 +80,3 @@ Other things:
     [ ] Remove #if checks for chrono timezones (console.cpp)
     [ ] Drop formatcompat.hpp and {fmt}, use std::format()
   [ ] Upgrade to VS2022
-  - Probably not going to adopt the C++23 Networking TS into this codebase.
-   - Would require massive refactoring
-   - No Bluetooth in the TS
