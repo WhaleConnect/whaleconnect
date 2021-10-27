@@ -14,7 +14,7 @@ Alpha 1:
       [ ] Adjust CMake scripts/VS projects as necessary
       [ ] Add download_glfw.py
       [ ] Remove libglfw3-dev from BUILDING.md
-    [ ] Make fork of GNU Unifont on GitHub
+    [X] Make fork of GNU Unifont on GitHub
       [ ] Add a download script
     [ ] Remove all third-party code from this repository
       - The Python scripts will handle downloading them all.
