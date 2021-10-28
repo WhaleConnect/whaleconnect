@@ -34,7 +34,7 @@ void Console::_add(const std::string& s, const ImVec4& color, bool canUseHex) {
     if (_items.empty() || (_items.back().text.back() == '\n')) {
         // Text goes on its own line if there are no items or the last line ends with a newline
         // We need to explicitly specify the ostringstream constructor so the compiler knows what type the argument is.
-        _items.emplace_back(canUseHex, s, std::ostringstream(), color, timestamp);
+        _items.emplace_back(canUseHex, s, std::ostringstream{}, color, timestamp);
     } else {
         // Text goes on the last line (append)
         _items.back().text += s;
