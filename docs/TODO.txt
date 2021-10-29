@@ -15,7 +15,7 @@ Alpha 1:
       [ ] Add download_glfw.py
       [ ] Remove libglfw3-dev from BUILDING.md
     [X] Make fork of GNU Unifont on GitHub
-      [ ] Add a download script
+      [X] Add a download script
     [ ] Remove all third-party code from this repository
       - The Python scripts will handle downloading them all.
         [ ] Document them

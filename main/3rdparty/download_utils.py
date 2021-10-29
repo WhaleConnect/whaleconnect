@@ -107,6 +107,7 @@ def download_file(name, flatten=True):
     with urllib.request.urlopen(repo_url + name) as u:
         # Get the file size with the Content-Length HTTP leader
         file_size = int(u.getheader("Content-Length"))
+
         # If the file is > 1024 bytes, set the unit to kb
         file_unit = "bytes"
         if (file_size > 1024):
@@ -139,3 +140,30 @@ def download_file(name, flatten=True):
         with open(out_name, "wb") as f:
             # Write the URL file to the local file
             f.writelines(u.readlines())
+
+
+def create_file(path, contents=b"", normalizeCRLF=False):
+    """Create a file in the output directory and write to it.
+
+    Parameters
+    ----------
+    path : str
+        The path of the file, relative to the path of the path of
+        the output directory
+    contents : bytes, optional
+        The text to write to the file, as a bytes string
+    normalizeCRLF : bool, optional
+        If newline endings in the string (LF) are replaced with CRLF
+        endings
+    """
+
+    # Get the full path using `calc_out_path()`
+    full_path = calc_out_path(path)
+
+    # If the file doesn't exist, create it
+    if not os.path.exists(full_path):
+        with open(full_path, "wb") as f:
+            if normalizeCRLF:
+                f.write(contents.replace(b"\n", b"\r\n"))
+            else:
+                f.write(contents)

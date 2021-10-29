@@ -4,7 +4,6 @@
 # This script will download the latest revision of Dear ImGui's docking
 # branch (https://github.com/ocornut/imgui/tree/docking) from GitHub.
 
-import os
 from download_utils import *
 
 # Main source files
@@ -49,13 +48,7 @@ def main():
     download_file("backends/imgui_impl_opengl3_loader.h")
 
     # Generate imconfig.h if it doesn't exist
-    imconfig_path = calc_out_path("imconfig.h")
-    if not os.path.exists(imconfig_path):
-        print("Generating imconfig.h...")
-        with open(imconfig_path, "wb") as f:
-            # This Python script has LF (\n) line endings,
-            # the target imconfig.h should have CRLF (\r\n) endings.
-            f.write(imconfig_contents.replace(b"\n", b"\r\n"))
+    create_file("imconfig.h", imconfig_contents, True)
 
     # Download license
     print("Downloading license...")
