@@ -6,7 +6,6 @@
 #pragma once
 
 #include <string> // std::string
-#include <cstring> // std::strchr()
 #include <type_traits> // std::is_same_v
 
 #include <imgui/imgui_internal.h>
@@ -116,7 +115,7 @@ namespace ImGui {
     /// Adapted from imgui_demo.cpp.
     /// </remarks>
     template<class... Args>
-    void Overlay(const ImVec2& padding, ImGuiOverlayCorner corner, const char* text, Args... args);
+    void Overlay(const ImVec2& padding, ImGuiOverlayCorner corner, const char* text, Args&&... args);
 
     /// <summary>
     /// Display a basic spinner which rotates every few frames.
@@ -158,7 +157,7 @@ constexpr ImGuiDataType ImGui::GetDataType([[maybe_unused]] T val) {
 }
 
 template <class... Args>
-void ImGui::Overlay(const ImVec2& padding, ImGuiOverlayCorner corner, const char* text, Args... args) {
+void ImGui::Overlay(const ImVec2& padding, ImGuiOverlayCorner corner, const char* text, Args&&... args) {
     // Window flags to make the overlay be fixed, immobile, and have no decoration
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav
         | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize;
@@ -187,6 +186,6 @@ void ImGui::Overlay(const ImVec2& padding, ImGuiOverlayCorner corner, const char
 
     // Draw the window - we're passing the text as the window name (which doesn't show). This function will work as
     // long as every call has a different text value.
-    if (Begin(text, nullptr, flags)) Text(text, args...);
+    if (Begin(text, nullptr, flags)) Text(text, std::forward<Args>(args)...);
     End();
 }
