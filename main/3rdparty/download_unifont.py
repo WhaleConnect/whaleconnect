@@ -6,11 +6,11 @@
 
 from download_utils import *
 
-readme_text = b"""The Unifont distribution bundled with this repository\
- contains the full Unifont TTF file and its license documents.
+readme_text = b"""The Unifont distribution bundled with this repository \
+contains the full Unifont TTF file and its license documents.
 
-For its source code and other relevant files, go to Network Socket\
- Terminal's GNU Unifont mirror at: https://github.com/NSTerminal/unifont
+For its source code and other relevant files, go to Network Socket \
+Terminal's GNU Unifont mirror at: https://github.com/NSTerminal/unifont
 """
 
 
@@ -23,7 +23,7 @@ def main():
 
     # Download the TTF
     print("Downloading TTF...")
-    download_file("font/precompiled/unifont-14.0.01.ttf")
+    download_file("font/precompiled/unifont-14.0.01.ttf", normalize_crlf=False)
 
     # Download license files
     print("Downloading licenses...")
@@ -32,7 +32,7 @@ def main():
 
     # Create readme
     print("Generating readme...")
-    create_file("README.txt", readme_text, True)
+    create_file("README.txt", readme_text)
 
 
 if __name__ == "__main__":

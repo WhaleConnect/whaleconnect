@@ -31,7 +31,6 @@ To build NST from the sources in this repository, you will need the following so
 You will need to install the following packages (if you're using a Debian-based system):
 
 ```bash
-sudo apt install libbluetooth-dev # BlueZ API
 sudo apt install libdbus-1-dev    # DBus
 sudo apt install libglib2.0-dev   # GLib
 sudo apt install libsystemd-dev   # systemd utility library (needed when static-linking the above packages)

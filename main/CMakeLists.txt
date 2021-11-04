@@ -62,6 +62,6 @@ if (NOT WIN32)
     find_package(Threads REQUIRED)
     target_link_libraries(Threads::Threads)
 
-    # Other libs (libdl, BlueZ)
-    target_link_libraries(terminal ${CMAKE_DL_LIBS} -lbluetooth)
+    # Link to libdl
+    target_link_libraries(terminal ${CMAKE_DL_LIBS})
 endif()

@@ -9,16 +9,14 @@ Alpha 1:
   [X] Rework the Bluetooth selection menu UI
   [X] Remove threads from ConnWindow, handle socket events in ConnWindowList instead
   [ ] Fix dependency mess
-    [ ] Add scripts to download BlueZ/GDBus
+    [X] Add scripts to download BlueZ/GDBus
     [ ] Compile GLFW from sources
       [ ] Adjust CMake scripts/VS projects as necessary
       [ ] Add download_glfw.py
       [ ] Remove libglfw3-dev from BUILDING.md
     [X] Make fork of GNU Unifont on GitHub
       [X] Add a download script
-    [ ] Remove all third-party code from this repository
-      - The Python scripts will handle downloading them all.
-        [ ] Document them
+    [ ] Document Python downloader scripts
 
 Alpha 2:
   [ ] Implement the server-side
@@ -36,6 +34,7 @@ Beta:
     [ ] Settings UI (like in VSCode)
     [ ] Save in JSON format
       - Add JSON for Modern C++: https://github.com/nlohmann/json
+    [ ] Allow saving/editing of Bluetooth SDP UUIDs
   [ ] Display first-party (GPLv3) and third-party licenses in app
   [ ] Display version/build information (build date/platform/compiler etc.)
     [ ] Display library versions (Dear ImGui/OpenGL/GLFW etc.) if applicable

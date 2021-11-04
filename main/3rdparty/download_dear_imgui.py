@@ -48,7 +48,7 @@ def main():
     download_file("backends/imgui_impl_opengl3_loader.h")
 
     # Generate imconfig.h if it doesn't exist
-    create_file("imconfig.h", imconfig_contents, True)
+    create_file("imconfig.h", imconfig_contents)
 
     # Download license
     print("Downloading license...")

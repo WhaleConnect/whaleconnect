@@ -8,8 +8,24 @@
 import os
 import urllib.request
 
-out_dir = ""
-repo_url = ""
+out_dir, repo_url = "", ""
+
+
+def calc_out_path(name):
+    """Get the name of a file appended to the output directory.
+
+    Parameters
+    ----------
+    name : str
+        The name of the file
+
+    Returns
+    -------
+    str
+        The given name joined to the end of the output directory path
+    """
+
+    return os.path.join(out_dir, name)
 
 
 def make_dir(name):
@@ -18,10 +34,33 @@ def make_dir(name):
     Parameters
     ----------
     name : str
-        The name of the directory to create (nested paths allowed)
+        The name of the directory to create relative to the output
+        directory (nested directories allowed)
     """
-    if not os.path.exists(name):
-        os.makedirs(name)
+
+    full_path = calc_out_path(name)
+    if not os.path.exists(full_path):
+        os.makedirs(full_path)
+
+def set_out_dir(name):
+    """Set the directory in which downloaded files will be placed.
+
+    Parameters
+    ----------
+    name : str
+        The path of the output directory, relative to the path of
+        this script
+    """
+
+    global out_dir
+
+    # Where this file is
+    file_dir = os.path.dirname(os.path.realpath(__file__))
+
+    out_dir = os.path.join(file_dir, name)
+
+    # If the output directory doesn't exist, create it
+    make_dir(out_dir)
 
 
 def set_repo(name, branch, out_name=""):
@@ -39,47 +78,41 @@ def set_repo(name, branch, out_name=""):
     """
 
     global repo_url
-    global out_dir
 
     # Repository URL
     repo_url = f"http://raw.githubusercontent.com/{name}/{branch}/"
-
-    # The working directory of this file
-    file_dir = os.path.dirname(os.path.realpath(__file__))
 
     if out_name == "":
         # Unspecified output name, use the repo name
         # This is the part after the /:
         out_name = name.split("/")[1]
 
-    # Join the current directory and the repository name together to
-    # get the directory where the files will be placed
-    out_dir = os.path.join(file_dir, out_name)
-
-    # If the output directory doesn't exist, create it
-    make_dir(out_dir)
+    set_out_dir(out_name)
 
     # Print an information message
     print(f"Downloading branch '{branch}' of '{name}' to '{out_name}'")
 
-
-def calc_out_path(name):
-    """Get the name of a file appended to the output directory.
+def write_file(name, contents, normalize_crlf=True):
+    """Write a string to a file in the output directory.
 
     Parameters
     ----------
     name : str
-        The name of the file
-
-    Returns
-    -------
-    str
-        The given name joined to the end of the output directory path
+        The name of the file relative to the output directory
+    contents : bytes
+        The string to write to the file
+    normalize_crlf : bool, optional
+        If newline endings (LF) in "contents" are replaced with CRLF, by
+        default True
     """
-    return os.path.join(out_dir, name)
 
+    with open(calc_out_path(name), "wb") as f:
+        if normalize_crlf:
+            f.write(contents.replace(b"\n", b"\r\n"))
+        else:
+            f.write(contents)
 
-def download_file(name, flatten=True):
+def download_file(name, flatten=True, normalize_crlf=True):
     """Download a file from the specified GitHub repository.
 
     Parameters
@@ -90,6 +123,9 @@ def download_file(name, flatten=True):
         If the download is directly placed into the output directory
         (not maintaining the repo's original file structure),
         by default True
+    normalize_crlf : bool, optional
+        If newline endings (LF) in the file are replaced with CRLF, by
+        default True
 
     Raises
     ------
@@ -117,32 +153,27 @@ def download_file(name, flatten=True):
         # Print info
         print(f"> {file_name} [{file_size:.2f} {file_unit}]")
 
-        # Get the full path where the file will be saved
+        # Get the path where the file will be saved
         out_name = ""
 
         if flatten:
             # The flatten option loses the original directory structure
             # and places everything directly inside the output dir.
-            out_name = calc_out_path(file_name)
+            out_name = file_name
         else:
             # Setting flatten to false preserves the original directory
             # structure
-            out_name = out_dir
-
             # Join each path part to the output
-            for i in name.split("/"):
-                out_name = os.path.join(out_name, i)
+            out_name = os.path.join(*[i for i in name.split("/")])
 
             # Make the directory:
             make_dir(os.path.dirname(out_name))
 
         # Open the output file for writing
-        with open(out_name, "wb") as f:
-            # Write the URL file to the local file
-            f.writelines(u.readlines())
+        write_file(out_name, u.read(), normalize_crlf)
 
 
-def create_file(path, contents=b"", normalizeCRLF=False):
+def create_file(path, contents=b"", normalize_crlf=True):
     """Create a file in the output directory and write to it.
 
     Parameters
@@ -151,10 +182,11 @@ def create_file(path, contents=b"", normalizeCRLF=False):
         The path of the file, relative to the path of the path of
         the output directory
     contents : bytes, optional
-        The text to write to the file, as a bytes string
-    normalizeCRLF : bool, optional
-        If newline endings in the string (LF) are replaced with CRLF
-        endings
+        The text to write to the file, as a bytes string, by default
+        empty
+    normalize_crlf : bool, optional
+        If newline endings (LF) in "contents" are replaced with CRLF, by
+        default True
     """
 
     # Get the full path using `calc_out_path()`
@@ -162,8 +194,4 @@ def create_file(path, contents=b"", normalizeCRLF=False):
 
     # If the file doesn't exist, create it
     if not os.path.exists(full_path):
-        with open(full_path, "wb") as f:
-            if normalizeCRLF:
-                f.write(contents.replace(b"\n", b"\r\n"))
-            else:
-                f.write(contents)
+        write_file(full_path, contents, normalize_crlf)

@@ -25,9 +25,10 @@ if (NOT WIN32)
     target_include_directories(terminalLibs PUBLIC ${GLIB_INCLUDE_DIRS})
     target_link_directories(terminalLibs PUBLIC ${GLIB_LIBRARY_DIRS})
 
-    # GDBus
+    # BlueZ and GDBus
+    file(GLOB BLUEZ_SOURCES "bluetooth/*.c")
     file(GLOB GDBUS_SOURCES "gdbus/*.c")
 
-    target_sources(terminalLibs PRIVATE ${GDBUS_SOURCES})
+    target_sources(terminalLibs PRIVATE ${BLUEZ_SOURCES} ${GDBUS_SOURCES})
     target_link_libraries(terminalLibs ${DBUS_STATIC_LIBRARIES} ${GLIB_STATIC_LIBRARIES})
 endif()
