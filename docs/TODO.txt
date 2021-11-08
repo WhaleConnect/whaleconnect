@@ -78,4 +78,4 @@ Other things:
   [ ] When GCC and Clang are C++20 complete:
     [ ] Remove #if checks for chrono timezones (console.cpp)
     [ ] Drop formatcompat.hpp and {fmt}, use std::format()
-  [ ] Upgrade to VS2022
+  [X] Upgrade to VS2022
