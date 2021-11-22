@@ -24,6 +24,8 @@ static GLFWwindow* window = nullptr;
 /// Set Dear ImGui's configuration for use by the application.
 /// </summary>
 static void configImGui() {
+    using namespace Settings;
+
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
@@ -35,11 +37,11 @@ static void configImGui() {
 
     // Set styles
     ImGuiStyle& style = ImGui::GetStyle();
-    style.Colors[ImGuiCol_WindowBg].w = 1;
-    style.Colors[ImGuiCol_Tab].w = 0;
+    style.Colors[ImGuiCol_WindowBg].w = (windowTransparency) ? 0.92f : 1.0f;
+    style.Colors[ImGuiCol_Tab].w = 0.0f;
 
     // Set corner rounding
-    style.WindowRounding = (Settings::roundedCorners) ? 8.0f : 0.0f;
+    style.WindowRounding = (roundedCorners) ? 8.0f : 0.0f;
 
     style.ChildRounding
         = style.FrameRounding
@@ -47,17 +49,20 @@ static void configImGui() {
         = style.ScrollbarRounding
         = style.GrabRounding
         = style.TabRounding
-        = (Settings::roundedCorners) ? 4.0f : 0.0f;
+        = (roundedCorners) ? 4.0f : 0.0f;
 
     // Load font file
     ImFontAtlas& fonts = *io.Fonts;
+
+    // If the default font is used, the rest of this function can be skipped
+    if (useDefaultFont) return;
 
     // Select glyphs for loading
     // Include all in Unicode plane 0 except for control characters (U+0000 - U+0019), surrogates (U+D800 - U+DFFF),
     // private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
     static const ImWchar ranges[] = { 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
     static const char* fontFile = "3rdparty/unifont/unifont-14.0.01.ttf";
-    fonts.AddFontFromFileTTF(fontFile, Settings::fontSize, nullptr, &ranges[0]);
+    fonts.AddFontFromFileTTF(fontFile, fontSize, nullptr, ranges);
 }
 
 bool MainHandler::initApp() {
@@ -77,7 +82,7 @@ bool MainHandler::initApp() {
 
     // Create window
     window = glfwCreateWindow(1280, 720, "Network Socket Terminal", nullptr, nullptr);
-    if (window == nullptr) return false;
+    if (!window) return false;
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync

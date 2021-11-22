@@ -12,6 +12,8 @@ namespace Settings {
     inline unsigned char fontSize = 13; // Application font height in pixels
     inline unsigned char connectTimeout = 5; // Number of seconds to allow for connection before it aborts
     inline unsigned char sendTextboxHeight = 4; // Number of lines that can be shown in send textboxes at a time
+    inline bool useDefaultFont = false; // If Dear ImGui's default font is used (instead of GNU Unifont)
     inline bool showFPScounter = false; // If a framerate counter is shown in the top-right corner
     inline bool roundedCorners = false; // If corners in the UI are rounded
+    inline bool windowTransparency = false; // If application windows have a transparent effect
 }
