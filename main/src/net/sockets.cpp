@@ -11,8 +11,8 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 // These don't exist on Windows
-constexpr int EAI_SYSTEM = 0;
-constexpr int MSG_NOSIGNAL = 0;
+constexpr auto EAI_SYSTEM = 0;
+constexpr auto MSG_NOSIGNAL = 0;
 
 // Unix int types
 using nfds_t = ULONG;
@@ -23,6 +23,7 @@ using socklen_t = int;
 // Bluetooth headers for Linux
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
+#include <bluetooth/l2cap.h>
 
 #include <netinet/in.h> // sockaddr
 #include <sys/socket.h> // Socket definitions
@@ -31,8 +32,6 @@ using socklen_t = int;
 #include <fcntl.h> // fcntl()
 #include <poll.h> // poll()
 
-#include "btutils.hpp"
-
 // Winsock-specific definitions and their Berkeley equivalents
 constexpr auto WSAPoll = poll;
 constexpr auto GetAddrInfoW = getaddrinfo;
@@ -40,12 +39,13 @@ constexpr auto FreeAddrInfoW = freeaddrinfo;
 using ADDRINFOW = addrinfo;
 
 // Socket errors
-constexpr int WSAEWOULDBLOCK = EWOULDBLOCK;
-constexpr int WSAEINPROGRESS = EINPROGRESS;
+constexpr auto WSAEWOULDBLOCK = EWOULDBLOCK;
+constexpr auto WSAEINPROGRESS = EINPROGRESS;
 
 // Bluetooth definitions
-constexpr int AF_BTH = AF_BLUETOOTH;
-constexpr int BTHPROTO_RFCOMM = BTPROTO_RFCOMM;
+constexpr auto AF_BTH = AF_BLUETOOTH;
+constexpr auto BTHPROTO_RFCOMM = BTPROTO_RFCOMM;
+constexpr auto BTHPROTO_L2CAP = BTPROTO_L2CAP;
 #endif
 
 #include "sockets.hpp"
@@ -116,22 +116,23 @@ bool Sockets::isFatal(int code, bool allowNonBlock) {
 int Sockets::init() {
 #ifdef _WIN32
     // Start Winsock on Windows
+    // WSAStartup() directly returns the error code, making it inconsistent with the rest of the socket APIs.
+    // This function sets the last error based on that code as an improvement.
     WSADATA wsaData;
-    return WSAStartup(MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
+    int startupRet = WSAStartup(MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
+    setLastErr(startupRet);
+    return (startupRet == NO_ERROR) ? NO_ERROR : SOCKET_ERROR;
 #else
-    // Start GLib on Linux
-    BTUtils::glibInit();
     return NO_ERROR;
 #endif
 }
 
-void Sockets::cleanup() {
+int Sockets::cleanup() {
 #ifdef _WIN32
     // Cleanup Winsock on Windows
-    WSACleanup();
+    return WSACleanup();
 #else
-    // Stop GLib on Linux
-    BTUtils::glibStop();
+    return NO_ERROR;
 #endif
 }
 
@@ -163,34 +164,48 @@ static SOCKET nonBlockSocket(int af, int type, int proto) {
         Sockets::closeSocket(sockfd);
         sockfd = INVALID_SOCKET;
     }
+
     return sockfd;
+}
+
+static SOCKET bluetoothSocket(Sockets::ConnectionType type) {
+    using enum Sockets::ConnectionType;
+
+    // Determine the socket type
+    int sockType = 0;
+    switch (type) {
+    case L2CAPSeqPacket:
+        sockType = SOCK_SEQPACKET;
+        break;
+    case L2CAPStream:
+    case RFCOMM:
+        // L2CAP can use a stream-based protocol, RFCOMM is stream-only.
+        sockType = SOCK_STREAM;
+        break;
+    case L2CAPDgram:
+        sockType = SOCK_DGRAM;
+        break;
+    default:
+        // Should never get here since this function is used internally.
+        return INVALID_SOCKET;
+    }
+
+    // Determine the socket protocol
+    int sockProto = (type == RFCOMM) ? BTHPROTO_RFCOMM : BTHPROTO_L2CAP;
+
+    // Create the socket
+    return nonBlockSocket(AF_BTH, sockType, sockProto);
 }
 
 SOCKET Sockets::createClientSocket(const DeviceData& data) {
     SOCKET sockfd = INVALID_SOCKET; // Socket file descriptor
 
-    if (data.type == ConnectionType::Bluetooth) {
-        // Bluetooth connection - set up socket
-        sockfd = nonBlockSocket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
-        if (sockfd == INVALID_SOCKET) return INVALID_SOCKET;
+    using enum ConnectionType;
 
-        // Set up server address structure
-#ifdef _WIN32
-        SOCKADDR_BTH addr{
-            .addressFamily = AF_BTH,
-            .btAddr = data.btAddr,
-            .serviceClassId = RFCOMM_PROTOCOL_UUID,
-            .port = data.port
-        };
-#else
-        bdaddr_t bdaddr;
-        str2ba(data.address.c_str(), &bdaddr);
-        sockaddr_rc addr{ AF_BLUETOOTH, bdaddr, static_cast<uint8_t>(data.port) };
-#endif
+    // Check for None type
+    if (data.type == None) return sockfd;
 
-        // Connect
-        connect(sockfd, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
-    } else {
+    if ((data.type == TCP) || (data.type == UDP)) {
         // Internet protocol - Set up hints for getaddrinfo()
         // Ignore "missing initializer" warnings on GCC and clang
 #ifdef __GNUC__
@@ -201,7 +216,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #endif
-        bool isTCP = (data.type == ConnectionType::TCP);
+        bool isTCP = (data.type == TCP);
         ADDRINFOW hints{
             .ai_flags = AI_NUMERICHOST,
             .ai_family = AF_UNSPEC,
@@ -216,8 +231,6 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 #endif
 
         // Wide encoding conversions for Windows
-        // These are stored in their own variables to prevent them from being temporaries and destroyed later.
-        // If we were to call `.c_str()` and then have these destroyed, `.c_str()` would be a dangling pointer.
         Strings::widestr addrWide = Strings::toWide(data.address);
         Strings::widestr portWide = Strings::toWide(data.port);
 
@@ -233,11 +246,50 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
             // The last error can be set to the getaddrinfo() error, the error-checking functions will handle it
             setLastErr(gaiResult);
         }
+    } else {
+        // Set up Bluetooth socket
+        sockfd = bluetoothSocket(data.type);
+        if (sockfd == INVALID_SOCKET) return INVALID_SOCKET;
+
+        // Set up server address structure
+        socklen_t addrSize;
+
+#ifdef _WIN32
+        // Convert the MAC address from string form into integer form
+        // This is done by removing all colons in the address string, then parsing the resultant string as an
+        // integer in base-16 (which is how a MAC address is structured).
+        BTH_ADDR btAddr = std::stoull(Strings::replaceAll(data.address, ":", ""), nullptr, 16);
+
+        SOCKADDR_BTH sAddrBT{ .addressFamily = AF_BTH, .btAddr = btAddr, .port = data.port };
+        addrSize = sizeof(sAddrBT);
+#else
+        // Address of the device to connect to
+        bdaddr_t bdaddr;
+        str2ba(data.address.c_str(), &bdaddr);
+
+        // The structure used depends on the protocol
+        union {
+            sockaddr_l2 addrL2;
+            sockaddr_rc addrRC;
+        } sAddrBT;
+
+        // Set the appropriate sockaddr struct based on the protocol
+        if (data.type == RFCOMM) {
+            sAddrBT.addrRC = { AF_BLUETOOTH, bdaddr, static_cast<uint8_t>(data.port) };
+            addrSize = sizeof(sAddrBT.addrRC);
+        } else {
+            sAddrBT.addrL2 = { AF_BLUETOOTH, htobs(data.port), bdaddr, 0, 0 };
+            addrSize = sizeof(sAddrBT.addrL2);
+        }
+#endif
+
+        // Connect
+        connect(sockfd, reinterpret_cast<sockaddr*>(&sAddrBT), addrSize);
     }
 
     // Check if connection failed
     if (isFatal(getLastErr(), true)) {
-        // Destroy the socket:
+        // Free the socket:
         closeSocket(sockfd);
         sockfd = INVALID_SOCKET;
     }

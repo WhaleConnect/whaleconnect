@@ -6,6 +6,7 @@
 #pragma once
 
 #include <string> // std::string
+#include <vector> // std::vector
 #include <type_traits> // std::is_same_v
 
 #include <imgui/imgui_internal.h>
@@ -31,6 +32,14 @@ namespace ImGui {
     /// <param name="s">The string to display</param>
     inline void TextUnformatted(const std::string& s) {
         TextUnformatted(s.c_str());
+    }
+
+    /// <summary>
+    /// A TextWrapped() overload not accepting format strings.
+    /// </summary>
+    /// <param name="s">The string to display</param>
+    inline void TextWrappedUnformatted(const std::string& s) {
+        TextWrapped("%s", s.c_str());
     }
 
     /// <summary>
@@ -64,7 +73,7 @@ namespace ImGui {
     inline void InputScalar(const char* label, T& data, U step = 0, U stepFast = 0) {
         // Any negative step value is considered invalid and nullptr is passed to disable the step buttons
         U* stepPtr = (step > 0) ? &step : nullptr;
-        U* stepFastPtr = (stepFast > 0) ? &stepFast : nullptr;
+        U* stepFastPtr = ((step > 0) && (stepFast > 0)) ? &stepFast : nullptr;
 
         InputScalar(label, GetDataType(data), &data, stepPtr, stepFastPtr);
     }
@@ -131,29 +140,17 @@ namespace ImGui {
 
 template <class T>
 constexpr ImGuiDataType ImGui::GetDataType([[maybe_unused]] T val) {
-    if constexpr (std::is_same_v<T, int8_t>) {
-        return ImGuiDataType_S8;
-    } else if constexpr (std::is_same_v<T, uint8_t>) {
-        return ImGuiDataType_U8;
-    } else if constexpr (std::is_same_v<T, int16_t>) {
-        return ImGuiDataType_S16;
-    } else if constexpr (std::is_same_v<T, uint16_t>) {
-        return ImGuiDataType_U16;
-    } else if constexpr (std::is_same_v<T, int32_t>) {
-        return ImGuiDataType_S32;
-    } else if constexpr (std::is_same_v<T, uint32_t>) {
-        return ImGuiDataType_U32;
-    } else if constexpr (std::is_same_v<T, int64_t>) {
-        return ImGuiDataType_S64;
-    } else if constexpr (std::is_same_v<T, uint64_t>) {
-        return ImGuiDataType_U64;
-    } else if constexpr (std::is_same_v<T, float>) {
-        return ImGuiDataType_Float;
-    } else if constexpr (std::is_same_v<T, double>) {
-        return ImGuiDataType_Double;
-    } else {
-        return ImGuiDataType_COUNT;
-    }
+    if constexpr (std::is_same_v<T, int8_t>) return ImGuiDataType_S8;
+    else if constexpr (std::is_same_v<T, uint8_t>) return ImGuiDataType_U8;
+    else if constexpr (std::is_same_v<T, int16_t>) return ImGuiDataType_S16;
+    else if constexpr (std::is_same_v<T, uint16_t>) return ImGuiDataType_U16;
+    else if constexpr (std::is_same_v<T, int32_t>) return ImGuiDataType_S32;
+    else if constexpr (std::is_same_v<T, uint32_t>) return ImGuiDataType_U32;
+    else if constexpr (std::is_same_v<T, int64_t>) return ImGuiDataType_S64;
+    else if constexpr (std::is_same_v<T, uint64_t>) return ImGuiDataType_U64;
+    else if constexpr (std::is_same_v<T, float>) return ImGuiDataType_Float;
+    else if constexpr (std::is_same_v<T, double>) return ImGuiDataType_Double;
+    else return ImGuiDataType_COUNT;
 }
 
 template <class... Args>

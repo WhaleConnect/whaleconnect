@@ -79,7 +79,7 @@ void ConnWindow::update() {
     ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
 
     // Begin window, draw console outputs
-    if (ImGui::Begin(_title.c_str(), &_open)) _output.update();
+    if (ImGui::Begin(_windowText.c_str(), &_open)) _output.update();
 
     // End window
     ImGui::End();

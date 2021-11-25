@@ -50,8 +50,7 @@ void Console::_add(const std::string& s, const ImVec4& color, bool canUseHex) {
         // We won't need to check for newlines using this approach.
         std::ostringstream& oss = _items.back().textHex;
         for (unsigned char c : s) {
-            // `c` is not a const reference since copy elision does not work here - `c` is unsigned char, `s` is
-            // composed of chars.
+            // Add each character:
             oss << std::hex            // Express integers in hexadecimal (i.e. base-16)
                 << std::uppercase      // Make hex digits A-F uppercase
                 << std::setw(2)        // Format in octets (8 bits => 2 hex digits)

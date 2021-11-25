@@ -42,8 +42,9 @@ public:
     /// Add a new, unique window to the list.
     /// </summary>
     /// <param name="data">The DeviceData to initialize the window with</param>
+    /// <param name="extraInfo">A string prepended to the window title in parentheses (optional)</param>
     /// <returns>If the window is unique and added</returns>
-    bool add(const Sockets::DeviceData& data);
+    bool add(const Sockets::DeviceData& data, const std::string& extraInfo = "");
 
     /// <summary>
     /// Redraw all contained windows and delete any that have been closed.

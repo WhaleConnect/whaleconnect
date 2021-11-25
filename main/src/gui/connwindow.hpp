@@ -21,6 +21,7 @@ class ConnWindow {
     short _pollFlags = POLLOUT; // What to check for when polling the socket
 
     const std::string _title; // Title of window
+    const std::string _windowText; // The text in the window's title bar
     bool _open = true; // If the window is open (affected by the close button)
     Console _output; // Console output with send textbox
 
@@ -59,7 +60,9 @@ public:
     /// <param name="title">The title of the window, shown in the title bar</param>
     /// <param name="sockfd">The socket file descriptor to use</param>
     /// <param name="lastErr">The error that occurred, taken right after the socket has been created</param>
-    ConnWindow(const std::string& title, SOCKET sockfd, int lastErr) : _sockfd(sockfd), _title(title),
+    ConnWindow(const std::string& title, const std::string& extraInfo, SOCKET sockfd, int lastErr) : _sockfd(sockfd),
+        _title(title),
+        _windowText((extraInfo.empty()) ? _title : std::format("({}) {}", extraInfo, _title)),
         _output(std::bind(&ConnWindow::_sendHandler, this, std::placeholders::_1)) {
         // The internal Console object is intialized to send data when the textbox is submitted (i.e. Enter pressed)
         // This overloaded version of the constructor (taking a function which takes a `const std::string&`) enables
@@ -88,24 +91,24 @@ public:
     /// Get the desired flags for polling this window's socket with (WSA)poll().
     /// </summary>
     /// <returns>The polling flags, set `pollfd::events` to this</returns>
-    short getPollFlags() {
+    short getPollFlags() const {
         return _pollFlags;
     }
 
     /// <summary>
     /// Check if the window is open.
     /// </summary>
-    operator bool() const {
+    bool open() const {
         return _open;
     }
 
     /// <summary>
     /// Compare this window's title to another given title.
     /// </summary>
-    /// <param name="s">The title to compare with</param>
+    /// <param name="other">The title to compare with</param>
     /// <returns>If this window's title and the given title are equal</returns>
-    bool operator==(const std::string& s) const {
-        return _title == s;
+    bool titleEquals(const std::string& other) const {
+        return _title == other;
     }
 
     /// <summary>

@@ -134,6 +134,9 @@
         "list": "cpp",
         "xhash": "cpp",
         "condition_variable": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "variant": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp"
     }
 }

@@ -16,9 +16,9 @@
 #include <poll.h> // pollfd
 
 // Error status codes
-constexpr int INVALID_SOCKET = -1; // An invalid socket descriptor
-constexpr int SOCKET_ERROR = -1; // An error has occurred (returned from a function)
-constexpr int NO_ERROR = 0; // Done successfully (returned from a function)
+constexpr auto INVALID_SOCKET = -1; // An invalid socket descriptor
+constexpr auto SOCKET_ERROR = -1; // An error has occurred (returned from a function)
+constexpr auto NO_ERROR = 0; // Done successfully (returned from a function)
 
 // Windows-style SOCKET equals int on Unix for file descriptors
 using SOCKET = int;
@@ -29,7 +29,7 @@ using SOCKET = int;
 /// </summary>
 namespace Sockets {
     // All possible connection types
-    enum class ConnectionType { TCP, UDP, Bluetooth };
+    enum class ConnectionType { TCP, UDP, L2CAPSeqPacket, L2CAPStream, L2CAPDgram, RFCOMM, None };
 
     /// <summary>
     /// A structure to represent an error with a symbolic name and a description.
@@ -47,12 +47,14 @@ namespace Sockets {
     /// Structure containing metadata about a device (type, name, address, port).
     /// </summary>
     struct DeviceData {
-        ConnectionType type; // Type of connection
+        ConnectionType type = ConnectionType::None; // Type of connection
         std::string name; // Name of device (Bluetooth only)
         std::string address; // Address of device (IP address for TCP/UDP, MAC address for Bluetooth)
-        uint16_t port; // Port/channel of device
-        uint64_t btAddr; // Bluetooth address as a 64-bit unsigned integer (used on Windows only)
+        uint16_t port = 0; // Port/channel of device
     };
+
+    // A vector of DeviceData structs
+    using DeviceDataList = std::vector<Sockets::DeviceData>;
 
     // The data structure to act as a lookup table for error codes. It maps numeric codes to NamedErrors.
     // It is an unordered_map to store key/value pairs and to provide constant O(1) access time complexity.
@@ -104,15 +106,16 @@ namespace Sockets {
     bool isFatal(int code, bool allowNonBlock = false);
 
     /// <summary>
-    /// Prepare the OS sockets for use by the application.
+    /// Windows only - Prepare the OS sockets for use by the application.
     /// </summary>
-    /// <returns>Windows only: The return value of WSAStartup()</returns>
+    /// <returns>NO_ERROR on success, SOCKET_ERROR on failure (use getLastErr() to get the error code)</returns>
     int init();
 
     /// <summary>
-    /// Cleanup Winsock on Windows.
+    /// Windows only - Cleanup Winsock.
     /// </summary>
-    void cleanup();
+    /// <returns>NO_ERROR on success, SOCKET_ERROR on failure</returns>
+    int cleanup();
 
     /// <summary>
     /// Connect to a remote server. The socket created is non-blocking.

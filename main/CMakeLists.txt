@@ -50,18 +50,23 @@ else()
 endif()
 
 if (NOT WIN32)
-    # Unix - GLFW should be installed via your package manager, use PackageConfig to find and configure it.
+    # Use pkg-config
     find_package(PkgConfig REQUIRED)
+
+    # GLFW
     pkg_search_module(GLFW REQUIRED glfw3)
     include_directories(${GLFW_INCLUDE_DIRS})
-    target_link_libraries(terminal ${GLFW_STATIC_LIBRARIES})
+
+    # DBus
+    pkg_search_module(DBUS REQUIRED dbus-1)
+    target_include_directories(terminal PRIVATE ${DBUS_INCLUDE_DIRS})
+    target_link_directories(terminal PRIVATE ${DBUS_LIBRARY_DIRS})
 
     # POSIX threads
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     find_package(Threads REQUIRED)
-    target_link_libraries(Threads::Threads)
 
-    # Link to libdl
-    target_link_libraries(terminal ${CMAKE_DL_LIBS})
+    # Link to libraries
+    target_link_libraries(terminal ${GLFW_STATIC_LIBRARIES} ${DBUS_LIBRARIES} Threads::Threads ${CMAKE_DL_LIBS} -lbluetooth)
 endif()

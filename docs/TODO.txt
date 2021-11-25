@@ -1,8 +1,8 @@
 This is a list of the tasks to complete before each release.
 
 Alpha 1:
-  [ ] Split btutils - Put Linux GDBus functions in a separate file
-  [ ] Add support for L2CAP over Bluetooth
+  [ ] Split large files
+  [X] Add support for L2CAP over Bluetooth
   [ ] Unicode username support
   [ ] Add option to export Console output to a file in the user's Documents folder
   [ ] Export the GLFW error file (mainhandle.cpp) in a better location

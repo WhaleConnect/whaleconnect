@@ -27,11 +27,13 @@ NST uses the following third-party libraries and dependencies:
 - {fmt} (MIT License) [Website](https://fmt.dev/) | [GitHub](https://www.github.com/fmtlib/fmt)
 - GLFW (Zlib License) [Website](https://www.glfw.org/) | [GitHub](https://www.github.com/glfw/glfw)
 - Dear ImGui (MIT License) [GitHub](https://www.github.com/ocornut/imgui)
-- GNU Unifont (Dual-Licensed) [Website](https://www.unifoundry.com/unifont/index.html) | [Sources](https://www.unifoundry.com/unifont/unifont-utilities.html)
-- BlueZ and GDBus (GNU GPL v2+) [BlueZ Website](http://www.bluez.org/) | [GitHub](https://www.github.com/bluez/bluez)
+- GNU Unifont (Dual-Licensed) [Website](https://www.unifoundry.com/unifont/index.html) | [Sources](https://www.unifoundry.com/unifont/unifont-utilities.html) | [Mirror on GitHub](https://www.github.com/NSTerminal/unifont)
+- BlueZ (GNU GPL v2+) [Website](http://www.bluez.org/) | [GitHub](https://www.github.com/bluez/bluez)
+- libdbus (GNU GPL v2+) [Website](https://www.freedesktop.org/wiki/Software/dbus)
 
 *GNU Unifont is dual-licensed under the GNU GPLv2+ with font embedding exception, and the SIL OFL v1.1.*
 
 NST also used the following dependencies in the past:
 
 - glad (Public Domain) [Webservice for v2](https://gen.glad.sh/) | [GitHub](https://www.github.com/Dav1dde/glad) **Dropped 8/19/2021**
+- GDBus (GNU GPL v2+) [GitHub](https://github.com/bluez/bluez/tree/master/gdbus) **Dropped 11/12/2021**

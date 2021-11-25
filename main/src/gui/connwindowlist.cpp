@@ -1,14 +1,12 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <algorithm> // std::replace()
-
 #include "connwindowlist.hpp"
 #include "util/formatcompat.hpp"
 
 #ifndef _WIN32
-constexpr int WSAEINVAL = EINVAL;
-constexpr int WSAENOTSOCK = ENOTSOCK;
+constexpr auto WSAEINVAL = EINVAL;
+constexpr auto WSAENOTSOCK = ENOTSOCK;
 #endif
 
 /// <summary>
@@ -28,8 +26,16 @@ static constexpr const char* connTypeToStr(Sockets::ConnectionType type) {
         return "TCP";
     case UDP:
         return "UDP";
-    case Bluetooth:
-        return "Bluetooth";
+    case L2CAPSeqPacket:
+        return "L2CAP SeqPacket";
+    case L2CAPStream:
+        return "L2CAP Stream";
+    case L2CAPDgram:
+        return "L2CAP Datagram";
+    case RFCOMM:
+        return "RFCOMM";
+    case None:
+        return "None";
     default:
         return "Unknown";
     }
@@ -43,16 +49,16 @@ static constexpr const char* connTypeToStr(Sockets::ConnectionType type) {
 static std::string formatDeviceData(const Sockets::DeviceData& data) {
     // Type of the connection
     Sockets::ConnectionType type = data.type;
-    bool isBluetooth = (type == Sockets::ConnectionType::Bluetooth);
+    bool isBluetooth = (type != Sockets::ConnectionType::TCP) && (type != Sockets::ConnectionType::UDP);
 
     // Bluetooth connections are described using the device's name (e.g. "MyESP32"),
     // IP connections (TCP/UDP) use the device's IP address (e.g. 192.168.0.178).
     std::string deviceString = (isBluetooth) ? data.name : data.address;
 
     // Newlines may be present in a Bluetooth device name, and if they get into a window's title, anything after the
-    // first one will get cut off (the title bar can only hold one line). Replace them with spaces to keep everything
-    // on one line.
-    std::replace(deviceString.begin(), deviceString.end(), '\n', ' ');
+    // first one will get cut off (the title bar can only hold one line). Replace them with enter characters (U+23CE)
+    // to keep everything on one line.
+    deviceString = Strings::replaceAll(deviceString, "\n", "\u23CE");
 
     // Format the values into a string as the title
     // The address is always part of the id hash.
@@ -67,20 +73,20 @@ void ConnWindowList::_populateFds() {
     for (const auto& window : _windows) _pfds.emplace_back(window->getSocket(), window->getPollFlags(), 0);
 }
 
-bool ConnWindowList::add(const Sockets::DeviceData& data) {
+bool ConnWindowList::add(const Sockets::DeviceData& data, const std::string& extraInfo) {
     // Title of the ConnWindow
     std::string title = formatDeviceData(data);
 
     // Check if the title already exists
     bool isNew = std::find_if(_windows.begin(), _windows.end(), [title](const ConnWindowPtr& current) {
-        return *current == title;
+        return current->titleEquals(title);
     }) == _windows.end();
 
     // Add the window to the list
     if (isNew) {
         SOCKET sockfd = _connectFunction(data); // Create the socket
         int lastErr = Sockets::getLastErr(); // Get the error immediately
-        _windows.push_back(std::make_unique<ConnWindow>(title, sockfd, lastErr));
+        _windows.push_back(std::make_unique<ConnWindow>(title, extraInfo, sockfd, lastErr));
         _populateFds(); // Update the vector for polling
     }
 
@@ -93,7 +99,7 @@ int ConnWindowList::update() {
         // The current window
         auto& current = _windows[i];
 
-        if (*current) {
+        if (current->open()) {
             // Window is open, update it
             current->update();
         } else {
