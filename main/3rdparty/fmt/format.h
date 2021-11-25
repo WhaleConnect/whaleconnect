@@ -905,7 +905,7 @@ constexpr const char* digits2(size_t value) {
 
 // Sign is a template parameter to workaround a bug in gcc 4.8.
 template <typename Char, typename Sign> constexpr Char sign(Sign s) {
-#if !FMT_GCC_VERSION || FMT_GCC_VERSION > 408
+#if !FMT_GCC_VERSION || FMT_GCC_VERSION >= 604
   static_assert(std::is_same<Sign, sign_t>::value, "");
 #endif
   return static_cast<Char>("\0-+ "[s]);
@@ -970,11 +970,14 @@ FMT_CONSTEXPR auto count_digits(UInt n) -> int {
   if (num_bits<UInt>() == 32)
     return (FMT_BUILTIN_CLZ(static_cast<uint32_t>(n) | 1) ^ 31) / BITS + 1;
 #endif
-  int num_digits = 0;
-  do {
-    ++num_digits;
-  } while ((n >>= BITS) != 0);
-  return num_digits;
+  // Lambda avoids unreachable code warnings from NVHPC.
+  return [](UInt m) {
+    int num_digits = 0;
+    do {
+      ++num_digits;
+    } while ((m >>= BITS) != 0);
+    return num_digits;
+  }(n);
 }
 
 template <> auto count_digits<4>(detail::fallback_uintptr n) -> int;

@@ -24,7 +24,8 @@
 #  define FMT_CLANG_VERSION 0
 #endif
 
-#if defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER)
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER) && \
+    !defined(__NVCOMPILER)
 #  define FMT_GCC_VERSION (__GNUC__ * 100 + __GNUC_MINOR__)
 #else
 #  define FMT_GCC_VERSION 0
@@ -1369,8 +1370,14 @@ template <typename Context> struct arg_mapper {
 
   // We use SFINAE instead of a const T* parameter to avoid conflicting with
   // the C array overload.
-  template <typename T, FMT_ENABLE_IF(std::is_pointer<T>::value)>
-  FMT_CONSTEXPR auto map(T) -> unformattable_pointer {
+  template <
+      typename T,
+      FMT_ENABLE_IF(
+          std::is_member_pointer<T>::value ||
+          std::is_function<typename std::remove_pointer<T>::type>::value ||
+          (std::is_convertible<const T&, const void*>::value &&
+           !std::is_convertible<const T&, const char_type*>::value))>
+  FMT_CONSTEXPR auto map(const T&) -> unformattable_pointer {
     return {};
   }
 
