@@ -6,7 +6,6 @@
 #pragma once
 
 #include <string> // std::string
-#include <vector> // std::vector
 #include <type_traits> // std::is_same_v
 
 #include <imgui/imgui_internal.h>
