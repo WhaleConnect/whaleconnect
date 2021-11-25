@@ -299,15 +299,8 @@ static void drawSDPList(const BTUtils::SDPResultList& list, const Sockets::Devic
 
             // Print profile descriptors
             if (!profiles.empty()) ImGui::TextUnformatted("Profile descriptors:");
-            for (const auto& [uuid, verMajor, verMinor] : profiles) {
-                ImGui::BulletText("0x%04X", uuid);
-
-                // Print version numbers if at least one is greater than 0
-                if ((verMajor + verMinor) > 0) {
-                    ImGui::SameLine();
-                    ImGui::Text("(version %d.%d)", verMajor, verMinor);
-                }
-            }
+            for (const auto& [uuid, verMajor, verMinor] : profiles) ImGui::BulletText("0x%04X (version %d.%d)",
+                                                                                      uuid, verMajor, verMinor);
 
             // Print the port
             ImGui::Text("Port: %d", port);

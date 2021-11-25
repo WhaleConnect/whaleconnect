@@ -469,8 +469,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(const std::string& addr, const UUID& u
                 else if (specificType == SDP_ST_UINT16) extractVersionNums(data.uint16, pd);
             }
 
-            // Push back if at least the UUID was successfully found
-            if (pd.uuid > 0) result.profileDescs.push_back(pd);
+            result.profileDescs.push_back(pd);
         }
 
         // Add to return vector
@@ -573,8 +572,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(const std::string& addr, const UUID& u
                 pd.uuid = desc->uuid.value.uuid16;
                 extractVersionNums(desc->version, pd);
 
-                // Push back if successfully found
-                if (pd.uuid > 0) result.profileDescs.push_back(pd);
+                result.profileDescs.push_back(pd);
             }
         }
 
