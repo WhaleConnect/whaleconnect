@@ -52,10 +52,10 @@ std::string Strings::replaceAll(NO_CONST_REF std::string str, const std::string&
     // 3. If from and to are equal the function call becomes pointless
     if (str.empty() || from.empty() || (from == to)) return str;
 
-    size_t start_pos = 0;
-    while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
-        str.replace(start_pos, from.size(), to);
-        start_pos += to.size(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+    size_t start = 0;
+    while ((start = str.find(from, start)) != std::string::npos) {
+        str.replace(start, from.size(), to);
+        start += to.size(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
     }
 
     return str;
