@@ -44,6 +44,67 @@ namespace Sockets {
     using DeviceDataList = std::vector<Sockets::DeviceData>;
 
     /// <summary>
+    /// Check if a given ConnectionType uses IP.
+    /// </summary>
+    /// <param name="type">The type to check</param>
+    /// <returns>If the type is Internet Protocol-based</returns>
+    inline bool connectionTypeIsIP(ConnectionType type) {
+        using enum ConnectionType;
+        return (type == TCP) || (type == UDP);
+    }
+
+    /// <summary>
+    /// Check if a given ConnectionType uses Bluetooth.
+    /// </summary>
+    /// <param name="type">The type to check</param>
+    /// <returns>If the type is Bluetooth-based</returns>
+    inline bool connectionTypeIsBT(ConnectionType type) {
+        using enum ConnectionType;
+        return (type == L2CAPSeqPacket) || (type == L2CAPStream) || (type == L2CAPDgram) || (type == RFCOMM);
+    }
+
+    /// <summary>
+    /// Check if a given ConnectionType is None.
+    /// </summary>
+    /// <param name="type">The type to check</param>
+    /// <returns>If the type is None</returns>
+    inline bool connectionTypeIsNone(ConnectionType type) {
+        return type == ConnectionType::None;
+    }
+
+    /// <summary>
+    /// Get the textual name of a ConnectionType.
+    /// </summary>
+    /// <param name="type">The ConnectionType</param>
+    /// <returns>The textual name as a const char*</returns>
+    /// <remarks>
+    /// Returning a const char* is safe for this function since there are no local variables that are being returned,
+    /// just string literals.
+    /// </remarks>
+    constexpr const char* connectionTypeToStr(Sockets::ConnectionType type) {
+        using enum Sockets::ConnectionType;
+
+        switch (type) {
+        case TCP:
+            return "TCP";
+        case UDP:
+            return "UDP";
+        case L2CAPSeqPacket:
+            return "L2CAP SeqPacket";
+        case L2CAPStream:
+            return "L2CAP Stream";
+        case L2CAPDgram:
+            return "L2CAP Datagram";
+        case RFCOMM:
+            return "RFCOMM";
+        case None:
+            return "None";
+        default:
+            return "Unknown";
+        }
+    }
+
+    /// <summary>
     /// Get the error that occurred on a given socket descriptor.
     /// </summary>
     /// <param name="sockfd">The socket to check</param>
@@ -61,7 +122,7 @@ namespace Sockets {
     void setLastErr(int err);
 
     /// <summary>
-    /// Format an error code into a readable string.
+    /// Format an error code into a readable string. Handles both standard errors and getaddrinfo() errors.
     /// </summary>
     /// <param name="code">The error code to format</param>
     /// <returns>The formatted string with the code and description</returns>

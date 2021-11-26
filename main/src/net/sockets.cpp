@@ -39,6 +39,7 @@ using ADDRINFOW = addrinfo;
 // Socket errors
 constexpr auto WSAEWOULDBLOCK = EWOULDBLOCK;
 constexpr auto WSAEINPROGRESS = EINPROGRESS;
+constexpr auto WSAEINVAL = EINVAL;
 
 // Bluetooth definitions
 constexpr auto AF_BTH = AF_BLUETOOTH;
@@ -205,10 +206,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 
     using enum ConnectionType;
 
-    // Check for None type
-    if (data.type == None) return sockfd;
-
-    if ((data.type == TCP) || (data.type == UDP)) {
+    if (connectionTypeIsIP(data.type)) {
         // Internet protocol - Set up hints for getaddrinfo()
         // Ignore "missing initializer" warnings on GCC and clang
 #ifdef __GNUC__
@@ -220,6 +218,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 #pragma clang diagnostic ignored "-Wmissing-field-initializers"
 #endif
         bool isTCP = (data.type == TCP);
+
         ADDRINFOW hints{
             .ai_flags = AI_NUMERICHOST,
             .ai_family = AF_UNSPEC,
@@ -249,7 +248,7 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
             // The last error can be set to the getaddrinfo() error, the error-checking functions will handle it
             setLastErr(gaiResult);
         }
-    } else {
+    } else if (connectionTypeIsBT(data.type)) {
         // Set up Bluetooth socket
         sockfd = bluetoothSocket(data.type);
         if (sockfd == INVALID_SOCKET) return INVALID_SOCKET;
@@ -288,6 +287,10 @@ SOCKET Sockets::createClientSocket(const DeviceData& data) {
 
         // Connect
         connect(sockfd, reinterpret_cast<sockaddr*>(&sAddrBT), addrSize);
+    } else {
+        // None type
+        setLastErr(WSAEINVAL);
+        return sockfd;
     }
 
     // Check if connection failed
