@@ -82,9 +82,6 @@
     <ClCompile Include="src\net\btutils.cpp">
       <Filter>Source Files\net</Filter>
     </ClCompile>
-    <ClCompile Include="src\net\errorlist.cpp">
-      <Filter>Source Files\net</Filter>
-    </ClCompile>
     <ClCompile Include="src\net\sockets.cpp">
       <Filter>Source Files\net</Filter>
     </ClCompile>

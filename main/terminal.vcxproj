@@ -103,7 +103,6 @@
     <ClCompile Include="src\gui\connwindowlist.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\net\btutils.cpp" />
-    <ClCompile Include="src\net\errorlist.cpp" />
     <ClCompile Include="src\net\sockets.cpp" />
     <ClCompile Include="src\gui\connwindow.cpp" />
     <ClCompile Include="src\gui\console.cpp" />

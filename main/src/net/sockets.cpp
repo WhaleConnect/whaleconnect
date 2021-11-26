@@ -1,8 +1,6 @@
 // Copyright 2021 the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <stdexcept> // std::out_of_range
-
 #ifdef _WIN32
 // Winsock headers for Windows
 #include <ws2tcpip.h>
@@ -75,20 +73,25 @@ void Sockets::setLastErr(int err) {
 #endif
 }
 
-Sockets::NamedError Sockets::getErr(int code) {
-    try {
-        // Attempt to get the element specified by the given code.
-        return errors.at(code);
-    } catch (const std::out_of_range&) {
-        // std::unordered_map::at() throws an exception when the key is invalid.
-        // This means the error code is not contained in the data structure and no NamedError corresponds to it.
-        return { "System error", "Unknown system error code" };
-    }
-}
-
 std::string Sockets::formatErr(int code) {
-    NamedError ne = getErr(code);
-    return std::format("{} ({}): {}", ne.name, code, ne.desc);
+    const char* formatStr = "{}: {}";
+
+#ifdef _WIN32
+    // Message buffer
+    constexpr size_t msgSize = 512;
+    char msg[msgSize];
+
+    // Get the message text
+    FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK, nullptr,
+                  code, LocaleNameToLCID(L"en-US", 0), msg, msgSize, nullptr);
+
+    return std::format(formatStr, code, msg);
+#else
+    // `strerrordesc_np()` (a GNU extension) is used since it doesn't translate the error message. A translation is
+    // undesirable since the rest of the app isn't translated either.
+    // A negative error value on Linux is most likely a getaddrinfo() error, handle that as well.
+    return std::format(formatStr, code, (code >= 0) ? strerrordesc_np(code) : gai_strerror(code));
+#endif
 }
 
 std::string Sockets::formatLastErr() {

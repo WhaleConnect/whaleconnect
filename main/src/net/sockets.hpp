@@ -7,7 +7,6 @@
 
 #include <string> // std::string
 #include <vector> // std::vector
-#include <unordered_map> // std::unordered_map
 
 #ifdef _WIN32
 // Winsock header
@@ -32,18 +31,6 @@ namespace Sockets {
     enum class ConnectionType { TCP, UDP, L2CAPSeqPacket, L2CAPStream, L2CAPDgram, RFCOMM, None };
 
     /// <summary>
-    /// A structure to represent an error with a symbolic name and a description.
-    /// </summary>
-    /// <remarks>
-    /// A symbolic name is a human-readable identifier for the error (e.g. "ENOMEM").
-    /// A description is a short string describing the error (e.g. "No more memory").
-    /// </remarks>
-    struct NamedError {
-        const char* name; // Symbolic name
-        const char* desc; // Description
-    };
-
-    /// <summary>
     /// Structure containing metadata about a device (type, name, address, port).
     /// </summary>
     struct DeviceData {
@@ -55,10 +42,6 @@ namespace Sockets {
 
     // A vector of DeviceData structs
     using DeviceDataList = std::vector<Sockets::DeviceData>;
-
-    // The data structure to act as a lookup table for error codes. It maps numeric codes to NamedErrors.
-    // It is an unordered_map to store key/value pairs and to provide constant O(1) access time complexity.
-    extern const std::unordered_map<long, NamedError> errors;
 
     /// <summary>
     /// Get the error that occurred on a given socket descriptor.
@@ -78,21 +61,14 @@ namespace Sockets {
     void setLastErr(int err);
 
     /// <summary>
-    /// Get the corresponding NamedError from a numeric code.
-    /// </summary>
-    /// <param name="code">The numeric error code</param>
-    /// <returns>The NamedError describing the error specified by the code</returns>
-    NamedError getErr(int code);
-
-    /// <summary>
     /// Format an error code into a readable string.
     /// </summary>
     /// <param name="code">The error code to format</param>
-    /// <returns>The formatted string with the code, symbolic name, and description</returns>
+    /// <returns>The formatted string with the code and description</returns>
     std::string formatErr(int code);
 
     /// <summary>
-    /// Format the last error code into a readable string.
+    /// Format the last error code into a readable string. Handles both standard errors and getaddrinfo() errors.
     /// </summary>
     /// <returns>The formatted string with the code, symbolic name, and description</returns>
     std::string formatLastErr();
