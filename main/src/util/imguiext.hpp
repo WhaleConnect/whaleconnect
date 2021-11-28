@@ -25,20 +25,15 @@ using ImGuiOverlayCorner = int;
 /// The naming conventions used here are selected to remain consistent with the official Dear ImGui API.
 /// </remarks>
 namespace ImGui {
+    // Make a widget fill a dimension. (Use inside ImVec2 size parameters.)
+    constexpr float FILL = -FLT_MIN;
+
     /// <summary>
     /// Wrapper function for ImGui::TextUnformatted() to allow a std::string parameter.
     /// </summary>
     /// <param name="s">The string to display</param>
     inline void TextUnformatted(const std::string& s) {
         TextUnformatted(s.c_str());
-    }
-
-    /// <summary>
-    /// A TextWrapped() overload not accepting format strings.
-    /// </summary>
-    /// <param name="s">The string to display</param>
-    inline void TextWrappedUnformatted(const std::string& s) {
-        TextWrapped("%s", s.c_str());
     }
 
     /// <summary>

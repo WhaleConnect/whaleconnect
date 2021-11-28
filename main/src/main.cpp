@@ -154,7 +154,7 @@ static void drawIPConnectionTab() {
     ImGui::EndChild();
 
     // If the connection exists, show a message
-    if (!isNew) ImGui::TextUnformatted("This connection is already open.");
+    if (!isNew) ImGui::Text("This connection is already open.");
 
     ImGui::EndTabItem();
 }
@@ -195,7 +195,7 @@ bool drawPairedDevicesList(const Sockets::DeviceDataList& devices, bool showAddr
     bool ret = false;
 
     // The menu is a listbox which can display 4 entries at a time
-    if (ImGui::BeginListBox("##paired", { -FLT_MIN, ImGui::GetFrameHeight() * 4 })) {
+    if (ImGui::BeginListBox("##paired", { ImGui::FILL, ImGui::GetFrameHeight() * 4 })) {
         // The index of the selected item
         // The code is structured so that no buffer overruns occur if the number of devices decreases after a
         // refresh (don't use this variable to access something in the vector).
@@ -287,18 +287,18 @@ static void drawSDPList(const BTUtils::SDPResultList& list, const Sockets::Devic
             ImGui::Text("Description: %s", (desc.empty()) ? "(none)" : desc.c_str());
 
             // Print UUIDs
-            if (!protos.empty()) ImGui::TextUnformatted("Protocol UUIDs:");
+            if (!protos.empty()) ImGui::Text("Protocol UUIDs:");
             for (auto i : protos) ImGui::BulletText("0x%04X", i);
 
             // Print service class UUIDs
-            if (!services.empty()) ImGui::TextUnformatted("Service class UUIDs:");
+            if (!services.empty()) ImGui::Text("Service class UUIDs:");
             for (const auto& i : services) ImGui::BulletText("%08lX-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
                                                              i.Data1, i.Data2, i.Data3,
                                                              i.Data4[0], i.Data4[1], i.Data4[2], i.Data4[3],
                                                              i.Data4[4], i.Data4[5], i.Data4[6], i.Data4[7]);
 
             // Print profile descriptors
-            if (!profiles.empty()) ImGui::TextUnformatted("Profile descriptors:");
+            if (!profiles.empty()) ImGui::Text("Profile descriptors:");
             for (const auto& [uuid, verMajor, verMinor] : profiles) ImGui::BulletText("0x%04X (version %d.%d)",
                                                                                       uuid, verMajor, verMinor);
 
@@ -328,7 +328,7 @@ static void drawBTConnectionTab() {
 
     // Check if the application's sockets are initialized
     if (!btInitDone) {
-        ImGui::TextWrappedUnformatted("Socket initialization failed. See the \"Error List\" window for details.");
+        ImGui::TextWrapped("Socket initialization failed. See the \"Error List\" window for details.");
         ImGui::Spacing();
     }
 
@@ -361,7 +361,7 @@ static void drawBTConnectionTab() {
         if (btInitDone && pairedDevices.empty()) {
             // Bluetooth initialization is done and no devices detected
             // (BT init checked because an empty devices vector may be caused by failed init.)
-            ImGui::TextUnformatted("No paired devices.");
+            ImGui::Text("No paired devices.");
         } else {
             float sameLineSpacing = ImGui::GetStyle().ItemInnerSpacing.x * 4; // Spacing between the below widgets
 
@@ -398,7 +398,7 @@ static void drawBTConnectionTab() {
         }
     } else {
         // Error occurred
-        ImGui::TextWrappedUnformatted(errStr);
+        ImGui::TextWrapped("Error: %s", errStr.c_str());
     }
 
     ImGui::EndDisabled();
@@ -434,5 +434,5 @@ static void drawBTConnectionTab() {
     ImGui::EndTabItem();
 
     // If the connection exists, show a message
-    if (!isNewBT) ImGui::TextUnformatted("This connection is already open.");
+    if (!isNewBT) ImGui::Text("This connection is already open.");
 }

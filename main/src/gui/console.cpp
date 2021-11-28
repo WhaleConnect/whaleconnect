@@ -151,7 +151,7 @@ void Console::update() {
         | ImGuiInputTextFlags_AllowTabInput;
 
     // Textbox (but check for input enable first with short-circuiting &&)
-    ImVec2 size{ -FLT_MIN, ImGui::GetTextLineHeight() * Settings::sendTextboxHeight };
+    ImVec2 size{ ImGui::FILL, ImGui::GetTextLineHeight() * Settings::sendTextboxHeight };
     if (_hasInput && ImGui::InputTextMultiline("##consoleInput", _textBuf, size, flags)) {
         // Line ending
         const char* endings[] = { "\n", "\r", "\r\n" };

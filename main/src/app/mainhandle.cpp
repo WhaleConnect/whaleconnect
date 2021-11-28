@@ -123,8 +123,8 @@ void MainHandler::handleNewFrame() {
 
     if (showDebugTools) {
         ImGui::Begin("Debug Tools", &showDebugTools, ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::TextUnformatted("This is a debug build for testing.");
-        ImGui::TextUnformatted("Closing this window hides it until the next launch!");
+        ImGui::Text("This is a debug build for testing.");
+        ImGui::Text("Closing this window hides it until the next launch!");
 
         static bool showDemoWindow = false;
         static bool showMetricsWindow = false;
