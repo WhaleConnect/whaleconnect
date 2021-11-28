@@ -15,13 +15,12 @@
 /// A class to handle a connection in an easy-to-use GUI.
 /// </summary>
 class ConnWindow {
-    const SOCKET _sockfd; // Socket for connections
+    SOCKET _sockfd; // Socket for connections
     bool _connected = false; // If the window has an active connection
-    bool _error = false; // If a fatal error occurred
     short _pollFlags = POLLOUT; // What to check for when polling the socket
 
-    const std::string _title; // Title of window
-    const std::string _windowText; // The text in the window's title bar
+    std::string _title; // Title of window
+    std::string _windowText; // The text in the window's title bar
     bool _open = true; // If the window is open (affected by the close button)
     Console _output; // Console output with send textbox
 
@@ -49,6 +48,7 @@ class ConnWindow {
     /// </summary>
     void _closeConnection() {
         Sockets::closeSocket(_sockfd);
+        _sockfd = INVALID_SOCKET;
         _connected = false;
         _pollFlags = 0;
     }
@@ -80,6 +80,14 @@ public:
     }
 
     /// <summary>
+    /// Get the window's title.
+    /// </summary>
+    /// <returns>The window's title</returns>
+    std::string getTitle() {
+        return _title;
+    }
+
+    /// <summary>
     /// Get the internal socket descriptor.
     /// </summary>
     /// <returns>The file descriptor of the managed socket</returns>
@@ -100,15 +108,6 @@ public:
     /// </summary>
     bool open() const {
         return _open;
-    }
-
-    /// <summary>
-    /// Compare this window's title to another given title.
-    /// </summary>
-    /// <param name="other">The title to compare with</param>
-    /// <returns>If this window's title and the given title are equal</returns>
-    bool titleEquals(const std::string& other) const {
-        return _title == other;
     }
 
     /// <summary>

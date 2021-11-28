@@ -23,7 +23,6 @@ void ConnWindow::_errorHandler(int err) {
     if (!Sockets::isFatal(err, true)) return;
 
     _closeConnection();
-    _error = true;
 
     // Add error line to console
     _output.addError(Sockets::formatErr(err));
@@ -38,11 +37,10 @@ void ConnWindow::connectHandler() {
     // The error handling approach used in ConnWindow is taken from https://stackoverflow.com/a/17770524
     _errorHandler(Sockets::getSocketErr(_sockfd));
 
-    // The `_error` flag (indicating something failed) could have been set at any point in the past (including the
-    // above check).
+    // If the socket is invalid, it means that an error occurred, and it has been closed.
     // The `_connected` flag indicates that this function has already been called, no need to go again.
-    // If any of these flags are set we don't continue on in the function.
-    if (_error || _connected) return;
+    // If any of these conditions are met we don't continue on in the function.
+    if ((_sockfd == INVALID_SOCKET) || _connected) return;
 
     _output.addInfo("Connected."); // Add information message
     _connected = true; // Done connecting

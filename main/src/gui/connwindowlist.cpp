@@ -45,8 +45,8 @@ bool ConnWindowList::add(const Sockets::DeviceData& data, const std::string& ext
     std::string title = formatDeviceData(data);
 
     // Check if the title already exists
-    bool isNew = std::find_if(_windows.begin(), _windows.end(), [title](const ConnWindowPtr& current) {
-        return current->titleEquals(title);
+    bool isNew = std::find_if(_windows.begin(), _windows.end(), [title](const PtrType& current) {
+        return current->getTitle() == title;
     }) == _windows.end();
 
     // Add the window to the list

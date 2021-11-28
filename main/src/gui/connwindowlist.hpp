@@ -12,15 +12,15 @@
 #include "connwindow.hpp"
 #include "net/sockets.hpp"
 
-// A unique_ptr pointing to a managed ConnWindow object
-using ConnWindowPtr = std::unique_ptr<ConnWindow>;
-
 /// <summary>
 /// A class to manage multiple ConnWindow objects.
 /// </summary>
 class ConnWindowList {
+    using PtrType = std::unique_ptr<ConnWindow>; // A unique_ptr pointing to a managed ConnWindow object
+    using VectorType = std::vector<PtrType>; // A vector of the above type
+
     std::function<SOCKET(Sockets::DeviceData)> _connectFunction; // The function to call when creating a new window
-    std::vector<ConnWindowPtr> _windows; // All window pointers and their corresponding titles
+    VectorType _windows; // All window pointers and their corresponding titles
     std::vector<pollfd> _pfds; // Vector of socket fds to poll
     int _pollRet = NO_ERROR; // The result of Sockets::poll()
 
