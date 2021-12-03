@@ -959,7 +959,8 @@ static bool             UpdateWindowManualResize(ImGuiWindow* window, const ImVe
 static void             RenderWindowOuterBorders(ImGuiWindow* window);
 static void             RenderWindowDecorations(ImGuiWindow* window, const ImRect& title_bar_rect, bool title_bar_is_highlight, bool handle_borders_and_resize_grips, int resize_grip_count, const ImU32 resize_grip_col[4], float resize_grip_draw_size);
 static void             RenderWindowTitleBarContents(ImGuiWindow* window, const ImRect& title_bar_rect, const char* name, bool* p_open);
-static void             EndFrameDrawDimmedBackgrounds();
+static void             RenderDimmedBackgroundBehindWindow(ImGuiWindow* window, ImU32 col);
+static void             RenderDimmedBackgrounds();
 
 // Viewports
 const ImGuiID           IMGUI_VIEWPORT_DEFAULT_ID = 0x11111111; // Using an arbitrary constant instead of e.g. ImHashStr("ViewportDefault", 0); so it's easier to spot in the debugger. The exact value doesn't matter.
@@ -4528,6 +4529,8 @@ static void AddWindowToDrawData(ImGuiWindow* window, int layer)
     ImGuiContext& g = *GImGui;
     ImGuiViewportP* viewport = window->Viewport;
     g.IO.MetricsRenderWindows++;
+    if (window->Flags & ImGuiWindowFlags_DockNodeHost)
+        window->DrawList->ChannelsMerge();
     AddDrawListToDrawData(&viewport->DrawDataBuilder.Layers[layer], window->DrawList);
     for (int i = 0; i < window->DC.ChildWindows.Size; i++)
     {
@@ -4621,58 +4624,86 @@ static ImGuiWindow* FindFrontMostVisibleChildWindow(ImGuiWindow* window)
     return window;
 }
 
-static void ImGui::EndFrameDrawDimmedBackgrounds()
+static void ImGui::RenderDimmedBackgroundBehindWindow(ImGuiWindow* window, ImU32 col)
+{
+    if ((col & IM_COL32_A_MASK) == 0)
+        return;
+
+    ImGuiViewportP* viewport = window->Viewport;
+    ImRect viewport_rect = viewport->GetMainRect();
+
+    // Draw behind window by moving the draw command at the FRONT of the draw list
+    {
+        ImDrawList* draw_list = window->RootWindowDockTree->DrawList;
+        draw_list->AddDrawCmd();
+        draw_list->PushClipRect(viewport_rect.Min - ImVec2(1, 1), viewport_rect.Max + ImVec2(1, 1), false); // Ensure ImDrawCmd are not merged
+        draw_list->AddRectFilled(viewport_rect.Min, viewport_rect.Max, col);
+        ImDrawCmd cmd = draw_list->CmdBuffer.back();
+        IM_ASSERT(cmd.ElemCount == 6);
+        draw_list->CmdBuffer.pop_back();
+        draw_list->CmdBuffer.push_front(cmd);
+    }
+
+    // Draw over sibling docking nodes in a same docking tree
+    if (window->RootWindow->DockIsActive)
+    {
+        ImDrawList* draw_list = FindFrontMostVisibleChildWindow(window->RootWindowDockTree)->DrawList;
+        draw_list->PushClipRect(viewport_rect.Min, viewport_rect.Max, false);
+        //if (window->RootWindowDockTree != window->RootWindow)
+        RenderRectFilledWithHole(draw_list, window->RootWindowDockTree->Rect(), window->RootWindow->Rect(), col, 0.0f);// window->RootWindowDockTree->WindowRounding);
+        draw_list->PopClipRect();
+    }
+}
+
+static void ImGui::RenderDimmedBackgrounds()
 {
     ImGuiContext& g = *GImGui;
-
-    // Draw modal whitening background on _other_ viewports than the one the modal is one
-    ImGuiWindow* modal_window = GetTopMostPopupModal();
+    ImGuiWindow* modal_window = GetTopMostAndVisiblePopupModal();
     const bool dim_bg_for_modal = (modal_window != NULL);
-    const bool dim_bg_for_window_list = (g.NavWindowingTargetAnim != NULL);
-    if (dim_bg_for_modal || dim_bg_for_window_list)
-        for (int viewport_n = 0; viewport_n < g.Viewports.Size; viewport_n++)
-        {
-            ImGuiViewportP* viewport = g.Viewports[viewport_n];
-            if (modal_window && viewport == modal_window->Viewport)
-                continue;
-            if (g.NavWindowingListWindow && viewport == g.NavWindowingListWindow->Viewport)
-                continue;
-            if (g.NavWindowingTargetAnim && viewport == g.NavWindowingTargetAnim->Viewport)
-                continue;
-            if (viewport->Window && modal_window && IsWindowAbove(viewport->Window, modal_window))
-                continue;
-            ImDrawList* draw_list = GetForegroundDrawList(viewport);
-            const ImU32 dim_bg_col = GetColorU32(dim_bg_for_modal ? ImGuiCol_ModalWindowDimBg : ImGuiCol_NavWindowingDimBg, g.DimBgRatio);
-            draw_list->AddRectFilled(viewport->Pos, viewport->Pos + viewport->Size, dim_bg_col);
-        }
+    const bool dim_bg_for_window_list = (g.NavWindowingTargetAnim != NULL && g.NavWindowingTargetAnim->Active);
+    if (!dim_bg_for_modal && !dim_bg_for_window_list)
+        return;
 
-    // Draw modal whitening background between CTRL-TAB list
-    if (dim_bg_for_window_list && g.NavWindowingTargetAnim->Active)
+    ImGuiViewport* viewports_already_dimmed[2] = { NULL, NULL };
+    if (dim_bg_for_modal)
     {
-        // Choose a draw list that will be front-most across all our children
-        // In the unlikely case that the window wasn't made active we can't rely on its drawlist and skip rendering all-together.
+        // Draw dimming behind modal
+        RenderDimmedBackgroundBehindWindow(modal_window, GetColorU32(ImGuiCol_ModalWindowDimBg, g.DimBgRatio));
+        viewports_already_dimmed[0] = modal_window->Viewport;
+    }
+    else if (dim_bg_for_window_list)
+    {
+        // Draw dimming behind CTRL+Tab target window and behind CTRL+Tab UI window
+        RenderDimmedBackgroundBehindWindow(g.NavWindowingTargetAnim, GetColorU32(ImGuiCol_NavWindowingDimBg, g.DimBgRatio));
+        if (g.NavWindowingListWindow != NULL && g.NavWindowingListWindow->Viewport != g.NavWindowingTargetAnim->Viewport)
+            RenderDimmedBackgroundBehindWindow(g.NavWindowingListWindow, GetColorU32(ImGuiCol_NavWindowingDimBg, g.DimBgRatio));
+        viewports_already_dimmed[0] = g.NavWindowingTargetAnim->Viewport;
+        viewports_already_dimmed[1] = g.NavWindowingListWindow ? g.NavWindowingListWindow->Viewport : NULL;
+
+        // Draw border around CTRL+Tab target window
         ImGuiWindow* window = g.NavWindowingTargetAnim;
-        ImDrawList* draw_list = FindFrontMostVisibleChildWindow(window->RootWindowDockTree)->DrawList;
-        draw_list->PushClipRectFullScreen();
-
-        // Docking: draw modal whitening background on other nodes of a same dock tree
-        // For CTRL+TAB within a docking node we need to render the dimming background in 8 steps
-        // (Because the root node renders the background in one shot, in order to avoid flickering when a child dock node is not submitted)
-        if (window->RootWindow->DockIsActive)
-            if (window->RootWindowDockTree != window->RootWindow)
-                RenderRectFilledWithHole(draw_list, window->RootWindowDockTree->Rect(), window->RootWindow->Rect(), GetColorU32(ImGuiCol_NavWindowingDimBg, g.DimBgRatio), g.Style.WindowRounding);
-
-        // Draw navigation selection/windowing rectangle border
-        float rounding = ImMax(window->WindowRounding, g.Style.WindowRounding);
+        ImGuiViewport* viewport = window->Viewport;
+        float distance = g.FontSize;
         ImRect bb = window->Rect();
-        bb.Expand(g.FontSize);
-        if (!window->Viewport->GetMainRect().Contains(bb)) // If a window fits the entire viewport, adjust its highlight inward
-        {
-            bb.Expand(-g.FontSize - 1.0f);
-            rounding = window->WindowRounding;
-        }
-        draw_list->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_NavWindowingHighlight, g.NavWindowingHighlightAlpha), rounding, 0, 3.0f);
-        draw_list->PopClipRect();
+        bb.Expand(distance);
+        if (bb.GetWidth() >= viewport->Size.x && bb.GetHeight() >= viewport->Size.y)
+            bb.Expand(-distance - 1.0f); // If a window fits the entire viewport, adjust its highlight inward
+        window->DrawList->PushClipRect(viewport->Pos, viewport->Pos + viewport->Size);
+        window->DrawList->AddRect(bb.Min, bb.Max, GetColorU32(ImGuiCol_NavWindowingHighlight, g.NavWindowingHighlightAlpha), window->WindowRounding, 0, 3.0f);
+        window->DrawList->PopClipRect();
+    }
+
+    // Draw dimming background on _other_ viewports than the ones our windows are in
+    for (int viewport_n = 0; viewport_n < g.Viewports.Size; viewport_n++)
+    {
+        ImGuiViewportP* viewport = g.Viewports[viewport_n];
+        if (viewport == viewports_already_dimmed[0] || viewport == viewports_already_dimmed[1])
+            continue;
+        if (modal_window && viewport->Window && IsWindowAbove(viewport->Window, modal_window))
+            continue;
+        ImDrawList* draw_list = GetForegroundDrawList(viewport);
+        const ImU32 dim_bg_col = GetColorU32(dim_bg_for_modal ? ImGuiCol_ModalWindowDimBg : ImGuiCol_NavWindowingDimBg, g.DimBgRatio);
+        draw_list->AddRectFilled(viewport->Pos, viewport->Pos + viewport->Size, dim_bg_col);
     }
 }
 
@@ -4709,6 +4740,9 @@ void ImGui::EndFrame()
     // Update navigation: CTRL+Tab, wrap-around requests
     NavEndFrame();
 
+    // Update docking
+    DockContextEndFrame(&g);
+
     SetCurrentViewport(NULL, NULL);
 
     // Drag and Drop: Elapse payload (if delivered, or if source stops being submitted)
@@ -4734,9 +4768,6 @@ void ImGui::EndFrame()
 
     // Initiate moving window + handle left-click and right-click focus
     UpdateMouseMovingWindowEndFrame();
-
-    // Draw modal/window whitening backgrounds
-    EndFrameDrawDimmedBackgrounds();
 
     // Update user-facing viewport list (g.Viewports -> g.PlatformIO.Viewports after filtering out some)
     UpdateViewportsEndFrame();
@@ -4780,6 +4811,7 @@ void ImGui::Render()
 
     if (g.FrameCountEnded != g.FrameCount)
         EndFrame();
+    const bool first_render_of_frame = (g.FrameCountRendered != g.FrameCount);
     g.FrameCountRendered = g.FrameCount;
     g.IO.MetricsRenderWindows = 0;
 
@@ -4809,6 +4841,10 @@ void ImGui::Render()
         if (windows_to_render_top_most[n] && IsWindowActiveAndVisible(windows_to_render_top_most[n])) // NavWindowingTarget is always temporarily displayed as the top-most window
             AddRootWindowToDrawData(windows_to_render_top_most[n]);
 
+    // Draw modal/window whitening backgrounds
+    if (first_render_of_frame)
+        RenderDimmedBackgrounds();
+
     ImVec2 mouse_cursor_offset, mouse_cursor_size, mouse_cursor_uv[4];
     if (g.IO.MouseDrawCursor && g.MouseCursor != ImGuiMouseCursor_None)
         g.IO.Fonts->GetMouseCursorTexData(g.MouseCursor, &mouse_cursor_offset, &mouse_cursor_size, &mouse_cursor_uv[0], &mouse_cursor_uv[2]);
@@ -4822,7 +4858,7 @@ void ImGui::Render()
 
         // Draw software mouse cursor if requested by io.MouseDrawCursor flag
         // (note we scale cursor by current viewport/monitor, however Windows 10 for its own hardware cursor seems to be using a different scale factor)
-        if (mouse_cursor_size.x > 0.0f && mouse_cursor_size.y > 0.0f)
+        if (mouse_cursor_size.x > 0.0f && mouse_cursor_size.y > 0.0f && first_render_of_frame)
         {
             float scale = g.Style.MouseCursorScale * viewport->DpiScale;
             if (viewport->GetMainRect().Overlaps(ImRect(g.IO.MousePos, g.IO.MousePos + ImVec2(mouse_cursor_size.x + 2, mouse_cursor_size.y + 2) * scale)))
@@ -5065,11 +5101,11 @@ bool ImGui::IsMouseDoubleClicked(ImGuiMouseButton button)
     return g.IO.MouseClickedCount[button] == 2;
 }
 
-bool ImGui::IsMouseTripleClicked(ImGuiMouseButton button)
+int ImGui::GetMouseClickedCount(ImGuiMouseButton button)
 {
     ImGuiContext& g = *GImGui;
     IM_ASSERT(button >= 0 && button < IM_ARRAYSIZE(g.IO.MouseDown));
-    return g.IO.MouseClickedCount[button] == 3;
+    return g.IO.MouseClickedCount[button];
 }
 
 // Return if a mouse click/drag went past the given threshold. Valid to call during the MouseReleased frame.
@@ -5653,11 +5689,11 @@ ImVec2 ImGui::CalcWindowNextAutoFitSize(ImGuiWindow* window)
     return size_final;
 }
 
-static ImGuiCol GetWindowBgColorIdxFromFlags(ImGuiWindowFlags flags)
+static ImGuiCol GetWindowBgColorIdx(ImGuiWindow* window)
 {
-    if (flags & (ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_Popup))
+    if (window->Flags & (ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_Popup))
         return ImGuiCol_PopupBg;
-    if (flags & ImGuiWindowFlags_ChildWindow)
+    if ((window->Flags & ImGuiWindowFlags_ChildWindow) && !window->DockIsActive)
         return ImGuiCol_ChildBg;
     return ImGuiCol_WindowBg;
 }
@@ -5950,7 +5986,7 @@ void ImGui::RenderWindowDecorations(ImGuiWindow* window, const ImRect& title_bar
                 if (g.DragDropPayload.IsDataType(IMGUI_PAYLOAD_TYPE_WINDOW) && *(ImGuiWindow**)g.DragDropPayload.Data == window)
                     is_docking_transparent_payload = true;
 
-            ImU32 bg_col = GetColorU32(GetWindowBgColorIdxFromFlags(flags));
+            ImU32 bg_col = GetColorU32(GetWindowBgColorIdx(window));
             if (window->ViewportOwned)
             {
                 // No alpha
@@ -5976,8 +6012,21 @@ void ImGui::RenderWindowDecorations(ImGuiWindow* window, const ImRect& title_bar
                 if (override_alpha)
                     bg_col = (bg_col & ~IM_COL32_A_MASK) | (IM_F32_TO_INT8_SAT(alpha) << IM_COL32_A_SHIFT);
             }
-            window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()), window->Pos + window->Size, bg_col, window_rounding, (flags & ImGuiWindowFlags_NoTitleBar) ? 0 : ImDrawFlags_RoundCornersBottom);
+
+            // Render, for docked windows and host windows we ensure bg goes before decorations
+            ImDrawList* bg_draw_list = window->DockIsActive ? window->DockNode->HostWindow->DrawList : window->DrawList;
+            if (window->DockIsActive || (flags & ImGuiWindowFlags_DockNodeHost))
+                bg_draw_list->ChannelsSetCurrent(0);
+            if (window->DockIsActive)
+                window->DockNode->LastBgColor = bg_col;
+
+            bg_draw_list->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()), window->Pos + window->Size, bg_col, window_rounding, (flags & ImGuiWindowFlags_NoTitleBar) ? 0 : ImDrawFlags_RoundCornersBottom);
+
+            if (window->DockIsActive || (flags & ImGuiWindowFlags_DockNodeHost))
+                bg_draw_list->ChannelsSetCurrent(1);
         }
+        if (window->DockIsActive)
+            window->DockNode->IsBgDrawnThisFrame = true;
 
         // Title bar
         // (when docked, DockNode are drawing their own title bar. Individual windows however do NOT set the _NoTitleBar flag,
@@ -6346,6 +6395,11 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         window->IDStack.resize(1);
         window->DrawList->_ResetForNewFrame();
         window->DC.CurrentTableIdx = -1;
+        if (flags & ImGuiWindowFlags_DockNodeHost)
+        {
+            window->DrawList->ChannelsSplit(2);
+            window->DrawList->ChannelsSetCurrent(1); // Render decorations on channel 1 as we will render the backgrounds manually later
+        }
 
         // Restore buffer capacity when woken from a compacted state, to avoid
         if (window->MemoryCompacted)
@@ -6699,25 +6753,6 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
         IM_ASSERT(window->DrawList->CmdBuffer.Size == 1 && window->DrawList->CmdBuffer[0].ElemCount == 0);
         window->DrawList->PushTextureID(g.Font->ContainerAtlas->TexID);
         PushClipRect(host_rect.Min, host_rect.Max, false);
-
-        // Draw modal or window list full viewport dimming background (for other viewports we'll render them in EndFrame)
-        ImGuiWindow* window_window_list = g.NavWindowingListWindow;
-        const bool dim_bg_for_modal = (flags & ImGuiWindowFlags_Modal) && window == GetTopMostPopupModal() && window->HiddenFramesCannotSkipItems <= 0;
-        const bool dim_bg_for_window_list = g.NavWindowingTargetAnim && ((window == g.NavWindowingTargetAnim->RootWindowDockTree) || (window == window_window_list && window_window_list->Viewport != g.NavWindowingTargetAnim->Viewport));
-        if (dim_bg_for_modal || dim_bg_for_window_list)
-        {
-            const ImU32 dim_bg_col = GetColorU32(dim_bg_for_modal ? ImGuiCol_ModalWindowDimBg : ImGuiCol_NavWindowingDimBg, g.DimBgRatio);
-            window->DrawList->AddRectFilled(viewport_rect.Min, viewport_rect.Max, dim_bg_col);
-        }
-
-        // Draw navigation selection/windowing rectangle background
-        if (dim_bg_for_window_list && window == g.NavWindowingTargetAnim)
-        {
-            ImRect bb = window->Rect();
-            bb.Expand(g.FontSize);
-            if (!bb.Contains(viewport_rect)) // Avoid drawing if the window covers all the viewport anyway
-                window->DrawList->AddRectFilled(bb.Min, bb.Max, GetColorU32(ImGuiCol_NavWindowingHighlight, g.NavWindowingHighlightAlpha * 0.25f), g.Style.WindowRounding);
-        }
 
         // Child windows can render their decoration (bg color, border, scrollbars, etc.) within their parent to save a draw call (since 1.71)
         // When using overlapping child windows, this will break the assumption that child z-order is mapped to submission order.
@@ -8963,6 +8998,16 @@ ImGuiWindow* ImGui::GetTopMostPopupModal()
     for (int n = g.OpenPopupStack.Size - 1; n >= 0; n--)
         if (ImGuiWindow* popup = g.OpenPopupStack.Data[n].Window)
             if (popup->Flags & ImGuiWindowFlags_Modal)
+                return popup;
+    return NULL;
+}
+
+ImGuiWindow* ImGui::GetTopMostAndVisiblePopupModal()
+{
+    ImGuiContext& g = *GImGui;
+    for (int n = g.OpenPopupStack.Size - 1; n >= 0; n--)
+        if (ImGuiWindow* popup = g.OpenPopupStack.Data[n].Window)
+            if ((popup->Flags & ImGuiWindowFlags_Modal) && IsWindowActiveAndVisible(popup))
                 return popup;
     return NULL;
 }
@@ -12786,6 +12831,9 @@ void ImGui::DestroyPlatformWindows()
 //    | BeginDockableDragDropTarget()
 //    | - DockNodePreviewDockRender()
 //-----------------------------------------------------------------------------
+// - EndFrame()
+//    | DockContextEndFrame()
+//-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
 // Docking: Internal Types
@@ -12908,7 +12956,7 @@ namespace ImGui
     // ImGuiDockNode tree manipulations
     static void             DockNodeTreeSplit(ImGuiContext* ctx, ImGuiDockNode* parent_node, ImGuiAxis split_axis, int split_first_child, float split_ratio, ImGuiDockNode* new_node);
     static void             DockNodeTreeMerge(ImGuiContext* ctx, ImGuiDockNode* parent_node, ImGuiDockNode* merge_lead_child);
-    static void             DockNodeTreeUpdatePosSize(ImGuiDockNode* node, ImVec2 pos, ImVec2 size, bool only_write_to_marked_nodes = false);
+    static void             DockNodeTreeUpdatePosSize(ImGuiDockNode* node, ImVec2 pos, ImVec2 size, ImGuiDockNode* only_write_to_single_node = NULL);
     static void             DockNodeTreeUpdateSplitter(ImGuiDockNode* node);
     static ImGuiDockNode*   DockNodeTreeFindVisibleNodeByPos(ImGuiDockNode* node, ImVec2 pos);
     static ImGuiDockNode*   DockNodeTreeFindFallbackLeafNode(ImGuiDockNode* node);
@@ -12940,6 +12988,7 @@ namespace ImGui
 // - DockContextRebuildNodes()
 // - DockContextNewFrameUpdateUndocking()
 // - DockContextNewFrameUpdateDocking()
+// - DockContextEndFrame()
 // - DockContextFindNodeByID()
 // - DockContextBindNodeToWindow()
 // - DockContextGenNodeID()
@@ -13073,6 +13122,22 @@ void ImGui::DockContextNewFrameUpdateDocking(ImGuiContext* ctx)
         if (ImGuiDockNode* node = (ImGuiDockNode*)dc->Nodes.Data[n].val_p)
             if (node->IsFloatingNode())
                 DockNodeUpdate(node);
+}
+
+void ImGui::DockContextEndFrame(ImGuiContext* ctx)
+{
+    // Draw backgrounds of node missing their window
+    ImGuiContext& g = *ctx;
+    ImGuiDockContext* dc = &g.DockContext;
+    for (int n = 0; n < dc->Nodes.Data.Size; n++)
+        if (ImGuiDockNode* node = (ImGuiDockNode*)dc->Nodes.Data[n].val_p)
+            if (node->LastFrameActive == g.FrameCount && node->IsVisible && node->HostWindow && node->IsLeafNode() && !node->IsBgDrawnThisFrame)
+            {
+                ImRect bg_rect(node->Pos + ImVec2(0.0f, GetFrameHeight()), node->Pos + node->Size);
+                ImDrawFlags bg_rounding_flags = CalcRoundingFlagsForRectInRect(bg_rect, node->HostWindow->Rect(), DOCKING_SPLITTER_SIZE);
+                node->HostWindow->DrawList->ChannelsSetCurrent(0);
+                node->HostWindow->DrawList->AddRectFilled(bg_rect.Min, bg_rect.Max, node->LastBgColor, node->HostWindow->WindowRounding, bg_rounding_flags);
+            }
 }
 
 static ImGuiDockNode* ImGui::DockContextFindNodeByID(ImGuiContext* ctx, ImGuiID id)
@@ -13592,6 +13657,7 @@ ImGuiDockNode::ImGuiDockNode(ImGuiID id)
     SplitAxis = ImGuiAxis_None;
 
     State = ImGuiDockNodeState_Unknown;
+    LastBgColor = IM_COL32_WHITE;
     HostWindow = VisibleWindow = NULL;
     CentralNode = OnlyNodeWithWindows = NULL;
     CountNodeWithWindows = 0;
@@ -13603,8 +13669,8 @@ ImGuiDockNode::ImGuiDockNode(ImGuiID id)
     AuthorityForViewport = ImGuiDataAuthority_Auto;
     IsVisible = true;
     IsFocused = HasCloseButton = HasWindowMenuButton = HasCentralNodeChild = false;
+    IsBgDrawnThisFrame = false;
     WantCloseAll = WantLockSizeOnce = WantMouseMove = WantHiddenTabBarUpdate = WantHiddenTabBarToggle = false;
-    MarkedForPosSizeWrite = false;
 }
 
 ImGuiDockNode::~ImGuiDockNode()
@@ -14045,7 +14111,7 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
     ImGuiContext& g = *GImGui;
     IM_ASSERT(node->LastFrameActive != g.FrameCount);
     node->LastFrameAlive = g.FrameCount;
-    node->MarkedForPosSizeWrite = false;
+    node->IsBgDrawnThisFrame = false;
 
     node->CentralNode = node->OnlyNodeWithWindows = NULL;
     if (node->IsRootNode())
@@ -14188,6 +14254,7 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
             window_flags |= ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoCollapse;
             window_flags |= ImGuiWindowFlags_NoTitleBar;
 
+            SetNextWindowBgAlpha(0.0f); // Don't set ImGuiWindowFlags_NoBackground because it disables borders
             PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
             Begin(window_label, NULL, window_flags);
             PopStyleVar();
@@ -14226,15 +14293,6 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
         if (g.NavWindow && g.NavWindow->RootWindow->DockNode && g.NavWindow->RootWindow->ParentWindow == host_window)
             node->LastFocusedNodeId = g.NavWindow->RootWindow->DockNode->ID;
 
-    // We need to draw a background at the root level if requested by ImGuiDockNodeFlags_PassthruCentralNode, but we will only know the correct pos/size
-    // _after_ processing the resizing splitters. So we are using the DrawList channel splitting facility to submit drawing primitives out of order!
-    const bool render_dockspace_bg = node->IsRootNode() && host_window && (node_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0;
-    if (render_dockspace_bg)
-    {
-        host_window->DrawList->ChannelsSplit(2);
-        host_window->DrawList->ChannelsSetCurrent(1);
-    }
-
     // Register a hit-test hole in the window unless we are currently dragging a window that is compatible with our dockspace
     ImGuiDockNode* central_node = node->CentralNode;
     const bool central_node_hole = node->IsRootNode() && host_window && (node_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0 && central_node != NULL && central_node->IsEmpty();
@@ -14267,15 +14325,25 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
     // Update position/size, process and draw resizing splitters
     if (node->IsRootNode() && host_window)
     {
+        host_window->DrawList->ChannelsSetCurrent(1);
         DockNodeTreeUpdatePosSize(node, host_window->Pos, host_window->Size);
         DockNodeTreeUpdateSplitter(node);
     }
 
     // Draw empty node background (currently can only be the Central Node)
-    if (host_window && node->IsEmpty() && node->IsVisible && !(node_flags & ImGuiDockNodeFlags_PassthruCentralNode))
-        host_window->DrawList->AddRectFilled(node->Pos, node->Pos + node->Size, GetColorU32(ImGuiCol_DockingEmptyBg));
+    if (host_window && node->IsEmpty() && node->IsVisible)
+    {
+        host_window->DrawList->ChannelsSetCurrent(0);
+        node->LastBgColor = (node_flags & ImGuiDockNodeFlags_PassthruCentralNode) ? 0 : GetColorU32(ImGuiCol_DockingEmptyBg);
+        if (node->LastBgColor != 0)
+            host_window->DrawList->AddRectFilled(node->Pos, node->Pos + node->Size, node->LastBgColor);
+        node->IsBgDrawnThisFrame = true;
+    }
 
     // Draw whole dockspace background if ImGuiDockNodeFlags_PassthruCentralNode if set.
+    // We need to draw a background at the root level if requested by ImGuiDockNodeFlags_PassthruCentralNode, but we will only know the correct pos/size
+    // _after_ processing the resizing splitters. So we are using the DrawList channel splitting facility to submit drawing primitives out of order!
+    const bool render_dockspace_bg = node->IsRootNode() && host_window && (node_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0;
     if (render_dockspace_bg && node->IsVisible)
     {
         host_window->DrawList->ChannelsSetCurrent(0);
@@ -14283,10 +14351,11 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
             RenderRectFilledWithHole(host_window->DrawList, node->Rect(), central_node->Rect(), GetColorU32(ImGuiCol_WindowBg), 0.0f);
         else
             host_window->DrawList->AddRectFilled(node->Pos, node->Pos + node->Size, GetColorU32(ImGuiCol_WindowBg), 0.0f);
-        host_window->DrawList->ChannelsMerge();
     }
 
     // Draw and populate Tab Bar
+    if (host_window)
+        host_window->DrawList->ChannelsSetCurrent(1);
     if (host_window && node->Windows.Size > 0)
     {
         DockNodeUpdateTabBar(node, host_window);
@@ -14321,7 +14390,13 @@ static void ImGui::DockNodeUpdate(ImGuiDockNode* node)
 
         // Render outer borders last (after the tab bar)
         if (node->IsRootNode())
+        {
+            host_window->DrawList->ChannelsSetCurrent(1);
             RenderWindowOuterBorders(host_window);
+        }
+
+        // Further rendering (= hosted windows background) will be drawn on layer 0
+        host_window->DrawList->ChannelsSetCurrent(0);
     }
 
     // End host window
@@ -14488,7 +14563,8 @@ static void ImGui::DockNodeUpdateTabBar(ImGuiDockNode* node, ImGuiWindow* host_w
     if (is_focused)
         node->LastFrameFocused = g.FrameCount;
     ImU32 title_bar_col = GetColorU32(host_window->Collapsed ? ImGuiCol_TitleBgCollapsed : is_focused ? ImGuiCol_TitleBgActive : ImGuiCol_TitleBg);
-    host_window->DrawList->AddRectFilled(title_bar_rect.Min, title_bar_rect.Max, title_bar_col, host_window->WindowRounding, ImDrawFlags_RoundCornersTop);
+    ImDrawFlags rounding_flags = CalcRoundingFlagsForRectInRect(title_bar_rect, host_window->Rect(), DOCKING_SPLITTER_SIZE);
+    host_window->DrawList->AddRectFilled(title_bar_rect.Min, title_bar_rect.Max, title_bar_col, host_window->WindowRounding, rounding_flags);
 
     // Docking/Collapse button
     if (has_window_menu_button)
@@ -14956,7 +15032,7 @@ static void ImGui::DockNodePreviewDockRender(ImGuiWindow* host_window, ImGuiDock
             overlay_rect.Min.y += GetFrameHeight();
         if (data->SplitDir != ImGuiDir_None || data->IsCenterAvailable)
             for (int overlay_n = 0; overlay_n < overlay_draw_lists_count; overlay_n++)
-                overlay_draw_lists[overlay_n]->AddRectFilled(overlay_rect.Min, overlay_rect.Max, overlay_col_main, host_window->WindowRounding);
+                overlay_draw_lists[overlay_n]->AddRectFilled(overlay_rect.Min, overlay_rect.Max, overlay_col_main, host_window->WindowRounding, CalcRoundingFlagsForRectInRect(overlay_rect, host_window->Rect(), DOCKING_SPLITTER_SIZE));
     }
 
     // Display tab shape/label preview unless we are splitting node (it generally makes the situation harder to read)
@@ -15149,11 +15225,11 @@ void ImGui::DockNodeTreeMerge(ImGuiContext* ctx, ImGuiDockNode* parent_node, ImG
 
 // Update Pos/Size for a node hierarchy (don't affect child Windows yet)
 // (Depth-first, Pre-Order)
-void ImGui::DockNodeTreeUpdatePosSize(ImGuiDockNode* node, ImVec2 pos, ImVec2 size, bool only_write_to_marked_nodes)
+void ImGui::DockNodeTreeUpdatePosSize(ImGuiDockNode* node, ImVec2 pos, ImVec2 size, ImGuiDockNode* only_write_to_single_node)
 {
     // During the regular dock node update we write to all nodes.
-    // 'only_write_to_marked_nodes' is only set when turning a node visible mid-frame and we need its size right-away.
-    const bool write_to_node = (only_write_to_marked_nodes == false) || (node->MarkedForPosSizeWrite);
+    // 'only_write_to_single_node' is only set when turning a node visible mid-frame and we need its size right-away.
+    const bool write_to_node = only_write_to_single_node == NULL || only_write_to_single_node == node;
     if (write_to_node)
     {
         node->Pos = pos;
@@ -15167,15 +15243,21 @@ void ImGui::DockNodeTreeUpdatePosSize(ImGuiDockNode* node, ImVec2 pos, ImVec2 si
     ImGuiDockNode* child_1 = node->ChildNodes[1];
     ImVec2 child_0_pos = pos, child_1_pos = pos;
     ImVec2 child_0_size = size, child_1_size = size;
-    if (child_0->IsVisible && child_1->IsVisible)
+
+    const bool child_0_is_toward_single_node = (only_write_to_single_node != NULL && DockNodeIsInHierarchyOf(only_write_to_single_node, child_0));
+    const bool child_1_is_toward_single_node = (only_write_to_single_node != NULL && DockNodeIsInHierarchyOf(only_write_to_single_node, child_1));
+    const bool child_0_is_or_will_be_visible = child_0->IsVisible || child_0_is_toward_single_node;
+    const bool child_1_is_or_will_be_visible = child_1->IsVisible || child_1_is_toward_single_node;
+
+    if (child_0_is_or_will_be_visible && child_1_is_or_will_be_visible)
     {
+        ImGuiContext& g = *GImGui;
         const float spacing = DOCKING_SPLITTER_SIZE;
         const ImGuiAxis axis = (ImGuiAxis)node->SplitAxis;
         const float size_avail = ImMax(size[axis] - spacing, 0.0f);
 
         // Size allocation policy
         // 1) The first 0..WindowMinSize[axis]*2 are allocated evenly to both windows.
-        ImGuiContext& g = *GImGui;
         const float size_min_each = ImFloor(ImMin(size_avail, g.Style.WindowMinSize[axis] * 2.0f) * 0.5f);
 
         // FIXME: Blocks 2) and 3) are essentially doing nearly the same thing.
@@ -15226,11 +15308,15 @@ void ImGui::DockNodeTreeUpdatePosSize(ImGuiDockNode* node, ImVec2 pos, ImVec2 si
 
         child_1_pos[axis] += spacing + child_0_size[axis];
     }
-    child_0->WantLockSizeOnce = child_1->WantLockSizeOnce = false;
 
-    if (child_0->IsVisible)
+    if (only_write_to_single_node == NULL)
+        child_0->WantLockSizeOnce = child_1->WantLockSizeOnce = false;
+
+    const bool child_0_recurse = only_write_to_single_node ? child_0_is_toward_single_node : child_0->IsVisible;
+    const bool child_1_recurse = only_write_to_single_node ? child_1_is_toward_single_node : child_1->IsVisible;
+    if (child_0_recurse)
         DockNodeTreeUpdatePosSize(child_0, child_0_pos, child_0_size);
-    if (child_1->IsVisible)
+    if (child_1_recurse)
         DockNodeTreeUpdatePosSize(child_1, child_1_pos, child_1_size);
 }
 
@@ -15321,7 +15407,8 @@ void ImGui::DockNodeTreeUpdateSplitter(ImGuiDockNode* node)
             float cur_size_1 = child_1->Size[axis];
             float min_size_0 = resize_limits[0] - child_0->Pos[axis];
             float min_size_1 = child_1->Pos[axis] + child_1->Size[axis] - resize_limits[1];
-            if (SplitterBehavior(bb, GetID("##Splitter"), axis, &cur_size_0, &cur_size_1, min_size_0, min_size_1, WINDOWS_HOVER_PADDING, WINDOWS_RESIZE_FROM_EDGES_FEEDBACK_TIMER))
+            ImU32 bg_col = GetColorU32(ImGuiCol_WindowBg);
+            if (SplitterBehavior(bb, GetID("##Splitter"), axis, &cur_size_0, &cur_size_1, min_size_0, min_size_1, WINDOWS_HOVER_PADDING, WINDOWS_RESIZE_FROM_EDGES_FEEDBACK_TIMER, bg_col))
             {
                 if (touching_nodes[0].Size > 0 && touching_nodes[1].Size > 0)
                 {
@@ -16044,20 +16131,17 @@ static ImGuiDockNode* ImGui::DockContextBindNodeToWindow(ImGuiContext* ctx, ImGu
     if (!node->IsVisible)
     {
         ImGuiDockNode* ancestor_node = node;
-        while (!ancestor_node->IsVisible)
-        {
-            ancestor_node->IsVisible = true;
-            ancestor_node->MarkedForPosSizeWrite = true;
-            if (ancestor_node->ParentNode)
-                ancestor_node = ancestor_node->ParentNode;
-        }
+        while (!ancestor_node->IsVisible && ancestor_node->ParentNode)
+            ancestor_node = ancestor_node->ParentNode;
         IM_ASSERT(ancestor_node->Size.x > 0.0f && ancestor_node->Size.y > 0.0f);
         DockNodeUpdateHasCentralNodeChild(DockNodeGetRootNode(ancestor_node));
-        DockNodeTreeUpdatePosSize(ancestor_node, ancestor_node->Pos, ancestor_node->Size, true);
+        DockNodeTreeUpdatePosSize(ancestor_node, ancestor_node->Pos, ancestor_node->Size, node);
     }
 
     // Add window to node
+    bool node_was_visible = node->IsVisible;
     DockNodeAddWindow(node, window, true);
+    node->IsVisible = node_was_visible; // Don't mark visible right away (so DockContextEndFrame() doesn't render it, maybe other side effects? will see)
     IM_ASSERT(node == window->DockNode);
     return node;
 }
