@@ -501,7 +501,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(const std::string& addr, const UUID& u
     int err = sdp_service_search_attr_req(session, searchList, SDP_ATTR_REQ_RANGE, attridList, &responseList);
     sdp_close(session);
 
-    if (err != NO_ERROR) {
+    if (err == SOCKET_ERROR) {
         // Failed to initialize service search, free all lists and return
         sdp_list_free(responseList, nullptr);
         sdp_list_free(searchList, nullptr);
