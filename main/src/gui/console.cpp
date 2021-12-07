@@ -66,7 +66,7 @@ void Console::_add(const std::string& s, const ImVec4& color, bool canUseHex) {
 void Console::_updateOutput() {
     // Reserve space at bottom for more elements
     static const float reservedSpace = -ImGui::GetFrameHeightWithSpacing();
-    ImGui::BeginChild("ConsoleOutput", { 0, reservedSpace }, true, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::BeginChild("output", { 0, reservedSpace }, true, ImGuiWindowFlags_HorizontalScrollbar);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 4, 1 }); // Tighten line spacing
 
     // Add each item
@@ -146,13 +146,16 @@ void Console::_updateOutput() {
 }
 
 void Console::update() {
+    ImGui::PushID("Console");
+    ImGui::BeginGroup();
+
     // Textbox flags
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
         | ImGuiInputTextFlags_AllowTabInput;
 
     // Textbox (but check for input enable first with short-circuiting &&)
     ImVec2 size{ ImGui::FILL, ImGui::GetTextLineHeight() * Settings::sendTextboxHeight };
-    if (_hasInput && ImGui::InputTextMultiline("##consoleInput", _textBuf, size, flags)) {
+    if (_hasInput && ImGui::InputTextMultiline("##input", _textBuf, size, flags)) {
         // Line ending
         const char* endings[] = { "\n", "\r", "\r\n" };
         const char* selectedEnding = endings[_currentLE];
@@ -172,4 +175,7 @@ void Console::update() {
     }
 
     _updateOutput();
+
+    ImGui::EndGroup();
+    ImGui::PopID();
 }

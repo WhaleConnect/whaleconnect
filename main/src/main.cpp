@@ -259,7 +259,7 @@ static void drawBTConnOptions(const Sockets::DeviceData& target, uint16_t port, 
 /// <param name="spacing">If spacing is reserved at the bottom of the child</param>
 /// <param name="border">If a border is present around the child</param>
 static void beginChildWithSpacing(bool spacing, bool border) {
-    ImGui::BeginChild("Output", { 0, (spacing) ? 0 : -ImGui::GetFrameHeightWithSpacing() }, border);
+    ImGui::BeginChild("output", { 0, (spacing) ? 0 : -ImGui::GetFrameHeightWithSpacing() }, border);
 }
 
 /// <summary>
