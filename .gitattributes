@@ -1,2 +1,2 @@
 # Tell GitHub Linguist to ignore 3rd-party files
-main/3rdparty/*/** linguist-vendored
+core/lib/*/** linguist-vendored

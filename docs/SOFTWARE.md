@@ -9,7 +9,6 @@ This is a list of all the software used in the development of Network Socket Ter
 - [Visual Studio](https://visualstudio.microsoft.com/)
   - **Extensions**
     - [Editor Guidelines](https://marketplace.visualstudio.com/items?itemName=PaulHarrington.EditorGuidelines)
-    - [Trailing Whitespace Visualizer](https://marketplace.visualstudio.com/items?itemName=MadsKristensen.TrailingWhitespaceVisualizer)
 - [Visual Studio Code](https://code.visualstudio.com/)
   - **Extensions**
     - **Language Support**
@@ -18,7 +17,6 @@ This is a list of all the software used in the development of Network Socket Ter
       - [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
       - [Better C++ Syntax](https://marketplace.visualstudio.com/items?itemName=jeff-hykin.better-cpp-syntax)
       - [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
-      - [CMake](https://marketplace.visualstudio.com/items?itemName=twxs.cmake)
     - **Source Generation/Autocompletion**
       - [Visual Studio IntelliCode](https://marketplace.visualstudio.com/items?itemName=VisualStudioExptTeam.vscodeintellicode)
       - [Python Docstring Generator](https://marketplace.visualstudio.com/items?itemName=njpwerner.autodocstring)
@@ -26,20 +24,15 @@ This is a list of all the software used in the development of Network Socket Ter
     - **Workflow**
       - [Todo Tree](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree)
       - [Git History](https://marketplace.visualstudio.com/items?itemName=donjayamanne.githistory)
-      - [GitHub Pull Requests and Issues](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-pull-request-github)
       - [Remote - SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh)
     - **Other**
       - [Remote - WSL](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl)
-      - [C/C++ Themes](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools-themes)
       - [EditorConfig for VS Code](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
-      - [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
 
 ## Compilers and Build Tools
 
-- [MSVC/MSBuild](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019)
-- [GCC](https://gcc.gnu.org/)
-- [Clang](https://clang.llvm.org/)
-- [CMake](https://cmake.org/)
+- MSVC, MSBuild
+- GCC
 
 ## VCS
 
@@ -57,4 +50,4 @@ This is a list of all the software used in the development of Network Socket Ter
 - [Python](https://www.python.org/)
 - [Valgrind](https://www.valgrind.org/)
 - [ScreenToGif](https://www.screentogif.com/)
-- [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+- Windows Subsystem for Linux

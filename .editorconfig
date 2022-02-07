@@ -20,7 +20,7 @@ trim_trailing_whitespace = true
 end_of_line = lf
 
 ## App source files
-[main/src/**.{c,h}pp]
+[core/src/**.{c,h}pp]
 # Set guidelines length for source files (120-char limit)
 # Requires Visual Studio Extension "Editor Guidelines":
 # https://marketplace.visualstudio.com/items?itemName=PaulHarrington.EditorGuidelines
@@ -43,7 +43,7 @@ cpp_indent_preserve_within_parentheses = false
 cpp_indent_case_contents = true
 cpp_indent_case_labels = false
 cpp_indent_case_contents_when_block = false
-cpp_indent_lambda_braces_when_parameter = true
+cpp_indent_lambda_braces_when_parameter = false
 cpp_indent_goto_labels = one_left
 cpp_indent_preprocessor = leftmost_column
 cpp_indent_access_specifiers = false

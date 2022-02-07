@@ -21,24 +21,22 @@
             120
         ]
     },
-    "C_Cpp.default.cStandard": "c17",
     "C_Cpp.default.cppStandard": "c++20",
     "C_Cpp.default.includePath": [
-        "${workspaceFolder}/main/3rdparty"
+        "${workspaceFolder}/core/lib"
     ],
     "todo-tree.filtering.excludeGlobs": [
-        "**/3rdparty/*/**"
+        "**/lib/*/**"
     ],
     "cmake.configureOnOpen": true,
     "cmake.configureOnEdit": true,
-    "cmake.sourceDirectory": "${workspaceFolder}/main",
-    "cmake.buildDirectory": "${workspaceFolder}/main/build",
+    "cmake.sourceDirectory": "${workspaceFolder}/core",
+    "cmake.buildDirectory": "${workspaceFolder}/core/build",
     "cmake.debugConfig": {
-        "cwd": "${workspaceFolder}/main"
+        "cwd": "${workspaceFolder}/core"
     },
-    "workbench.colorTheme": "Visual Studio Dark - C++",
     "python.analysis.extraPaths": [
-        "${workspaceFolder}/main/3rdparty"
+        "${workspaceFolder}/core/lib"
     ],
     "autoDocstring.docstringFormat": "numpy",
     "doxdocgen.c.commentPrefix": "/// ",

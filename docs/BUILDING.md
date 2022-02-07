@@ -30,7 +30,7 @@ To build NST from the sources in this repository, you will need the following so
 
 You will need to install the following packages (if you're using a Debian-based system):
 
-```bash
+```shell
 sudo apt install libbluetooth-dev # BlueZ API
 sudo apt install libdbus1-dev     # D-Bus API
 sudo apt install libgl-dev        # OpenGL API
@@ -53,14 +53,14 @@ This project uses C++20 features, so be sure to update your compiler(s) if neede
 #### With MSBuild (Windows)
 
 ```shell
-cd main
+cd core
 msbuild
 ```
 
 #### With CMake (All Platforms)
 
 ```shell
-cd main
+cd core
 mkdir build
 cd build
 cmake ..
