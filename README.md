@@ -13,6 +13,12 @@
 - [Software Used](/docs/SOFTWARE.md)
 - [Todo List](/docs/TODO.txt)
 
+## Development Branch
+
+The [`dev` branch](https://github.com/NSTerminal/terminal/tree/dev) is used for in-progress features. Updates can vary in maturity; **the branch is not guaranteed to compile or run properly.**
+
+When a feature is merged into `main` it is ready for release.
+
 ## Licenses
 
 This repository contains two licenses: the third version of the GNU General Public License (GPLv3) and the MIT license.
