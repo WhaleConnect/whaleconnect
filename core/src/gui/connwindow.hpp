@@ -1,4 +1,4 @@
-// Copyright 2021 the Network Socket Terminal contributors
+// Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
 // A class to handle a socket connection in a GUI window

@@ -1,4 +1,4 @@
-Copyright 2021 the Network Socket Terminal contributors
+Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
