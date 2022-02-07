@@ -17,6 +17,7 @@ This is a list of all the software used in the development of Network Socket Ter
       - [C/C++](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
       - [Better C++ Syntax](https://marketplace.visualstudio.com/items?itemName=jeff-hykin.better-cpp-syntax)
       - [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
+      - [CMake](https://marketplace.visualstudio.com/items?itemName=twxs.cmake)
     - **Source Generation/Autocompletion**
       - [Visual Studio IntelliCode](https://marketplace.visualstudio.com/items?itemName=VisualStudioExptTeam.vscodeintellicode)
       - [Python Docstring Generator](https://marketplace.visualstudio.com/items?itemName=njpwerner.autodocstring)
@@ -28,9 +29,11 @@ This is a list of all the software used in the development of Network Socket Ter
     - **Other**
       - [Remote - WSL](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl)
       - [EditorConfig for VS Code](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
+      - [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
 
 ## Compilers and Build Tools
 
+- CMake
 - MSVC, MSBuild
 - GCC
 
