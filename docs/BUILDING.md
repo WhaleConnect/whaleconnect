@@ -32,7 +32,7 @@ You will need to install the following packages (if you're using a Debian-based 
 
 ```bash
 sudo apt install libbluetooth-dev # BlueZ API
-sudo apt install libdbus1-dev     # D-Bus API
+sudo apt install libdbus-1-dev    # D-Bus API
 sudo apt install libgl-dev        # OpenGL API
 sudo apt install libglfw3-dev     # GLFW 3 API
 ```
