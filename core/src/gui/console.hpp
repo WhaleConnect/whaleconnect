@@ -6,6 +6,7 @@
 #pragma once
 
 #include <vector>
+#include <ranges> // std::views::split
 #include <sstream> // std::ostringstream
 #include <string_view>
 #include <functional> // std::function
@@ -14,7 +15,6 @@
 
 #include "app/settings.hpp"
 #include "util/formatcompat.hpp"
-#include "util/strings.hpp"
 
 /// <summary>
 /// A class to represent a scrollable panel of output text with an optional input textbox.
@@ -84,11 +84,8 @@ public:
     /// <param name="pre">A string to add before each line</param>
     /// <param name="canUseHex">If the string gets displayed as hexadecimal when set</param>
     void addText(std::string_view s, std::string_view pre = "", const ImVec4& color = {}, bool canUseHex = true) {
-        // Split the string by the '\n' character to get each line
-        auto lines = Strings::split(s, '\n');
-
-        // Add each line
-        for (const auto& i : Strings::split(s, '\n')) _add(std::format("{}{}\n", pre, i), color, canUseHex);
+        // Split the string by the '\n' character to get each line, then add each line
+        for (std::string_view i : std::views::split(s, "\n")) _add(std::format("{}{}\n", pre, i), color, canUseHex);
     }
 
     /// <summary>

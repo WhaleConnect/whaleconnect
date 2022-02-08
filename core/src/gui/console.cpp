@@ -12,6 +12,7 @@
 
 #include "console.hpp"
 #include "app/settings.hpp"
+#include "util/strings.hpp"
 #include "util/imguiext.hpp"
 #include "util/formatcompat.hpp"
 

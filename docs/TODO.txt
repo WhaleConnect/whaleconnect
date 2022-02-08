@@ -57,19 +57,7 @@ Beta:
   [ ] Send data in hex format in addition to the existing UTF-8 textbox
     - imgui_club Memory Editor (https://github.com/ocornut/imgui_club) should be helpful here (make a modification of it?)
 
-Various small optimizations:
-  [X] Use vector::find in ConnWindowList
-  [X] Don't poll sockets that have been closed (modify relevant parts in ConnWindowList)
-
 Other things:
   [ ] Setup GitHub Actions (whenever)
-  - Profile application
-    - Visual Studio debug tools on Windows
-    - Valgrind on Linux (check for memory leaks)
-    - Task Manager (CPU/GPU/Memory/Network use)
-  [ ] When GCC and Clang are C++20 complete:
-    [ ] Remove #if checks for chrono timezones (console.cpp)
-    [ ] Drop formatcompat.hpp and {fmt}, use std::format()
-    [ ] Replace `Strings::split()` with `std::views::split()`
-  [ ] - Replace many index-based loops with `views::zip()` and `views::enumerate()` in C++23
-  [X] Upgrade to VS2022
+  [ ] Drop formatcompat.hpp and {fmt}, use std::format()
+  [ ] Replace many index-based loops with `views::zip()` and `views::enumerate()` in C++23/C++26

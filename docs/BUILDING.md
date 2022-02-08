@@ -14,7 +14,7 @@ To build NST from the sources in this repository, you will need the following so
 
 ### Windows
 
-- [Visual Studio 2019](https://visualstudio.microsoft.com/) (Requires the C++ Build Tools - the IDE is optional)
+- [Visual Studio](https://visualstudio.microsoft.com/) (Requires the C++ Build Tools - the IDE is optional)
 - [CMake](https://cmake.org/) (Optional)
 
 ### Linux
@@ -37,16 +37,16 @@ sudo apt install libgl-dev        # OpenGL API
 sudo apt install libglfw3-dev     # GLFW 3 API
 ```
 
-TODO: Add install commands for Fedora and similar distros
+TODO: Add install commands for pacman and dnf
 
 ## Compiling
 
-This project uses C++20 features, so be sure to update your compiler(s) if needed. Compilation has been tested successfully with the following compiler versions:
+This project uses C++23 features, so be sure to update your compiler(s) if needed. Compilation has been tested successfully with the following compiler versions:
 
-- GCC 11.2.0
-- MSVC 19.29
+- GCC 12.0.1
+- Visual Studio 2022 17.1
 
-*Clang is currently not supported because it does not yet implement P0960R3 (Parenthesized initialization of aggregates) used in `std::vector::emplace_back()`.*
+*Clang is currently not supported because of its C++20/23 implementation status.*
 
 ### Command Line
 

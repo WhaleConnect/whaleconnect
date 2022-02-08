@@ -66,12 +66,4 @@ namespace Strings {
     /// This function is adapted from https://stackoverflow.com/a/3418285
     /// </remarks>
     std::string replaceAll(NO_CONST_REF std::string str, std::string_view from, std::string_view to);
-
-    /// <summary>
-    /// Split a string into substrings given a delimiter char.
-    /// </summary>
-    /// <param name="str">The string to split</param>
-    /// <param name="delim">The delimiter character to split the string with</param>
-    /// <returns>A vector containing each substring</returns>
-    std::vector<std::string_view> split(std::string_view str, char delim);
 }

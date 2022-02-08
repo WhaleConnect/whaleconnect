@@ -10,7 +10,7 @@ project(terminal VERSION 1.0)
 include("cmake/utf_8.cmake")
 
 # C++ language standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Generate compile_commands.json under build directory

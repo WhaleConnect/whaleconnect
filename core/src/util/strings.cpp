@@ -60,29 +60,3 @@ std::string Strings::replaceAll(NO_CONST_REF std::string str, std::string_view f
 
     return str;
 }
-
-std::vector<std::string_view> Strings::split(std::string_view str, char delim) {
-    // Return value
-    std::vector<std::string_view> ret;
-
-    // Find each delimited substring in the buffer to extract each individual substring
-
-    // Index of the first delimiter found
-    size_t first = 0;
-
-    while (first < str.size()) {
-        // Find the index of the next delimiter after the last one found
-        size_t next = str.find_first_of(delim, first);
-
-        // Add the substring between the two delimiters
-        ret.push_back(str.substr(first, next - first));
-
-        // If there are no more occurrences of the delimiters we can exit
-        if (next == std::string_view::npos) break;
-
-        // Go past the last one found and continue
-        first = next + 1;
-    }
-
-    return ret;
-}
