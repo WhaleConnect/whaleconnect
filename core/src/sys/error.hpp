@@ -48,20 +48,22 @@ namespace System {
 
     template <class T = void>
     class MayFail {
-        using Type = std::conditional_t<std::is_void_v<T>, bool, T>;
-        using Optional = std::conditional_t<std::is_void_v<T>, Type, std::optional<Type>>;
+        static constexpr bool _isVoid = std::is_void_v<T>;
+
+        using Type = std::conditional_t<_isVoid, bool, T>;
+        using Optional = std::conditional_t<_isVoid, Type, std::optional<Type>>;
 
         ErrorCode _errCode;
-        Optional _value;
+        Optional _optVal;
 
     public:
-        MayFail(Type value) : _value(value), _errCode(getLastErr()) {}
+        MayFail(Type value) : _optVal(value), _errCode(getLastErr()) {}
 
         ErrorCode error() { return _errCode; }
 
         Type value() {
-            if constexpr (std::is_void_v<T>) return !_value;
-            else return _value.value();
+            if constexpr (_isVoid) return _optVal;
+            else return _optVal.value();
         }
     };
 }
