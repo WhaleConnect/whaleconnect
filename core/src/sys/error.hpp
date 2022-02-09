@@ -23,34 +23,13 @@ namespace System {
     using ErrorCode = int;
 #endif
 
-    namespace Internal {
-        class MayFailBaseVoid {
-            bool _failed = false;
-
-        public:
-            explicit MayFailBaseVoid(bool failed) : _failed(failed) {}
-
-            operator bool() { return _failed; };
-        };
-
-        template <class T>
-        class MayFailBaseValue {
-            std::optional<T> _value;
-
-        public:
-            explicit MayFailBaseValue(T value) : _value(ValueType) {}
-
-            operator bool() { return !_value };
-        };
-    }
-
     /// <summary>
-    /// Get the error code of the last socket error.
+    /// Get the last error code.
     /// </summary>
     ErrorCode getLastErr();
 
     /// <summary>
-    /// Set the last socket error code.
+    /// Set the last error code.
     /// </summary>
     void setLastErr(ErrorCode err);
 
@@ -66,4 +45,23 @@ namespace System {
     /// </summary>
     /// <returns>The formatted string with code and description</returns>
     std::string formatLastErr();
+
+    template <class T = void>
+    class MayFail {
+        using Type = std::conditional_t<std::is_void_v<T>, bool, T>;
+        using Optional = std::conditional_t<std::is_void_v<T>, Type, std::optional<Type>>;
+
+        ErrorCode _errCode;
+        Optional _value;
+
+    public:
+        MayFail(Type value) : _value(value), _errCode(getLastErr()) {}
+
+        ErrorCode error() { return _errCode; }
+
+        Type value() {
+            if constexpr (std::is_void_v<T>) return !_value;
+            else return _value.value();
+        }
+    };
 }

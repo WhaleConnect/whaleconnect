@@ -24,11 +24,11 @@ namespace Async {
         bool connected = false;
     };
 
-    int init();
+    System::MayFail<> init();
 
     void cleanup();
 
-    int add(SOCKET sockfd);
+    System::MayFail<> add(SOCKET sockfd);
 
 #ifdef _WIN32
     HANDLE getCompletionPort();

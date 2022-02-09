@@ -37,18 +37,18 @@ static void worker() {
 }
 #endif
 
-int Async::init() {
+System::MayFail<> Async::init() {
     completionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, numThreads);
-    if (!completionPort) return SOCKET_ERROR;
+    if (!completionPort) return false;
 
     try {
         for (auto& i : workerThreadPool) i = std::thread(worker);
     } catch (const std::system_error&) {
         System::setLastErr(ERROR_NO_SYSTEM_RESOURCES);
-        return SOCKET_ERROR;
+        return false;
     }
 
-    return NO_ERROR;
+    return true;
 }
 
 void Async::cleanup() {
@@ -61,7 +61,7 @@ void Async::cleanup() {
     CloseHandle(completionPort);
 }
 
-bool Async::add(SOCKET sockfd) {
+System::MayFail<> Async::add(SOCKET sockfd) {
 #ifdef _WIN32
     return static_cast<bool>(CreateIoCompletionPort(reinterpret_cast<HANDLE>(sockfd), completionPort, 0, 0));
 #endif
