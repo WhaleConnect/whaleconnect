@@ -57,7 +57,9 @@ namespace System {
         Optional _optVal;
 
     public:
-        MayFail(Type value) : _optVal(value), _errCode(getLastErr()) {}
+        MayFail(Type&& value) : _optVal(std::forward<Type>(value)), _errCode(getLastErr()) {}
+
+        MayFail(std::nullopt_t) requires (!_isVoid) : _optVal(std::nullopt), _errCode(getLastErr()) {}
 
         ErrorCode error() { return _errCode; }
 
