@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "connwindowlist.hpp"
+#include "util/strings.hpp"
 #include "util/formatcompat.hpp"
 
 /// <summary>
