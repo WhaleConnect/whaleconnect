@@ -10,7 +10,7 @@
 
 #define NOMINMAX
 
-#include <winsock2.h>
+#include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <Mswsock.h>
 #endif
