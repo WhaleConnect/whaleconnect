@@ -143,11 +143,12 @@ static System::MayFail<> connectSocket(SOCKET s, Async::AsyncData& asyncData, co
 
     if (loadSuccess == SOCKET_ERROR) return false;
 
-    DWORD bytesSent;
-    if (!connectExPtr(s, addr, addrLen, nullptr, 0, &bytesSent, &asyncData.overlapped))
-        if (System::isFatal(WSAGetLastError())) return false;
+    DWORD bytesSent = 0;
+    System::MayFail<> connectResult = connectExPtr(s, addr, addrLen, nullptr, 0, &bytesSent, &asyncData.overlapped);
 
-    return true;
+    // We're not directly returning the result of ConnectEx() as connectResult's operator bool() does some more work in
+    // permitting in-progress error codes.
+    return connectResult;
 #else
     return connectSocket();
 #endif
@@ -180,13 +181,13 @@ System::MayFail<Sockets::Socket> Sockets::createClientSocket(const DeviceData& d
 
             // Connect to the server
             // The cast to `socklen_t` is only needed on Windows because `ai_addrlen` is of type `size_t`.
-            int connectResult = SOCKET_ERROR;
+            System::MayFail<> connectResult;
             if (ret) connectResult = connectSocket(ret.get(), asyncData, addr->ai_addr,
                                                    static_cast<socklen_t>(addr->ai_addrlen), isUDP);
 
             FreeAddrInfo(addr); // Release the resources
 
-            if ((connectResult == SOCKET_ERROR) && System::isFatal(System::getLastErr())) return {};
+            if (!connectResult) return {};
             return ret;
         } else {
             // The last error can be set to the getaddrinfo() error, the error-checking functions will handle it

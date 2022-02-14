@@ -26,20 +26,6 @@ void System::setLastErr(ErrorCode code) {
 #endif
 }
 
-bool System::isFatal(ErrorCode code) {
-    // Check if the code is actually an error
-    if (code == NO_ERROR) return false;
-
-#ifdef _WIN32
-    // This error means an operation hasn't failed, it's still waiting.
-    // Tell the calling function that there's no error, and it should check back later.
-    if (code == WSA_IO_PENDING) return false;
-#endif
-
-    // The error is fatal
-    return true;
-}
-
 std::string System::formatErr(ErrorCode code) {
     const char* formatStr = "{}: {}";
 
@@ -67,4 +53,19 @@ std::string System::formatErr(ErrorCode code) {
 
 std::string System::formatLastErr() {
     return formatErr(getLastErr());
+}
+
+template <class T>
+bool System::MayFail<T>::_nonFatal() {
+    // Check if the code is actually an error
+    if (_errCode == NO_ERROR) return false;
+
+#ifdef _WIN32
+    // This error means an operation hasn't failed, it's still waiting.
+    // Tell the calling function that there's no error, and it should check back later.
+    if (_errCode == WSA_IO_PENDING) return false;
+#endif
+
+    // The error is fatal
+    return true;
 }

@@ -34,8 +34,6 @@ namespace System {
     /// </summary>
     void setLastErr(ErrorCode code);
 
-    bool isFatal(ErrorCode code);
-
     /// <summary>
     /// Format an error code into a readable string.
     /// </summary>
@@ -58,6 +56,8 @@ namespace System {
 
         ErrorCode _errCode = NO_ERROR;
         Optional _optVal{};
+
+        bool _nonFatal();
 
     public:
         MayFail() : _errCode(getLastErr()) {}
@@ -82,6 +82,6 @@ namespace System {
 
         const Type* operator->() const { return &operator*(); }
 
-        operator bool() const { return _optVal && !isFatal(_errCode); }
+        operator bool() const { return _optVal && _nonFatal(); }
     };
 }
