@@ -11,6 +11,7 @@
 
 #include "async/async.hpp"
 #include "async/task.hpp"
+#include "sys/error.hpp"
 
 #ifdef _WIN32
 // Winsock header
@@ -106,22 +107,22 @@ namespace Sockets {
     /// <summary>
     /// Windows only - Prepare the OS sockets for use by the application.
     /// </summary>
-    /// <returns>NO_ERROR on success, SOCKET_ERROR on failure (use getLastErr() to get the error code)</returns>
-    int init();
+    /// <returns>An object indicating success/fail</returns>
+    System::MayFail<> init();
 
     /// <summary>
     /// Windows only - Cleanup Winsock.
     /// </summary>
-    /// <returns>NO_ERROR on success, SOCKET_ERROR on failure</returns>
-    int cleanup();
+    /// <returns>An object indicating success/fail</returns>
+    System::MayFail<> cleanup();
 
     /// <summary>
     /// Connect to a remote server. The socket created is to be used with the async I/O functions in `Sockets::Async`.
     /// </summary>
     /// <param name="data">The target server to connect to</param>
     /// <param name="asyncData">Information to use when performing async I/O on the socket</param>
-    /// <returns>Failure: A Socket owning nothing, Success: The newly-created socket file descriptor</returns>
-    Socket createClientSocket(const DeviceData& data, Async::AsyncData& asyncData);
+    /// <returns>The newly-created socket file descriptor</returns>
+    System::MayFail<Socket> createClientSocket(const DeviceData& data, Async::AsyncData& asyncData);
 
     /// <summary>
     /// Close a socket.
@@ -134,16 +135,16 @@ namespace Sockets {
     /// </summary>
     /// <param name="sockfd">The socket file descriptor to receive from</param>
     /// <param name="data">The data to send through the socket</param>
-    /// <returns>-1: failure, >=1: success, amount of bytes sent</returns>
-    int sendData(SOCKET sockfd, std::string_view data);
+    /// <returns>Number of bytes sent</returns>
+    System::MayFail<int> sendData(SOCKET sockfd, std::string_view data);
 
     /// <summary>
     /// Receive a string from the socket.
     /// </summary>
     /// <param name="sockfd">The socket file descriptor to receive from</param>
     /// <param name="data">The string to hold the data received</param>
-    /// <returns>-1: failure, 0: peer disconnected, >= 1: success, amount of bytes read</returns>
-    int recvData(SOCKET sockfd, std::string& data);
+    /// <returns>0: peer disconnected, 1+: number of bytes read</returns>
+    System::MayFail<int> recvData(SOCKET sockfd, std::string& data);
 }
 
 /// <summary>

@@ -9,6 +9,7 @@
 #include <vector> // std::vector
 
 #include "sockets.hpp"
+#include "sys/error.hpp"
 
 #ifndef _WIN32
 /// <summary>
@@ -33,9 +34,9 @@ namespace BTUtils {
     /// Initialize the OS APIs to use Bluetooth.
     /// </summary>
     /// <returns>
-    /// NO_ERROR on success, SOCKET_ERROR on failure
+    /// An object indicating success/fail
     /// </returns>
-    int init();
+    System::MayFail<> init();
 
     /// <summary>
     /// Clean up the OS APIs.
@@ -91,13 +92,12 @@ namespace BTUtils {
     /// <summary>
     /// Get the Bluetooth devices that are paired to this computer.
     /// </summary>
-    /// <param name="deviceList">The vector that will be populated with the paired devices</param>
-    /// <returns>NO_ERROR on success, SOCKET_ERROR on failure</returns>
+    /// <returns>A vector containing each device</returns>
     /// <remarks>
-    /// The DeviceData instances returned have `type` set to `None` because the communication protocol to use with them
+    /// The DeviceData instances returned have no type set because the communication protocol to use with them
     /// is indeterminate (the function doesn't know if L2CAP or RFCOMM should be used with each).
     /// </remarks>
-    int getPaired(Sockets::DeviceDataList& deviceList);
+    System::MayFail<Sockets::DeviceDataList> getPaired();
 
     /// <summary>
     /// Run a Service Discovery Protocol (SDP) inquiry on a remote device.
@@ -105,6 +105,6 @@ namespace BTUtils {
     /// <param name="addr">The MAC address of the device</param>
     /// <param name="uuid">The UUID of the service to inquiry</param>
     /// <param name="flushCache">If previous caches are ignored during the inquiry (Windows only)</param>
-    /// <returns>A vector of `SDPResult`s for each service found, or an empty vector on failure</returns>
-    SDPResultList sdpLookup(std::string_view addr, const UUID& uuid, bool flushCache);
+    /// <returns>A vector of each service found</returns>
+    System::MayFail<SDPResultList> sdpLookup(std::string_view addr, const UUID& uuid, bool flushCache);
 }

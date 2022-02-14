@@ -18,23 +18,15 @@ ConnWindow::ConnWindow(const Sockets::DeviceData& data, std::string_view title, 
     // into the window text.
     _windowText = (extraInfo.empty()) ? std::string{ title } : std::format("({}) {}", extraInfo, title);
 
-    _socket = Sockets::createClientSocket(data, _asyncData);
-
-    if (!_socket) _errorHandler(); // Handle the error
+    auto socket = Sockets::createClientSocket(data, _asyncData);
+    if (socket) _socket = std::move(*socket);
+    else _errorHandler(socket);
 }
 
 void ConnWindow::_sendHandler(std::string_view s) {
-    if (Sockets::sendData(_socket.get(), s) == SOCKET_ERROR) _errorHandler();
-}
+    auto sendRet = Sockets::sendData(_socket.get(), s);
 
-void ConnWindow::_errorHandler() {
-    int err = System::getLastErr();
-
-    // Check for non-fatal errors
-    if (!System::isFatal(err)) return;
-
-    // Add error line to console
-    _output.addError(System::formatErr(err));
+    if (!sendRet) _errorHandler(sendRet);
 }
 
 void ConnWindow::_connectHandler() {

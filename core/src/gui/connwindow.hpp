@@ -47,10 +47,17 @@ class ConnWindow {
     /// Function callback to execute when the socket has an input event.
     /// </summary>
     void _readHandler();
+
     /// <summary>
-    /// Print the last error code and description.
+    /// Print the error (if any) from a function that may have failed.
     /// </summary>
-    void _errorHandler();
+    /// <typeparam name="T">The type of the value stored in the return object</typeparam>
+    /// <param name="returnCode">The returned object from the function to test for</param>
+    template <class T>
+    void _errorHandler(const System::MayFail<T>& returnCode) {
+        // Check for non-fatal errors, then add error line to console
+        if (!returnCode) _output.addError(System::formatErr(returnCode.error()));
+    }
 
 public:
     /// <summary>

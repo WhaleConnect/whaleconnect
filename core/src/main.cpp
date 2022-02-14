@@ -324,30 +324,31 @@ static void drawBTConnectionTab() {
     ImGui::BeginDisabled(!btInitDone || sdpRunning);
 
     // Get the paired devices when this tab is first clicked or if the "Refresh" button is clicked
+
     static bool devicesListed = false; // If device enumeration has completed at least once
-    static int pairedRet = NO_ERROR; // The return value of BTUtils::getPaired()
-    static Sockets::DeviceDataList pairedDevices; // Vector of paired devices
+    static System::MayFail<Sockets::DeviceDataList> pairedDevices; // Vector of paired devices
     static std::string errStr; // Error string that occurred during device enumeration (cached)
+
     if ((ImGui::Button("Refresh List") || !devicesListed) && btInitDone) {
         devicesListed = true;
-        pairedRet = BTUtils::getPaired(pairedDevices);
+        pairedDevices = BTUtils::getPaired();
 
         // Set the error string if the operation failed
         // Not only does having a cache prevent extra operations from running each frame, but it minimizes the chances
         // of getting a wrong error value since every socket operation uses getLastErr() as a means of error checking.
         // If this string were to be reevaluated every frame, it might eventually pick up a wrong or misleading
         // getLastErr() value caused by some other failed action.
-        if (pairedRet == SOCKET_ERROR) errStr = "[ERROR] " + System::formatLastErr();
+        if (!pairedDevices) errStr = "[ERROR] " + System::formatLastErr();
     }
 
     static bool useSDP = true; // If available connections on devices are found using SDP
     static Sockets::DeviceData selected; // The device selected in the menu
-    static AsyncFunction<BTUtils::SDPResultList> sdpInq; // Asynchronous SDP inquiry
+    static AsyncFunction<System::MayFail<BTUtils::SDPResultList>> sdpInq; // Asynchronous SDP inquiry
     static bool deviceSelected = false; // If the user interacted with the device menu at least once
 
-    if (pairedRet == NO_ERROR) {
+    if (pairedDevices) {
         // Enumeration succeeded, display all devices found
-        if (btInitDone && pairedDevices.empty()) {
+        if (btInitDone && pairedDevices->empty()) {
             // Bluetooth initialization is done and no devices detected
             // (BT init checked because an empty devices vector may be caused by failed init.)
             ImGui::Text("No paired devices.");
@@ -379,7 +380,7 @@ static void drawBTConnectionTab() {
             }
 
             // There are devices, display them
-            if (drawPairedDevicesList(pairedDevices, showAddrs, selected)) {
+            if (drawPairedDevicesList(*pairedDevices, showAddrs, selected)) {
                 deviceSelected = true;
 
                 if (useSDP) sdpInq.run(BTUtils::sdpLookup, selected.address, selectedUUID, flushSDPCache);
@@ -400,7 +401,7 @@ static void drawBTConnectionTab() {
             sdpRunning = false;
         } else if (sdpInq.checkDone()) {
             // Done, print results
-            drawSDPList(sdpInq.value(), selected);
+            drawSDPList(*sdpInq.value(), selected);
             sdpRunning = false;
         } else if (sdpInq.firstRun()) {
             // Running, display a spinner

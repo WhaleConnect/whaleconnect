@@ -69,7 +69,7 @@ bool MainHandler::initApp() {
     // Set an error callback for GLFW so we know when something goes wrong
     glfwSetErrorCallback([](int error, const char* description) {
         // Error file for logging GLFW errors
-        auto file = fmt::output_file{ "err.txt", fmt::file::CREATE | fmt::file::APPEND | fmt::file::WRONLY };
+        auto file = fmt::output_file("err.txt", fmt::file::CREATE | fmt::file::APPEND | fmt::file::WRONLY);
 
         // Add the error to the file with timestamp, name, and description
         file.print("[{:%F %T}] [GLFW] Error {}: {}\n", std::chrono::system_clock::now(), error, description);

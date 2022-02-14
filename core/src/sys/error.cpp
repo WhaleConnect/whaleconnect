@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifdef _WIN32
-#include <Windows.h>
+#include <WinSock2.h>
 #else
 #include <cerrno> // errno
 #endif
@@ -18,12 +18,26 @@ System::ErrorCode System::getLastErr() {
 #endif
 }
 
-void System::setLastErr(ErrorCode err) {
+void System::setLastErr(ErrorCode code) {
 #ifdef _WIN32
-    SetLastError(err);
+    SetLastError(code);
 #else
-    errno = err;
+    errno = code;
 #endif
+}
+
+bool System::isFatal(ErrorCode code) {
+    // Check if the code is actually an error
+    if (code == NO_ERROR) return false;
+
+#ifdef _WIN32
+    // This error means an operation hasn't failed, it's still waiting.
+    // Tell the calling function that there's no error, and it should check back later.
+    if (code == WSA_IO_PENDING) return false;
+#endif
+
+    // The error is fatal
+    return true;
 }
 
 std::string System::formatErr(ErrorCode code) {

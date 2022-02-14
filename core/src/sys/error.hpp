@@ -8,6 +8,7 @@
 #include <string>
 #include <type_traits>
 #include <optional>
+#include <utility> // std::forward()
 
 #ifndef _WIN32
 // Error status codes
@@ -31,7 +32,9 @@ namespace System {
     /// <summary>
     /// Set the last error code.
     /// </summary>
-    void setLastErr(ErrorCode err);
+    void setLastErr(ErrorCode code);
+
+    bool isFatal(ErrorCode code);
 
     /// <summary>
     /// Format an error code into a readable string.
@@ -53,19 +56,32 @@ namespace System {
         using Type = std::conditional_t<_isVoid, bool, T>;
         using Optional = std::conditional_t<_isVoid, Type, std::optional<Type>>;
 
-        ErrorCode _errCode;
-        Optional _optVal;
+        ErrorCode _errCode = NO_ERROR;
+        Optional _optVal{};
 
     public:
-        MayFail(Type&& value) : _optVal(std::forward<Type>(value)), _errCode(getLastErr()) {}
+        MayFail() : _errCode(getLastErr()) {}
 
-        MayFail(std::nullopt_t) requires (!_isVoid) : _optVal(std::nullopt), _errCode(getLastErr()) {}
+        template <class U>
+        MayFail(U&& value) : _optVal(std::forward<U>(value)) {}
 
-        ErrorCode error() { return _errCode; }
+        ErrorCode error() const { return _errCode; }
 
-        Type value() {
-            if constexpr (_isVoid) return _optVal;
+        // TODO: Remove macro hack and duplicate accessors in C++23: https://stackoverflow.com/a/69486322
+
+#define GET_VALUE if constexpr (_isVoid) return _optVal; \
             else return _optVal.value();
-        }
+
+        Type& operator*() { GET_VALUE }
+
+        const Type& operator*() const { GET_VALUE }
+
+#undef GET_VALUE
+
+        Type* operator->() { return &operator*(); }
+
+        const Type* operator->() const { return &operator*(); }
+
+        operator bool() const { return _optVal && !isFatal(_errCode); }
     };
 }

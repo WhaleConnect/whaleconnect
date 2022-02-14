@@ -30,14 +30,14 @@ static bool wsInitialized = false;
 static DBusConnection* conn = nullptr;
 #endif
 
-int BTUtils::init() {
-    if (initialized()) return NO_ERROR;
+System::MayFail<> BTUtils::init() {
+    if (initialized()) return true;
 
 #ifdef _WIN32
     // Initialize Winsock
     int ret = Sockets::init();
     wsInitialized = (ret == NO_ERROR);
-    return ret;
+    return wsInitialized;
 #else
     // Connect to the system D-Bus
     conn = dbus_bus_get(DBUS_BUS_SYSTEM, nullptr);
@@ -45,9 +45,9 @@ int BTUtils::init() {
         // The process will exit when a connection with `dbus_bus_get` closes.
         // The function below will undo this behavior:
         dbus_connection_set_exit_on_disconnect(conn, FALSE);
-        return NO_ERROR;
+        return true;
     }
-    return SOCKET_ERROR;
+    return false;
 #endif
 }
 
@@ -71,9 +71,8 @@ bool BTUtils::initialized() {
 #endif
 }
 
-int BTUtils::getPaired(Sockets::DeviceDataList& deviceList) {
-    // Clear the vector
-    deviceList.clear();
+System::MayFail<Sockets::DeviceDataList> BTUtils::getPaired() {
+    Sockets::DeviceDataList deviceList;
 
 #ifdef _WIN32
     // Bluetooth search criteria - only return remembered (paired) devices, and don't start a new inquiry search
@@ -96,10 +95,10 @@ int BTUtils::getPaired(Sockets::DeviceDataList& deviceList) {
         if (System::getLastErr() == ERROR_NO_MORE_ITEMS) {
             // This indicates that no Bluetooth devices are paired and is not considered a failure.
             System::setLastErr(NO_ERROR);
-            return NO_ERROR;
+            return deviceList;
         } else {
-            // Other errors are fatal, return a `SOCKET_ERROR`.
-            return SOCKET_ERROR;
+            // Other errors are fatal, return a null value.
+            return {};
         }
     }
 
@@ -122,10 +121,10 @@ int BTUtils::getPaired(Sockets::DeviceDataList& deviceList) {
                                                     "/",
                                                     "org.freedesktop.DBus.ObjectManager",
                                                     "GetManagedObjects");
-    if (!msg) return SOCKET_ERROR;
+    if (!msg) return {};
 
     DBusMessage* response = dbus_connection_send_with_reply_and_block(conn, msg, DBUS_TIMEOUT_USE_DEFAULT, nullptr);
-    if (!response) return SOCKET_ERROR;
+    if (!response) return {};
 
     DBusMessageIter responseIter;
     dbus_message_iter_init(response, &responseIter);
@@ -249,7 +248,7 @@ int BTUtils::getPaired(Sockets::DeviceDataList& deviceList) {
 #endif
 
     // Done
-    return NO_ERROR;
+    return deviceList;
 }
 
 #ifdef _WIN32
@@ -373,7 +372,8 @@ static void extractVersionNums(uint16_t version, BTUtils::ProfileDesc& desc) {
     desc.versionMinor = version & 0xFF;
 }
 
-BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, const UUID& uuid, [[maybe_unused]] bool flushCache) {
+System::MayFail<BTUtils::SDPResultList> BTUtils::sdpLookup(std::string_view addr, const UUID& uuid,
+                                                           [[maybe_unused]] bool flushCache) {
     // Return value
     SDPResultList ret;
 
@@ -395,7 +395,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, const UUID& uui
 
     // Start the lookup
     HANDLE hLookup = nullptr;
-    if (WSALookupServiceBegin(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) return ret;
+    if (WSALookupServiceBegin(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) return {};
 
     // Continue the lookup
     DWORD size = 2048;
@@ -486,7 +486,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, const UUID& uui
     // We can't directly pass BDADDR_ANY to sdp_connect() because a "taking the address of an rvalue" error is thrown.
     bdaddr_t addrAny{};
     sdp_session_t* session = sdp_connect(&addrAny, &deviceAddr, SDP_RETRY_IF_BUSY);
-    if (!session) return ret; // Failed to connect to SDP session
+    if (!session) return {}; // Failed to connect to SDP session
 
     uuid_t serviceUUID = uuidWindowsToLinux(uuid);
 
@@ -505,7 +505,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, const UUID& uui
         sdp_list_free(responseList, nullptr);
         sdp_list_free(searchList, nullptr);
         sdp_list_free(attridList, nullptr);
-        return ret;
+        return {};
     }
 
     // Iterate through each of the service records

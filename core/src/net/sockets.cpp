@@ -26,7 +26,7 @@ using socklen_t = int;
 #include <netinet/in.h> // sockaddr
 #include <sys/socket.h> // Socket definitions
 #include <unistd.h> // close()
-#include <netdb.h> // addrinfo/getaddrinfo() related indentifiers
+#include <netdb.h> // addrinfo/getaddrinfo() related identifiers
 
 // Winsock-specific definitions and their Berkeley equivalents
 constexpr auto GetAddrInfo = getaddrinfo;
@@ -49,7 +49,7 @@ constexpr auto BTHPROTO_L2CAP = BTPROTO_L2CAP;
 #include "util/formatcompat.hpp"
 #include "util/strings.hpp"
 
-int Sockets::init() {
+System::MayFail<> Sockets::init() {
 #ifdef _WIN32
     // Start Winsock on Windows
     // WSAStartup() directly returns the error code, making it inconsistent with the rest of the socket APIs.
@@ -57,20 +57,20 @@ int Sockets::init() {
     WSADATA wsaData;
     int startupRet = WSAStartup(MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
     System::setLastErr(startupRet);
-    if (startupRet != NO_ERROR) return SOCKET_ERROR;
+    if (startupRet != NO_ERROR) return false;
 #endif
 
     return Async::init();
 }
 
-int Sockets::cleanup() {
+System::MayFail<> Sockets::cleanup() {
     Async::cleanup();
 
 #ifdef _WIN32
     // Cleanup Winsock on Windows
-    return WSACleanup();
+    return WSACleanup() == NO_ERROR;
 #else
-    return NO_ERROR;
+    return true;
 #endif
 }
 
@@ -103,23 +103,20 @@ static SOCKET bluetoothSocket(Sockets::ConnectionType type) {
     return socket(AF_BTH, sockType, sockProto);
 }
 
-static int connectSocket(SOCKET s,
-                         Async::AsyncData& asyncData,
-                         const sockaddr* addr,
-                         socklen_t addrLen,
-                         [[maybe_unused]] bool isDgram) {
+static System::MayFail<> connectSocket(SOCKET s, Async::AsyncData& asyncData, const sockaddr* addr, socklen_t addrLen,
+                                       [[maybe_unused]] bool isDgram) {
     // Add the socket to the async queue
-    if (Async::add(s) == SOCKET_ERROR) return SOCKET_ERROR;
+    if (!Async::add(s)) return false;
 
-    auto connectSocket = [&] { return connect(s, addr, addrLen); };
+    auto connectSocket = [&] { return connect(s, addr, addrLen) == NO_ERROR; };
 
 #ifdef _WIN32
     if (isDgram) {
-        int connectRet = connectSocket();
+        bool connectRet = connectSocket();
 
-        if (connectRet == NO_ERROR) {
+        if (connectRet) {
             BOOL postRet = PostQueuedCompletionStatus(Async::getCompletionPort(), 0, 0, &asyncData.overlapped);
-            return (postRet) ? NO_ERROR : SOCKET_ERROR;
+            return static_cast<bool>(postRet);
         }
         return connectRet;
     }
@@ -128,7 +125,7 @@ static int connectSocket(SOCKET s,
     int addrSize = (addr->sa_family == AF_BTH) ? sizeof(SOCKADDR_BTH) : sizeof(sockaddr_storage);
 
     // ConnectEx() requires a socket to be initially bound.
-    if (bind(s, reinterpret_cast<sockaddr*>(&addrBind), addrSize) == SOCKET_ERROR) return SOCKET_ERROR;
+    if (bind(s, reinterpret_cast<sockaddr*>(&addrBind), addrSize) == SOCKET_ERROR) return false;
 
     LPFN_CONNECTEX connectExPtr = nullptr;
 
@@ -144,19 +141,19 @@ static int connectSocket(SOCKET s,
                                nullptr,
                                nullptr);
 
-    if (loadSuccess == SOCKET_ERROR) return SOCKET_ERROR;
+    if (loadSuccess == SOCKET_ERROR) return false;
 
     DWORD bytesSent;
     if (!connectExPtr(s, addr, addrLen, nullptr, 0, &bytesSent, &asyncData.overlapped))
-        if (System::isFatal(WSAGetLastError())) return SOCKET_ERROR;
+        if (System::isFatal(WSAGetLastError())) return false;
 
-    return NO_ERROR;
+    return true;
 #else
     return connectSocket();
 #endif
 }
 
-Sockets::Socket Sockets::createClientSocket(const DeviceData& data, Async::AsyncData& asyncData) {
+System::MayFail<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data, Async::AsyncData& asyncData) {
     using enum ConnectionType;
 
     if (connectionTypeIsIP(data.type)) {
@@ -184,20 +181,22 @@ Sockets::Socket Sockets::createClientSocket(const DeviceData& data, Async::Async
             // Connect to the server
             // The cast to `socklen_t` is only needed on Windows because `ai_addrlen` is of type `size_t`.
             int connectResult = SOCKET_ERROR;
-            if (ret) connectResult = connectSocket(ret.get(), asyncData, addr->ai_addr, static_cast<socklen_t>(addr->ai_addrlen), isUDP);
+            if (ret) connectResult = connectSocket(ret.get(), asyncData, addr->ai_addr,
+                                                   static_cast<socklen_t>(addr->ai_addrlen), isUDP);
+
             FreeAddrInfo(addr); // Release the resources
 
-            if ((connectResult == SOCKET_ERROR) && System::isFatal(System::getLastErr())) return Socket(INVALID_SOCKET);
+            if ((connectResult == SOCKET_ERROR) && System::isFatal(System::getLastErr())) return {};
             return ret;
         } else {
             // The last error can be set to the getaddrinfo() error, the error-checking functions will handle it
             if (gaiResult != EAI_SYSTEM) System::setLastErr(gaiResult);
-            return Socket{ INVALID_SOCKET };
+            return {};
         }
     } else if (connectionTypeIsBT(data.type)) {
         // Set up Bluetooth socket
         Socket ret{ bluetoothSocket(data.type) };
-        if (!ret) return Socket{ INVALID_SOCKET };
+        if (!ret) return {};
 
         // Set up server address structure
         socklen_t addrSize;
@@ -231,15 +230,17 @@ Sockets::Socket Sockets::createClientSocket(const DeviceData& data, Async::Async
         }
 #endif
 
+        bool isDgram = (data.type == L2CAPDgram);
+
         // Connect, then check if connection failed
-        if (connectSocket(ret.get(), asyncData, reinterpret_cast<sockaddr*>(&btAddr), addrSize, data.type == L2CAPDgram) == SOCKET_ERROR)
-            if (System::isFatal(System::getLastErr())) return Socket{ INVALID_SOCKET };
+        if (!connectSocket(ret.get(), asyncData, reinterpret_cast<sockaddr*>(&btAddr), addrSize, isDgram))
+            return {};
 
         return ret;
     } else {
         // None type
         System::setLastErr(WSAEINVAL);
-        return Socket{ INVALID_SOCKET };
+        return {};
     }
 }
 
@@ -260,10 +261,14 @@ void Sockets::closeSocket(SOCKET sockfd) {
     System::setLastErr(lastErrBackup);
 }
 
-int Sockets::sendData(SOCKET sockfd, std::string_view data) {
+System::MayFail<int> Sockets::sendData(SOCKET sockfd, std::string_view data) {
     // Send data through socket, static_cast the string size to avoid MSVC warning C4267
     // ('var': conversion from 'size_t' to 'type', possible loss of data)
-    return send(sockfd, data.data(), static_cast<int>(data.size()), MSG_NOSIGNAL);
+    int sendRet = send(sockfd, data.data(), static_cast<int>(data.size()), MSG_NOSIGNAL);
+
+    if (sendRet == SOCKET_ERROR) return {};
+
+    return sendRet;
 
     // Note: Typically, sendto() and recvfrom() are used with a UDP connection.
     // However, these require a sockaddr parameter, which becomes hard to get with getaddrinfo().
@@ -275,14 +280,17 @@ int Sockets::sendData(SOCKET sockfd, std::string_view data) {
     // This is why connect() is used with UDP.
 }
 
-int Sockets::recvData(SOCKET sockfd, std::string& data) {
+System::MayFail<int> Sockets::recvData(SOCKET sockfd, std::string& data) {
     char buf[1024]{};
 
     // Receive and check bytes received
     int ret = recv(sockfd, buf, static_cast<int>(std::ssize(buf)) - 1, MSG_NOSIGNAL);
-    if (ret != SOCKET_ERROR) {
+
+    if (ret == SOCKET_ERROR) {
+        return {};
+    } else {
         buf[ret] = '\0'; // Add a null char to the end of the buffer
         data = buf;
+        return ret;
     }
-    return ret;
 }
