@@ -24,6 +24,9 @@ namespace System {
     using ErrorCode = int;
 #endif
 
+    template <class T = void>
+    class MayFail;
+
     /// <summary>
     /// Get the last error code.
     /// </summary>
@@ -46,42 +49,57 @@ namespace System {
     /// </summary>
     /// <returns>The formatted string with code and description</returns>
     std::string formatLastErr();
+}
 
-    template <class T = void>
-    class MayFail {
-        static constexpr bool _isVoid = std::is_void_v<T>;
+template <class T>
+class System::MayFail {
+    static constexpr bool _isVoid = std::is_void_v<T>;
 
-        using Type = std::conditional_t<_isVoid, bool, T>;
-        using Optional = std::conditional_t<_isVoid, Type, std::optional<Type>>;
+    using Type = std::conditional_t<_isVoid, bool, T>;
+    using Optional = std::conditional_t<_isVoid, Type, std::optional<Type>>;
 
-        ErrorCode _errCode = NO_ERROR;
-        Optional _optVal{};
+    ErrorCode _errCode = NO_ERROR;
+    Optional _optVal{};
 
-        bool _nonFatal();
+    bool _nonFatal() const {
+        // Check if the code is actually an error
+        if (_errCode == NO_ERROR) return false;
 
-    public:
-        MayFail() : _errCode(getLastErr()) {}
+#ifdef _WIN32
+        // This error means an operation hasn't failed, it's still waiting.
+        // Tell the calling function that there's no error, and it should check back later.
+        if (_errCode == WSA_IO_PENDING) return false;
+#endif
 
-        template <class U>
-        MayFail(U&& value) : _optVal(std::forward<U>(value)) {}
+        // The error is fatal
+        return true;
+    }
 
-        ErrorCode error() const { return _errCode; }
+public:
+    MayFail() : _errCode(getLastErr()) {}
 
-        // TODO: Remove macro hack and duplicate accessors in C++23: https://stackoverflow.com/a/69486322
+    template <class U>
+    MayFail(U&& value) : _optVal(std::forward<U>(value)) {
+        if constexpr (_isVoid)
+            if (!value) _errCode = getLastErr();
+    }
+
+    ErrorCode error() const { return _errCode; }
+
+    // TODO: Remove macro hack and duplicate accessors in C++23: https://stackoverflow.com/a/69486322
 
 #define GET_VALUE if constexpr (_isVoid) return _optVal; \
             else return _optVal.value();
 
-        Type& operator*() { GET_VALUE }
+    Type& operator*() { GET_VALUE }
 
-        const Type& operator*() const { GET_VALUE }
+    const Type& operator*() const { GET_VALUE }
 
 #undef GET_VALUE
 
-        Type* operator->() { return &operator*(); }
+    Type* operator->() { return &operator*(); }
 
-        const Type* operator->() const { return &operator*(); }
+    const Type* operator->() const { return &operator*(); }
 
-        operator bool() const { return _optVal && _nonFatal(); }
-    };
-}
+    operator bool() const { return _optVal && _nonFatal(); }
+};
