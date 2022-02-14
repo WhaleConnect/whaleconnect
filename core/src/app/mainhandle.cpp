@@ -54,9 +54,6 @@ static void configImGui() {
         = style.TabRounding
         = (roundedCorners) ? 4.0f : 0.0f;
 
-    // Load font file
-    ImFontAtlas& fonts = *io.Fonts;
-
     // If the default font is used, the rest of this function can be skipped
     if (useDefaultFont) return;
 
@@ -65,7 +62,7 @@ static void configImGui() {
     // private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
     static const ImWchar ranges[] = { 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
     static const char* fontFile = "lib/unifont/unifont-14.0.01.ttf";
-    fonts.AddFontFromFileTTF(fontFile, fontSize, nullptr, ranges);
+    io.Fonts->AddFontFromFileTTF(fontFile, fontSize, nullptr, ranges);
 }
 
 bool MainHandler::initApp() {
