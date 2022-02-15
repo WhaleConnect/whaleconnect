@@ -80,8 +80,8 @@ public:
 
     template <class U>
     MayFail(U&& value) : _optVal(std::forward<U>(value)) {
-        if constexpr (_isVoid)
-            if (!value) _errCode = getLastErr();
+        // If the value is invalid, store the last error code for retrieval
+        if (!_optVal) _errCode = getLastErr();
     }
 
     ErrorCode error() const { return _errCode; }
