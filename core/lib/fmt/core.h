@@ -16,7 +16,7 @@
 #include <type_traits>
 
 // The fmt library version in the form major * 10000 + minor * 100 + patch.
-#define FMT_VERSION 80101
+#define FMT_VERSION 80102
 
 #if defined(__clang__) && !defined(__ibmxl__)
 #  define FMT_CLANG_VERSION (__clang_major__ * 100 + __clang_minor__)
@@ -390,7 +390,35 @@ template <typename T> inline auto convert_for_visit(T value) -> T {
 #endif
 #if !FMT_USE_INT128
 enum class int128_t {};
-enum class uint128_t {};
+class uint128_t {
+ private:
+  uint64_t lo_, hi_;
+  constexpr uint128_t(uint64_t hi, uint64_t lo) : lo_(lo), hi_(hi) {}
+
+ public:
+  constexpr uint128_t(uint64_t value = 0) : hi_(0), lo_(value) {}
+  explicit operator int() const { return lo_; }
+  explicit operator uint64_t() const { return lo_; }
+  friend auto operator==(const uint128_t& lhs, const uint128_t& rhs) -> bool {
+    return lhs.hi_ == rhs.hi_ && lhs.lo_ == rhs.lo_;
+  }
+  friend auto operator&(const uint128_t& lhs, const uint128_t& rhs)
+      -> uint128_t {
+    return {lhs.hi_ & rhs.hi_, lhs.lo_ & rhs.lo_};
+  }
+  friend auto operator-(const uint128_t& lhs, uint64_t rhs) -> uint128_t {
+    FMT_ASSERT(lhs.lo_ >= rhs, "");
+    return {lhs.hi_, lhs.lo_ - rhs};
+  }
+  auto operator>>(int shift) const -> uint128_t {
+    if (shift == 64) return {0, hi_};
+    return {hi_ >> shift, (hi_ << (64 - shift)) | (lo_ >> shift)};
+  }
+  auto operator<<(int shift) const -> uint128_t {
+    if (shift == 64) return {lo_, 0};
+    return {hi_ << shift | (lo_ >> (64 - shift)), (lo_ << shift)};
+  }
+};
 // Reduce template instantiations.
 template <typename T> inline auto convert_for_visit(T) -> monostate {
   return {};
@@ -1431,7 +1459,8 @@ template <typename Context> struct arg_mapper {
                       !std::is_const<remove_reference_t<T>>::value ||
                       has_fallback_formatter<U, char_type>::value> {};
 
-#if (FMT_MSC_VER != 0 && FMT_MSC_VER < 1910) || FMT_ICC_VERSION != 0
+#if (FMT_MSC_VER != 0 && FMT_MSC_VER < 1910) || FMT_ICC_VERSION != 0 || \
+    FMT_NVCC != 0
   // Workaround a bug in MSVC and Intel (Issue 2746).
   template <typename T> FMT_CONSTEXPR FMT_INLINE auto do_map(T&& val) -> T& {
     return val;
@@ -2282,7 +2311,7 @@ FMT_CONSTEXPR auto parse_align(const Char* begin, const Char* end,
   FMT_ASSERT(begin != end, "");
   auto align = align::none;
   auto p = begin + code_point_length(begin);
-  if (p >= end) p = begin;
+  if (end - p <= 0) p = begin;
   for (;;) {
     switch (to_ascii(*p)) {
     case '<':
@@ -2819,7 +2848,8 @@ template <typename Handler> class specs_checker : public Handler {
   FMT_CONSTEXPR void on_sign(sign_t s) {
     require_numeric_argument();
     if (is_integral_type(arg_type_) && arg_type_ != type::int_type &&
-        arg_type_ != type::long_long_type && arg_type_ != type::char_type) {
+        arg_type_ != type::long_long_type && arg_type_ != type::int128_type &&
+        arg_type_ != type::char_type) {
       this->on_error("format specifier requires signed argument");
     }
     Handler::on_sign(s);
@@ -3026,6 +3056,27 @@ struct formatter<T, Char,
   FMT_CONSTEXPR auto format(const T& val, FormatContext& ctx) const
       -> decltype(ctx.out());
 };
+
+#define FMT_FORMAT_AS(Type, Base)                                        \
+  template <typename Char>                                               \
+  struct formatter<Type, Char> : formatter<Base, Char> {                 \
+    template <typename FormatContext>                                    \
+    auto format(Type const& val, FormatContext& ctx) const               \
+        -> decltype(ctx.out()) {                                         \
+      return formatter<Base, Char>::format(static_cast<Base>(val), ctx); \
+    }                                                                    \
+  }
+
+FMT_FORMAT_AS(signed char, int);
+FMT_FORMAT_AS(unsigned char, unsigned);
+FMT_FORMAT_AS(short, int);
+FMT_FORMAT_AS(unsigned short, unsigned);
+FMT_FORMAT_AS(long, long long);
+FMT_FORMAT_AS(unsigned long, unsigned long long);
+FMT_FORMAT_AS(Char*, const Char*);
+FMT_FORMAT_AS(std::basic_string<Char>, basic_string_view<Char>);
+FMT_FORMAT_AS(std::nullptr_t, const void*);
+FMT_FORMAT_AS(detail::std_string_view<Char>, basic_string_view<Char>);
 
 template <typename Char> struct basic_runtime { basic_string_view<Char> str; };
 
