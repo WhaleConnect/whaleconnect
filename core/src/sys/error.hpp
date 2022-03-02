@@ -76,7 +76,9 @@ class System::MayFail {
     }
 
 public:
-    MayFail() : _errCode(getLastErr()) {}
+    MayFail() = default;
+
+    MayFail(std::nullopt_t) : _errCode(getLastErr()) {}
 
     template <class U>
     MayFail(U&& value) : _optVal(std::forward<U>(value)) {

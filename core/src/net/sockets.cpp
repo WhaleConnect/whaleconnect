@@ -187,17 +187,17 @@ System::MayFail<Sockets::Socket> Sockets::createClientSocket(const DeviceData& d
 
             FreeAddrInfo(addr); // Release the resources
 
-            if (!connectResult) return {};
+            if (!connectResult) return std::nullopt;
             return ret;
         } else {
             // The last error can be set to the getaddrinfo() error, the error-checking functions will handle it
             if (gaiResult != EAI_SYSTEM) System::setLastErr(gaiResult);
-            return {};
+            return std::nullopt;
         }
     } else if (connectionTypeIsBT(data.type)) {
         // Set up Bluetooth socket
         Socket ret{ bluetoothSocket(data.type) };
-        if (!ret) return {};
+        if (!ret) return std::nullopt;
 
         // Set up server address structure
         socklen_t addrSize;
@@ -235,13 +235,13 @@ System::MayFail<Sockets::Socket> Sockets::createClientSocket(const DeviceData& d
 
         // Connect, then check if connection failed
         if (!connectSocket(ret.get(), asyncData, reinterpret_cast<sockaddr*>(&btAddr), addrSize, isDgram))
-            return {};
+            return std::nullopt;
 
         return ret;
     } else {
         // None type
         System::setLastErr(WSAEINVAL);
-        return {};
+        return std::nullopt;
     }
 }
 
@@ -267,7 +267,7 @@ System::MayFail<int> Sockets::sendData(SOCKET sockfd, std::string_view data) {
     // ('var': conversion from 'size_t' to 'type', possible loss of data)
     int sendRet = send(sockfd, data.data(), static_cast<int>(data.size()), MSG_NOSIGNAL);
 
-    if (sendRet == SOCKET_ERROR) return {};
+    if (sendRet == SOCKET_ERROR) return std::nullopt;
 
     return sendRet;
 
@@ -288,7 +288,7 @@ System::MayFail<int> Sockets::recvData(SOCKET sockfd, std::string& data) {
     int ret = recv(sockfd, buf, static_cast<int>(std::ssize(buf)) - 1, MSG_NOSIGNAL);
 
     if (ret == SOCKET_ERROR) {
-        return {};
+        return std::nullopt;
     } else {
         buf[ret] = '\0'; // Add a null char to the end of the buffer
         data = buf;

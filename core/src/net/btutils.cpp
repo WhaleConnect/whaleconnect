@@ -98,7 +98,7 @@ System::MayFail<Sockets::DeviceDataList> BTUtils::getPaired() {
             return deviceList;
         } else {
             // Other errors are fatal, return a null value.
-            return {};
+            return std::nullopt;
         }
     }
 
@@ -121,10 +121,10 @@ System::MayFail<Sockets::DeviceDataList> BTUtils::getPaired() {
                                                     "/",
                                                     "org.freedesktop.DBus.ObjectManager",
                                                     "GetManagedObjects");
-    if (!msg) return {};
+    if (!msg) return std::nullopt;
 
     DBusMessage* response = dbus_connection_send_with_reply_and_block(conn, msg, DBUS_TIMEOUT_USE_DEFAULT, nullptr);
-    if (!response) return {};
+    if (!response) return std::nullopt;
 
     DBusMessageIter responseIter;
     dbus_message_iter_init(response, &responseIter);
@@ -395,7 +395,7 @@ System::MayFail<BTUtils::SDPResultList> BTUtils::sdpLookup(std::string_view addr
 
     // Start the lookup
     HANDLE hLookup = nullptr;
-    if (WSALookupServiceBegin(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) return {};
+    if (WSALookupServiceBegin(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) return std::nullopt;
 
     // Continue the lookup
     DWORD size = 2048;
@@ -486,7 +486,7 @@ System::MayFail<BTUtils::SDPResultList> BTUtils::sdpLookup(std::string_view addr
     // We can't directly pass BDADDR_ANY to sdp_connect() because a "taking the address of an rvalue" error is thrown.
     bdaddr_t addrAny{};
     sdp_session_t* session = sdp_connect(&addrAny, &deviceAddr, SDP_RETRY_IF_BUSY);
-    if (!session) return {}; // Failed to connect to SDP session
+    if (!session) return std::nullopt; // Failed to connect to SDP session
 
     uuid_t serviceUUID = uuidWindowsToLinux(uuid);
 
@@ -505,7 +505,7 @@ System::MayFail<BTUtils::SDPResultList> BTUtils::sdpLookup(std::string_view addr
         sdp_list_free(responseList, nullptr);
         sdp_list_free(searchList, nullptr);
         sdp_list_free(attridList, nullptr);
-        return {};
+        return std::nullopt;
     }
 
     // Iterate through each of the service records
