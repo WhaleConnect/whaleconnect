@@ -314,6 +314,8 @@ template <typename T>
 using remove_cvref_t = typename std::remove_cv<remove_reference_t<T>>::type;
 template <typename T> struct type_identity { using type = T; };
 template <typename T> using type_identity_t = typename type_identity<T>::type;
+template <typename T>
+using underlying_t = typename std::underlying_type<T>::type;
 
 struct monostate {
   constexpr monostate() {}
@@ -380,8 +382,8 @@ template <typename T> struct std_string_view {};
 #elif defined(__SIZEOF_INT128__) && !FMT_NVCC && \
     !(FMT_CLANG_VERSION && FMT_MSC_VER)
 #  define FMT_USE_INT128 1
-using int128_t = __int128_t;
-using uint128_t = __uint128_t;
+using int128_opt = __int128_t;  // An optional 128-bit integer.
+using uint128_opt = __uint128_t;
 template <typename T> inline auto convert_for_visit(T value) -> T {
   return value;
 }
@@ -389,40 +391,10 @@ template <typename T> inline auto convert_for_visit(T value) -> T {
 #  define FMT_USE_INT128 0
 #endif
 #if !FMT_USE_INT128
-enum class int128_t {};
-class uint128_t {
- private:
-  uint64_t lo_, hi_;
-  constexpr uint128_t(uint64_t hi, uint64_t lo) : lo_(lo), hi_(hi) {}
-
- public:
-  constexpr uint128_t(uint64_t value = 0) : hi_(0), lo_(value) {}
-  explicit operator int() const { return lo_; }
-  explicit operator uint64_t() const { return lo_; }
-  friend auto operator==(const uint128_t& lhs, const uint128_t& rhs) -> bool {
-    return lhs.hi_ == rhs.hi_ && lhs.lo_ == rhs.lo_;
-  }
-  friend auto operator&(const uint128_t& lhs, const uint128_t& rhs)
-      -> uint128_t {
-    return {lhs.hi_ & rhs.hi_, lhs.lo_ & rhs.lo_};
-  }
-  friend auto operator-(const uint128_t& lhs, uint64_t rhs) -> uint128_t {
-    FMT_ASSERT(lhs.lo_ >= rhs, "");
-    return {lhs.hi_, lhs.lo_ - rhs};
-  }
-  auto operator>>(int shift) const -> uint128_t {
-    if (shift == 64) return {0, hi_};
-    return {hi_ >> shift, (hi_ << (64 - shift)) | (lo_ >> shift)};
-  }
-  auto operator<<(int shift) const -> uint128_t {
-    if (shift == 64) return {lo_, 0};
-    return {hi_ << shift | (lo_ >> (64 - shift)), (lo_ << shift)};
-  }
-};
+enum class int128_opt {};
+enum class uint128_opt {};
 // Reduce template instantiations.
-template <typename T> inline auto convert_for_visit(T) -> monostate {
-  return {};
-}
+template <typename T> auto convert_for_visit(T) -> monostate { return {}; }
 #endif
 
 // Casts a nonnegative integer to unsigned.
@@ -1168,8 +1140,8 @@ FMT_TYPE_CONSTANT(int, int_type);
 FMT_TYPE_CONSTANT(unsigned, uint_type);
 FMT_TYPE_CONSTANT(long long, long_long_type);
 FMT_TYPE_CONSTANT(unsigned long long, ulong_long_type);
-FMT_TYPE_CONSTANT(int128_t, int128_type);
-FMT_TYPE_CONSTANT(uint128_t, uint128_type);
+FMT_TYPE_CONSTANT(int128_opt, int128_type);
+FMT_TYPE_CONSTANT(uint128_opt, uint128_type);
 FMT_TYPE_CONSTANT(bool, bool_type);
 FMT_TYPE_CONSTANT(Char, char_type);
 FMT_TYPE_CONSTANT(float, float_type);
@@ -1219,8 +1191,8 @@ template <typename Context> class value {
     unsigned uint_value;
     long long long_long_value;
     unsigned long long ulong_long_value;
-    int128_t int128_value;
-    uint128_t uint128_value;
+    int128_opt int128_value;
+    uint128_opt uint128_value;
     bool bool_value;
     char_type char_value;
     float float_value;
@@ -1237,8 +1209,8 @@ template <typename Context> class value {
   constexpr FMT_INLINE value(unsigned val) : uint_value(val) {}
   constexpr FMT_INLINE value(long long val) : long_long_value(val) {}
   constexpr FMT_INLINE value(unsigned long long val) : ulong_long_value(val) {}
-  FMT_INLINE value(int128_t val) : int128_value(val) {}
-  FMT_INLINE value(uint128_t val) : uint128_value(val) {}
+  FMT_INLINE value(int128_opt val) : int128_value(val) {}
+  FMT_INLINE value(uint128_opt val) : uint128_value(val) {}
   constexpr FMT_INLINE value(float val) : float_value(val) {}
   constexpr FMT_INLINE value(double val) : double_value(val) {}
   FMT_INLINE value(long double val) : long_double_value(val) {}
@@ -1321,8 +1293,12 @@ template <typename Context> struct arg_mapper {
       -> unsigned long long {
     return val;
   }
-  FMT_CONSTEXPR FMT_INLINE auto map(int128_t val) -> int128_t { return val; }
-  FMT_CONSTEXPR FMT_INLINE auto map(uint128_t val) -> uint128_t { return val; }
+  FMT_CONSTEXPR FMT_INLINE auto map(int128_opt val) -> int128_opt {
+    return val;
+  }
+  FMT_CONSTEXPR FMT_INLINE auto map(uint128_opt val) -> uint128_opt {
+    return val;
+  }
   FMT_CONSTEXPR FMT_INLINE auto map(bool val) -> bool { return val; }
 
   template <typename T, FMT_ENABLE_IF(std::is_same<T, char>::value ||
@@ -1442,8 +1418,8 @@ template <typename Context> struct arg_mapper {
                 !has_fallback_formatter<T, char_type>::value)>
   FMT_CONSTEXPR FMT_INLINE auto map(const T& val)
       -> decltype(std::declval<arg_mapper>().map(
-          static_cast<typename std::underlying_type<T>::type>(val))) {
-    return map(static_cast<typename std::underlying_type<T>::type>(val));
+          static_cast<underlying_t<T>>(val))) {
+    return map(static_cast<underlying_t<T>>(val));
   }
 
   template <typename T, typename U = decltype(format_as(T())),
@@ -2240,13 +2216,12 @@ template <typename Char> constexpr bool is_ascii_letter(Char c) {
 
 // Converts a character to ASCII. Returns a number > 127 on conversion failure.
 template <typename Char, FMT_ENABLE_IF(std::is_integral<Char>::value)>
-constexpr auto to_ascii(Char value) -> Char {
-  return value;
+constexpr auto to_ascii(Char c) -> Char {
+  return c;
 }
 template <typename Char, FMT_ENABLE_IF(std::is_enum<Char>::value)>
-constexpr auto to_ascii(Char value) ->
-    typename std::underlying_type<Char>::type {
-  return value;
+constexpr auto to_ascii(Char c) -> underlying_t<Char> {
+  return c;
 }
 
 template <typename Char>
@@ -2753,7 +2728,6 @@ struct float_specs {
   bool upper : 1;
   bool locale : 1;
   bool binary32 : 1;
-  bool fallback : 1;
   bool showpoint : 1;
 };
 
