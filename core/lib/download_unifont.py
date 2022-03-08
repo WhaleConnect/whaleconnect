@@ -23,7 +23,7 @@ def main():
 
     # Download the TTF
     print("Downloading TTF...")
-    download_file("font/precompiled/unifont-14.0.01.ttf", normalize_crlf=False)
+    download_file("font/precompiled/unifont-14.0.02.ttf", normalize_crlf=False)
 
     # Download license files
     print("Downloading licenses...")
