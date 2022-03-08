@@ -63,16 +63,16 @@ class System::MayFail {
 
     bool _nonFatal() const {
         // Check if the code is actually an error
-        if (_errCode == NO_ERROR) return false;
+        if (_errCode == NO_ERROR) return true;
 
 #ifdef _WIN32
         // This error means an operation hasn't failed, it's still waiting.
         // Tell the calling function that there's no error, and it should check back later.
-        if (_errCode == WSA_IO_PENDING) return false;
+        if (_errCode == WSA_IO_PENDING) return true;
 #endif
 
         // The error is fatal
-        return true;
+        return false;
     }
 
 public:

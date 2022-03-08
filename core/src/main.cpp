@@ -39,7 +39,7 @@ int MAIN_FUNC(MAIN_ARGS) {
     Console errorOutput;
 
     // Initialize APIs for sockets and Bluetooth
-    if (BTUtils::init() != NO_ERROR) errorOutput.addError("Initialization failed - " + System::formatLastErr());
+    if (!BTUtils::init()) errorOutput.addError("Initialization failed - " + System::formatLastErr());
 
     // Main loop
     while (MainHandler::isActive()) {
@@ -326,7 +326,7 @@ static void drawBTConnectionTab() {
     // Get the paired devices when this tab is first clicked or if the "Refresh" button is clicked
 
     static bool devicesListed = false; // If device enumeration has completed at least once
-    static System::MayFail<Sockets::DeviceDataList> pairedDevices; // Vector of paired devices
+    static System::MayFail<Sockets::DeviceDataList> pairedDevices = std::nullopt; // Vector of paired devices
     static std::string errStr; // Error string that occurred during device enumeration (cached)
 
     if ((ImGui::Button("Refresh List") || !devicesListed) && btInitDone) {
@@ -338,7 +338,7 @@ static void drawBTConnectionTab() {
         // of getting a wrong error value since every socket operation uses getLastErr() as a means of error checking.
         // If this string were to be reevaluated every frame, it might eventually pick up a wrong or misleading
         // getLastErr() value caused by some other failed action.
-        if (!pairedDevices) errStr = "[ERROR] " + System::formatLastErr();
+        if (!pairedDevices) errStr = System::formatLastErr();
     }
 
     static bool useSDP = true; // If available connections on devices are found using SDP
@@ -388,7 +388,7 @@ static void drawBTConnectionTab() {
         }
     } else {
         // Error occurred
-        ImGui::TextWrapped("Error: %s", errStr.c_str());
+        ImGui::TextWrapped("Error %s", errStr.c_str());
     }
 
     ImGui::EndDisabled();

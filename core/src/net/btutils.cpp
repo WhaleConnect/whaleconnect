@@ -35,8 +35,7 @@ System::MayFail<> BTUtils::init() {
 
 #ifdef _WIN32
     // Initialize Winsock
-    int ret = Sockets::init();
-    wsInitialized = (ret == NO_ERROR);
+    wsInitialized = Sockets::init();
     return wsInitialized;
 #else
     // Connect to the system D-Bus
@@ -55,7 +54,7 @@ void BTUtils::cleanup() {
     if (!initialized()) return;
 
 #ifdef _WIN32
-    if (Sockets::cleanup() == NO_ERROR) wsInitialized = false;
+    if (Sockets::cleanup()) wsInitialized = false;
 #else
     // Shut down the connection
     dbus_connection_unref(conn);
@@ -94,7 +93,6 @@ System::MayFail<Sockets::DeviceDataList> BTUtils::getPaired() {
     if (!foundDevice) {
         if (System::getLastErr() == ERROR_NO_MORE_ITEMS) {
             // This indicates that no Bluetooth devices are paired and is not considered a failure.
-            System::setLastErr(NO_ERROR);
             return deviceList;
         } else {
             // Other errors are fatal, return a null value.
