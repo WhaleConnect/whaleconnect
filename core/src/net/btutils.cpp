@@ -262,7 +262,7 @@ static std::vector<SDP_ELEMENT_DATA> getSDPListData(SDP_ELEMENT_DATA& element) {
     ULONG length = element.data.sequence.length;
 
     HBLUETOOTH_CONTAINER_ELEMENT iter = nullptr;
-    while (BluetoothSdpGetContainerElementData(value, length, &iter, &element) == ERROR_SUCCESS) ret.push_back(element);
+    while (BluetoothSdpGetContainerElementData(value, length, &iter, &element) == NO_ERROR) ret.push_back(element);
 
     return ret;
 }
@@ -280,7 +280,7 @@ static std::vector<SDP_ELEMENT_DATA> getSDPListData(const LPBLOB blob, USHORT at
     SDP_ELEMENT_DATA element{};
     DWORD getValueRet = BluetoothSdpGetAttributeValue(blob->pBlobData, blob->cbSize, attrib, &element);
 
-    if (getValueRet != ERROR_SUCCESS) return ret;
+    if (getValueRet != NO_ERROR) return ret;
     return getSDPListData(element);
 }
 #else
@@ -412,9 +412,9 @@ System::MayFail<BTUtils::SDPResultList> BTUtils::sdpLookup(std::string_view addr
 
         // Protocol descriptors
         auto protoList = getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_PROTOCOL_DESCRIPTOR_LIST);
-        if (protoList.empty()) continue;
+        if (protoList.empty()) continue; // Contains the port, which is required for connecting
 
-        // Iterate through the list of protocol descriptors (includes UUIDs + port)
+        // Iterate through the list of protocol descriptors (UUIDs + port)
         for (auto& element : protoList) {
             uint16_t proto = 0;
             for (const auto& [_, specificType, data] : getSDPListData(element)) {
@@ -437,9 +437,6 @@ System::MayFail<BTUtils::SDPResultList> BTUtils::sdpLookup(std::string_view addr
 
         // Service class UUIDs
         auto svClassList = getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_CLASS_ID_LIST);
-        if (svClassList.empty()) continue;
-
-        // Iterate through the list of service class IDs
         for (const auto& [_, specificType, data] : svClassList) {
             switch (specificType) {
             case SDP_ST_UUID16:
@@ -455,9 +452,6 @@ System::MayFail<BTUtils::SDPResultList> BTUtils::sdpLookup(std::string_view addr
 
         // Profile descriptors
         auto profileList = getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_PROFILE_DESCRIPTOR_LIST);
-        if (profileList.empty()) continue;
-
-        // Iterate through the list of profile descriptors
         for (auto& element : profileList) {
             // Construct a profile descriptor and populate it with the data in the nested container
             ProfileDesc pd;
@@ -520,7 +514,7 @@ System::MayFail<BTUtils::SDPResultList> BTUtils::sdpLookup(std::string_view addr
                 // Iterate through each protocol list of the protocol sequence
                 for (sdp_list_t* pds = static_cast<sdp_list_t*>(p->data); pds; pds = pds->next) {
                     // Check protocol attributes
-                    int proto = 0;
+                    uint16_t proto = 0;
                     for (sdp_data_t* d = static_cast<sdp_data_t*>(pds->data); d; d = d->next) {
                         switch (d->dtd) {
                         case SDP_UUID16:
@@ -554,8 +548,6 @@ System::MayFail<BTUtils::SDPResultList> BTUtils::sdpLookup(std::string_view addr
                 result.serviceUUIDs.push_back(uuidLinuxToWindows(*static_cast<uuid_t*>(iter->data)));
 
             sdp_list_free(svClassList, nullptr);
-        } else {
-            continue;
         }
 
         // Get the list of profile descriptors
@@ -571,6 +563,8 @@ System::MayFail<BTUtils::SDPResultList> BTUtils::sdpLookup(std::string_view addr
 
                 result.profileDescs.push_back(pd);
             }
+
+            sdp_list_free(profileDescList, nullptr);
         }
 
         // Allocate 1 kb for name/desc strings
