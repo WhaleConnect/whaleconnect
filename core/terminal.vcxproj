@@ -131,7 +131,6 @@
     <ClInclude Include="src\app\mainhandle.hpp" />
     <ClInclude Include="src\app\settings.hpp" />
     <ClInclude Include="src\async\async.hpp" />
-    <ClInclude Include="src\async\asyncfunction.hpp" />
     <ClInclude Include="src\async\task.hpp" />
     <ClInclude Include="src\gui\connwindowlist.hpp" />
     <ClInclude Include="src\net\btutils.hpp" />

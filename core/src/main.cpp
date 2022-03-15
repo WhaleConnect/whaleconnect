@@ -2,13 +2,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <map>
+#include <future>
+#include <chrono> // std::chrono
 #include <iterator> // std::back_inserter()
 #include <string_view>
+#include <system_error> // std::system_error
 
 #include "app/settings.hpp"
 #include "app/mainhandle.hpp"
 #include "async/async.hpp"
-#include "async/asyncfunction.hpp"
 #include "gui/console.hpp"
 #include "gui/connwindowlist.hpp"
 #include "net/btutils.hpp"
@@ -251,11 +253,16 @@ static void beginChildWithSpacing(bool spacing, bool border) {
 /// <summary>
 /// Display the entries from an SDP lookup (with buttons to connect to each) in a tree format.
 /// </summary>
-/// <param name="list">The SDP lookup list to display</param>
+/// <param name="list">The SDP lookup result object to display</param>
 /// <param name="selected">The DeviceData instance used as context for making a connection</param>
-static void drawSDPList(const BTUtils::SDPResultList& list, const Sockets::DeviceData& selected) {
+static void drawSDPList(const System::MayFail<BTUtils::SDPResultList>& list, const Sockets::DeviceData& selected) {
+    if (!list) {
+        ImGui::Text("Error %s", System::formatErr(list.error()).c_str());
+        return;
+    }
+
     // If no SDP results were found, display a message and exit
-    if (list.empty()) {
+    if (list->empty()) {
         ImGui::Text("No SDP results found for \"%s\".", selected.name.c_str());
         return;
     }
@@ -264,7 +271,7 @@ static void drawSDPList(const BTUtils::SDPResultList& list, const Sockets::Devic
 
     // ID to use in case multiple services have the same name
     unsigned int id = 0;
-    for (const auto& [protos, services, profiles, port, name, desc] : list) {
+    for (const auto& [protos, services, profiles, port, name, desc] : *list) {
         const char* serviceName = (name.empty()) ? "Unnamed service" : name.c_str();
 
         ImGui::PushID(id++); // Push the ID, then increment it
@@ -313,7 +320,7 @@ static void drawBTConnectionTab() {
     if (!ImGui::BeginTabItem("Bluetooth")) return;
 
     bool btInitDone = BTUtils::initialized(); // If Bluetooth initialization completed
-    static bool sdpRunning = false; // If the SDP inquiry is still running
+    static enum class SDPStatus { NotStarted, Started, Error, Done } sdpStatus = SDPStatus::NotStarted;
 
     // Check if the application's sockets are initialized
     if (!btInitDone) {
@@ -321,29 +328,21 @@ static void drawBTConnectionTab() {
         ImGui::Spacing();
     }
 
-    ImGui::BeginDisabled(!btInitDone || sdpRunning);
+    ImGui::BeginDisabled(!btInitDone || (sdpStatus == SDPStatus::Started));
 
     // Get the paired devices when this tab is first clicked or if the "Refresh" button is clicked
 
     static bool devicesListed = false; // If device enumeration has completed at least once
     static System::MayFail<Sockets::DeviceDataList> pairedDevices = std::nullopt; // Vector of paired devices
-    static std::string errStr; // Error string that occurred during device enumeration (cached)
 
     if ((ImGui::Button("Refresh List") || !devicesListed) && btInitDone) {
         devicesListed = true;
         pairedDevices = BTUtils::getPaired();
-
-        // Set the error string if the operation failed
-        // Not only does having a cache prevent extra operations from running each frame, but it minimizes the chances
-        // of getting a wrong error value since every socket operation uses getLastErr() as a means of error checking.
-        // If this string were to be reevaluated every frame, it might eventually pick up a wrong or misleading
-        // getLastErr() value caused by some other failed action.
-        if (!pairedDevices) errStr = System::formatLastErr();
     }
 
     static bool useSDP = true; // If available connections on devices are found using SDP
     static Sockets::DeviceData selected; // The device selected in the menu
-    static AsyncFunction<System::MayFail<BTUtils::SDPResultList>> sdpInq; // Asynchronous SDP inquiry
+    static std::future<System::MayFail<BTUtils::SDPResultList>> sdpInq; // Asynchronous SDP inquiry
     static bool deviceSelected = false; // If the user interacted with the device menu at least once
 
     if (pairedDevices) {
@@ -383,30 +382,46 @@ static void drawBTConnectionTab() {
             if (drawPairedDevicesList(*pairedDevices, showAddrs, selected)) {
                 deviceSelected = true;
 
-                if (useSDP) sdpInq.run(BTUtils::sdpLookup, selected.address, selectedUUID, flushSDPCache);
+                if (useSDP) {
+                    try {
+                        sdpInq = std::async(std::launch::async, BTUtils::sdpLookup, selected.address, selectedUUID,
+                                            flushSDPCache);
+                        sdpStatus = SDPStatus::Started;
+                    } catch (const std::system_error&) {
+                        sdpStatus = SDPStatus::Error;
+                    }
+                }
             }
         }
     } else {
         // Error occurred
-        ImGui::TextWrapped("Error %s", errStr.c_str());
+        ImGui::TextWrapped("Error %s", System::formatErr(pairedDevices.error()).c_str());
     }
 
     ImGui::EndDisabled();
 
+    static System::MayFail<BTUtils::SDPResultList> sdpResults; // Result list from SDP search
+
+    // Check if the future is ready
+    using namespace std::literals;
+    if (sdpInq.valid() && (sdpInq.wait_for(0s) == std::future_status::ready)) {
+        sdpStatus = SDPStatus::Done;
+        sdpResults = sdpInq.get();
+    }
+
     if (useSDP) {
-        // Check status of SDP inquiry
-        if (sdpInq.error()) {
-            // Error occurred
-            ImGui::TextWrapped("System error - Failed to launch thread.");
-            sdpRunning = false;
-        } else if (sdpInq.checkDone()) {
-            // Done, print results
-            drawSDPList(*sdpInq.value(), selected);
-            sdpRunning = false;
-        } else if (sdpInq.firstRun()) {
+        switch (sdpStatus) {
+        case SDPStatus::Started:
             // Running, display a spinner
             ImGui::LoadingSpinner("Running SDP inquiry");
-            sdpRunning = true;
+            break;
+        case SDPStatus::Error:
+            // Error occurred
+            ImGui::TextWrapped("System error: Failed to launch thread.");
+            break;
+        case SDPStatus::Done:
+            // Done, print results
+            drawSDPList(sdpResults, selected);
         }
     } else if (deviceSelected) {
         // SDP is not used and a device is selected, show the connection options

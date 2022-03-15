@@ -186,9 +186,6 @@
     <ClInclude Include="src\util\strings.hpp">
       <Filter>Source Files\util</Filter>
     </ClInclude>
-    <ClInclude Include="src\async\asyncfunction.hpp">
-      <Filter>Source Files\async</Filter>
-    </ClInclude>
     <ClInclude Include="src\async\task.hpp">
       <Filter>Source Files\async</Filter>
     </ClInclude>
