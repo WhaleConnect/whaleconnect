@@ -393,7 +393,12 @@ System::MayFail<BTUtils::SDPResultList> BTUtils::sdpLookup(std::string_view addr
 
     // Start the lookup
     HANDLE hLookup = nullptr;
-    if (WSALookupServiceBegin(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) return std::nullopt;
+    if (WSALookupServiceBegin(&wsaQuery, flags, &hLookup) == SOCKET_ERROR) {
+        // This error indicates no services were found, return the empty vector
+        if (System::getLastErr() == WSASERVICE_NOT_FOUND) return ret;
+
+        return std::nullopt;
+    }
 
     // Continue the lookup
     DWORD size = 2048;
