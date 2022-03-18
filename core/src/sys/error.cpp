@@ -27,7 +27,7 @@ void System::setLastErr(ErrorCode code) {
 }
 
 std::string System::formatErr(ErrorCode code) {
-    const char* formatStr = "{}: {}";
+    constexpr const char* formatStr = "{}: {}";
 
 #ifdef _WIN32
     // Message buffer

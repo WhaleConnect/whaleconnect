@@ -27,7 +27,9 @@ static std::string formatDeviceData(const Sockets::DeviceData& data) {
     // The address is always part of the id hash.
     // The port is not visible for a Bluetooth connection, instead, it is part of the id hash.
     const char* fmtStr = (isBluetooth) ? "{} Connection - {}##{} {}" : "{} Connection - {} port {}##{}";
-    return std::format(fmtStr, Sockets::connectionTypeToStr(data.type), deviceString, data.port, data.address);
+    return std::vformat(fmtStr,
+                        std::make_format_args(Sockets::connectionTypeToStr(data.type),
+                                              deviceString, data.port, data.address));
 }
 
 bool ConnWindowList::add(const Sockets::DeviceData& data, std::string_view extraInfo) {

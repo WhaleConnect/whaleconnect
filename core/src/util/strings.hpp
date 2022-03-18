@@ -47,11 +47,11 @@ namespace Strings {
     /// <param name="val">The numeric value to convert</param>
     /// <returns>The converted string</returns>
     template <class T>
-    inline WideStr toWide(T val) requires std::integral<T> || std::floating_point<T> {
+    inline WideStr toWide(T from) requires std::integral<T> || std::floating_point<T> {
 #ifdef _WIN32
-        return std::to_wstring(val);
+        return std::to_wstring(from);
 #else
-        return std::to_string(val);
+        return std::to_string(from);
 #endif
     }
 
