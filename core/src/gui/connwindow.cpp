@@ -11,56 +11,54 @@
 
 ConnWindow::ConnWindow(const Sockets::DeviceData& data, std::string_view title, std::string_view extraInfo)
     : _title(title) {
-    _output.addInfo("Connecting...");
-
     // Set the window text (not in initializer list because of length)
     // If there's no extra info, use the title as the window text; otherwise, format both the extra info and title
     // into the window text.
     _windowText = (extraInfo.empty()) ? std::string{ title } : std::format("({}) {}", extraInfo, title);
 
-    auto socket = Sockets::createClientSocket(data, _asyncData);
-    if (socket) _socket = std::move(*socket);
-    else _errorHandler(socket);
+    _connect(data);
 }
 
-void ConnWindow::_sendHandler(std::string_view s) {
-    auto sendRet = Sockets::sendData(_socket.get(), s);
+Task<> ConnWindow::_connect(const Sockets::DeviceData& data) {
+    _output.addInfo("Connecting...");
 
+    auto socket = co_await Sockets::createClientSocket(data);
+
+    if (socket) {
+        _socket = std::move(*socket);
+        _output.addInfo("Connected.");
+        _connected = true;
+    } else {
+        _errorHandler(socket);
+    }
+}
+
+Task<> ConnWindow::_sendHandler(std::string_view s) {
+    auto sendRet = co_await Sockets::sendData(_socket.get(), s);
     if (!sendRet) _errorHandler(sendRet);
 }
 
-void ConnWindow::_connectHandler() {
-    _output.addInfo("Connected.");
-}
+Task<> ConnWindow::_readHandler() {
+    if (!_connected) co_return;
 
-void ConnWindow::_disconnectHandler() {
-    _output.addInfo("Disconnected.");
-}
+    auto recvRet = co_await Sockets::recvData(_socket.get());
+    if (!recvRet) {
+        _errorHandler(recvRet);
+        co_return;
+    }
 
-void ConnWindow::_readHandler() {
-    //// String to store received data
-    //std::string recvBuf;
-
-    //// Perform receive call and check status code
-    //int ret = Sockets::recvData(_socket.get(), recvBuf);
-    //switch (ret) {
-    //case SOCKET_ERROR:
-    //    // Error, print message
-    //    _errorHandler();
-    //    break;
-    //case 0:
-    //    // Peer closed connection (here, 0 does not necessarily mean success, i.e. NO_ERROR)
-    //    _output.addInfo("Remote host closed connection.");
-    //    _closeConnection();
-    //    break;
-    //default:
-    //    // Receive successful, add the buffer to the Console to display
-    //    _output.addText(recvBuf);
-    //}
-    _output.addInfo("E");
+    if (recvRet->bytesRead == 0) {
+        // Peer closed connection (here, 0 does not necessarily mean success, i.e. NO_ERROR)
+        _output.addInfo("Remote host closed connection.");
+        _connected = false;
+    } else {
+        _output.addText(recvRet->data);
+    }
 }
 
 void ConnWindow::update() {
+    _readHandler();
+
     // Set window size
     ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
 

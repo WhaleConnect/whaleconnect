@@ -18,9 +18,7 @@
 /// </summary>
 class ConnWindow {
     Sockets::Socket _socket; // Socket for connection
-
-    // Data for asynchronous I/O
-    Async::AsyncData _asyncData{};
+    bool _connected = false; // If the socket has an active connection to a server
 
     std::string _title; // Title of window
     std::string _windowText; // The text in the window's title bar
@@ -28,25 +26,24 @@ class ConnWindow {
     Console _output{ std::bind(&ConnWindow::_sendHandler, this, std::placeholders::_1) }; // Console with input textbox
 
     /// <summary>
-    /// Function callback to execute when the socket has a connect event.
+    /// Connect to a server.
     /// </summary>
-    void _connectHandler();
-
-    /// <summary>
-    /// Function callback to execute when the socket has a disconnect event.
-    /// </summary>
-    void _disconnectHandler();
+    /// <param name="data">The server to connect to</param>
+    /// <returns>A void task</returns>
+    Task<> _connect(const Sockets::DeviceData& data);
 
     /// <summary>
     /// Send a string through the socket if it's connected.
     /// </summary>
     /// <param name="s">The string to send</param>
-    void _sendHandler(std::string_view s);
+    /// <returns>A void task</returns>
+    Task<> _sendHandler(std::string_view s);
 
     /// <summary>
     /// Function callback to execute when the socket has an input event.
     /// </summary>
-    void _readHandler();
+    /// <returns>A void task</returns>
+    Task<> _readHandler();
 
     /// <summary>
     /// Print the error (if any) from a function that may have failed.
@@ -61,9 +58,9 @@ class ConnWindow {
 
 public:
     /// <summary>
-    /// ConnWindow constructor, initialize a new object that can send/receive data across a socket file descriptor.
+    /// ConnWindow constructor, set the window title and create the connection.
     /// </summary>
-    /// <param name="title">The server to connect to</param>
+    /// <param name="data">The server to connect to</param>
     /// <param name="title">Text to display in the window's titlebar</param>
     /// <param name="extraInfo">Extra information to display in the window's titlebar</param>
     ConnWindow(const Sockets::DeviceData& data, std::string_view title, std::string_view extraInfo);

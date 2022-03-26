@@ -41,6 +41,11 @@ namespace Sockets {
     // A vector of DeviceData structs
     using DeviceDataList = std::vector<DeviceData>;
 
+    struct RecvResult {
+        size_t bytesRead = 0;
+        std::string data;
+    };
+
     class Socket;
 
     /// <summary>
@@ -120,9 +125,8 @@ namespace Sockets {
     /// Connect to a remote server. The socket created is to be used with the async I/O functions in `Sockets::Async`.
     /// </summary>
     /// <param name="data">The target server to connect to</param>
-    /// <param name="asyncData">Information to use when performing async I/O on the socket</param>
-    /// <returns>The newly-created socket file descriptor</returns>
-    System::MayFail<Socket> createClientSocket(const DeviceData& data, Async::AsyncData& asyncData);
+    /// <returns>The newly-created socket</returns>
+    Task<System::MayFail<Socket>> createClientSocket(const DeviceData& data);
 
     /// <summary>
     /// Close a socket.
@@ -136,15 +140,14 @@ namespace Sockets {
     /// <param name="sockfd">The socket file descriptor to receive from</param>
     /// <param name="data">The data to send through the socket</param>
     /// <returns>Number of bytes sent</returns>
-    System::MayFail<int> sendData(SOCKET sockfd, std::string_view data);
+    Task<System::MayFail<>> sendData(SOCKET sockfd, std::string_view data);
 
     /// <summary>
     /// Receive a string from the socket.
     /// </summary>
     /// <param name="sockfd">The socket file descriptor to receive from</param>
-    /// <param name="data">The string to hold the data received</param>
-    /// <returns>0: peer disconnected, 1+: number of bytes read</returns>
-    System::MayFail<int> recvData(SOCKET sockfd, std::string& data);
+    /// <returns>The number of bytes read and the string received</returns>
+    Task<System::MayFail<RecvResult>> recvData(SOCKET sockfd);
 }
 
 /// <summary>

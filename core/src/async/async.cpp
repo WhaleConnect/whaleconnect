@@ -32,7 +32,9 @@ static void worker() {
     while (GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, INFINITE)) {
         if (!overlapped) break;
 
-        auto& asyncData = *reinterpret_cast<Async::AsyncData*>(overlapped);
+        auto& result = *reinterpret_cast<Async::CompletionResult*>(overlapped);
+        result.numBytes = numBytes;
+        if (result.coroHandle) result.coroHandle();
     }
 }
 #endif
@@ -66,9 +68,3 @@ System::MayFail<> Async::add(SOCKET sockfd) {
     return static_cast<bool>(CreateIoCompletionPort(reinterpret_cast<HANDLE>(sockfd), completionPort, 0, 0));
 #endif
 }
-
-#ifdef _WIN32
-HANDLE Async::getCompletionPort() {
-    return completionPort;
-}
-#endif

@@ -9,10 +9,12 @@
 #include <WinSock2.h>
 #endif
 
+#include <coroutine>
+
 #include "sys/error.hpp"
 
 namespace Async {
-    struct AsyncData {
+    struct CompletionResult {
 #ifdef _WIN32
         // This is used for overlapped I/O.
         // This must be the first field in this struct, as type punning is used to pass an entire instance to an IOCP
@@ -20,8 +22,18 @@ namespace Async {
         OVERLAPPED overlapped{};
 #endif
 
-        // If the socket is connected to a remote host
-        bool connected = false;
+        int numBytes = 0;
+        int error = 0;
+        std::coroutine_handle<> coroHandle;
+
+        bool await_ready() const noexcept { return false; }
+
+        void await_suspend(std::coroutine_handle<> coroutine) noexcept {
+            coroHandle = coroutine;
+            coroHandle();
+        }
+
+        void await_resume() const noexcept {}
     };
 
     System::MayFail<> init();
@@ -29,8 +41,4 @@ namespace Async {
     void cleanup();
 
     System::MayFail<> add(SOCKET sockfd);
-
-#ifdef _WIN32
-    HANDLE getCompletionPort();
-#endif
 }

@@ -33,11 +33,9 @@ class Task {
     /// <typeparam name="U">The type of the returned value (should not be void)</typeparam>
     template <class U>
     struct PromiseTypeValue {
-    protected:
         // The value(s) produced by the coroutine
         U _data;
 
-    public:
         /// <summary>
         /// Called when the coroutine returns.
         /// </summary>
@@ -54,12 +52,11 @@ class Task {
     /// This class inherits from either the "void" base or the "value" base depending on if T is void. This inheritance
     /// will give the class the appropriate return function for each template instantiation.
     /// </remarks>
-    class PromiseType : std::conditional_t<_isVoid, PromiseTypeVoid, PromiseTypeValue<T>> {
+    struct PromiseType : std::conditional_t<_isVoid, PromiseTypeVoid, PromiseTypeValue<T>> {
         // In the case of another coroutine calling this one, keep track of the caller. This allows us to resume the
         // caller when this one exits (i.e. when `final_suspend()::await_suspend()` is hit).
         std::coroutine_handle<> _continuation;
 
-    public:
         /// <summary>
         /// Called first when a coroutine is entered. This specifies the Task object returned from a coroutine function.
         /// </summary>
@@ -68,7 +65,7 @@ class Task {
         /// Given a coroutine `Task myCoro();` the call `auto x = myCoro();` will return what's declared in here.
         /// </remarks>
         Task get_return_object() noexcept {
-            return { ._handle = std::coroutine_handle<PromiseType>::from_promise(*this) };
+            return *this;
         }
 
         /// <summary>
@@ -124,6 +121,12 @@ class Task {
 
     // The handle for the coroutine performing work with this task object
     std::coroutine_handle<PromiseType> _handle;
+
+    /// <summary>
+    /// Construct a task object from a coroutine promise object.
+    /// </summary>
+    /// <param name="promiseType">The promise object</param>
+    Task(PromiseType& promiseType) : _handle(std::coroutine_handle<PromiseType>::from_promise(promiseType)) {}
 
 public:
     /// <summary>

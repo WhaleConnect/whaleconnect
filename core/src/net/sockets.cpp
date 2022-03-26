@@ -13,7 +13,6 @@
 
 // These don't exist on Windows
 constexpr auto EAI_SYSTEM = 0;
-constexpr auto MSG_NOSIGNAL = 0;
 
 // Berkeley sockets int types
 using socklen_t = int;
@@ -48,6 +47,21 @@ constexpr auto BTHPROTO_L2CAP = BTPROTO_L2CAP;
 #include "sys/error.hpp"
 #include "util/formatcompat.hpp"
 #include "util/strings.hpp"
+
+static System::MayFail<> checkFunctionError(int ret) {
+    return ret != SOCKET_ERROR;
+}
+
+#ifdef _WIN32
+static System::MayFail<DWORD> getOverlappedResult(SOCKET sockfd, Async::CompletionResult& completionResult) {
+    DWORD numBytes;
+    DWORD flags = 0;
+    BOOL result = WSAGetOverlappedResult(sockfd, &completionResult.overlapped, &numBytes, FALSE, &flags);
+
+    if (result) return numBytes;
+    return std::nullopt;
+}
+#endif
 
 System::MayFail<> Sockets::init() {
 #ifdef _WIN32
@@ -103,29 +117,19 @@ static SOCKET bluetoothSocket(Sockets::ConnectionType type) {
     return socket(AF_BTH, sockType, sockProto);
 }
 
-static System::MayFail<> connectSocket(SOCKET s, Async::AsyncData& asyncData, const sockaddr* addr, socklen_t addrLen,
-                                       [[maybe_unused]] bool isDgram) {
+static Task<System::MayFail<>> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen,
+                                             [[maybe_unused]] bool isDgram) {
     // Add the socket to the async queue
-    if (!Async::add(s)) return false;
-
-    auto connectSocket = [&] { return connect(s, addr, addrLen) == NO_ERROR; };
+    if (!Async::add(s)) co_return false;
 
 #ifdef _WIN32
-    if (isDgram) {
-        bool connectRet = connectSocket();
-
-        if (connectRet) {
-            BOOL postRet = PostQueuedCompletionStatus(Async::getCompletionPort(), 0, 0, &asyncData.overlapped);
-            return static_cast<bool>(postRet);
-        }
-        return connectRet;
-    }
+    if (isDgram) co_return connect(s, addr, addrLen) == NO_ERROR;
 
     sockaddr_storage addrBind{ .ss_family = addr->sa_family };
     int addrSize = (addr->sa_family == AF_BTH) ? sizeof(SOCKADDR_BTH) : sizeof(sockaddr_storage);
 
     // ConnectEx() requires a socket to be initially bound.
-    if (bind(s, reinterpret_cast<sockaddr*>(&addrBind), addrSize) == SOCKET_ERROR) return false;
+    if (bind(s, reinterpret_cast<sockaddr*>(&addrBind), addrSize) == SOCKET_ERROR) co_return false;
 
     LPFN_CONNECTEX connectExPtr = nullptr;
 
@@ -141,20 +145,22 @@ static System::MayFail<> connectSocket(SOCKET s, Async::AsyncData& asyncData, co
                                nullptr,
                                nullptr);
 
-    if (loadSuccess == SOCKET_ERROR) return false;
+    if (loadSuccess == SOCKET_ERROR) co_return false;
+
+    Async::CompletionResult result;
+    co_await result;
 
     DWORD bytesSent = 0;
-    System::MayFail<> connectResult = connectExPtr(s, addr, addrLen, nullptr, 0, &bytesSent, &asyncData.overlapped);
+    System::MayFail<> connectResult = connectExPtr(s, addr, addrLen, nullptr, 0, &bytesSent, &result.overlapped);
 
-    // We're not directly returning the result of ConnectEx() as connectResult's operator bool() does some more work in
-    // permitting in-progress error codes.
-    return connectResult;
-#else
-    return connectSocket();
+    if (!connectResult) co_return false;
+
+    co_await std::suspend_always{};
+    co_return getOverlappedResult(s, result);
 #endif
 }
 
-System::MayFail<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data, Async::AsyncData& asyncData) {
+Task<System::MayFail<Sockets::Socket>> Sockets::createClientSocket(const DeviceData& data) {
     using enum ConnectionType;
 
     if (connectionTypeIsIP(data.type)) {
@@ -182,22 +188,22 @@ System::MayFail<Sockets::Socket> Sockets::createClientSocket(const DeviceData& d
             // Connect to the server
             // The cast to `socklen_t` is only needed on Windows because `ai_addrlen` is of type `size_t`.
             System::MayFail<> connectResult;
-            if (ret) connectResult = connectSocket(ret.get(), asyncData, addr->ai_addr,
-                                                   static_cast<socklen_t>(addr->ai_addrlen), isUDP);
+            if (ret) connectResult
+                = co_await connectSocket(ret.get(), addr->ai_addr, static_cast<socklen_t>(addr->ai_addrlen), isUDP);
 
             FreeAddrInfo(addr); // Release the resources
 
-            if (!connectResult) return std::nullopt;
-            return ret;
+            if (!connectResult) co_return std::nullopt;
+            co_return ret;
         } else {
             // The last error can be set to the getaddrinfo() error, the error-checking functions will handle it
             if (gaiResult != EAI_SYSTEM) System::setLastErr(gaiResult);
-            return std::nullopt;
+            co_return std::nullopt;
         }
     } else if (connectionTypeIsBT(data.type)) {
         // Set up Bluetooth socket
         Socket ret{ bluetoothSocket(data.type) };
-        if (!ret) return std::nullopt;
+        if (!ret) co_return std::nullopt;
 
         // Set up server address structure
         socklen_t addrSize;
@@ -234,14 +240,14 @@ System::MayFail<Sockets::Socket> Sockets::createClientSocket(const DeviceData& d
         bool isDgram = (data.type == L2CAPDgram);
 
         // Connect, then check if connection failed
-        if (!connectSocket(ret.get(), asyncData, reinterpret_cast<sockaddr*>(&btAddr), addrSize, isDgram))
-            return std::nullopt;
+        if (!co_await connectSocket(ret.get(), reinterpret_cast<sockaddr*>(&btAddr), addrSize, isDgram))
+            co_return std::nullopt;
 
-        return ret;
+        co_return ret;
     } else {
         // None type
         System::setLastErr(WSAEINVAL);
-        return std::nullopt;
+        co_return std::nullopt;
     }
 }
 
@@ -262,14 +268,25 @@ void Sockets::closeSocket(SOCKET sockfd) {
     System::setLastErr(lastErrBackup);
 }
 
-System::MayFail<int> Sockets::sendData(SOCKET sockfd, std::string_view data) {
-    // Send data through socket, static_cast the string size to avoid MSVC warning C4267
-    // ('var': conversion from 'size_t' to 'type', possible loss of data)
-    int sendRet = send(sockfd, data.data(), static_cast<int>(data.size()), MSG_NOSIGNAL);
+Task<System::MayFail<>> Sockets::sendData(SOCKET sockfd, std::string_view data) {
+    Async::CompletionResult result;
+    co_await result;
 
-    if (sendRet == SOCKET_ERROR) return std::nullopt;
+#ifdef _WIN32
+    WSABUF buf{ static_cast<ULONG>(data.length()), const_cast<char*>(data.data()) };
+    DWORD numBytes;
+    int sendRet = WSASend(sockfd, &buf, 1, &numBytes, 0, &result.overlapped, nullptr);
+#else
+    int sendRet = send(sockfd, data.data(), data.size(), MSG_NOSIGNAL);
+#endif
 
-    return sendRet;
+    if (!checkFunctionError(sendRet)) co_return false;
+
+    co_await std::suspend_always{};
+
+#ifdef _WIN32
+    co_return static_cast<bool>(getOverlappedResult(sockfd, result));
+#endif
 
     // Note: Typically, sendto() and recvfrom() are used with a UDP connection.
     // However, these require a sockaddr parameter, which becomes hard to get with getaddrinfo().
@@ -281,17 +298,30 @@ System::MayFail<int> Sockets::sendData(SOCKET sockfd, std::string_view data) {
     // This is why connect() is used with UDP.
 }
 
-System::MayFail<int> Sockets::recvData(SOCKET sockfd, std::string& data) {
-    char buf[1024]{};
+Task<System::MayFail<Sockets::RecvResult>> Sockets::recvData(SOCKET sockfd) {
+    Async::CompletionResult result;
+    co_await result;
 
     // Receive and check bytes received
-    int ret = recv(sockfd, buf, static_cast<int>(std::ssize(buf)) - 1, MSG_NOSIGNAL);
+    char recvBuf[1024]{};
 
-    if (ret == SOCKET_ERROR) {
-        return std::nullopt;
-    } else {
-        buf[ret] = '\0'; // Add a null char to the end of the buffer
-        data = buf;
-        return ret;
-    }
+#ifdef _WIN32
+    WSABUF buf{ static_cast<ULONG>(std::ssize(recvBuf)), recvBuf };
+    DWORD numBytes;
+    DWORD flags = 0;
+    int recvRet = WSARecv(sockfd, &buf, 1, &numBytes, &flags, &result.overlapped, nullptr);
+#else
+    int recvRet = recv(asyncData.sockfd, recvBuf, static_cast<int>(std::ssize(recvBuf)) - 1, MSG_NOSIGNAL);
+#endif
+
+#ifdef _WIN32
+    auto error = checkFunctionError(recvRet);
+#endif
+
+    if (!error) co_return std::nullopt;
+
+    co_await std::suspend_always{};
+
+    buf.buf[result.numBytes] = '\0'; // Add a null char to the end of the buffer
+    co_return RecvResult{ static_cast<ULONG>(result.numBytes), buf.buf };
 }
