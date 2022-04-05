@@ -34,7 +34,6 @@
 #define FMT_FORMAT_H_
 
 #include <cmath>         // std::signbit
-#include <cstddef>       // std::byte
 #include <cstdint>       // uint32_t
 #include <cstring>       // std::memcpy
 #include <limits>        // std::numeric_limits
@@ -255,6 +254,13 @@ FMT_END_NAMESPACE
 FMT_BEGIN_NAMESPACE
 namespace detail {
 
+FMT_CONSTEXPR inline void abort_fuzzing_if(bool condition) {
+  ignore_unused(condition);
+#ifdef FMT_FUZZ
+  if (condition) throw std::runtime_error("fuzzing limit reached");
+#endif
+}
+
 template <typename Streambuf> class formatbuf : public Streambuf {
  private:
   using char_type = typename Streambuf::char_type;
@@ -315,36 +321,60 @@ inline auto is_big_endian() -> bool {
 class uint128_fallback {
  private:
   uint64_t lo_, hi_;
-  constexpr uint128_fallback(uint64_t hi, uint64_t lo) : lo_(lo), hi_(hi) {}
+
+  friend uint128_fallback umul128(uint64_t x, uint64_t y) noexcept;
 
  public:
+  constexpr uint128_fallback(uint64_t hi, uint64_t lo) : lo_(lo), hi_(hi) {}
   constexpr uint128_fallback(uint64_t value = 0) : lo_(value), hi_(0) {}
+
+  constexpr uint64_t high() const noexcept { return hi_; }
+  constexpr uint64_t low() const noexcept { return lo_; }
 
   template <typename T, FMT_ENABLE_IF(std::is_integral<T>::value)>
   constexpr explicit operator T() const {
     return static_cast<T>(lo_);
   }
 
-  friend auto operator==(const uint128_fallback& lhs,
-                         const uint128_fallback& rhs) -> bool {
+  friend constexpr auto operator==(const uint128_fallback& lhs,
+                                   const uint128_fallback& rhs) -> bool {
     return lhs.hi_ == rhs.hi_ && lhs.lo_ == rhs.lo_;
   }
-  friend auto operator!=(const uint128_fallback& lhs,
-                         const uint128_fallback& rhs) -> bool {
+  friend constexpr auto operator!=(const uint128_fallback& lhs,
+                                   const uint128_fallback& rhs) -> bool {
     return !(lhs == rhs);
   }
-  friend auto operator|(const uint128_fallback& lhs,
-                        const uint128_fallback& rhs) -> uint128_fallback {
+  friend constexpr auto operator>(const uint128_fallback& lhs,
+                                  const uint128_fallback& rhs) -> bool {
+    return lhs.hi_ != rhs.hi_ ? lhs.hi_ > rhs.hi_ : lhs.lo_ > rhs.lo_;
+  }
+  friend constexpr auto operator|(const uint128_fallback& lhs,
+                                  const uint128_fallback& rhs)
+      -> uint128_fallback {
     return {lhs.hi_ | rhs.hi_, lhs.lo_ | rhs.lo_};
   }
-  friend auto operator&(const uint128_fallback& lhs,
-                        const uint128_fallback& rhs) -> uint128_fallback {
+  friend constexpr auto operator&(const uint128_fallback& lhs,
+                                  const uint128_fallback& rhs)
+      -> uint128_fallback {
     return {lhs.hi_ & rhs.hi_, lhs.lo_ & rhs.lo_};
+  }
+  friend auto operator+(const uint128_fallback& lhs,
+                        const uint128_fallback& rhs) -> uint128_fallback {
+    auto result = uint128_fallback(lhs);
+    result += rhs;
+    return result;
+  }
+  friend auto operator*(const uint128_fallback& lhs, uint32_t rhs)
+      -> uint128_fallback {
+    FMT_ASSERT(lhs.hi_ == 0, "");
+    uint64_t hi = (lhs.lo_ >> 32) * rhs;
+    uint64_t lo = (lhs.lo_ & ~uint32_t()) * rhs;
+    uint64_t new_lo = (hi << 32) + lo;
+    return {(hi >> 32) + (new_lo < lo ? 1 : 0), new_lo};
   }
   friend auto operator-(const uint128_fallback& lhs, uint64_t rhs)
       -> uint128_fallback {
-    FMT_ASSERT(lhs.lo_ >= rhs, "");
-    return {lhs.hi_, lhs.lo_ - rhs};
+    return {lhs.hi_ - (lhs.lo_ < rhs ? 1 : 0), lhs.lo_ - rhs};
   }
   FMT_CONSTEXPR auto operator>>(int shift) const -> uint128_fallback {
     if (shift == 64) return {0, hi_};
@@ -357,10 +387,14 @@ class uint128_fallback {
   FMT_CONSTEXPR auto operator>>=(int shift) -> uint128_fallback& {
     return *this = *this >> shift;
   }
-  FMT_CONSTEXPR void operator+=(uint64_t n) {
-    lo_ += n;
-    if (lo_ < n) ++hi_;
+  FMT_CONSTEXPR void operator+=(uint128_fallback n) {
+    uint64_t new_lo = lo_ + n.lo_;
+    uint64_t new_hi = hi_ + n.hi_ + (new_lo < lo_ ? 1 : 0);
+    FMT_ASSERT(new_hi >= hi_, "");
+    lo_ = new_lo;
+    hi_ = new_hi;
   }
+  FMT_CONSTEXPR20 uint128_fallback& operator+=(uint64_t n) noexcept;
 };
 
 using uint128_t = conditional_t<FMT_USE_INT128, uint128_opt, uint128_fallback>;
@@ -667,6 +701,24 @@ inline auto code_point_index(basic_string_view<char8_type> s, size_t n)
   return s.size();
 }
 
+#ifndef FMT_USE_FLOAT128
+#  ifdef __SIZEOF_FLOAT128__
+#    define FMT_USE_FLOAT128 1
+#  else
+#    define FMT_USE_FLOAT128 0
+#  endif
+#endif
+#if FMT_USE_FLOAT128
+using float128 = __float128;
+#else
+using float128 = void;
+#endif
+template <typename T> using is_float128 = std::is_same<T, float128>;
+
+template <typename T>
+using is_floating_point =
+    bool_constant<std::is_floating_point<T>::value || is_float128<T>::value>;
+
 template <typename T, bool = std::is_floating_point<T>::value>
 struct is_fast_float : bool_constant<std::numeric_limits<T>::is_iec559 &&
                                      sizeof(T) <= sizeof(double)> {};
@@ -749,9 +801,7 @@ class basic_memory_buffer final : public detail::buffer<T> {
       const Allocator& alloc = Allocator())
       : alloc_(alloc) {
     this->set(store_, SIZE);
-    if (detail::is_constant_evaluated()) {
-      detail::fill_n(store_, SIZE, T{});
-    }
+    if (detail::is_constant_evaluated()) detail::fill_n(store_, SIZE, T());
   }
   FMT_CONSTEXPR20 ~basic_memory_buffer() { deallocate(); }
 
@@ -763,13 +813,8 @@ class basic_memory_buffer final : public detail::buffer<T> {
     size_t size = other.size(), capacity = other.capacity();
     if (data == other.store_) {
       this->set(store_, capacity);
-      if (detail::is_constant_evaluated()) {
-        detail::copy_str<T>(other.store_, other.store_ + size,
-                            detail::make_checked(store_, capacity));
-      } else {
-        std::uninitialized_copy(other.store_, other.store_ + size,
-                                detail::make_checked(store_, capacity));
-      }
+      detail::copy_str<T>(other.store_, other.store_ + size,
+                          detail::make_checked(store_, capacity));
     } else {
       this->set(data, capacity);
       // Set pointer to the inline array so that delete is not called
@@ -826,9 +871,7 @@ class basic_memory_buffer final : public detail::buffer<T> {
 template <typename T, size_t SIZE, typename Allocator>
 FMT_CONSTEXPR20 void basic_memory_buffer<T, SIZE, Allocator>::grow(
     size_t size) {
-#ifdef FMT_FUZZ
-  if (size > 5000) throw std::runtime_error("fuzz mode - won't grow that much");
-#endif
+  detail::abort_fuzzing_if(size > 5000);
   const size_t max_size = std::allocator_traits<Allocator>::max_size(alloc_);
   size_t old_capacity = this->capacity();
   size_t new_capacity = old_capacity + old_capacity / 2;
@@ -894,7 +937,6 @@ FMT_DEPRECATED FMT_INLINE auto make_args_checked(
   return {args...};
 }
 
-// compile-time support
 namespace detail_exported {
 #if FMT_USE_NONTYPE_TEMPLATE_PARAMETERS
 template <typename Char, size_t N> struct fixed_string {
@@ -902,7 +944,7 @@ template <typename Char, size_t N> struct fixed_string {
     detail::copy_str<Char, const Char*, Char*>(static_cast<const Char*>(str),
                                                str + N, data);
   }
-  Char data[N]{};
+  Char data[N] = {};
 };
 #endif
 
@@ -935,19 +977,19 @@ using is_signed =
 // Returns true if value is negative, false otherwise.
 // Same as `value < 0` but doesn't produce warnings if T is an unsigned type.
 template <typename T, FMT_ENABLE_IF(is_signed<T>::value)>
-FMT_CONSTEXPR auto is_negative(T value) -> bool {
+constexpr auto is_negative(T value) -> bool {
   return value < 0;
 }
 template <typename T, FMT_ENABLE_IF(!is_signed<T>::value)>
-FMT_CONSTEXPR auto is_negative(T) -> bool {
+constexpr auto is_negative(T) -> bool {
   return false;
 }
 
-template <typename T, FMT_ENABLE_IF(std::is_floating_point<T>::value)>
-FMT_CONSTEXPR auto is_supported_floating_point(T) -> uint16_t {
-  return (std::is_same<T, float>::value && FMT_USE_FLOAT) ||
-         (std::is_same<T, double>::value && FMT_USE_DOUBLE) ||
-         (std::is_same<T, long double>::value && FMT_USE_LONG_DOUBLE);
+template <typename T> constexpr auto is_supported_floating_point(T) -> bool {
+  return (std::is_same<T, float>() && FMT_USE_FLOAT) ||
+         (std::is_same<T, double>() && FMT_USE_DOUBLE) ||
+         (std::is_same<T, long double>() && FMT_USE_LONG_DOUBLE) ||
+         is_float128<T>();
 }
 
 // Smallest of uint32_t, uint64_t, uint128_t that is large enough to
@@ -956,10 +998,9 @@ template <typename T>
 using uint32_or_64_or_128_t =
     conditional_t<num_bits<T>() <= 32 && !FMT_REDUCE_INT_INSTANTIATIONS,
                   uint32_t,
-                  conditional_t<num_bits<T>() <= 64, uint64_t, uint128_opt>>;
+                  conditional_t<num_bits<T>() <= 64, uint64_t, uint128_t>>;
 template <typename T>
-using uint64_or_128_t =
-    conditional_t<num_bits<T>() <= 64, uint64_t, uint128_opt>;
+using uint64_or_128_t = conditional_t<num_bits<T>() <= 64, uint64_t, uint128_t>;
 
 #define FMT_POWERS_OF_10(factor)                                             \
   factor * 10, (factor)*100, (factor)*1000, (factor)*10000, (factor)*100000, \
@@ -1227,56 +1268,38 @@ template <typename T, typename Enable = void> struct float_info;
 
 template <> struct float_info<float> {
   using carrier_uint = uint32_t;
-  static const int significand_bits = 23;
   static const int exponent_bits = 8;
-  static const int min_exponent = -126;
-  static const int max_exponent = 127;
-  static const int exponent_bias = -127;
-  static const int decimal_digits = 9;
   static const int kappa = 1;
   static const int big_divisor = 100;
   static const int small_divisor = 10;
   static const int min_k = -31;
   static const int max_k = 46;
-  static const int cache_bits = 64;
   static const int divisibility_check_by_5_threshold = 39;
   static const int case_fc_pm_half_lower_threshold = -1;
-  static const int case_shorter_interval_left_endpoint_lower_threshold = 2;
-  static const int case_shorter_interval_left_endpoint_upper_threshold = 3;
   static const int shorter_interval_tie_lower_threshold = -35;
   static const int shorter_interval_tie_upper_threshold = -35;
-  static const int max_trailing_zeros = 7;
 };
 
 template <> struct float_info<double> {
   using carrier_uint = uint64_t;
-  static const int significand_bits = 52;
   static const int exponent_bits = 11;
-  static const int min_exponent = -1022;
-  static const int max_exponent = 1023;
-  static const int exponent_bias = -1023;
-  static const int decimal_digits = 17;
   static const int kappa = 2;
   static const int big_divisor = 1000;
   static const int small_divisor = 100;
   static const int min_k = -292;
   static const int max_k = 326;
-  static const int cache_bits = 128;
   static const int divisibility_check_by_5_threshold = 86;
   static const int case_fc_pm_half_lower_threshold = -2;
-  static const int case_shorter_interval_left_endpoint_lower_threshold = 2;
-  static const int case_shorter_interval_left_endpoint_upper_threshold = 3;
   static const int shorter_interval_tie_lower_threshold = -77;
   static const int shorter_interval_tie_upper_threshold = -77;
-  static const int max_trailing_zeros = 16;
 };
 
-// 80-bit extended precision long double.
+// An 80- or 128-bit floating point number.
 template <typename T>
-struct float_info<T, enable_if_t<std::is_same<T, long double>::value &&
-                                 std::numeric_limits<T>::digits == 64>> {
+struct float_info<T, enable_if_t<std::numeric_limits<T>::digits == 64 ||
+                                 std::numeric_limits<T>::digits == 113 ||
+                                 is_float128<T>::value>> {
   using carrier_uint = detail::uint128_t;
-  static const int significand_bits = 64;
   static const int exponent_bits = 15;
 };
 
@@ -1289,12 +1312,32 @@ template <typename T> struct decimal_fp {
 template <typename T> FMT_API auto to_decimal(T x) noexcept -> decimal_fp<T>;
 }  // namespace dragonbox
 
-template <typename T>
+// Returns true iff Float has the implicit bit which is not stored.
+template <typename Float> constexpr bool has_implicit_bit() {
+  // An 80-bit FP number has a 64-bit significand an no implicit bit.
+  return std::numeric_limits<Float>::digits != 64;
+}
+
+// Returns the number of significand bits stored in Float. The implicit bit is
+// not counted since it is not stored.
+template <typename Float> constexpr int num_significand_bits() {
+  // std::numeric_limits may not support __float128.
+  return is_float128<Float>() ? 112
+                              : (std::numeric_limits<Float>::digits -
+                                 (has_implicit_bit<Float>() ? 1 : 0));
+}
+
+template <typename Float>
 constexpr auto exponent_mask() ->
-    typename dragonbox::float_info<T>::carrier_uint {
-  using uint = typename dragonbox::float_info<T>::carrier_uint;
-  return ((uint(1) << dragonbox::float_info<T>::exponent_bits) - 1)
-         << dragonbox::float_info<T>::significand_bits;
+    typename dragonbox::float_info<Float>::carrier_uint {
+  using uint = typename dragonbox::float_info<Float>::carrier_uint;
+  return ((uint(1) << dragonbox::float_info<Float>::exponent_bits) - 1)
+         << num_significand_bits<Float>();
+}
+template <typename Float> constexpr auto exponent_bias() -> int {
+  // std::numeric_limits may not support __float128.
+  return is_float128<Float>() ? 16383
+                              : std::numeric_limits<Float>::max_exponent - 1;
 }
 
 // Writes the exponent exp in the form "[+-]d{2,3}" to buffer.
@@ -1324,10 +1367,113 @@ FMT_HEADER_ONLY_CONSTEXPR20 auto format_float(T value, int precision,
                                               float_specs specs,
                                               buffer<char>& buf) -> int;
 
+#ifndef _MSC_VER
+#  define FMT_SNPRINTF snprintf
+#else
+FMT_API auto fmt_snprintf(char* buf, size_t size, const char* fmt, ...) -> int;
+#  define FMT_SNPRINTF fmt_snprintf
+#endif  // _MSC_VER
+
 // Formats a floating-point number with snprintf.
 template <typename T>
 auto snprintf_float(T value, int precision, float_specs specs,
-                    buffer<char>& buf) -> int;
+                    buffer<char>& buf) -> int {
+  // Buffer capacity must be non-zero, otherwise MSVC's vsnprintf_s will fail.
+  FMT_ASSERT(buf.capacity() > buf.size(), "empty buffer");
+  static_assert(!std::is_same<T, float>::value, "");
+
+  // Subtract 1 to account for the difference in precision since we use %e for
+  // both general and exponent format.
+  if (specs.format == float_format::general ||
+      specs.format == float_format::exp) {
+    precision = (precision >= 0 ? precision : 6) - 1;
+  }
+
+  // Build the format string.
+  char format[7];  // The longest format is "%#.*Le".
+  char* format_ptr = format;
+  *format_ptr++ = '%';
+  if (specs.showpoint && specs.format == float_format::hex) *format_ptr++ = '#';
+  if (precision >= 0) {
+    *format_ptr++ = '.';
+    *format_ptr++ = '*';
+  }
+  if (std::is_same<T, long double>()) *format_ptr++ = 'L';
+  *format_ptr++ = specs.format != float_format::hex
+                      ? (specs.format == float_format::fixed ? 'f' : 'e')
+                      : (specs.upper ? 'A' : 'a');
+  *format_ptr = '\0';
+
+  // Format using snprintf.
+  auto offset = buf.size();
+  for (;;) {
+    auto begin = buf.data() + offset;
+    auto capacity = buf.capacity() - offset;
+    abort_fuzzing_if(precision > 100000);
+    // Suppress the warning about a nonliteral format string.
+    // Cannot use auto because of a bug in MinGW (#1532).
+    int (*snprintf_ptr)(char*, size_t, const char*, ...) = FMT_SNPRINTF;
+    int result = precision >= 0
+                     ? snprintf_ptr(begin, capacity, format, precision, value)
+                     : snprintf_ptr(begin, capacity, format, value);
+    if (result < 0) {
+      // The buffer will grow exponentially.
+      buf.try_reserve(buf.capacity() + 1);
+      continue;
+    }
+    auto size = to_unsigned(result);
+    // Size equal to capacity means that the last character was truncated.
+    if (size >= capacity) {
+      buf.try_reserve(size + offset + 1);  // Add 1 for the terminating '\0'.
+      continue;
+    }
+    auto is_digit = [](char c) { return c >= '0' && c <= '9'; };
+    if (specs.format == float_format::fixed) {
+      if (precision == 0) {
+        buf.try_resize(size);
+        return 0;
+      }
+      // Find and remove the decimal point.
+      auto end = begin + size, p = end;
+      do {
+        --p;
+      } while (is_digit(*p));
+      int fraction_size = static_cast<int>(end - p - 1);
+      std::memmove(p, p + 1, to_unsigned(fraction_size));
+      buf.try_resize(size - 1);
+      return -fraction_size;
+    }
+    if (specs.format == float_format::hex) {
+      buf.try_resize(size + offset);
+      return 0;
+    }
+    // Find and parse the exponent.
+    auto end = begin + size, exp_pos = end;
+    do {
+      --exp_pos;
+    } while (*exp_pos != 'e');
+    char sign = exp_pos[1];
+    FMT_ASSERT(sign == '+' || sign == '-', "");
+    int exp = 0;
+    auto p = exp_pos + 2;  // Skip 'e' and sign.
+    do {
+      FMT_ASSERT(is_digit(*p), "");
+      exp = exp * 10 + (*p++ - '0');
+    } while (p != end);
+    if (sign == '-') exp = -exp;
+    int fraction_size = 0;
+    if (exp_pos != begin + 1) {
+      // Remove trailing zeros.
+      auto fraction_end = exp_pos - 1;
+      while (*fraction_end == '0') --fraction_end;
+      // Move the fractional part left to get rid of the decimal point.
+      fraction_size = static_cast<int>(fraction_end - begin - 1);
+      std::memmove(begin + 1, begin + 2, to_unsigned(fraction_size));
+    }
+    buf.try_resize(to_unsigned(fraction_size) + offset + 1);
+    return exp - fraction_size;
+  }
+}
 
 template <typename T>
 using convert_float_result =
@@ -1848,7 +1994,7 @@ class counting_iterator {
   using difference_type = std::ptrdiff_t;
   using pointer = void;
   using reference = void;
-  using _Unchecked_type = counting_iterator;  // Mark iterator as checked.
+  FMT_UNCHECKED_ITERATOR(counting_iterator);
 
   struct value_type {
     template <typename T> void operator=(const T&) {}
@@ -1915,11 +2061,11 @@ FMT_CONSTEXPR auto write(OutputIt out, const Char* s,
 }
 
 template <typename Char, typename OutputIt>
-FMT_CONSTEXPR20 auto write_nonfinite(OutputIt out, bool isinf,
+FMT_CONSTEXPR20 auto write_nonfinite(OutputIt out, bool isnan,
                                      basic_format_specs<Char> specs,
                                      const float_specs& fspecs) -> OutputIt {
   auto str =
-      isinf ? (fspecs.upper ? "INF" : "inf") : (fspecs.upper ? "NAN" : "nan");
+      isnan ? (fspecs.upper ? "NAN" : "nan") : (fspecs.upper ? "INF" : "inf");
   constexpr size_t str_size = 3;
   auto sign = fspecs.sign;
   auto size = str_size + (sign ? 1 : 0);
@@ -2096,10 +2242,7 @@ FMT_CONSTEXPR20 auto do_write_float(OutputIt out, const DecimalFP& fp,
     // 1234e5 -> 123400000[.0+]
     size += to_unsigned(fp.exponent);
     int num_zeros = fspecs.precision - exp;
-#ifdef FMT_FUZZ
-    if (num_zeros > 5000)
-      throw std::runtime_error("fuzz mode - avoiding excessive cpu use");
-#endif
+    abort_fuzzing_if(num_zeros > 5000);
     if (fspecs.showpoint) {
       ++size;
       if (num_zeros <= 0 && fspecs.format != float_format::fixed) num_zeros = 1;
@@ -2174,50 +2317,36 @@ FMT_CONSTEXPR20 auto write_float(OutputIt out, const DecimalFP& fp,
   }
 }
 
-template <typename T, FMT_ENABLE_IF(std::is_floating_point<T>::value)>
-FMT_CONSTEXPR20 bool isinf(T value) {
-  if (is_constant_evaluated()) {
-#if defined(__cpp_if_constexpr)
-    if constexpr (std::numeric_limits<double>::is_iec559) {
-      auto bits = detail::bit_cast<uint64_t>(static_cast<double>(value));
-      constexpr auto significand_bits =
-          dragonbox::float_info<double>::significand_bits;
-      return (bits & exponent_mask<double>()) &&
-             !(bits & ((uint64_t(1) << significand_bits) - 1));
-    }
-#endif
-  }
-  return std::isinf(value);
+template <typename T> constexpr bool isnan(T value) {
+  return !(value >= value);  // std::isnan doesn't support __float128.
 }
 
-template <typename T, FMT_ENABLE_IF(std::is_floating_point<T>::value)>
+template <typename T, FMT_ENABLE_IF(std::is_floating_point<T>::value &&
+                                    !is_float128<T>::value)>
 FMT_CONSTEXPR20 bool isfinite(T value) {
-  if (is_constant_evaluated()) {
-#if defined(__cpp_if_constexpr)
-    if constexpr (std::numeric_limits<double>::is_iec559) {
-      auto bits = detail::bit_cast<uint64_t>(static_cast<double>(value));
-      return (bits & exponent_mask<double>()) != exponent_mask<double>();
-    }
-#endif
-  }
+  if (is_constant_evaluated()) return !isnan(value - value);
   return std::isfinite(value);
 }
+template <typename T, FMT_ENABLE_IF(is_float128<T>::value)>
+constexpr bool isfinite(T value) {
+  return value - value == 0;  // std::isfinite doesn't support __float128.
+}
 
-template <typename T, FMT_ENABLE_IF(std::is_floating_point<T>::value)>
+template <typename T, FMT_ENABLE_IF(is_floating_point<T>::value)>
 FMT_INLINE FMT_CONSTEXPR bool signbit(T value) {
   if (is_constant_evaluated()) {
 #ifdef __cpp_if_constexpr
     if constexpr (std::numeric_limits<double>::is_iec559) {
       auto bits = detail::bit_cast<uint64_t>(static_cast<double>(value));
-      return (bits & (uint64_t(1) << (num_bits<uint64_t>() - 1))) != 0;
+      return (bits >> (num_bits<uint64_t>() - 1)) != 0;
     }
 #endif
   }
-  return std::signbit(value);
+  return std::signbit(static_cast<double>(value));
 }
 
 template <typename Char, typename OutputIt, typename T,
-          FMT_ENABLE_IF(std::is_floating_point<T>::value)>
+          FMT_ENABLE_IF(is_floating_point<T>::value)>
 FMT_CONSTEXPR20 auto write(OutputIt out, T value,
                            basic_format_specs<Char> specs, locale_ref loc = {})
     -> OutputIt {
@@ -2232,7 +2361,7 @@ FMT_CONSTEXPR20 auto write(OutputIt out, T value,
   }
 
   if (!detail::isfinite(value))
-    return write_nonfinite(out, detail::isinf(value), specs, fspecs);
+    return write_nonfinite(out, detail::isnan(value), specs, fspecs);
 
   if (specs.align == align::numeric && fspecs.sign) {
     auto it = reserve(out, 1);
@@ -2272,12 +2401,7 @@ template <typename Char, typename OutputIt, typename T,
 FMT_CONSTEXPR20 auto write(OutputIt out, T value) -> OutputIt {
   if (is_constant_evaluated())
     return write(out, value, basic_format_specs<Char>());
-
   if (const_check(!is_supported_floating_point(value))) return out;
-
-  using floaty = conditional_t<std::is_same<T, long double>::value, double, T>;
-  using uint = typename dragonbox::float_info<floaty>::carrier_uint;
-  auto bits = bit_cast<uint>(value);
 
   auto fspecs = float_specs();
   if (detail::signbit(value)) {
@@ -2286,16 +2410,18 @@ FMT_CONSTEXPR20 auto write(OutputIt out, T value) -> OutputIt {
   }
 
   constexpr auto specs = basic_format_specs<Char>();
+  using floaty = conditional_t<std::is_same<T, long double>::value, double, T>;
+  using uint = typename dragonbox::float_info<floaty>::carrier_uint;
   uint mask = exponent_mask<floaty>();
-  if ((bits & mask) == mask)
-    return write_nonfinite(out, std::isinf(value), specs, fspecs);
+  if ((bit_cast<uint>(value) & mask) == mask)
+    return write_nonfinite(out, std::isnan(value), specs, fspecs);
 
   auto dec = dragonbox::to_decimal(static_cast<floaty>(value));
   return write_float(out, dec, specs, fspecs, {});
 }
 
 template <typename Char, typename OutputIt, typename T,
-          FMT_ENABLE_IF(std::is_floating_point<T>::value &&
+          FMT_ENABLE_IF(is_floating_point<T>::value &&
                         !is_fast_float<T>::value)>
 inline auto write(OutputIt out, T value) -> OutputIt {
   return write(out, value, basic_format_specs<Char>());
@@ -2897,11 +3023,6 @@ constexpr auto format_as(Enum e) noexcept -> underlying_t<Enum> {
 }
 }  // namespace enums
 
-#ifdef __cpp_lib_byte
-inline auto format_as(std::byte b) -> unsigned char { return underlying(b); }
-FMT_FORMAT_AS(std::byte, unsigned char);
-#endif
-
 class bytes {
  private:
   string_view data_;
@@ -3150,9 +3271,10 @@ void vformat_to(
     basic_format_parse_context<Char> parse_context;
     buffer_context<Char> context;
 
-    format_handler(buffer_appender<Char> out, basic_string_view<Char> str,
-                   basic_format_args<buffer_context<Char>> args, locale_ref loc)
-        : parse_context(str), context(out, args, loc) {}
+    format_handler(buffer_appender<Char> p_out, basic_string_view<Char> str,
+                   basic_format_args<buffer_context<Char>> p_args,
+                   locale_ref p_loc)
+        : parse_context(str), context(p_out, p_args, p_loc) {}
 
     void on_text(const Char* begin, const Char* end) {
       auto text = basic_string_view<Char>(begin, to_unsigned(end - begin));
@@ -3215,14 +3337,6 @@ extern template auto format_float<double>(double value, int precision,
 extern template auto format_float<long double>(long double value, int precision,
                                                float_specs specs,
                                                buffer<char>& buf) -> int;
-void snprintf_float(float, int, float_specs, buffer<char>&) = delete;
-extern template auto snprintf_float<double>(double value, int precision,
-                                            float_specs specs,
-                                            buffer<char>& buf) -> int;
-extern template auto snprintf_float<long double>(long double value,
-                                                 int precision,
-                                                 float_specs specs,
-                                                 buffer<char>& buf) -> int;
 #endif  // FMT_HEADER_ONLY
 
 FMT_END_DETAIL_NAMESPACE
@@ -3240,11 +3354,9 @@ inline namespace literals {
   \endrst
  */
 #  if FMT_USE_NONTYPE_TEMPLATE_PARAMETERS
-template <detail_exported::fixed_string Str>
-constexpr auto operator""_a()
-    -> detail::udl_arg<remove_cvref_t<decltype(Str.data[0])>,
-                       sizeof(Str.data) / sizeof(decltype(Str.data[0])), Str> {
-  return {};
+template <detail_exported::fixed_string Str> constexpr auto operator""_a() {
+  using char_t = remove_cvref_t<decltype(Str.data[0])>;
+  return detail::udl_arg<char_t, sizeof(Str.data) / sizeof(char_t), Str>();
 }
 #  else
 constexpr auto operator"" _a(const char* s, size_t) -> detail::udl_arg<char> {

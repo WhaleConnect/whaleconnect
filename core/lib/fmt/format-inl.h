@@ -44,19 +44,6 @@ FMT_FUNC void throw_format_error(const char* message) {
   FMT_THROW(format_error(message));
 }
 
-#ifndef _MSC_VER
-#  define FMT_SNPRINTF snprintf
-#else  // _MSC_VER
-inline int fmt_snprintf(char* buffer, size_t size, const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  int result = vsnprintf_s(buffer, size, _TRUNCATE, format, args);
-  va_end(args);
-  return result;
-}
-#  define FMT_SNPRINTF fmt_snprintf
-#endif  // _MSC_VER
-
 FMT_FUNC void format_error_code(detail::buffer<char>& out, int error_code,
                                 string_view message) noexcept {
   // Report error code making sure that the output fits into
@@ -215,14 +202,7 @@ template <typename T> struct bits {
       static_cast<int>(sizeof(T) * std::numeric_limits<unsigned char>::digits);
 };
 
-// Returns the number of significand bits in Float excluding the implicit bit.
-template <typename Float> constexpr int num_significand_bits() {
-  // Subtract 1 to account for an implicit most significant bit in the
-  // normalized form.
-  return std::numeric_limits<Float>::digits - 1;
-}
-
-// A floating-point number f * pow(2, e).
+// A floating-point number f * pow(2, e) where F is an unsigned type.
 template <typename F> struct basic_fp {
   F f;
   int e;
@@ -232,44 +212,36 @@ template <typename F> struct basic_fp {
   constexpr basic_fp() : f(0), e(0) {}
   constexpr basic_fp(uint64_t f_val, int e_val) : f(f_val), e(e_val) {}
 
-  // Constructs fp from an IEEE754 floating-point number. It is a template to
-  // prevent compile errors on systems where n is not IEEE754.
-  template <typename Float> explicit FMT_CONSTEXPR basic_fp(Float n) {
-    assign(n);
-  }
+  // Constructs fp from an IEEE754 floating-point number.
+  template <typename Float> FMT_CONSTEXPR basic_fp(Float n) { assign(n); }
 
-  template <typename Float>
-  using is_supported = bool_constant<std::numeric_limits<Float>::is_iec559 &&
-                                     std::numeric_limits<Float>::digits <= 64>;
-
-  // Assigns d to this and return true iff predecessor is closer than successor.
-  template <typename Float, FMT_ENABLE_IF(is_supported<Float>::value)>
-  FMT_CONSTEXPR bool assign(Float n) {
-    // Assume float is in the format [sign][exponent][significand].
-    const int num_float_significand_bits =
-        detail::num_significand_bits<Float>();
-    const uint64_t implicit_bit = 1ULL << num_float_significand_bits;
+  // Assigns n to this and return true iff predecessor is closer than successor.
+  template <typename Float> FMT_CONSTEXPR bool assign(Float n) {
+    static_assert((std::numeric_limits<Float>::is_iec559 &&
+                   std::numeric_limits<Float>::digits <= 113) ||
+                      is_float128<Float>::value,
+                  "unsupported FP");
+    // Assume Float is in the format [sign][exponent][significand].
     using carrier_uint = typename dragonbox::float_info<Float>::carrier_uint;
-    const carrier_uint significand_mask = implicit_bit - 1;
+    const auto num_float_significand_bits =
+        detail::num_significand_bits<Float>();
+    const auto implicit_bit = carrier_uint(1) << num_float_significand_bits;
+    const auto significand_mask = implicit_bit - 1;
     auto u = bit_cast<carrier_uint>(n);
-    f = static_cast<uint64_t>(u & significand_mask);
-    int biased_e =
-        static_cast<int>((u & exponent_mask<Float>()) >>
-                         dragonbox::float_info<Float>::significand_bits);
+    f = static_cast<F>(u & significand_mask);
+    auto biased_e = static_cast<int>((u & exponent_mask<Float>()) >>
+                                     num_float_significand_bits);
     // The predecessor is closer if n is a normalized power of 2 (f == 0) other
     // than the smallest normalized number (biased_e > 1).
-    bool is_predecessor_closer = f == 0 && biased_e > 1;
-    if (biased_e != 0)
-      f += implicit_bit;
-    else
+    auto is_predecessor_closer = f == 0 && biased_e > 1;
+    if (biased_e == 0)
       biased_e = 1;  // Subnormals use biased exponent 1 (min exponent).
-    const int exponent_bias = std::numeric_limits<Float>::max_exponent - 1;
-    e = biased_e - exponent_bias - num_float_significand_bits;
+    else if (has_implicit_bit<Float>())
+      f += static_cast<F>(implicit_bit);
+    e = biased_e - exponent_bias<Float>() - num_float_significand_bits;
+    if (!has_implicit_bit<Float>()) ++e;
     return is_predecessor_closer;
   }
-
-  template <typename Float, FMT_ENABLE_IF(!is_supported<Float>::value)>
-  bool assign(Float) = delete;
 };
 
 using fp = basic_fp<unsigned long long>;
@@ -396,21 +368,37 @@ class bigint {
     if (carry != 0) bigits_.push_back(carry);
   }
 
-  FMT_CONSTEXPR20 void multiply(uint64_t value) {
-    const bigit mask = ~bigit(0);
-    const double_bigit lower = value & mask;
-    const double_bigit upper = value >> bigit_bits;
-    double_bigit carry = 0;
+  template <typename UInt, FMT_ENABLE_IF(std::is_same<UInt, uint64_t>::value ||
+                                         std::is_same<UInt, uint128_t>::value)>
+  FMT_CONSTEXPR20 void multiply(UInt value) {
+    using half_uint =
+        conditional_t<std::is_same<UInt, uint128_t>::value, uint64_t, uint32_t>;
+    const int shift = num_bits<half_uint>() - bigit_bits;
+    const UInt lower = static_cast<half_uint>(value);
+    const UInt upper = value >> num_bits<half_uint>();
+    UInt carry = 0;
     for (size_t i = 0, n = bigits_.size(); i < n; ++i) {
-      double_bigit result = bigits_[i] * lower + (carry & mask);
-      carry =
-          bigits_[i] * upper + (result >> bigit_bits) + (carry >> bigit_bits);
+      UInt result = lower * bigits_[i] + static_cast<bigit>(carry);
+      carry = (upper * bigits_[i] << shift) + (result >> bigit_bits) +
+              (carry >> bigit_bits);
       bigits_[i] = static_cast<bigit>(result);
     }
     while (carry != 0) {
-      bigits_.push_back(carry & mask);
+      bigits_.push_back(static_cast<bigit>(carry));
       carry >>= bigit_bits;
     }
+  }
+
+  template <typename UInt, FMT_ENABLE_IF(std::is_same<UInt, uint64_t>::value ||
+                                         std::is_same<UInt, uint128_t>::value)>
+  FMT_CONSTEXPR20 void assign(UInt n) {
+    size_t num_bigits = 0;
+    do {
+      bigits_[num_bigits++] = static_cast<bigit>(n);
+      n >>= bigit_bits;
+    } while (n != 0);
+    bigits_.resize(num_bigits);
+    exp_ = 0;
   }
 
  public:
@@ -428,14 +416,9 @@ class bigint {
     exp_ = other.exp_;
   }
 
-  FMT_CONSTEXPR20 void assign(uint64_t n) {
-    size_t num_bigits = 0;
-    do {
-      bigits_[num_bigits++] = n & ~bigit(0);
-      n >>= bigit_bits;
-    } while (n != 0);
-    bigits_.resize(num_bigits);
-    exp_ = 0;
+  template <typename Int> FMT_CONSTEXPR20 void operator=(Int n) {
+    FMT_ASSERT(n > 0, "");
+    assign(uint64_or_128_t<Int>(n));
   }
 
   FMT_CONSTEXPR20 int num_bigits() const {
@@ -506,14 +489,14 @@ class bigint {
   // Assigns pow(10, exp) to this bigint.
   FMT_CONSTEXPR20 void assign_pow10(int exp) {
     FMT_ASSERT(exp >= 0, "");
-    if (exp == 0) return assign(1);
+    if (exp == 0) return *this = 1;
     // Find the top bit.
     int bitmask = 1;
     while (exp >= bitmask) bitmask <<= 1;
     bitmask >>= 1;
     // pow(10, exp) = pow(5, exp) * pow(2, exp). First compute pow(5, exp) by
     // repeated squaring and multiplication.
-    assign(5);
+    *this = 5;
     bitmask >>= 1;
     while (bitmask != 0) {
       square();
@@ -753,39 +736,31 @@ FMT_INLINE FMT_CONSTEXPR20 digits::result grisu_gen_digits(
   }
 }
 
-// A 128-bit integer type used internally.
-struct uint128_wrapper {
-  uint128_wrapper() = default;
-
-  uint64_t high_;
-  uint64_t low_;
-
-  constexpr uint128_wrapper(uint64_t high, uint64_t low) noexcept
-      : high_{high}, low_{low} {}
-
-  constexpr uint64_t high() const noexcept { return high_; }
-  constexpr uint64_t low() const noexcept { return low_; }
-
-  uint128_wrapper& operator+=(uint64_t n) noexcept {
-#if FMT_HAS_BUILTIN(__builtin_addcll)
-    unsigned long long carry;
-    low_ = __builtin_addcll(low_, n, 0, &carry);
-    high_ += carry;
-#elif FMT_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
-    unsigned long long result;
-    auto carry = __builtin_ia32_addcarryx_u64(0, low_, n, &result);
-    low_ = result;
-    high_ += carry;
-#elif defined(_MSC_VER) && defined(_M_X64)
-    auto carry = _addcarry_u64(0, low_, n, &low_);
-    _addcarry_u64(carry, high_, 0, &high_);
-#else
-    low_ += n;
-    high_ += (low_ < n ? 1 : 0);
-#endif
+inline FMT_CONSTEXPR20 uint128_fallback& uint128_fallback::operator+=(
+    uint64_t n) noexcept {
+  if (is_constant_evaluated()) {
+    lo_ += n;
+    hi_ += (lo_ < n ? 1 : 0);
     return *this;
   }
-};
+#if FMT_HAS_BUILTIN(__builtin_addcll)
+  unsigned long long carry;
+  lo_ = __builtin_addcll(lo_, n, 0, &carry);
+  hi_ += carry;
+#elif FMT_HAS_BUILTIN(__builtin_ia32_addcarryx_u64)
+  unsigned long long result;
+  auto carry = __builtin_ia32_addcarryx_u64(0, lo_, n, &result);
+  lo_ = result;
+  hi_ += carry;
+#elif defined(_MSC_VER) && defined(_M_X64)
+  auto carry = _addcarry_u64(0, lo_, n, &lo_);
+  _addcarry_u64(carry, hi_, 0, &hi_);
+#else
+  lo_ += n;
+  hi_ += (lo_ < n ? 1 : 0);
+#endif
+  return *this;
+}
 
 // Compilers should be able to optimize this into the ror instruction.
 FMT_CONSTEXPR inline uint32_t rotr(uint32_t n, uint32_t r) noexcept {
@@ -797,20 +772,17 @@ FMT_CONSTEXPR inline uint64_t rotr(uint64_t n, uint32_t r) noexcept {
   return (n >> r) | (n << (64 - r));
 }
 
-// Implementation of Dragonbox algorithm: https://github.com/jk-jeon/dragonbox.
-namespace dragonbox {
 // Computes 128-bit result of multiplication of two 64-bit unsigned integers.
-inline uint128_wrapper umul128(uint64_t x, uint64_t y) noexcept {
+inline uint128_fallback umul128(uint64_t x, uint64_t y) noexcept {
 #if FMT_USE_INT128
   auto p = static_cast<uint128_opt>(x) * static_cast<uint128_opt>(y);
   return {static_cast<uint64_t>(p >> 64), static_cast<uint64_t>(p)};
 #elif defined(_MSC_VER) && defined(_M_X64)
-  uint128_wrapper result;
-  result.low_ = _umul128(x, y, &result.high_);
+  auto result = uint128_fallback();
+  result.lo_ = _umul128(x, y, &result.hi_);
   return result;
 #else
-  const uint64_t mask =
-      static_cast<uint64_t>(std::numeric_limits<uint32_t>::max());
+  const uint64_t mask = static_cast<uint64_t>(max_value<uint32_t>());
 
   uint64_t a = x >> 32;
   uint64_t b = x & mask;
@@ -829,6 +801,8 @@ inline uint128_wrapper umul128(uint64_t x, uint64_t y) noexcept {
 #endif
 }
 
+// Implementation of Dragonbox algorithm: https://github.com/jk-jeon/dragonbox.
+namespace dragonbox {
 // Computes upper 64 bits of multiplication of two 64-bit unsigned integers.
 inline uint64_t umul128_upper64(uint64_t x, uint64_t y) noexcept {
 #if FMT_USE_INT128
@@ -843,9 +817,9 @@ inline uint64_t umul128_upper64(uint64_t x, uint64_t y) noexcept {
 
 // Computes upper 128 bits of multiplication of a 64-bit unsigned integer and a
 // 128-bit unsigned integer.
-inline uint128_wrapper umul192_upper128(uint64_t x,
-                                        uint128_wrapper y) noexcept {
-  uint128_wrapper r = umul128(x, y.high());
+inline uint128_fallback umul192_upper128(uint64_t x,
+                                         uint128_fallback y) noexcept {
+  uint128_fallback r = umul128(x, y.high());
   r += umul128_upper64(x, y.low());
   return r;
 }
@@ -858,10 +832,10 @@ inline uint64_t umul96_upper64(uint32_t x, uint64_t y) noexcept {
 
 // Computes lower 128 bits of multiplication of a 64-bit unsigned integer and a
 // 128-bit unsigned integer.
-inline uint128_wrapper umul192_lower128(uint64_t x,
-                                        uint128_wrapper y) noexcept {
+inline uint128_fallback umul192_lower128(uint64_t x,
+                                         uint128_fallback y) noexcept {
   uint64_t high = x * y.high();
-  uint128_wrapper high_low = umul128(x, y.low());
+  uint128_fallback high_low = umul128(x, y.low());
   return {high + high_low.high(), high_low.low()};
 }
 
@@ -1016,22 +990,21 @@ template <> struct cache_accessor<float> {
   static carrier_uint compute_left_endpoint_for_shorter_interval_case(
       const cache_entry_type& cache, int beta) noexcept {
     return static_cast<carrier_uint>(
-        (cache - (cache >> (float_info<float>::significand_bits + 2))) >>
-        (64 - float_info<float>::significand_bits - 1 - beta));
+        (cache - (cache >> (num_significand_bits<float>() + 2))) >>
+        (64 - num_significand_bits<float>() - 1 - beta));
   }
 
   static carrier_uint compute_right_endpoint_for_shorter_interval_case(
       const cache_entry_type& cache, int beta) noexcept {
     return static_cast<carrier_uint>(
-        (cache + (cache >> (float_info<float>::significand_bits + 1))) >>
-        (64 - float_info<float>::significand_bits - 1 - beta));
+        (cache + (cache >> (num_significand_bits<float>() + 1))) >>
+        (64 - num_significand_bits<float>() - 1 - beta));
   }
 
   static carrier_uint compute_round_up_for_shorter_interval_case(
       const cache_entry_type& cache, int beta) noexcept {
     return (static_cast<carrier_uint>(
-                cache >>
-                (64 - float_info<float>::significand_bits - 2 - beta)) +
+                cache >> (64 - num_significand_bits<float>() - 2 - beta)) +
             1) /
            2;
   }
@@ -1039,13 +1012,13 @@ template <> struct cache_accessor<float> {
 
 template <> struct cache_accessor<double> {
   using carrier_uint = float_info<double>::carrier_uint;
-  using cache_entry_type = uint128_wrapper;
+  using cache_entry_type = uint128_fallback;
 
-  static uint128_wrapper get_cached_power(int k) noexcept {
+  static uint128_fallback get_cached_power(int k) noexcept {
     FMT_ASSERT(k >= float_info<double>::min_k && k <= float_info<double>::max_k,
                "k is out of range");
 
-    static constexpr const uint128_wrapper pow10_significands[] = {
+    static constexpr const uint128_fallback pow10_significands[] = {
 #if FMT_USE_FULL_CACHE_DRAGONBOX
       {0xff77b1fcbebcdc4f, 0x25e8e89c13bb0f7b},
       {0x9faacf3df73609b1, 0x77b191618c54e9ad},
@@ -1717,7 +1690,7 @@ template <> struct cache_accessor<double> {
     int offset = k - kb;
 
     // Get base cache.
-    uint128_wrapper base_cache = pow10_significands[cache_index];
+    uint128_fallback base_cache = pow10_significands[cache_index];
     if (offset == 0) return base_cache;
 
     // Compute the required amount of bit-shift.
@@ -1726,8 +1699,8 @@ template <> struct cache_accessor<double> {
 
     // Try to recover the real cache.
     uint64_t pow5 = powers_of_5_64[offset];
-    uint128_wrapper recovered_cache = umul128(base_cache.high(), pow5);
-    uint128_wrapper middle_low = umul128(base_cache.low(), pow5);
+    uint128_fallback recovered_cache = umul128(base_cache.high(), pow5);
+    uint128_fallback middle_low = umul128(base_cache.low(), pow5);
 
     recovered_cache += middle_low.high();
 
@@ -1735,8 +1708,8 @@ template <> struct cache_accessor<double> {
     uint64_t middle_to_low = recovered_cache.low() << (64 - alpha);
 
     recovered_cache =
-        uint128_wrapper{(recovered_cache.low() >> alpha) | high_to_middle,
-                        ((middle_low.low() >> alpha) | middle_to_low)};
+        uint128_fallback{(recovered_cache.low() >> alpha) | high_to_middle,
+                         ((middle_low.low() >> alpha) | middle_to_low)};
     FMT_ASSERT(recovered_cache.low() + 1 != 0, "");
     return {recovered_cache.high(), recovered_cache.low() + 1};
 #endif
@@ -1775,21 +1748,20 @@ template <> struct cache_accessor<double> {
   static carrier_uint compute_left_endpoint_for_shorter_interval_case(
       const cache_entry_type& cache, int beta) noexcept {
     return (cache.high() -
-            (cache.high() >> (float_info<double>::significand_bits + 2))) >>
-           (64 - float_info<double>::significand_bits - 1 - beta);
+            (cache.high() >> (num_significand_bits<double>() + 2))) >>
+           (64 - num_significand_bits<double>() - 1 - beta);
   }
 
   static carrier_uint compute_right_endpoint_for_shorter_interval_case(
       const cache_entry_type& cache, int beta) noexcept {
     return (cache.high() +
-            (cache.high() >> (float_info<double>::significand_bits + 1))) >>
-           (64 - float_info<double>::significand_bits - 1 - beta);
+            (cache.high() >> (num_significand_bits<double>() + 1))) >>
+           (64 - num_significand_bits<double>() - 1 - beta);
   }
 
   static carrier_uint compute_round_up_for_shorter_interval_case(
       const cache_entry_type& cache, int beta) noexcept {
-    return ((cache.high() >>
-             (64 - float_info<double>::significand_bits - 2 - beta)) +
+    return ((cache.high() >> (64 - num_significand_bits<double>() - 2 - beta)) +
             1) /
            2;
   }
@@ -1798,11 +1770,10 @@ template <> struct cache_accessor<double> {
 // Various integer checks
 template <class T>
 bool is_left_endpoint_integer_shorter_interval(int exponent) noexcept {
-  return exponent >=
-             float_info<
-                 T>::case_shorter_interval_left_endpoint_lower_threshold &&
-         exponent <=
-             float_info<T>::case_shorter_interval_left_endpoint_upper_threshold;
+  const int case_shorter_interval_left_endpoint_lower_threshold = 2;
+  const int case_shorter_interval_left_endpoint_upper_threshold = 3;
+  return exponent >= case_shorter_interval_left_endpoint_lower_threshold &&
+         exponent <= case_shorter_interval_left_endpoint_upper_threshold;
 }
 
 // Remove trailing zeros from n and return the number of zeros removed (float)
@@ -1814,12 +1785,12 @@ FMT_INLINE int remove_trailing_zeros(uint32_t& n) noexcept {
   int s = 0;
   while (true) {
     auto q = rotr(n * mod_inv_25, 2);
-    if (q > std::numeric_limits<uint32_t>::max() / 100) break;
+    if (q > max_value<uint32_t>() / 100) break;
     n = q;
     s += 2;
   }
   auto q = rotr(n * mod_inv_5, 1);
-  if (q <= std::numeric_limits<uint32_t>::max() / 10) {
+  if (q <= max_value<uint32_t>() / 10) {
     n = q;
     s |= 1;
   }
@@ -1846,12 +1817,12 @@ FMT_INLINE int remove_trailing_zeros(uint64_t& n) noexcept {
     int s = 8;
     while (true) {
       auto q = rotr(n32 * mod_inv_25, 2);
-      if (q > std::numeric_limits<uint32_t>::max() / 100) break;
+      if (q > max_value<uint32_t>() / 100) break;
       n32 = q;
       s += 2;
     }
     auto q = rotr(n32 * mod_inv_5, 1);
-    if (q <= std::numeric_limits<uint32_t>::max() / 10) {
+    if (q <= max_value<uint32_t>() / 10) {
       n32 = q;
       s |= 1;
     }
@@ -1867,12 +1838,12 @@ FMT_INLINE int remove_trailing_zeros(uint64_t& n) noexcept {
   int s = 0;
   while (true) {
     auto q = rotr(n * mod_inv_25, 2);
-    if (q > std::numeric_limits<uint64_t>::max() / 100) break;
+    if (q > max_value<uint64_t>() / 100) break;
     n = q;
     s += 2;
   }
   auto q = rotr(n * mod_inv_5, 1);
-  if (q <= std::numeric_limits<uint64_t>::max() / 10) {
+  if (q <= max_value<uint64_t>() / 10) {
     n = q;
     s |= 1;
   }
@@ -1937,25 +1908,25 @@ template <typename T> decimal_fp<T> to_decimal(T x) noexcept {
 
   // Extract significand bits and exponent bits.
   const carrier_uint significand_mask =
-      (static_cast<carrier_uint>(1) << float_info<T>::significand_bits) - 1;
+      (static_cast<carrier_uint>(1) << num_significand_bits<T>()) - 1;
   carrier_uint significand = (br & significand_mask);
-  int exponent = static_cast<int>((br & exponent_mask<T>()) >>
-                                  float_info<T>::significand_bits);
+  int exponent =
+      static_cast<int>((br & exponent_mask<T>()) >> num_significand_bits<T>());
 
   if (exponent != 0) {  // Check if normal.
-    exponent += float_info<T>::exponent_bias - float_info<T>::significand_bits;
+    exponent -= exponent_bias<T>() + num_significand_bits<T>();
 
     // Shorter interval case; proceed like Schubfach.
     // In fact, when exponent == 1 and significand == 0, the interval is
     // regular. However, it can be shown that the end-results are anyway same.
     if (significand == 0) return shorter_interval_case<T>(exponent);
 
-    significand |=
-        (static_cast<carrier_uint>(1) << float_info<T>::significand_bits);
+    significand |= (static_cast<carrier_uint>(1) << num_significand_bits<T>());
   } else {
     // Subnormal case; the interval is always regular.
     if (significand == 0) return {0, 0};
-    exponent = float_info<T>::min_exponent - float_info<T>::significand_bits;
+    exponent =
+        std::numeric_limits<T>::min_exponent - num_significand_bits<T>() - 1;
   }
 
   const bool include_left_endpoint = (significand % 2 == 0);
@@ -2068,12 +2039,19 @@ small_divisor_case_label:
 }
 }  // namespace dragonbox
 
+// format_dragon flags.
+enum dragon {
+  predecessor_closer = 1,
+  fixup = 2,  // Run fixup to correct exp10 which can be off by one.
+  fixed = 4,
+};
+
 // Formats a floating-point number using a variation of the Fixed-Precision
 // Positive Floating-Point Printout ((FPP)^2) algorithm by Steele & White:
 // https://fmt.dev/papers/p372-steele.pdf.
-FMT_CONSTEXPR20 inline void format_dragon(fp value, bool is_predecessor_closer,
-                                          int num_digits, buffer<char>& buf,
-                                          int& exp10) {
+FMT_CONSTEXPR20 inline void format_dragon(basic_fp<uint128_t> value,
+                                          unsigned flags, int num_digits,
+                                          buffer<char>& buf, int& exp10) {
   bigint numerator;    // 2 * R in (FPP)^2.
   bigint denominator;  // 2 * S in (FPP)^2.
   // lower and upper are differences between value and corresponding boundaries.
@@ -2083,14 +2061,15 @@ FMT_CONSTEXPR20 inline void format_dragon(fp value, bool is_predecessor_closer,
   // Shift numerator and denominator by an extra bit or two (if lower boundary
   // is closer) to make lower and upper integers. This eliminates multiplication
   // by 2 during later computations.
+  bool is_predecessor_closer = (flags & dragon::predecessor_closer) != 0;
   int shift = is_predecessor_closer ? 2 : 1;
   if (value.e >= 0) {
-    numerator.assign(value.f);
+    numerator = value.f;
     numerator <<= value.e + shift;
-    lower.assign(1);
+    lower = 1;
     lower <<= value.e;
-    if (shift != 1) {
-      upper_store.assign(1);
+    if (is_predecessor_closer) {
+      upper_store = 1;
       upper_store <<= value.e + 1;
       upper = &upper_store;
     }
@@ -2099,31 +2078,42 @@ FMT_CONSTEXPR20 inline void format_dragon(fp value, bool is_predecessor_closer,
   } else if (exp10 < 0) {
     numerator.assign_pow10(-exp10);
     lower.assign(numerator);
-    if (shift != 1) {
+    if (is_predecessor_closer) {
       upper_store.assign(numerator);
       upper_store <<= 1;
       upper = &upper_store;
     }
     numerator *= value.f;
     numerator <<= shift;
-    denominator.assign(1);
+    denominator = 1;
     denominator <<= shift - value.e;
   } else {
-    numerator.assign(value.f);
+    numerator = value.f;
     numerator <<= shift;
     denominator.assign_pow10(exp10);
     denominator <<= shift - value.e;
-    lower.assign(1);
-    if (shift != 1) {
-      upper_store.assign(1ULL << 1);
+    lower = 1;
+    if (is_predecessor_closer) {
+      upper_store = 1ULL << 1;
       upper = &upper_store;
     }
+  }
+  bool even = (value.f & 1) == 0;
+  if (!upper) upper = &lower;
+  if ((flags & dragon::fixup) != 0) {
+    if (add_compare(numerator, *upper, denominator) + even <= 0) {
+      --exp10;
+      numerator *= 10;
+      if (num_digits < 0) {
+        lower *= 10;
+        if (upper != &lower) *upper *= 10;
+      }
+    }
+    if ((flags & dragon::fixed) != 0) adjust_precision(num_digits, exp10 + 1);
   }
   // Invariant: value == (numerator / denominator) * pow(10, exp10).
   if (num_digits < 0) {
     // Generate the shortest representation.
-    if (!upper) upper = &lower;
-    bool even = (value.f & 1) == 0;
     num_digits = 0;
     char* data = buf.data();
     for (;;) {
@@ -2186,6 +2176,17 @@ FMT_CONSTEXPR20 inline void format_dragon(fp value, bool is_predecessor_closer,
   buf[num_digits - 1] = static_cast<char>('0' + digit);
 }
 
+#ifdef _MSC_VER
+FMT_FUNC auto fmt_snprintf(char* buf, size_t size, const char* fmt, ...)
+    -> int {
+  auto args = va_list();
+  va_start(args, fmt);
+  int result = vsnprintf_s(buf, size, _TRUNCATE, fmt, args);
+  va_end(args);
+  return result;
+}
+#endif
+
 template <typename Float>
 FMT_HEADER_ONLY_CONSTEXPR20 int format_float(Float value, int precision,
                                              float_specs specs,
@@ -2193,6 +2194,7 @@ FMT_HEADER_ONLY_CONSTEXPR20 int format_float(Float value, int precision,
   // float is passed as double to reduce the number of instantiations.
   static_assert(!std::is_same<Float, float>::value, "");
   FMT_ASSERT(value >= 0, "value is negative");
+  auto converted_value = convert_float(value);
 
   const bool fixed = specs.format == float_format::fixed;
   if (value <= 0) {  // <= instead of == to silence a warning.
@@ -2207,10 +2209,21 @@ FMT_HEADER_ONLY_CONSTEXPR20 int format_float(Float value, int precision,
 
   int exp = 0;
   bool use_dragon = true;
+  unsigned dragon_flags = 0;
   if (!is_fast_float<Float>()) {
-    // Use floor because 0.9 = 9e-1.
-    exp = static_cast<int>(std::floor(std::log10(value)));
-    if (fixed) adjust_precision(precision, exp + 1);
+    const auto inv_log2_10 = 0.3010299956639812;  // 1 / log2(10)
+    const auto e = basic_fp<typename dragonbox::float_info<
+        decltype(converted_value)>::carrier_uint>(converted_value)
+                       .e;
+    // Compute exp, an approximate power of 10, such that
+    //   10^(exp - 1) <= value < 10^exp or 10^exp <= value < 10^(exp + 1).
+    // This is based on log10(value) == log2(value) / log2(10) and approximation
+    // of log2(value) by e + num_fraction_bits idea from double-conversion.
+    auto num_fraction_bits =
+        num_significand_bits<Float>() - (has_implicit_bit<Float>() ? 0 : 1);
+    exp = static_cast<int>(
+        std::ceil((e + num_fraction_bits) * inv_log2_10 - 1e-10));
+    dragon_flags = dragon::fixup;
   } else if (!is_constant_evaluated() && precision < 0) {
     // Use Dragonbox for the shortest format.
     if (specs.binary32) {
@@ -2226,7 +2239,7 @@ FMT_HEADER_ONLY_CONSTEXPR20 int format_float(Float value, int precision,
     // https://www.cs.tufts.edu/~nr/cs257/archive/florian-loitsch/printf.pdf.
     const int min_exp = -60;  // alpha in Grisu.
     int cached_exp10 = 0;     // K in Grisu.
-    fp normalized = normalize(fp(convert_float(value)));
+    fp normalized = normalize(fp(converted_value));
     const auto cached_pow = get_cached_power(
         min_exp - (normalized.e + fp::num_significand_bits), cached_exp10);
     normalized = normalized * cached_pow;
@@ -2242,15 +2255,17 @@ FMT_HEADER_ONLY_CONSTEXPR20 int format_float(Float value, int precision,
     }
   }
   if (use_dragon) {
-    auto f = fp();
+    auto f = basic_fp<uint128_t>();
     bool is_predecessor_closer = specs.binary32
                                      ? f.assign(static_cast<float>(value))
-                                     : f.assign(convert_float(value));
+                                     : f.assign(converted_value);
+    if (is_predecessor_closer) dragon_flags |= dragon::predecessor_closer;
+    if (fixed) dragon_flags |= dragon::fixed;
     // Limit precision to the maximum possible number of significant digits in
     // an IEEE754 double because we don't need to generate zeros.
     const int max_double_digits = 767;
     if (precision > max_double_digits) precision = max_double_digits;
-    format_dragon(f, is_predecessor_closer, precision, buf, exp);
+    format_dragon(f, dragon_flags, precision, buf, exp);
   }
   if (!fixed && !specs.showpoint) {
     // Remove trailing zeros.
@@ -2263,120 +2278,17 @@ FMT_HEADER_ONLY_CONSTEXPR20 int format_float(Float value, int precision,
   }
   return exp;
 }
-
-template <typename T>
-int snprintf_float(T value, int precision, float_specs specs,
-                   buffer<char>& buf) {
-  // Buffer capacity must be non-zero, otherwise MSVC's vsnprintf_s will fail.
-  FMT_ASSERT(buf.capacity() > buf.size(), "empty buffer");
-  static_assert(!std::is_same<T, float>::value, "");
-
-  // Subtract 1 to account for the difference in precision since we use %e for
-  // both general and exponent format.
-  if (specs.format == float_format::general ||
-      specs.format == float_format::exp)
-    precision = (precision >= 0 ? precision : 6) - 1;
-
-  // Build the format string.
-  enum { max_format_size = 7 };  // The longest format is "%#.*Le".
-  char format[max_format_size];
-  char* format_ptr = format;
-  *format_ptr++ = '%';
-  if (specs.showpoint && specs.format == float_format::hex) *format_ptr++ = '#';
-  if (precision >= 0) {
-    *format_ptr++ = '.';
-    *format_ptr++ = '*';
-  }
-  if (std::is_same<T, long double>()) *format_ptr++ = 'L';
-  *format_ptr++ = specs.format != float_format::hex
-                      ? (specs.format == float_format::fixed ? 'f' : 'e')
-                      : (specs.upper ? 'A' : 'a');
-  *format_ptr = '\0';
-
-  // Format using snprintf.
-  auto offset = buf.size();
-  for (;;) {
-    auto begin = buf.data() + offset;
-    auto capacity = buf.capacity() - offset;
-#ifdef FMT_FUZZ
-    if (precision > 100000)
-      throw std::runtime_error(
-          "fuzz mode - avoid large allocation inside snprintf");
-#endif
-    // Suppress the warning about a nonliteral format string.
-    // Cannot use auto because of a bug in MinGW (#1532).
-    int (*snprintf_ptr)(char*, size_t, const char*, ...) = FMT_SNPRINTF;
-    int result = precision >= 0
-                     ? snprintf_ptr(begin, capacity, format, precision, value)
-                     : snprintf_ptr(begin, capacity, format, value);
-    if (result < 0) {
-      // The buffer will grow exponentially.
-      buf.try_reserve(buf.capacity() + 1);
-      continue;
-    }
-    auto size = to_unsigned(result);
-    // Size equal to capacity means that the last character was truncated.
-    if (size >= capacity) {
-      buf.try_reserve(size + offset + 1);  // Add 1 for the terminating '\0'.
-      continue;
-    }
-    auto is_digit = [](char c) { return c >= '0' && c <= '9'; };
-    if (specs.format == float_format::fixed) {
-      if (precision == 0) {
-        buf.try_resize(size);
-        return 0;
-      }
-      // Find and remove the decimal point.
-      auto end = begin + size, p = end;
-      do {
-        --p;
-      } while (is_digit(*p));
-      int fraction_size = static_cast<int>(end - p - 1);
-      std::memmove(p, p + 1, to_unsigned(fraction_size));
-      buf.try_resize(size - 1);
-      return -fraction_size;
-    }
-    if (specs.format == float_format::hex) {
-      buf.try_resize(size + offset);
-      return 0;
-    }
-    // Find and parse the exponent.
-    auto end = begin + size, exp_pos = end;
-    do {
-      --exp_pos;
-    } while (*exp_pos != 'e');
-    char sign = exp_pos[1];
-    FMT_ASSERT(sign == '+' || sign == '-', "");
-    int exp = 0;
-    auto p = exp_pos + 2;  // Skip 'e' and sign.
-    do {
-      FMT_ASSERT(is_digit(*p), "");
-      exp = exp * 10 + (*p++ - '0');
-    } while (p != end);
-    if (sign == '-') exp = -exp;
-    int fraction_size = 0;
-    if (exp_pos != begin + 1) {
-      // Remove trailing zeros.
-      auto fraction_end = exp_pos - 1;
-      while (*fraction_end == '0') --fraction_end;
-      // Move the fractional part left to get rid of the decimal point.
-      fraction_size = static_cast<int>(fraction_end - begin - 1);
-      std::memmove(begin + 1, begin + 2, to_unsigned(fraction_size));
-    }
-    buf.try_resize(to_unsigned(fraction_size) + offset + 1);
-    return exp - fraction_size;
-  }
-}
 }  // namespace detail
 
 template <> struct formatter<detail::bigint> {
-  FMT_CONSTEXPR format_parse_context::iterator parse(
-      format_parse_context& ctx) {
+  FMT_CONSTEXPR auto parse(format_parse_context& ctx)
+      -> format_parse_context::iterator {
     return ctx.begin();
   }
 
-  format_context::iterator format(const detail::bigint& n,
-                                  format_context& ctx) {
+  template <typename FormatContext>
+  auto format(const detail::bigint& n, FormatContext& ctx) const ->
+      typename FormatContext::iterator {
     auto out = ctx.out();
     bool first = true;
     for (auto i = n.bigits_.size(); i > 0; --i) {
