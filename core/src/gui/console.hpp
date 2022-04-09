@@ -84,8 +84,10 @@ public:
     /// <param name="pre">A string to add before each line</param>
     /// <param name="canUseHex">If the string gets displayed as hexadecimal when set</param>
     void addText(std::string_view s, std::string_view pre = "", const ImVec4& color = {}, bool canUseHex = true) {
+        using namespace std::literals;
+
         // Split the string by the '\n' character to get each line, then add each line
-        for (std::string_view i : std::views::split(s, "\n")) _add(std::format("{}{}", pre, i), color, canUseHex);
+        for (std::string_view i : std::views::split(s, "\n"sv)) _add(std::format("{}{}\n", pre, i), color, canUseHex);
     }
 
     /// <summary>

@@ -92,6 +92,7 @@ void Console::_updateOutput() {
             if (hasColor) ImGui::PopStyleColor();
         }
     }
+    clipper.End();
 
     // Scroll to end if autoscroll is set
     if (_scrollToEnd) {
