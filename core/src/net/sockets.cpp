@@ -124,14 +124,14 @@ static Task<System::MayFail<>> connectSocket(SOCKET s, const sockaddr* addr, soc
     GUID guid = WSAID_CONNECTEX;
     DWORD numBytes = 0;
     int loadSuccess = WSAIoctl(s,
-                                SIO_GET_EXTENSION_FUNCTION_POINTER,
-                                &guid,
-                                sizeof(guid),
-                                &connectExPtr,
-                                sizeof(connectExPtr),
-                                &numBytes,
-                                nullptr,
-                                nullptr);
+                               SIO_GET_EXTENSION_FUNCTION_POINTER,
+                               &guid,
+                               sizeof(guid),
+                               &connectExPtr,
+                               sizeof(connectExPtr),
+                               &numBytes,
+                               nullptr,
+                               nullptr);
 
     if (loadSuccess == SOCKET_ERROR) co_return false;
 
