@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <iomanip> // std::hex, std::uppercase, std::setw(), std::setfill()
+#include <ranges> // std::views::split()
 
 // TODO: Remove the #if check once all major compilers implement timezones for <chrono>
 #if __cpp_lib_chrono >= 201803L
@@ -124,27 +125,23 @@ void Console::_updateOutput() {
         ImGui::MenuItem("Show hexadecimal", nullptr, &_showHex);
 
         // Options for the input textbox
-        if (_hasInput) {
-            ImGui::Separator();
+        ImGui::Separator();
 
-            ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSend);
+        ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSend);
 
-            ImGui::MenuItem("Add final line ending", nullptr, &_addFinalLineEnding);
-        }
+        ImGui::MenuItem("Add final line ending", nullptr, &_addFinalLineEnding);
 
         ImGui::EndPopup();
     }
 
-    // Line ending combobox, don't draw this if there's no input textbox
-    if (_hasInput) {
-        // The code used to calculate where to put the combobox is derived from
-        // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
-        float comboWidth = 150.0f;
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
-        ImGui::SetNextItemWidth(comboWidth);
-        ImGui::Combo("##lineEnding", &_currentLE, "Newline\0Carriage return\0Both\0");
-    }
+    // Line ending combobox
+    // The code used to calculate where to put the combobox is derived from
+    // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
+    float comboWidth = 150.0f;
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
+    ImGui::SetNextItemWidth(comboWidth);
+    ImGui::Combo("##lineEnding", &_currentLE, "Newline\0Carriage return\0Both\0");
 }
 
 void Console::update() {
@@ -155,9 +152,9 @@ void Console::update() {
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
         | ImGuiInputTextFlags_AllowTabInput;
 
-    // Textbox (but check for input enable first with short-circuiting &&)
+    // Textbox
     ImVec2 size{ ImGui::FILL, ImGui::GetTextLineHeight() * Settings::sendTextboxHeight };
-    if (_hasInput && ImGui::InputTextMultiline("##input", _textBuf, size, flags)) {
+    if (ImGui::InputTextMultiline("##input", _textBuf, size, flags)) {
         // Line ending
         const char* endings[] = { "\n", "\r", "\r\n" };
         const char* selectedEnding = endings[_currentLE];
@@ -180,4 +177,22 @@ void Console::update() {
 
     ImGui::EndGroup();
     ImGui::PopID();
+}
+
+void Console::addText(std::string_view s, std::string_view pre, const ImVec4& color, bool canUseHex) {
+    using namespace std::literals;
+
+    // Split the string by newlines to get each line, then add each line
+    for (auto i : std::views::split(s, "\n"sv)) {
+        // Check if there's a newline after the current string:
+        // Get the end position of the split string
+        auto endIdx = std::ranges::distance(s.begin(), i.end());
+
+        // Check if the end position is at the end of the input string
+        // If it is, there will be nothing after so no newline is added.
+        // Otherwise, there are more lines after, add a newline so subsequent lines are independent of this one.
+        auto end = (s.begin() + endIdx == s.end()) ? "" : "\n";
+
+        _add(std::format("{}{}{}", pre, std::string_view{ i }, end), color, canUseHex);
+    }
 }

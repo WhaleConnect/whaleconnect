@@ -20,9 +20,6 @@
 // The GUI window of the app
 static GLFWwindow* window = nullptr;
 
-// If this is the first loop iteration
-static bool firstLoop = true;
-
 /// <summary>
 /// Set Dear ImGui's configuration for use by the application.
 /// </summary>
@@ -104,10 +101,6 @@ bool MainHandler::isActive() {
     return !glfwWindowShouldClose(window);
 }
 
-bool MainHandler::isFirstLoop() {
-    return firstLoop;
-}
-
 void MainHandler::handleNewFrame() {
     glfwPollEvents();
     ImGui_ImplOpenGL3_NewFrame();
@@ -162,7 +155,6 @@ void MainHandler::renderWindow() {
     glfwMakeContextCurrent(backupCurrentContext);
 
     glfwSwapBuffers(window);
-    firstLoop = false;
 }
 
 void MainHandler::cleanupApp() {

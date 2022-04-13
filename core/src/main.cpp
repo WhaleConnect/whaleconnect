@@ -37,50 +37,26 @@ static void drawBTConnectionTab();
 int MAIN_FUNC(MAIN_ARGS) {
     if (!MainHandler::initApp()) return EXIT_FAILURE; // Create a main application window
 
-    // Console containing error/info items
-    Console errorOutput;
-
     // Initialize APIs for sockets and Bluetooth
-    if (!BTUtils::init()) errorOutput.addError("Initialization failed - " + System::formatLastErr());
+    auto initResult = BTUtils::init();
 
     // Main loop
     while (MainHandler::isActive()) {
         MainHandler::handleNewFrame();
 
-        const char* newConnectionTitle = "New Connection";
-        const char* errorListTitle = "Error List";
+        // Error message for failed initialization
+        if (!initResult)
+            ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner_TopLeft,
+                           "Initialization failed - %s", System::formatErr(initResult.error()).c_str());
 
         // New connection window
-        if (ImGui::Begin(newConnectionTitle) && ImGui::BeginTabBar("ConnectionTypes")) {
+        ImGui::SetNextWindowSize({ 600, 250 });
+        if (ImGui::Begin("New Connection") && ImGui::BeginTabBar("ConnectionTypes")) {
             drawIPConnectionTab();
             drawBTConnectionTab();
             ImGui::EndTabBar();
         }
         ImGui::End();
-
-        // Error list
-        if (ImGui::Begin(errorListTitle)) errorOutput.update();
-        ImGui::End();
-
-        if (MainHandler::isFirstLoop()) {
-            // Set up the initial docking positions
-            ImGuiID id = ImGui::GetID("mainWindowGroup");
-            ImVec2 pos = ImGui::GetMainViewport()->WorkPos;
-
-            // Set up nodes
-            ImGui::DockBuilderRemoveNode(id); // Clear any previous layout
-            ImGui::DockBuilderAddNode(id);
-            ImGui::DockBuilderSetNodeSize(id, { 600, 250 });
-            ImGui::DockBuilderSetNodePos(id, { pos.x + 50, pos.y + 50 }); // 50px padding in both X and Y
-
-            // Add the windows to the node
-            ImGui::DockBuilderDockWindow(newConnectionTitle, id);
-            ImGui::DockBuilderDockWindow(errorListTitle, id);
-            ImGui::DockBuilderFinish(id);
-
-            // Set the initial focus to the new connection window
-            ImGui::SetWindowFocus(newConnectionTitle);
-        }
 
         connections.update();
 
@@ -324,7 +300,7 @@ static void drawBTConnectionTab() {
 
     // Check if the application's sockets are initialized
     if (!btInitDone) {
-        ImGui::TextWrapped("Socket initialization failed. See the \"Error List\" window for details.");
+        ImGui::TextWrapped("Socket initialization failed.");
         ImGui::Spacing();
     }
 
@@ -347,7 +323,7 @@ static void drawBTConnectionTab() {
 
     if (pairedDevices) {
         // Enumeration succeeded, display all devices found
-        if (btInitDone && pairedDevices->empty()) {
+        if (pairedDevices->empty()) {
             // Bluetooth initialization is done and no devices detected
             // (BT init checked because an empty devices vector may be caused by failed init.)
             ImGui::Text("No paired devices.");

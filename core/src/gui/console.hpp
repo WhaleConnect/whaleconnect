@@ -6,7 +6,6 @@
 #pragma once
 
 #include <vector>
-#include <ranges> // std::views::split
 #include <sstream> // std::ostringstream
 #include <string_view>
 #include <functional> // std::function
@@ -31,7 +30,6 @@ class Console {
         std::string timestamp; // The time when the item was added
     };
 
-    bool _hasInput; // If the input textbox is displayed
     bool _scrollToEnd = false; // If the console is force-scrolled to the end
     bool _autoscroll = true; // If console autoscrolls when new data is put
     bool _showTimestamps = false; // If timestamps are shown in the output
@@ -59,17 +57,12 @@ class Console {
 
 public:
     /// <summary>
-    /// Console constructor, disables the input textbox.
-    /// </summary>
-    Console() : _hasInput(false), _inputCallback([](std::string_view) {}) {}
-
-    /// <summary>
     /// Console constructor, set the text input callback function (enables the input textbox).
     /// </summary>
     /// <typeparam name="Fn">A function which takes a string which is the textbox contents at the time</typeparam>
     /// <param name="fn">The function to call when the input textbox contents are submitted</param>
     template <class Fn>
-    Console(Fn&& fn) : _hasInput(true), _inputCallback(fn) {}
+    Console(Fn&& fn) : _inputCallback(fn) {}
 
     /// <summary>
     /// Draw the console output.
@@ -83,12 +76,7 @@ public:
     /// <param name="color">The color of the text</param>
     /// <param name="pre">A string to add before each line</param>
     /// <param name="canUseHex">If the string gets displayed as hexadecimal when set</param>
-    void addText(std::string_view s, std::string_view pre = "", const ImVec4& color = {}, bool canUseHex = true) {
-        using namespace std::literals;
-
-        // Split the string by the '\n' character to get each line, then add each line
-        for (std::string_view i : std::views::split(s, "\n"sv)) _add(std::format("{}{}\n", pre, i), color, canUseHex);
-    }
+    void addText(std::string_view s, std::string_view pre = "", const ImVec4& color = {}, bool canUseHex = true);
 
     /// <summary>
     /// Add a red error message.

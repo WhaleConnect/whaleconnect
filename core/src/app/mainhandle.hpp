@@ -32,12 +32,6 @@ namespace MainHandler {
     bool isActive();
 
     /// <summary>
-    /// Check if the current main loop iteration is the first.
-    /// </summary>
-    /// <returns>If this iteration is the first</returns>
-    bool isFirstLoop();
-
-    /// <summary>
     /// Create a new frame at the start of every main loop iteration.
     /// </summary>
     void handleNewFrame();
