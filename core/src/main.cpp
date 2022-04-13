@@ -50,7 +50,7 @@ int MAIN_FUNC(MAIN_ARGS) {
                            "Initialization failed - %s", System::formatErr(initResult.error()).c_str());
 
         // New connection window
-        ImGui::SetNextWindowSize({ 600, 250 });
+        ImGui::SetNextWindowSize({ 600, 250 }, ImGuiCond_FirstUseEver);
         if (ImGui::Begin("New Connection") && ImGui::BeginTabBar("ConnectionTypes")) {
             drawIPConnectionTab();
             drawBTConnectionTab();
