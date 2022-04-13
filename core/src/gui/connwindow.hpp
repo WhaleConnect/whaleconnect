@@ -6,6 +6,7 @@
 #pragma once
 
 #include <string>
+#include <mutex>
 #include <functional> // std::bind()
 #include <string_view>
 
@@ -19,10 +20,12 @@
 class ConnWindow {
     Sockets::Socket _socket; // Socket for connection
     bool _connected = false; // If the socket has an active connection to a server
+    bool _pendingRecv = false; // If a receive operation has not yet completed
 
     std::string _title; // Title of window
     std::string _windowText; // The text in the window's title bar
     bool _open = true; // If the window is open (affected by the close button)
+    std::mutex _outputMutex; // Mutex for access to the console output
     Console _output{ std::bind(&ConnWindow::_sendHandler, this, std::placeholders::_1) }; // Console with input textbox
 
     /// <summary>

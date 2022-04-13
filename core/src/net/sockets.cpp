@@ -52,17 +52,6 @@ static System::MayFail<> checkFunctionError(int ret) {
     return ret != SOCKET_ERROR;
 }
 
-#ifdef _WIN32
-static System::MayFail<DWORD> getOverlappedResult(SOCKET sockfd, Async::CompletionResult& completionResult) {
-    DWORD numBytes;
-    DWORD flags = 0;
-    BOOL result = WSAGetOverlappedResult(sockfd, &completionResult.overlapped, &numBytes, FALSE, &flags);
-
-    if (result) return numBytes;
-    return std::nullopt;
-}
-#endif
-
 System::MayFail<> Sockets::init() {
 #ifdef _WIN32
     // Start Winsock on Windows
@@ -117,8 +106,7 @@ static SOCKET bluetoothSocket(Sockets::ConnectionType type) {
     return socket(AF_BTH, sockType, sockProto);
 }
 
-static Task<System::MayFail<>> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen,
-                                             [[maybe_unused]] bool isDgram) {
+static Task<System::MayFail<>> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, bool isDgram) {
     // Add the socket to the async queue
     if (!Async::add(s)) co_return false;
 
@@ -136,27 +124,27 @@ static Task<System::MayFail<>> connectSocket(SOCKET s, const sockaddr* addr, soc
     GUID guid = WSAID_CONNECTEX;
     DWORD numBytes = 0;
     int loadSuccess = WSAIoctl(s,
-                               SIO_GET_EXTENSION_FUNCTION_POINTER,
-                               &guid,
-                               sizeof(guid),
-                               &connectExPtr,
-                               sizeof(connectExPtr),
-                               &numBytes,
-                               nullptr,
-                               nullptr);
+                                SIO_GET_EXTENSION_FUNCTION_POINTER,
+                                &guid,
+                                sizeof(guid),
+                                &connectExPtr,
+                                sizeof(connectExPtr),
+                                &numBytes,
+                                nullptr,
+                                nullptr);
 
     if (loadSuccess == SOCKET_ERROR) co_return false;
 
-    Async::CompletionResult result;
+    Async::CompletionResult result{};
     co_await result;
 
-    DWORD bytesSent = 0;
-    System::MayFail<> connectResult = connectExPtr(s, addr, addrLen, nullptr, 0, &bytesSent, &result.overlapped);
-
+    System::MayFail<> connectResult = connectExPtr(s, addr, addrLen, nullptr, 0, nullptr, &result);
     if (!connectResult) co_return false;
 
     co_await std::suspend_always{};
-    co_return getOverlappedResult(s, result);
+    if (result.error != NO_ERROR) co_return std::nullopt;
+
+    co_return setsockopt(s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0) == NO_ERROR;
 #endif
 }
 
@@ -240,7 +228,7 @@ Task<System::MayFail<Sockets::Socket>> Sockets::createClientSocket(const DeviceD
         bool isDgram = (data.type == L2CAPDgram);
 
         // Connect, then check if connection failed
-        if (!co_await connectSocket(ret.get(), reinterpret_cast<sockaddr*>(&btAddr), addrSize, isDgram))
+        if (!co_await connectSocket(ret.get(), reinterpret_cast<sockaddr*>(&sAddrBT), addrSize, isDgram))
             co_return std::nullopt;
 
         co_return ret;
@@ -259,8 +247,10 @@ void Sockets::closeSocket(SOCKET sockfd) {
     int lastErrBackup = System::getLastErr();
 
 #ifdef _WIN32
+    shutdown(sockfd, SD_BOTH);
     closesocket(sockfd);
 #else
+    shutdown(sockfd, SHUT_RDWR);
     close(sockfd);
 #endif
 
@@ -269,13 +259,12 @@ void Sockets::closeSocket(SOCKET sockfd) {
 }
 
 Task<System::MayFail<>> Sockets::sendData(SOCKET sockfd, std::string_view data) {
-    Async::CompletionResult result;
+    Async::CompletionResult result{};
     co_await result;
 
 #ifdef _WIN32
     WSABUF buf{ static_cast<ULONG>(data.length()), const_cast<char*>(data.data()) };
-    DWORD numBytes;
-    int sendRet = WSASend(sockfd, &buf, 1, &numBytes, 0, &result.overlapped, nullptr);
+    int sendRet = WSASend(sockfd, &buf, 1, nullptr, 0, &result, nullptr);
 #else
     int sendRet = send(sockfd, data.data(), data.size(), MSG_NOSIGNAL);
 #endif
@@ -285,7 +274,7 @@ Task<System::MayFail<>> Sockets::sendData(SOCKET sockfd, std::string_view data) 
     co_await std::suspend_always{};
 
 #ifdef _WIN32
-    co_return static_cast<bool>(getOverlappedResult(sockfd, result));
+    co_return result.error == NO_ERROR;
 #endif
 
     // Note: Typically, sendto() and recvfrom() are used with a UDP connection.
@@ -299,7 +288,7 @@ Task<System::MayFail<>> Sockets::sendData(SOCKET sockfd, std::string_view data) 
 }
 
 Task<System::MayFail<Sockets::RecvResult>> Sockets::recvData(SOCKET sockfd) {
-    Async::CompletionResult result;
+    Async::CompletionResult result{};
     co_await result;
 
     // Receive and check bytes received
@@ -307,9 +296,8 @@ Task<System::MayFail<Sockets::RecvResult>> Sockets::recvData(SOCKET sockfd) {
 
 #ifdef _WIN32
     WSABUF buf{ static_cast<ULONG>(std::ssize(recvBuf)), recvBuf };
-    DWORD numBytes;
     DWORD flags = 0;
-    int recvRet = WSARecv(sockfd, &buf, 1, &numBytes, &flags, &result.overlapped, nullptr);
+    int recvRet = WSARecv(sockfd, &buf, 1, nullptr, &flags, &result, nullptr);
 #else
     int recvRet = recv(asyncData.sockfd, recvBuf, static_cast<int>(std::ssize(recvBuf)) - 1, MSG_NOSIGNAL);
 #endif
@@ -321,6 +309,8 @@ Task<System::MayFail<Sockets::RecvResult>> Sockets::recvData(SOCKET sockfd) {
     if (!error) co_return std::nullopt;
 
     co_await std::suspend_always{};
+
+    if (result.error != NO_ERROR) co_return std::nullopt;
 
     buf.buf[result.numBytes] = '\0'; // Add a null char to the end of the buffer
     co_return RecvResult{ static_cast<ULONG>(result.numBytes), buf.buf };

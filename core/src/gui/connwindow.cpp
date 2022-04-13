@@ -40,20 +40,30 @@ Task<> ConnWindow::_sendHandler(std::string_view s) {
 
 Task<> ConnWindow::_readHandler() {
     if (!_connected) co_return;
+    if (_pendingRecv) co_return;
 
+    _pendingRecv = true;
     auto recvRet = co_await Sockets::recvData(_socket.get());
+
     if (!recvRet) {
-        _errorHandler(recvRet);
+        // Check for errors caused by socket closure
+        if (recvRet.error() != WSA_OPERATION_ABORTED) {
+            std::lock_guard<std::mutex> outputLock{ _outputMutex };
+            _errorHandler(recvRet);
+        }
         co_return;
     }
 
     if (recvRet->bytesRead == 0) {
         // Peer closed connection (here, 0 does not necessarily mean success, i.e. NO_ERROR)
         _output.addInfo("Remote host closed connection.");
+        _socket.reset();
         _connected = false;
     } else {
         _output.addText(recvRet->data);
     }
+
+    _pendingRecv = false;
 }
 
 void ConnWindow::update() {
@@ -63,7 +73,10 @@ void ConnWindow::update() {
     ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
 
     // Begin window, draw console outputs
-    if (ImGui::Begin(_windowText.c_str(), &_open)) _output.update();
+    if (ImGui::Begin(_windowText.c_str(), &_open)) {
+        std::lock_guard<std::mutex> outputLock{ _outputMutex };
+        _output.update();
+    }
 
     // End window
     ImGui::End();

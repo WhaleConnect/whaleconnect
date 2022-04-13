@@ -22,6 +22,8 @@ static const auto numThreads = std::max(std::thread::hardware_concurrency(), 1U)
 static std::vector<std::thread> workerThreadPool(numThreads);
 
 #ifdef _WIN32
+static constexpr int iocpInterrupt = 1;
+
 static HANDLE completionPort = nullptr;
 
 static void worker() {
@@ -29,11 +31,22 @@ static void worker() {
     uint64_t completionKey;
     LPOVERLAPPED overlapped = nullptr;
 
-    while (GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, INFINITE)) {
-        if (!overlapped) break;
+    while (true) {
+        // Dequeue a completion packet from the system and check for the exit condition
+        BOOL ret = GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, INFINITE);
+        if (completionKey == iocpInterrupt) break;
 
-        auto& result = *reinterpret_cast<Async::CompletionResult*>(overlapped);
+        // Get the structure with completion data, passed through the overlapped pointer
+        // No locking is needed to modify the structure's fields - the calling coroutine will be suspended at this
+        // point so mutually-exclusive access is guaranteed.
+        if (!overlapped) continue;
+        auto& result = *static_cast<Async::CompletionResult*>(overlapped);
         result.numBytes = numBytes;
+
+        // Pass any failure back to the calling coroutine
+        if (!ret) result.error = System::getLastErr();
+
+        // Resume the coroutine that started the operation
         if (result.coroHandle) result.coroHandle();
     }
 }
@@ -56,7 +69,8 @@ System::MayFail<> Async::init() {
 void Async::cleanup() {
     if (!completionPort) return;
 
-    for (size_t i = 0; i < workerThreadPool.size(); i++) PostQueuedCompletionStatus(completionPort, 0, 0, nullptr);
+    for (size_t i = 0; i < workerThreadPool.size(); i++)
+        PostQueuedCompletionStatus(completionPort, 0, iocpInterrupt, nullptr);
 
     for (auto& i : workerThreadPool) if (i.joinable()) i.join();
 

@@ -14,23 +14,22 @@
 #include "sys/error.hpp"
 
 namespace Async {
-    struct CompletionResult {
+    struct CompletionResult
 #ifdef _WIN32
-        // This is used for overlapped I/O.
-        // This must be the first field in this struct, as type punning is used to pass an entire instance to an IOCP
-        // callback through a pointer to this field.
-        OVERLAPPED overlapped{};
+        // Inherit from OVERLAPPED on Windows to pass this struct as IOCP user data
+        // https://devblogs.microsoft.com/oldnewthing/20101217-00/?p=11983
+        : OVERLAPPED
 #endif
-
-        int numBytes = 0;
-        int error = 0;
+    {
         std::coroutine_handle<> coroHandle;
+        System::ErrorCode error;
+        int numBytes;
 
-        bool await_ready() const noexcept { return false; }
+        bool await_ready() const noexcept { return static_cast<bool>(coroHandle); }
 
-        void await_suspend(std::coroutine_handle<> coroutine) noexcept {
+        bool await_suspend(std::coroutine_handle<> coroutine) noexcept {
             coroHandle = coroutine;
-            coroHandle();
+            return false;
         }
 
         void await_resume() const noexcept {}
