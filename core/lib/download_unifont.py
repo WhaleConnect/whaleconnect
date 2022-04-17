@@ -21,9 +21,9 @@ def main():
     # GNU Unifont GitHub repo URL (mirror)
     set_repo("NSTerminal/unifont", "main")
 
-    # Download the TTF
-    print("Downloading TTF...")
-    download_file("font/precompiled/unifont-14.0.02.ttf", normalize_crlf=False)
+    # Download the OTF
+    print("Downloading OTF...")
+    download_file("font/precompiled/unifont-14.0.03.otf", normalize_crlf=False)
 
     # Download license files
     print("Downloading licenses...")
