@@ -44,6 +44,9 @@
     <Filter Include="Source Files\sys">
       <UniqueIdentifier>{3ec1a787-e650-40cb-a09e-240f3b5489ca}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Third Party Libraries\Magic Enum Header Files">
+      <UniqueIdentifier>{ff2b2a0d-36c4-47b3-8863-284cb3c2631e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -194,6 +197,12 @@
     </ClInclude>
     <ClInclude Include="src\sys\error.hpp">
       <Filter>Source Files\sys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sys\errcheck.hpp">
+      <Filter>Source Files\sys</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\magic_enum\magic_enum.hpp">
+      <Filter>Third Party Libraries\Magic Enum Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

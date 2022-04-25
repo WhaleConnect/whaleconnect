@@ -6,9 +6,11 @@
 
 import download_dear_imgui
 import download_fmt
+import download_magic_enum
 import download_unifont
 
 # Run each script's entry point
 download_dear_imgui.main()
 download_fmt.main()
+download_magic_enum.main()
 download_unifont.main()

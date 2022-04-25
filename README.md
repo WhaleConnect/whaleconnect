@@ -28,11 +28,12 @@ The [MIT license](/docs/MIT_LICENSE.txt) applies to all utility scripts that are
 
 ## Libraries and Dependencies
 
+- BlueZ (GNU GPLv2+) [Website](http://www.bluez.org/) | [GitHub](https://www.github.com/bluez/bluez)
+- Dear ImGui (MIT License) [GitHub](https://www.github.com/ocornut/imgui)
 - {fmt} (MIT License) [Website](https://fmt.dev/) | [GitHub](https://www.github.com/fmtlib/fmt)
 - GLFW (Zlib License) [Website](https://www.glfw.org/) | [GitHub](https://www.github.com/glfw/glfw)
-- Dear ImGui (MIT License) [GitHub](https://www.github.com/ocornut/imgui)
 - GNU Unifont (Dual-Licensed) [Website](https://www.unifoundry.com/unifont) | [Sources](https://www.unifoundry.com/unifont/unifont-utilities.html) | [Mirror on GitHub](https://www.github.com/NSTerminal/unifont)
-- BlueZ (GNU GPLv2+) [Website](http://www.bluez.org/) | [GitHub](https://www.github.com/bluez/bluez)
 - libdbus (GNU GPLv2+) [Website](https://www.freedesktop.org/wiki/Software/dbus)
+- Magic Enum (MIT License) [GitHub](https://github.com/Neargye/magic_enum)
 
 *GNU Unifont is dual-licensed under the GNU GPLv2+ with font embedding exception, and the SIL OFL v1.1.*

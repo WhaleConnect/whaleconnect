@@ -128,6 +128,7 @@
     <ClInclude Include="lib\imgui\imstb_rectpack.h" />
     <ClInclude Include="lib\imgui\imstb_textedit.h" />
     <ClInclude Include="lib\imgui\imstb_truetype.h" />
+    <ClInclude Include="lib\magic_enum\magic_enum.hpp" />
     <ClInclude Include="src\app\mainhandle.hpp" />
     <ClInclude Include="src\app\settings.hpp" />
     <ClInclude Include="src\async\async.hpp" />
@@ -137,6 +138,7 @@
     <ClInclude Include="src\net\sockets.hpp" />
     <ClInclude Include="src\gui\connwindow.hpp" />
     <ClInclude Include="src\gui\console.hpp" />
+    <ClInclude Include="src\sys\errcheck.hpp" />
     <ClInclude Include="src\sys\error.hpp" />
     <ClInclude Include="src\util\formatcompat.hpp" />
     <ClInclude Include="src\util\imguiext.hpp" />
