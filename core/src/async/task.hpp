@@ -34,14 +34,14 @@ class Task {
     template <class U>
     struct PromiseTypeValue {
         // The value(s) produced by the coroutine
-        U _data;
+        U data;
 
         /// <summary>
         /// Called when the coroutine returns.
         /// </summary>
         /// <param name="value">The value returned from the coroutine (the X in `co_return X;`)</param>
         void return_value(U value) noexcept {
-            _data = std::move(value);
+            data = std::move(value);
         }
     };
 
@@ -161,6 +161,6 @@ public:
     /// <returns>The value that the coroutine produced (for a value-returning coroutine)</returns>
     T await_resume() const noexcept {
         // Return a value if this template instantiation is non-void
-        if constexpr (!_isVoid) return std::move(_handle.promise()._data);
+        if constexpr (!_isVoid) return std::move(_handle.promise().data);
     }
 };
