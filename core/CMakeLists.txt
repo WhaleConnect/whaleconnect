@@ -5,48 +5,50 @@
 
 cmake_minimum_required(VERSION 3.17)
 
-project(terminal VERSION 1.0)
-
-include("cmake/utf_8.cmake")
+project(terminal)
 
 # C++ language standard
 set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-# Generate compile_commands.json under build directory
-add_definitions(-DCMAKE_EXPORT_COMPILE_COMMANDS=ON)
+set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 # Source files to compile
-file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-add_executable(terminal WIN32 ${SOURCES})
+file(GLOB_RECURSE SRCS ${CMAKE_SOURCE_DIR}/src/*.cpp)
+add_executable(terminal WIN32 ${SRCS})
+target_include_directories(terminal PRIVATE src)
 
-# Bundled libraries location
+# Libraries
 add_subdirectory(lib)
-target_include_directories(terminal PRIVATE lib src)
-
-# Link third-party library sources
+target_include_directories(terminal PRIVATE lib)
 target_link_libraries(terminal terminalLibs)
 
+# Copy GNU Unifont file next to built executable on post-build
+add_custom_command(TARGET terminal POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+    ${CMAKE_SOURCE_DIR}/lib/unifont/unifont-14.0.03.otf
+    $<TARGET_FILE_DIR:terminal>/unifont.otf)
+
 # Compiler-dependent options
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # MSVC options
-    set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS "/W4")
+if (MSVC)
+    # Warning level
+    set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS "/W4")
 
-    # Use MSVC's Unicode character set
-    target_compile_definitions(terminal PRIVATE UNICODE _UNICODE)
+    # UTF-8 charset (for libraries and app code)
+    target_compile_options(terminal PRIVATE "/utf-8")
 
-    # Windows - GLFW lib file
+    # Enable Edit and Continue in debug builds
+    target_link_options(terminal PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+    target_compile_options(terminal PRIVATE $<$<CONFIG:Debug>:/ZI>)
+
+    # Use MSVC's Unicode character set and prevent clashing macros
+    target_compile_definitions(terminal PRIVATE UNICODE _UNICODE NOMINMAX)
+
+    # GLFW lib file
     target_link_libraries(terminal ${PROJECT_SOURCE_DIR}/lib/GLFW/glfw3.lib)
-
-    # This prevents LNK4098 in Debug mode, but causes LNK2001 in Release mode.
-    # This is because the GLFW pre-built binaries were built in Release mode.
-    # Look for the "Rel" substring indicating a release build.
-    if(NOT CMAKE_BUILD_TYPE MATCHES "Rel")
-        target_link_options(terminal PRIVATE /NODEFAULTLIB:MSVCRT)
-    endif()
 else()
-    # GCC/clang options
-    set_source_files_properties(${SOURCES} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -Wno-missing-field-initializers")
+    # Warnings
+    set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -Wno-missing-field-initializers")
+
+    # UTF-8
+    target_compile_options(terminal PRIVATE "-finput-charset=UTF-8 -fexec-charset=UTF-8")
 endif()
 
 if (NOT WIN32)

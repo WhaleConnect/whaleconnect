@@ -27,9 +27,6 @@
     "cmake.configureOnEdit": true,
     "cmake.sourceDirectory": "${workspaceFolder}/core",
     "cmake.buildDirectory": "${workspaceFolder}/core/build",
-    "cmake.debugConfig": {
-        "cwd": "${workspaceFolder}/core"
-    },
     "python.analysis.extraPaths": [
         "${workspaceFolder}/core/lib"
     ],

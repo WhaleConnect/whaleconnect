@@ -9,9 +9,7 @@ __pycache__/
 *.py[cod]
 
 # Visual Studio generated files
-x64/
 .vs/
-*.user
 
 # CMake build output
 build/
