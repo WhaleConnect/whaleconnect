@@ -1,16 +1,10 @@
 # Windows desktop configuration file
 desktop.ini
 
-# Dear ImGui settings file
-imgui.ini
-
-# Python import cache
-__pycache__/
-*.py[cod]
-
 # Visual Studio generated files
 .vs/
 
 # CMake build output
+vcpkg_installed/
 build/
 out/

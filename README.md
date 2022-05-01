@@ -8,9 +8,9 @@
 
 ## Documentation Links
 
-- [Screenshots](/docs/SCREENSHOTS.md)
 - [Building from Source](/docs/BUILDING.md)
-- [Software Used](/docs/SOFTWARE.md)
+- [IDE Extensions](/docs/EXTENSIONS.md)
+- [Screenshots](/docs/SCREENSHOTS.md)
 - [Todo List](/docs/TODO.txt)
 
 ## Development Branch
@@ -19,12 +19,9 @@ The [`dev` branch](https://github.com/NSTerminal/terminal/tree/dev) is used for 
 
 When a feature is merged into `main` it is ready for release.
 
-## Licenses
+## License
 
-This repository contains the following licenses:
-
-The [GPLv3+ license](/COPYING) applies to the NST source code and CMake build scripts.\
-The [MIT license](/docs/MIT_LICENSE.txt) applies to all utility scripts that are unrelated to the GPL-ed code and releases (e.g. Python download scripts).
+NST and its build scripts are licensed under the [GPLv3+ license](/COPYING).
 
 ## Libraries and Dependencies
 

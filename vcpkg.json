@@ -1,0 +1,17 @@
+{
+    "name": "terminal",
+    "version-string":  "dev",
+    "dependencies": [
+        {
+            "name": "imgui",
+            "features": [
+                "docking-experimental",
+                "glfw-binding",
+                "opengl3-binding"
+            ]
+        },
+        "glfw3",
+        "fmt",
+        "magic-enum"
+    ]
+}

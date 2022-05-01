@@ -1,2 +1,0 @@
-# Tell GitHub Linguist to ignore 3rd-party files
-core/lib/*/** linguist-vendored

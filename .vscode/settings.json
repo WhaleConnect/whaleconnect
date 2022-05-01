@@ -1,36 +1,11 @@
 {
-    "editor.formatOnType": true,
-    "[python]": {
-        "editor.rulers": [
-            72,
-            79
-        ]
-    },
-    "[c]": {
-        "editor.rulers": [
-            120
-        ]
-    },
     "[cpp]": {
         "editor.rulers": [
             120
         ]
     },
-    "C_Cpp.default.cppStandard": "c++20",
-    "C_Cpp.default.includePath": [
-        "${workspaceFolder}/core/lib"
-    ],
-    "todo-tree.filtering.excludeGlobs": [
-        "**/lib/*/**"
-    ],
     "cmake.configureOnOpen": true,
     "cmake.configureOnEdit": true,
-    "cmake.sourceDirectory": "${workspaceFolder}/core",
-    "cmake.buildDirectory": "${workspaceFolder}/core/build",
-    "python.analysis.extraPaths": [
-        "${workspaceFolder}/core/lib"
-    ],
-    "autoDocstring.docstringFormat": "numpy",
     "doxdocgen.c.commentPrefix": "/// ",
     "doxdocgen.c.firstLine": "",
     "doxdocgen.c.lastLine": "",
@@ -43,6 +18,7 @@
     "doxdocgen.generic.paramTemplate": "<param name=\"{param}\"></param>",
     "doxdocgen.generic.returnTemplate": "<returns></returns>",
     "doxdocgen.generic.commandSuggestion": false,
+    "editor.formatOnType": true,
     "files.associations": {
         "*.tcc": "cpp",
         "algorithm": "cpp",

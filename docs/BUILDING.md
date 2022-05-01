@@ -1,19 +1,24 @@
 # Building Network Socket Terminal
 
-To build NST from source code, you will need CMake and an up-to-date compiler. MSVC is recommended on Windows, and GCC is recommended on Linux.
+To build NST from source code, you will need CMake, vcpkg, and an up-to-date compiler. MSVC is recommended on Windows, and GCC is recommended on Linux.
+
+## Integration with vcpkg
+
+NST uses [vcpkg](https://github.com/microsoft/vcpkg) to manage dependencies. Follow its installation guide if it's not present on your system.
+
+Then, create an enviroment variable called `VCPKG_ROOT` and point it to your vcpkg install path (for example, `C:\dev\vcpkg`). This allows the CMake script to know where vcpkg is installed.
+
+When CMake configures the project, vcpkg should automatically download the required packages.
 
 ## Required Linux Packages
 
 You will need to install the following packages (if you're using a Debian-based system):
 
-```shell
-sudo apt install libbluetooth-dev # BlueZ API
-sudo apt install libdbus-1-dev    # D-Bus API
-sudo apt install libgl-dev        # OpenGL API
-sudo apt install libglfw3-dev     # GLFW 3 API
-```
+- `libbluetooth-dev` (BlueZ API)
+- `libdbus-1-dev` (D-Bus API)
+- `libgl-dev` (OpenGL API)
 
-TODO: Add install commands for pacman and dnf
+TODO: Add package names for pacman and dnf
 
 ## Compiling
 
@@ -27,7 +32,6 @@ All code is standards-compliant. However, because it uses a recent C++ revision,
 ### Build Commands with CMake
 
 ```shell
-cd core
 mkdir build
 cd build
 cmake ..

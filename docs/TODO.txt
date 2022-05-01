@@ -1,23 +1,8 @@
 This is a list of the tasks to complete before each release.
 
 Alpha 1:
-  [ ] Split large files
-  [X] Add support for L2CAP over Bluetooth
-  [ ] Unicode username support
   [ ] Add option to export Console output to a file in the user's Documents folder
   [ ] Export the GLFW error file (mainhandle.cpp) in a better location
-  [X] Rework the Bluetooth selection menu UI
-  [X] Remove threads from ConnWindow, handle socket events in ConnWindowList instead
-  [ ] Fix dependency mess
-    [X] Add scripts to download BlueZ/GDBus
-    [ ] Compile GLFW from sources
-      [ ] Adjust CMake scripts/VS projects as necessary
-      [ ] Add download_glfw.py
-      [ ] Remove libglfw3-dev from BUILDING.md
-      [ ] Remove msvcrt.lib from IgnoreSpecificDefaultLibraries
-    [X] Make fork of GNU Unifont on GitHub
-      [X] Add a download script
-    [ ] Document Python downloader scripts
 
 Alpha 2:
   [ ] Implement the server-side
