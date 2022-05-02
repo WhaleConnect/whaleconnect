@@ -271,7 +271,7 @@ static std::vector<SDP_ELEMENT_DATA> getSDPListData(const LPBLOB blob, USHORT at
 
     // Get the list data
     SDP_ELEMENT_DATA element{};
-    CALL_EXPECT_POSITIVE(BluetoothSdpGetAttributeValue, blob->pBlobData, blob->cbSize, attrib, &element);
+    CALL_EXPECT_ZERO_RC_ERROR(BluetoothSdpGetAttributeValue, blob->pBlobData, blob->cbSize, attrib, &element);
     return getSDPListData(element);
 }
 #else
