@@ -25,7 +25,7 @@ void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
 #if __cpp_lib_chrono >= 201803L
     using namespace std::chrono;
 
-    // TODO: Limitations with {fmt} - `.time_since_epoch()` is added. Remove when standard std::format() is used
+    // TODO: Limitations with {fmt} - time_since_epoch is added. Remove when standard std::format() is used
     std::string timestamp = std::format("{:%T} >", current_zone()->to_local(system_clock::now()).time_since_epoch());
 #else
     std::string timestamp;
@@ -33,20 +33,16 @@ void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
 
     if (_items.empty() || (_items.back().text.back() == '\n')) {
         // Text goes on its own line if there are no items or the last line ends with a newline
-        // We need to explicitly specify the ostringstream constructor so the compiler knows what type the argument is.
         _items.emplace_back(canUseHex, std::string{ s }, std::ostringstream{}, color, timestamp);
     } else {
         // Text goes on the last line (append)
         _items.back().text += s;
     }
 
-    // The code block below is located here as a "caching" mechanism - the hex representation is only computed when the
-    // item is added. It is simply retreived in the main loop.
-    // If this was in `update()` (which would make the code slightly simpler), this would get unnecessarily re-computed
-    // every frame - 60 times a second or more.
+    // Computing the string's hex representation here removes the need to recompute it every application frame.
     if (canUseHex) {
         // Build the hex representation of the string
-        // We're appending to the last item's ostringstream (`_items.back()` is guaranteed to exist at this point).
+        // We're appending to the last item's ostringstream (_items.back() is guaranteed to exist at this point).
         // We won't need to check for newlines using this approach.
         std::ostringstream& oss = _items.back().textHex;
         for (unsigned char c : s) {
@@ -125,7 +121,7 @@ void Console::_updateOutput() {
         // Options for the input textbox
         ImGui::Separator();
 
-        ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSend);
+        ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSubmit);
 
         ImGui::MenuItem("Add final line ending", nullptr, &_addFinalLineEnding);
 
@@ -166,7 +162,7 @@ void Console::update() {
         // Invoke the callback function if the string is not empty
         if (!sendString.empty()) _inputCallback(sendString);
 
-        if (_clearTextboxOnSend) _textBuf.clear(); // Blank out input textbox
+        if (_clearTextboxOnSubmit) _textBuf.clear(); // Blank out input textbox
         ImGui::SetItemDefaultFocus();
         ImGui::SetKeyboardFocusHere(-1); // Auto focus on input textbox
     }

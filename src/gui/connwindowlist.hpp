@@ -1,7 +1,10 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
-//
-// A custom container to store and manage multiple ConnWindow objects
+
+/**
+ * @file
+ * @brief A custom container to store and manage multiple @p ConnWindow objects
+*/
 
 #pragma once
 
@@ -12,25 +15,24 @@
 #include "connwindow.hpp"
 #include "net/sockets.hpp"
 
-/// <summary>
-/// A class to manage multiple ConnWindow objects.
-/// </summary>
+/**
+ * @brief A custom container to store and manage multiple @p ConnWindow objects.
+ * @sa ConnWindow
+*/
 class ConnWindowList {
-    using PtrType = std::unique_ptr<ConnWindow>; // A unique_ptr pointing to a managed ConnWindow object
-
-    std::vector<PtrType> _windows; // All window pointers
+    std::vector<std::unique_ptr<ConnWindow>> _windows; // All connection windows
 
 public:
-    /// <summary>
-    /// Add a new, unique window to the list.
-    /// </summary>
-    /// <param name="data">The DeviceData to initialize the window with</param>
-    /// <param name="extraInfo">A string prepended to the window title in parentheses (optional)</param>
-    /// <returns>If the window is unique and added</returns>
+    /**
+     * @brief Adds a new window to the list.
+     * @param data A @p DeviceData to initialize the window with
+     * @param extraInfo A string prepended to the window title in parentheses (default is none)
+     * @return If the window is unique and was added
+    */
     bool add(const Sockets::DeviceData& data, std::string_view extraInfo = "");
 
-    /// <summary>
-    /// Redraw all contained windows and delete any that have been closed.
-    /// </summary>
+    /**
+     * @brief Redraws all contained windows and deletes any that have been closed.
+    */
     void update();
 };

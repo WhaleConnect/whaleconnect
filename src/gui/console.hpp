@@ -1,87 +1,84 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
-//
-// A class to represent a text panel with an input textbox
+
+/**
+ * @file
+ * @brief A class to represent a text panel with an input textbox
+*/
 
 #pragma once
 
-#include <vector>
+#include <functional> // std::function
 #include <sstream> // std::ostringstream
 #include <string_view>
-#include <functional> // std::function
+#include <vector>
 
 #include <imgui.h>
 
 #include "app/settings.hpp"
 #include "util/formatcompat.hpp"
 
-/// <summary>
-/// A class to represent a scrollable panel of output text with an optional input textbox.
-/// </summary>
+/**
+ * @brief A class to represent a text panel with an input textbox.
+*/
 class Console {
-    /// <summary>
-    /// A structure representing an item in this object's output.
-    /// </summary>
+    // A structure representing an item in a console output.
     struct ConsoleItem {
         bool canUseHex; // If the item gets displayed as hexadecimal when the option is set
-        std::string text; // The text of the item
-        std::ostringstream textHex; // The text of the item, in hexadecimal format
-        ImVec4 color; // The color of the item
+        std::string text; // The text
+        std::ostringstream textHex; // The text in hexadecimal format
+        ImVec4 color; // The color
         std::string timestamp; // The time when the item was added
     };
 
     bool _scrollToEnd = false; // If the console is force-scrolled to the end
-    bool _autoscroll = true; // If console autoscrolls when new data is put
+    bool _autoscroll = true; // If the console autoscrolls when new data is put
     bool _showTimestamps = false; // If timestamps are shown in the output
     bool _showHex = false; // If items are shown in hexadecimal
-    bool _clearTextboxOnSend = true; // If the textbox is cleared on each send
-    bool _addFinalLineEnding = false; // If a final line ending is added before sending
+    bool _clearTextboxOnSubmit = true; // If the textbox is cleared when the submit callback is called
+    bool _addFinalLineEnding = false; // If a final line ending is added to the callback input string
 
-    std::function<void(std::string_view)> _inputCallback; // Input textbox submit callback function
-    std::vector<ConsoleItem> _items; // Items in console output
-    std::string _textBuf; // Buffer for the texbox
+    std::function<void(std::string_view)> _inputCallback; // The textbox callback function, called on Enter key
+    std::vector<ConsoleItem> _items; // The items in console output
+    std::string _textBuf; // The buffer for the texbox
     int _currentLE = 0; // The index of the line ending selected
 
-    /// <summary>
-    /// Add text to the console. Does not make it go on its own line.
-    /// </summary>
-    /// <param name="s">The string to add to the output</param>
-    /// <param name="color">The color of the text (optional, default is uncolored)</param>
-    /// <param name="canUseHex">If the string gets displayed as hexadecimal when set (optional, default is true)</param>
+    // Adds text to the console. Does not make it go on its own line.
     void _add(std::string_view s, const ImVec4& color, bool canUseHex);
 
-    /// <summary>
-    /// Draw all elements, excluding the textbox.
-    /// </summary>
+    // Draws the output pane only.
     void _updateOutput();
 
 public:
-    /// <summary>
-    /// Console constructor, set the text input callback function (enables the input textbox).
-    /// </summary>
-    /// <typeparam name="Fn">A function which takes a string which is the textbox contents at the time</typeparam>
-    /// <param name="fn">The function to call when the input textbox contents are submitted</param>
+    /**
+     * @brief Sets the text input callback function.
+     * @tparam Fn A function taking a string_view
+     * @param fn The function to call when on the input callback
+     *
+     * The supplied function is called when the Enter key is pressed in the input textbox. The string passed to the
+     * function is the contents of the textbox at the time of the callback.
+    */
     template <class Fn>
     Console(Fn&& fn) : _inputCallback(fn) {}
 
-    /// <summary>
-    /// Draw the console output.
-    /// </summary>
+    /**
+     * @brief Draws the input textbox, output pane, and option selectors.
+    */
     void update();
 
-    /// <summary>
-    /// Add text to the console. Accepts multi-line strings (i.e. strings with multiple newlines)
-    /// </summary>
-    /// <param name="s">The string to add to the output</param>
-    /// <param name="color">The color of the text</param>
-    /// <param name="pre">A string to add before each line</param>
-    /// <param name="canUseHex">If the string gets displayed as hexadecimal when set</param>
+    /**
+     * @brief Adds text to the console. Accepts multiline strings.
+     * @param s The string to output
+     * @param pre A string to add before each line
+     * @param color The text color
+     * @param canUseHex If the string gets displayed as hexadecimal when the option is set (default is true)
+    */
     void addText(std::string_view s, std::string_view pre = "", const ImVec4& color = {}, bool canUseHex = true);
 
-    /// <summary>
-    /// Add a red error message.
-    /// </summary>
-    /// <param name="s">The string to add to the output</param>
+    /**
+     * @brief Adds a red error message.
+     * @param s The message
+    */
     void addError(std::string_view s) {
         // Error messages in red
         forceNextLine();
@@ -89,10 +86,10 @@ public:
         forceNextLine();
     }
 
-    /// <summary>
-    /// Add a yellow information message.
-    /// </summary>
-    /// <param name="s">The string to add to the output</param>
+    /**
+     * @brief Adds a yellow information message.
+     * @param s The message
+    */
     void addInfo(std::string_view s) {
         // Information in yellow
         forceNextLine();
@@ -100,10 +97,9 @@ public:
         forceNextLine();
     }
 
-    /// <summary>
-    /// Add a newline to the last line of the output (if it doesn't already end with one). This causes the next item to
-    /// go on a new line.
-    /// </summary>
+    /**
+     * @brief Forces subsequent text to go on a new line.
+    */
     void forceNextLine() {
         // If the deque is empty, the item will have to be on its own line.
         if (_items.empty()) return;
@@ -112,8 +108,8 @@ public:
         if (lastItem.back() != '\n') lastItem += '\n';
     }
 
-    /// <summary>
-    /// Clear the console output.
-    /// </summary>
+    /**
+     * @brief Clears the console output.
+    */
     void clear() { _items.clear(); }
 };

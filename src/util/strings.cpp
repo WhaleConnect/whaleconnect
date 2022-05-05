@@ -7,7 +7,7 @@
 
 #include "strings.hpp"
 
-Strings::WideStr Strings::toWide(std::string_view from) {
+Strings::SysStr Strings::toSys(std::string_view from) {
 #ifdef _WIN32
     // Nothing to convert in an empty string
     if (from.empty()) return {};
@@ -26,7 +26,7 @@ Strings::WideStr Strings::toWide(std::string_view from) {
 #endif
 }
 
-std::string Strings::fromWide(std::wstring_view from) {
+std::string Strings::fromSys(SysStrView from) {
 #ifdef _WIN32
     // Nothing to convert in an empty string
     if (from.empty()) return {};
@@ -45,7 +45,9 @@ std::string Strings::fromWide(std::wstring_view from) {
 #endif
 }
 
-std::string Strings::replaceAll(NO_CONST_REF std::string str, std::string_view from, std::string_view to) {
+std::string Strings::replaceAll(std::string str, std::string_view from, std::string_view to) {
+    // Adapted from https://stackoverflow.com/a/3418285
+ 
     // Preliminary checks
     // 1. Nothing to replace in an empty string
     // 2. Can't replace an empty string

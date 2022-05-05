@@ -21,9 +21,7 @@
 // The GUI window of the app
 static GLFWwindow* window = nullptr;
 
-/// <summary>
-/// Set Dear ImGui's configuration for use by the application.
-/// </summary>
+// Sets Dear ImGui's configuration for use by the application.
 static void configImGui() {
     using namespace Settings;
 
@@ -113,7 +111,7 @@ void MainHandler::handleNewFrame() {
 
     // FPS counter
     if (Settings::showFPScounter)
-        ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner_TopRight, "%d FPS", static_cast<int>(ImGui::GetIO().Framerate));
+        ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopRight, "%d FPS", static_cast<int>(ImGui::GetIO().Framerate));
 
 #ifndef NDEBUG
     // The demo and metrics window are enabled in debug builds (see imconfig.h), provide a window to show them

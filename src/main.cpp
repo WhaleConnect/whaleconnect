@@ -19,20 +19,26 @@
 #include "util/imguiext.hpp"
 #include "util/formatcompat.hpp"
 
+#ifdef _MSC_VER
+// Use WinMain() as an entry point on MSVC
+#define MAIN_FUNC CALLBACK WinMain
+#define MAIN_ARGS _In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int
+#else
+// Use the standard main() as an entry point on other compilers
+#define MAIN_FUNC main
+#define MAIN_ARGS
+#endif
+
 // List of open windows
 static ConnWindowList connections;
 
 // If an attempted Bluetooth connection is unique
 static bool isNewBT = true;
 
-/// <summary>
-/// Render the "New Connection" window for Internet-based connections.
-/// </summary>
+// Renders the "New Connection" window for Internet-based connections.
 static void drawIPConnectionTab();
 
-/// <summary>
-/// Render the "New Connection" window for Bluetooth-based connections.
-/// </summary>
+// Renders the "New Connection" window for Bluetooth-based connections.
 static void drawBTConnectionTab();
 
 int MAIN_FUNC(MAIN_ARGS) {
@@ -54,10 +60,10 @@ int MAIN_FUNC(MAIN_ARGS) {
 
         // Error message for failed initialization
         if (std::holds_alternative<System::SystemError>(initResult))
-            ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner_TopLeft,
+            ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopLeft,
                            "Initialization failed - %s", std::get<System::SystemError>(initResult).formatted().c_str());
         else if (std::holds_alternative<std::system_error>(initResult))
-            ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner_TopLeft, "Could not initialize thread pool.");
+            ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopLeft, "Could not initialize thread pool.");
 
         // New connection window
         ImGui::SetNextWindowSize({ 600, 250 }, ImGuiCond_FirstUseEver);
@@ -107,7 +113,7 @@ static void drawIPConnectionTab() {
         - portWidth;                                    // Width of the port input
 
     // Server address, set the textbox width to the space not taken up by everything else
-    // Use `ImMax()` to set a minimum size for the texbox; it will not resize past a certain min bound.
+    // Use ImMax to set a minimum size for the texbox; it will not resize past a certain min bound.
     ImGui::SetNextItemWidth(ImMax(spaceAvail, minAddressWidth));
     ImGui::InputText(addressLabel, addr);
 
@@ -133,10 +139,7 @@ static void drawIPConnectionTab() {
     ImGui::EndTabItem();
 }
 
-/// <summary>
-/// Draw the combobox used to select UUIDs for Bluetooth SDP lookup.
-/// </summary>
-/// <returns>The UUID selected in the combobox</returns>
+// Draws the combobox used to select UUIDs for Bluetooth SDP lookup.
 static UUID drawUUIDCombo() {
     // Map of UUIDs, associating a UUID value with a user-given name
     static std::map<std::string, UUID> uuidList = {
@@ -158,14 +161,8 @@ static UUID drawUUIDCombo() {
     return uuidList[selected];
 }
 
-/// <summary>
-/// Draw a menu composed of Bluetooth devices.
-/// </summary>
-/// <param name="devices">The list of devices to display in the menu</param>
-/// <param name="showAddrs">If addresses are shown next to device names</param>
-/// <param name="selected">The device selected in the menu (modified when an entry is clicked)</param>
-/// <returns>If an entry was selected</returns>
-bool drawPairedDevicesList(const Sockets::DeviceDataList& devices, bool showAddrs, Sockets::DeviceData& selected) {
+// Draws a menu composed of the paired Bluetooth devices.
+static bool drawPairedDevices(const Sockets::DeviceDataList& devices, bool showAddrs, Sockets::DeviceData& selected) {
     bool ret = false;
 
     // The menu is a listbox which can display 4 entries at a time
@@ -205,12 +202,7 @@ bool drawPairedDevicesList(const Sockets::DeviceDataList& devices, bool showAddr
     return ret;
 }
 
-/// <summary>
-/// Draw the options for connecting to a device with Bluetooth.
-/// </summary>
-/// <param name="target">The device to connect to</param>
-/// <param name="port">The port (RFCOMM: channel, L2CAP: PSM) of the server running on the device</param>
-/// <param name="extraInfo">Any extra text to display in the new window</param>
+// Draws the options for connecting to a device with Bluetooth.
 static void drawBTConnOptions(const Sockets::DeviceData& target, uint16_t port, std::string_view extraInfo) {
     using Sockets::ConnectionType;
     using enum ConnectionType;
@@ -227,20 +219,12 @@ static void drawBTConnOptions(const Sockets::DeviceData& target, uint16_t port, 
     if (ImGui::Button("Connect")) isNewBT = connections.add({ type, target.name, target.address, port }, extraInfo);
 }
 
-/// <summary>
-/// Begin a child window with an optional one-line spacing at the bottom.
-/// </summary>
-/// <param name="spacing">If spacing is reserved at the bottom of the child</param>
-/// <param name="border">If a border is present around the child</param>
+// Begins a child window with an optional one-line spacing at the bottom.
 static void beginChildWithSpacing(bool spacing, bool border) {
     ImGui::BeginChild("output", { 0, (spacing) ? 0 : -ImGui::GetFrameHeightWithSpacing() }, border);
 }
 
-/// <summary>
-/// Display the entries from an SDP lookup (with buttons to connect to each) in a tree format.
-/// </summary>
-/// <param name="list">The SDP lookup result object to display</param>
-/// <param name="selected">The DeviceData instance used as context for making a connection</param>
+// Displays the entries from an SDP lookup (with buttons to connect to each) in a tree format.
 static void drawSDPList(const BTUtils::SDPResultList& list, const Sockets::DeviceData& selected) {
     // If no SDP results were found, display a message and exit
     if (list.empty()) {
@@ -366,7 +350,7 @@ static void drawBTConnectionTab() {
             }
 
             // There are devices, display them
-            if (drawPairedDevicesList(deviceList, showAddrs, selected)) {
+            if (drawPairedDevices(deviceList, showAddrs, selected)) {
                 deviceSelected = true;
 
                 if (useSDP) {

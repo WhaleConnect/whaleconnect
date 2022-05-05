@@ -16,15 +16,21 @@
 #include "async.hpp"
 #include "sys/errcheck.hpp"
 
+// The number of threads to start
+// If the number of supported threads cannot be determined, 1 is created.
 static const auto numThreads = std::max(std::thread::hardware_concurrency(), 1U);
 
+// A vector of threads to serve as a thread pool
 static std::vector<std::thread> workerThreadPool(numThreads);
 
 #ifdef _WIN32
+// A completion key value to indicate a signaled interrupt
 static constexpr int iocpInterrupt = 1;
 
+// The IOCP handle
 static HANDLE completionPort = nullptr;
 
+// Runs in each thread to handle completion results.
 static void worker() {
     DWORD numBytes;
     uint64_t completionKey;
@@ -52,24 +58,34 @@ static void worker() {
 #endif
 
 void Async::init() {
+#ifdef _WIN32
+    // Initialize IOCP
     completionPort = CALL_EXPECT_TRUE(CreateIoCompletionPort, INVALID_HANDLE_VALUE, nullptr, 0, numThreads);
+#endif
 
-    for (auto& i : workerThreadPool) i = std::thread(worker);
+    // Populate thread pool
+    for (auto& i : workerThreadPool) i = std::thread{ worker };
 }
 
 void Async::cleanup() {
     if (!completionPort) return;
 
+#ifdef _WIN32
+    // Signal threads to terminate
     for (size_t i = 0; i < workerThreadPool.size(); i++)
         PostQueuedCompletionStatus(completionPort, 0, iocpInterrupt, nullptr);
 
+    // Join each thread
     for (auto& i : workerThreadPool) if (i.joinable()) i.join();
 
+    // Close the IOCP handle
     CloseHandle(completionPort);
+#endif
 }
 
 void Async::add(SOCKET sockfd) {
 #ifdef _WIN32
+    // Create a new handle for the socket
     CALL_EXPECT_TRUE(CreateIoCompletionPort, reinterpret_cast<HANDLE>(sockfd), completionPort, 0, 0);
 #endif
 }

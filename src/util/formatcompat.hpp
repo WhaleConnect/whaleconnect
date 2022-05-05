@@ -1,9 +1,12 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 //
-// Compatibility layer for C++20 std::format() using the {fmt} library internally.
+// TODO: Remove this fallback file and just use #include <format> when all major compilers implement it
 
-// TODO: Remove this fallback file and just use `#include <format>` when all major compilers implement it
+/**
+ * @file
+ * @brief Compatibility layer for C++20 @p std::format() using the {fmt} library internally
+*/
 
 #pragma once
 
@@ -18,27 +21,27 @@
 #include <fmt/core.h>
 
 namespace std {
-    /// <summary>
-    /// Polyfill function for `std::format()`.
-    /// </summary>
-    /// <typeparam name="...Args">Variadic arguments to format</typeparam>
-    /// <param name="fString">The format string</param>
-    /// <param name="...args">Arguments to format into the string</param>
-    /// <returns>The formatted string</returns>
+    /**
+     * @brief Polyfill for @p std::format().
+     * @tparam ...Args A sequence of arguments to format
+     * @param fString The format string
+     * @param ...args Arguments to format into the string
+     * @return The formatted string
+    */
     template <class... Args>
     inline string format(string_view fString, Args&&... args) {
         return fmt::format(fmt::runtime(fString), forward<Args>(args)...);
     }
 
-    /// <summary>
-    /// Polyfill function for `std::format_to()`.
-    /// </summary>
-    /// <typeparam name="OutputIt">An output iterator</typeparam>
-    /// <typeparam name="...Args">Variadic arguments to format</typeparam>
-    /// <param name="out">An iterator to the output buffer</param>
-    /// <param name="fString">The format string</param>
-    /// <param name="...args">Arguments to format into the string</param>
-    /// <returns>An iterator past the end of the output range</returns>
+    /**
+     * @brief Polyfill for @p std::format_to().
+     * @tparam OutputIt An iterator type
+     * @tparam ...Args A sequence of arguments to format
+     * @param out An iterator to the output buffer to format into
+     * @param fString The format string
+     * @param ...args Arguments to format into the string
+     * @return An iterator past the end of the output range
+    */
     template <class OutputIt, class... Args>
     inline OutputIt format_to(OutputIt out, string_view fString, Args&&... args) {
         return fmt::format_to(out, fmt::runtime(fString), forward<Args>(args)...);

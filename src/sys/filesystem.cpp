@@ -13,6 +13,6 @@ fs::path System::getProgramDir() {
 #ifdef _WIN32
     wchar_t path[_MAX_PATH + 1]{};
     GetModuleFileName(nullptr, path, _MAX_PATH);
-    return fs::path{ Strings::fromWide(path) }.parent_path();
+    return fs::path{ Strings::fromSys(path) }.parent_path();
 #endif
 }

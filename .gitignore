@@ -4,7 +4,7 @@ desktop.ini
 # Visual Studio generated files
 .vs/
 
-# CMake build output
-vcpkg_installed/
+# Build output
 build/
 out/
+vcpkg_installed/

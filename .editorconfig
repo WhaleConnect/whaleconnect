@@ -22,7 +22,7 @@ guidelines = 120 1px solid A0A9A9A9
 
 # Visual C++ Code Style settings
 
-cpp_generate_documentation_comments = xml
+cpp_generate_documentation_comments = doxygen_slash_star
 
 # Visual C++ Formatting settings
 

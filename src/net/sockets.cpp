@@ -102,17 +102,26 @@ static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, b
     Async::add(s);
 
 #ifdef _WIN32
+    // Datagram sockets can be directly connected (ConnectEx() doesn't support them)
     if (isDgram) {
         CALL_EXPECT_ZERO(connect, s, addr, addrLen);
         co_return;
     }
 
+    // ConnectEx() requires the socket to be initially bound.
+    // A sockaddr_storage can be used with all connection types, Internet and Bluetooth.
     sockaddr_storage addrBind{ .ss_family = addr->sa_family };
+
+    // The bind() function will work with sockaddr_storage for any address family. However, with Bluetooth, it expects
+    // the size parameter to be the size of a Bluetooth address structure. Unlike Internet-based sockets, it will not
+    // accept a sockaddr_storage size.
+    // This means the size must be spoofed with Bluetooth sockets.
     int addrSize = (addr->sa_family == AF_BTH) ? sizeof(SOCKADDR_BTH) : sizeof(sockaddr_storage);
 
-    // ConnectEx() requires a socket to be initially bound.
+    // Bind the socket
     CALL_EXPECT_ZERO(bind, s, reinterpret_cast<sockaddr*>(&addrBind), addrSize);
 
+    // Load the ConnectEx() function
     LPFN_CONNECTEX connectExPtr = nullptr;
 
     GUID guid = WSAID_CONNECTEX;
@@ -131,11 +140,12 @@ static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, b
     Async::CompletionResult result{};
     co_await result;
 
+    // Call ConnectEx()
     CALL_EXPECT_TRUE(connectExPtr, s, addr, addrLen, nullptr, 0, nullptr, &result);
-
     co_await std::suspend_always{};
     CALL_EXPECT_ZERO(result.errorResult);
 
+    // Make the socket behave more like a regular socket connected with connect()
     CALL_EXPECT_ZERO(setsockopt, s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
 #endif
 }
@@ -155,26 +165,26 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
         };
 
         // Wide encoding conversions for Windows
-        Strings::WideStr addrWide = Strings::toWide(data.address);
-        Strings::WideStr portWide = Strings::toWide(data.port);
+        Strings::SysStr addrWide = Strings::toSys(data.address);
+        Strings::SysStr portWide = Strings::toSys(data.port);
 
         // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
         HandleWrapper<ADDRINFOW*> addr{ FreeAddrInfo };
         CALL_EXPECT_ZERO_RC_ERROR_TYPE(GetAddrInfo, System::ErrorType::AddrInfo,
                                        addrWide.c_str(), portWide.c_str(), &hints, &addr.get());
 
-        // getaddrinfo() succeeded, initialize socket file descriptor with values created by GAI
-        Socket ret{ CALL_EXPECT_POSITIVE(socket, addr->ai_family, addr->ai_socktype, addr->ai_protocol) };
+        // Initialize socket
+        Socket ret{ CALL_EXPECT_NONERROR(socket, addr->ai_family, addr->ai_socktype, addr->ai_protocol) };
 
         // Connect to the server
-        // The cast to `socklen_t` is only needed on Windows because `ai_addrlen` is of type `size_t`.
+        // The cast to socklen_t is only needed on Windows because ai_addrlen is of type size_t.
         co_await connectSocket(ret.get(), addr->ai_addr, static_cast<socklen_t>(addr->ai_addrlen), isUDP);
 
         // Return the socket
         co_return std::move(ret);
     } else if (connectionTypeIsBT(data.type)) {
         // Set up Bluetooth socket
-        Socket ret{ CALL_EXPECT_POSITIVE(bluetoothSocket, data.type) };
+        Socket ret{ CALL_EXPECT_NONERROR(bluetoothSocket, data.type) };
 
         // Set up server address structure
         socklen_t addrSize;
@@ -245,7 +255,7 @@ Task<> Sockets::sendData(SOCKET sockfd, std::string_view data) {
 
 #ifdef _WIN32
     WSABUF buf{ static_cast<ULONG>(data.length()), const_cast<char*>(data.data()) };
-    CALL_EXPECT_POSITIVE(WSASend, sockfd, &buf, 1, nullptr, 0, &result, nullptr);
+    CALL_EXPECT_NONERROR(WSASend, sockfd, &buf, 1, nullptr, 0, &result, nullptr);
 #else
     int sendRet = send(sockfd, data.data(), data.size(), MSG_NOSIGNAL);
 #endif
@@ -273,7 +283,7 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
 #ifdef _WIN32
     WSABUF buf{ static_cast<ULONG>(std::ssize(recvBuf)), recvBuf };
     DWORD flags = 0;
-    CALL_EXPECT_POSITIVE(WSARecv, sockfd, &buf, 1, nullptr, &flags, &result, nullptr);
+    CALL_EXPECT_NONERROR(WSARecv, sockfd, &buf, 1, nullptr, &flags, &result, nullptr);
 #else
     int recvRet = recv(asyncData.sockfd, recvBuf, static_cast<int>(std::ssize(recvBuf)) - 1, MSG_NOSIGNAL);
 #endif

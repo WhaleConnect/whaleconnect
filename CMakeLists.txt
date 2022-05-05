@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.17)
 
 # Toolchain file for vcpkg
 if (DEFINED ENV{VCPKG_ROOT})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+    set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake CACHE STRING "")
 else()
     message(FATAL_ERROR "VCPKG_ROOT environment variable not set. See docs/BUILDING.md for details.")
 endif()
@@ -19,7 +19,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 # Source files to compile
-file(GLOB_RECURSE SRCS ${CMAKE_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE SRCS src/*.cpp)
 add_executable(terminal WIN32 ${SRCS})
 target_include_directories(terminal PRIVATE src)
 
@@ -37,11 +37,13 @@ add_custom_command(TARGET terminal POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
 
 # Compiler-dependent options
 if (MSVC)
-    # Warning level
-    set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS "/W4")
+    # Warnings
+    set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS /W4)
 
-    # UTF-8 charset (for libraries and app code)
-    target_compile_options(terminal PRIVATE "/utf-8")
+    # UTF-8 charset
+    target_compile_options(terminal PRIVATE
+        /utf-8
+        /EHsc)
 
     # Enable Edit and Continue in debug builds
     target_link_options(terminal PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
@@ -51,17 +53,15 @@ if (MSVC)
     target_compile_definitions(terminal PRIVATE UNICODE _UNICODE NOMINMAX)
 else()
     # Warnings
-    set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -Wno-missing-field-initializers")
+    set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wno-missing-field-initializers)
 
     # UTF-8
-    target_compile_options(terminal PRIVATE "-finput-charset=UTF-8 -fexec-charset=UTF-8")
+    target_compile_options(terminal PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
 endif()
 
 if (NOT WIN32)
-    # Use pkg-config
-    find_package(PkgConfig REQUIRED)
-
     # DBus
+    find_package(PkgConfig REQUIRED)
     pkg_search_module(DBUS REQUIRED dbus-1)
     target_include_directories(terminal PRIVATE ${DBUS_INCLUDE_DIRS})
     target_link_directories(terminal PRIVATE ${DBUS_LIBRARY_DIRS})
@@ -72,5 +72,18 @@ if (NOT WIN32)
     find_package(Threads REQUIRED)
 
     # Link to libraries
-    target_link_libraries(terminal ${GLFW_STATIC_LIBRARIES} ${DBUS_LIBRARIES} Threads::Threads ${CMAKE_DL_LIBS} -lbluetooth)
+    target_link_libraries(terminal ${DBUS_LIBRARIES} Threads::Threads ${CMAKE_DL_LIBS} -lbluetooth)
+endif()
+
+# Build source documentation with Doxygen in release builds
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+    set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+    configure_file(Doxyfile.in ${DOXYFILE_OUT} @ONLY)
+
+    add_custom_target(docs ALL
+        COMMAND $<$<CONFIG:Release>:${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}>
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Generating HTML documentation for sources"
+        VERBATIM)
 endif()

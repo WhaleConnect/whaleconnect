@@ -42,7 +42,7 @@ void BTUtils::init() {
     // Connect to the system D-Bus
     conn = CALL_EXPECT_TRUE(dbus_bus_get, DBUS_BUS_SYSTEM, nullptr);
 
-    // The process will exit when a connection with `dbus_bus_get` closes.
+    // The process will exit when a connection with dbus_bus_get closes.
     // The function below will undo this behavior:
     dbus_connection_set_exit_on_disconnect(conn, FALSE);
 #endif
@@ -104,7 +104,7 @@ Sockets::DeviceDataList BTUtils::getPaired() {
                                       addr[5], addr[4], addr[3], addr[2], addr[1], addr[0]);
 
         // Get the name of the device
-        std::string name = Strings::fromWide(deviceInfo.szName);
+        std::string name = Strings::fromSys(deviceInfo.szName);
 
         // Add to results
         deviceList.emplace_back(Sockets::ConnectionType::None, name, mac, uint16_t{ 0 });
@@ -123,7 +123,7 @@ Sockets::DeviceDataList BTUtils::getPaired() {
     DBusMessageIter responseIter;
     dbus_message_iter_init(response.get(), &responseIter);
 
-    // `dbus_message_iter_get_signature(&responseIter)` should return "a{oa{sa{sv}}}".
+    // dbus_message_iter_get_signature(&responseIter) should return "a{oa{sa{sv}}}".
     // Breakdown:
     // a          An array of...
     // {          Dictionaries with...
@@ -141,38 +141,38 @@ Sockets::DeviceDataList BTUtils::getPaired() {
     //
     // https://dbus.freedesktop.org/doc/dbus-specification.html
 
-    // Iterate through the `a{o` part of the signature - array of object paths
+    // Iterate through the "a{o" part of the signature - array of object paths
 
-    // Array iterator - `a`
+    // Array iterator - a
     DBusMessageIter objectsArr;
     do {
         dbus_message_iter_recurse(&responseIter, &objectsArr);
 
-        // Dict iterator - `{`
+        // Dict iterator - {
         DBusMessageIter objectDict;
         do {
             dbus_message_iter_recurse(&objectsArr, &objectDict);
 
-            // Object path - `o`
+            // Object path - o
             // If this statement is hit, the object path is found - something like
             // "/org/bluez" or "/org/bluez/hci0/dev_FC_77_74_EB_C1_92".
             // We can ignore this, and move on with the message iterator.
             if (dbus_message_iter_get_arg_type(&objectDict) == DBUS_TYPE_OBJECT_PATH)
                 dbus_message_iter_next(&objectDict);
 
-            // Iterate through the `a{s` part of the signature - array of interfaces
+            // Iterate through the a{s part of the signature - array of interfaces
 
-            // Array iterator - `a`
+            // Array iterator - a
             DBusMessageIter ifacesArr;
             do {
                 dbus_message_iter_recurse(&objectDict, &ifacesArr);
 
-                // Dict iterator - `{`
+                // Dict iterator - {
                 DBusMessageIter ifaceDict;
                 do {
                     dbus_message_iter_recurse(&ifacesArr, &ifaceDict);
 
-                    // Interface name - `s`
+                    // Interface name - s
                     // Most of what's returned from GetManagedObjects we don't care about,
                     // e.g. org.freedesktop.DBus.Introspectable, org.bluez.LEAdvertisingManager1.
                     // We only want devices (org.bluez.Device1).
@@ -188,24 +188,24 @@ Sockets::DeviceDataList BTUtils::getPaired() {
                     Sockets::DeviceData device;
                     dbus_bool_t paired = false;
 
-                    // Iterate through the `a{s` part of the signature - array of properties
+                    // Iterate through the a{s part of the signature - array of properties
 
-                    // Array iterator - `a`
+                    // Array iterator - a
                     DBusMessageIter propsArr;
                     do {
                         dbus_message_iter_recurse(&ifaceDict, &propsArr);
 
-                        // Dict iterator - `{`
+                        // Dict iterator - {
                         DBusMessageIter propDict;
                         do {
                             dbus_message_iter_recurse(&propsArr, &propDict);
 
-                            // Property name - `s`
+                            // Property name - s
                             const char* propName;
                             dbus_message_iter_get_basic(&propDict, &propName);
                             dbus_message_iter_next(&propDict);
 
-                            // Property value - `v`
+                            // Property value - v
                             // Since this is a variant type, we'll need another message iterator for it.
                             DBusMessageIter propVal;
                             dbus_message_iter_recurse(&propDict, &propVal);
@@ -243,11 +243,7 @@ Sockets::DeviceDataList BTUtils::getPaired() {
 }
 
 #ifdef _WIN32
-/// <summary>
-/// Get the SDP container data in a given SDP element.
-/// </summary>
-/// <param name="element">The SDP_ELEMENT_DATA which contains the SDP stream to read from</param>
-/// <returns>The container data as a vector</returns>
+// Gets the SDP container data in an SDP element.
 static std::vector<SDP_ELEMENT_DATA> getSDPListData(SDP_ELEMENT_DATA& element) {
     std::vector<SDP_ELEMENT_DATA> ret;
 
@@ -260,28 +256,17 @@ static std::vector<SDP_ELEMENT_DATA> getSDPListData(SDP_ELEMENT_DATA& element) {
     return ret;
 }
 
-/// <summary>
-/// Get the SDP container data associated with a given SDP attribute.
-/// </summary>
-/// <param name="blob">The SDP stream to read from</param>
-/// <param name="attrib">The attribute to get the data from</param>
-/// <returns>The container data as a vector</returns>
+// Gets the SDP container data associated with an SDP attribute.
 static std::vector<SDP_ELEMENT_DATA> getSDPListData(const LPBLOB blob, USHORT attrib) {
     std::vector<SDP_ELEMENT_DATA> ret;
 
-    // Get the list data
+    // Get the list data by reading from the blob (the SDP stream)
     SDP_ELEMENT_DATA element{};
     CALL_EXPECT_ZERO_RC_ERROR(BluetoothSdpGetAttributeValue, blob->pBlobData, blob->cbSize, attrib, &element);
     return getSDPListData(element);
 }
 #else
-/// <summary>
-/// Convert a Windows-style UUID struct into a Linux-style uuid_t struct.
-/// </summary>
-/// <param name="uuid">The UUID struct to convert</param>
-/// <returns>
-/// The converted uuid_t struct
-/// </returns>
+// Converts a Windows-style UUID struct into a Linux-style uuid_t struct.
 static uuid_t uuidWindowsToLinux(const UUID& uuid) {
     // Array of 16 bytes to create the UUID used for SDP search
     uint8_t uuidArr[16];
@@ -299,7 +284,7 @@ static uuid_t uuidWindowsToLinux(const UUID& uuid) {
     std::memcpy(uuidArr, &data1, 4);     // (1) Argument order: Destination, source, size of source in bytes.
     std::memcpy(uuidArr + 4, &data2, 2); // (2) The destination pointer is incremented by the sum of the previous sizes.
     std::memcpy(uuidArr + 6, &data3, 2); // (3) This will ensure that each byte is in the right location in the array.
-    std::memcpy(uuidArr + 8, uuid.Data4, 8); // No `&` operator because Data4 is an array (which decays into a pointer).
+    std::memcpy(uuidArr + 8, uuid.Data4, 8); // No & operator because Data4 is an array (which decays into a pointer).
 
     // Create the UUID
     uuid_t ret;
@@ -307,16 +292,10 @@ static uuid_t uuidWindowsToLinux(const UUID& uuid) {
     return ret;
 }
 
-/// <summary>
-/// Convert a Linux-style uuid_t struct into a Windows-style UUID struct.
-/// </summary>
-/// <param name="uuid">The uuid_t struct to convert</param>
-/// <returns>
-/// The converted UUID struct
-/// </returns>
+// Converts a Linux-style uuid_t struct into a Windows-style UUID struct.
 static UUID uuidLinuxToWindows(const uuid_t& uuid) {
     // For 16- and 32-bit UUIDs we can derive the rest of the UUID from the Bluetooth base UUID.
-    // (See the comments inside `createUUIDFromBase` for details.)
+    // See the comments inside createUUIDFromBase for details.
     switch (uuid.type) {
     case SDP_UUID16:
         return BTUtils::createUUIDFromBase(uuid.value.uuid16);
@@ -346,17 +325,11 @@ static UUID uuidLinuxToWindows(const uuid_t& uuid) {
 }
 #endif
 
-/// <summary>
-/// Get the major and minor versions of a Bluetooth profile descriptor.
-/// </summary>
-/// <param name="version">The 16-bit integer containing both version numbers</param>
-/// <param name="desc">The structure where the extracted values will be placed</param>
-/// <remarks>
-/// The major and minor versions are stored in the high-order 8 bits and low-order 8 bits of the 16-bit version number,
-/// respectively. This is the same for both Windows and Linux.
-/// </remarks>
+// Gets the major and minor versions of a Bluetooth profile descriptor.
 static void extractVersionNums(uint16_t version, BTUtils::ProfileDesc& desc) {
     // Bit operations to extract the two octets
+    // The major and minor version numbers are stored in the high-order 8 bits and low-order 8 bits of the 16-bit
+    // version number, respectively. This is the same for both Windows and Linux.
     desc.versionMajor = version >> 8;
     desc.versionMinor = version & 0xFF;
 }
@@ -366,7 +339,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, const UUID& uui
     SDPResultList ret;
 
 #ifdef _WIN32
-    Strings::WideStr addrWide = Strings::toWide(addr);
+    Strings::SysStr addrWide = Strings::toSys(addr);
 
     // Set up the query set restrictions
     WSAQUERYSET wsaQuery{
@@ -385,7 +358,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, const UUID& uui
     HandleWrapper<HANDLE> lookup{ WSALookupServiceEnd };
 
     try {
-        CALL_EXPECT_POSITIVE(WSALookupServiceBegin, &wsaQuery, flags, lookup.ptr());
+        CALL_EXPECT_NONERROR(WSALookupServiceBegin, &wsaQuery, flags, lookup.ptr());
     } catch (const System::SystemError& error) {
         if (error.code == WSASERVICE_NOT_FOUND) return {}; // No services found
 
@@ -404,8 +377,8 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, const UUID& uui
         SDPResult result;
 
         // The name and description
-        result.name = Strings::fromWide(wsaResults->lpszServiceInstanceName);
-        result.desc = Strings::fromWide(wsaResults->lpszComment);
+        result.name = Strings::fromSys(wsaResults->lpszServiceInstanceName);
+        result.desc = Strings::fromSys(wsaResults->lpszComment);
 
         // Protocol descriptors
         auto protoList = getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_PROTOCOL_DESCRIPTOR_LIST);

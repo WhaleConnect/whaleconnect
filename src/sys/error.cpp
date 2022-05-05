@@ -33,7 +33,7 @@ std::string System::SystemError::formatted() const {
                    nullptr);
 
 #else
-    // `strerrordesc_np()` (a GNU extension) is used since it doesn't translate the error message. A translation is
+    // strerrordesc_np (a GNU extension) is used since it doesn't translate the error message. A translation is
     // undesirable since the rest of the program isn't translated either.
     const char* msg = (type == ErrorType::System) ? strerrordesc_np(code) : gai_strerror(code);
 #endif

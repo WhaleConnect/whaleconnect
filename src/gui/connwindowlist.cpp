@@ -24,11 +24,7 @@ magic_enum::customize::enum_name<Sockets::ConnectionType>(Sockets::ConnectionTyp
     }
 }
 
-/// <summary>
-/// Format a DeviceData instance into a string for use in a ConnWindow title.
-/// </summary>
-/// <param name="data">The DeviceData to format</param>
-/// <returns>The resultant string</returns>
+// Formats a DeviceData instance into a string for use in a ConnWindow title.
 static std::string formatDeviceData(const Sockets::DeviceData& data) {
     // Type of the connection
     bool isBluetooth = Sockets::connectionTypeIsBT(data.type);
@@ -56,9 +52,8 @@ bool ConnWindowList::add(const Sockets::DeviceData& data, std::string_view extra
     std::string title = formatDeviceData(data);
 
     // Check if the title already exists
-    bool isNew = std::find_if(_windows.begin(), _windows.end(), [title](const PtrType& current) {
-        return current->getTitle() == title;
-    }) == _windows.end();
+    bool isNew = std::find_if(_windows.begin(), _windows.end(),
+                              [title](const auto& current) { return current->getTitle() == title; }) == _windows.end();
 
     // Add the window to the list
     if (isNew) _windows.push_back(std::make_unique<ConnWindow>(data, title, extraInfo));
@@ -67,20 +62,9 @@ bool ConnWindowList::add(const Sockets::DeviceData& data, std::string_view extra
 }
 
 void ConnWindowList::update() {
-    // Iterate through the windows vector
-    for (size_t i = 0; i < _windows.size(); i++) {
-        // The current window
-        auto& current = _windows[i];
+    // Remove all closed windows
+    std::erase_if(_windows, [](const auto& window) { return !window->open(); });
 
-        if (current->open()) {
-            // Window is open, update it
-            current->update();
-        } else {
-            // Window is closed, remove it from vector
-            _windows.erase(_windows.begin() + i);
-
-            // Iterators are invalid, wait until the next iteration
-            break;
-        }
-    }
+    // Update all open windows
+    for (const auto& i : _windows) i->update();
 }

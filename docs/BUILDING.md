@@ -31,9 +31,15 @@ All code is standards-compliant. However, because it uses a recent C++ revision,
 
 ### Build Commands with CMake
 
+These commands need to be run in the repository's root path.
+
 ```shell
 mkdir build
 cd build
 cmake ..
 cmake --build .
 ```
+
+## Building Source Documentation
+
+To build the documentation for the source code, you will need [Doxygen](https://www.doxygen.nl). If it is installed, the documentation pages will automatically be exported in a Release build. They export in HTML format in the build directory.
