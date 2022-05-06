@@ -6,5 +6,4 @@ desktop.ini
 
 # Build output
 build/
-out/
 vcpkg_installed/

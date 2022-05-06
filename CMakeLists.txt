@@ -3,14 +3,7 @@
 #
 # This is the main CMake script to build Network Socket Terminal.
 
-cmake_minimum_required(VERSION 3.17)
-
-# Toolchain file for vcpkg
-if (DEFINED ENV{VCPKG_ROOT})
-    set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake CACHE STRING "")
-else()
-    message(FATAL_ERROR "VCPKG_ROOT environment variable not set. See docs/BUILDING.md for details.")
-endif()
+cmake_minimum_required(VERSION 3.20)
 
 project(terminal)
 
@@ -45,10 +38,6 @@ if (MSVC)
         /utf-8
         /EHsc)
 
-    # Enable Edit and Continue in debug builds
-    target_link_options(terminal PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-    target_compile_options(terminal PRIVATE $<$<CONFIG:Debug>:/ZI>)
-
     # Use MSVC's Unicode character set and prevent clashing macros
     target_compile_definitions(terminal PRIVATE UNICODE _UNICODE NOMINMAX)
 else()
@@ -77,13 +66,23 @@ endif()
 
 # Build source documentation with Doxygen in release builds
 find_package(Doxygen)
-if (DOXYGEN_FOUND)
-    set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-    configure_file(Doxyfile.in ${DOXYFILE_OUT} @ONLY)
+option(BUILD_DOCS "Build documentation for sources" OFF)
+if (DOXYGEN_FOUND AND BUILD_DOCS)
+    set(DOXYGEN_PROJECT_NAME "Network Socket Terminal")
+    set(DOXYGEN_PROJECT_BRIEF "Cross-platform network communication software")
+    set(DOXYGEN_STRIP_FROM_PATH src)
+    set(DOXYGEN_STRIP_FROM_INC_PATH src)
 
-    add_custom_target(docs ALL
-        COMMAND $<$<CONFIG:Release>:${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}>
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "Generating HTML documentation for sources"
-        VERBATIM)
+    set(DOXYGEN_FORCE_LOCAL_INCLUDES YES)
+    set(DOXYGEN_SORT_MEMBERS_CTORS_1ST YES)
+    set(DOXYGEN_SORT_GROUP_NAMES YES)
+
+    set(DOXYGEN_WARN_NO_PARAMDOC YES)
+
+    set(DOXYGEN_HTML_OUTPUT src-docs)
+    set(DOXYGEN_GENERATE_TREEVIEW YES)
+
+    doxygen_add_docs(docs ALL
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        COMMENT "Generating HTML source documentation")
 endif()

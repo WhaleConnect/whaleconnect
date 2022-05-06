@@ -1,6 +1,6 @@
 # Building Network Socket Terminal
 
-To build NST from source code, you will need CMake, vcpkg, and an up-to-date compiler. MSVC is recommended on Windows, and GCC is recommended on Linux.
+To build NST from source code, you will need CMake, Ninja, vcpkg, and an up-to-date compiler. MSVC is recommended on Windows, and GCC is recommended on Linux.
 
 ## Integration with vcpkg
 
@@ -33,13 +33,30 @@ All code is standards-compliant. However, because it uses a recent C++ revision,
 
 These commands need to be run in the repository's root path.
 
+If building with the Visual Studio toolchain on Windows, run these commands in the VS command prompt.
+
+#### Debug Build
+
 ```shell
 mkdir build
 cd build
-cmake ..
+cmake .. --preset=debug
+cd debug
+cmake --build .
+```
+
+#### Release Build
+
+```shell
+mkdir build
+cd build
+cmake .. --preset=release
+cd release
 cmake --build .
 ```
 
 ## Building Source Documentation
 
-To build the documentation for the source code, you will need [Doxygen](https://www.doxygen.nl). If it is installed, the documentation pages will automatically be exported in a Release build. They export in HTML format in the build directory.
+To build the documentation for the source code, you will need [Doxygen](https://www.doxygen.nl).
+
+If it is installed, specify `-DBUILD_DOCS=ON` when configuring CMake. The documentation exports in HTML format in `build/<config>/src-docs`.
