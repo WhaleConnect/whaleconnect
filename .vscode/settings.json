@@ -10,19 +10,6 @@
     "doxdocgen.generic.boolReturnsTrueFalse": false,
     "doxdocgen.generic.includeTypeAtReturn": false,
     "editor.formatOnType": true,
-    "terminal.integrated.profiles.windows": {
-        "Command Prompt": {
-            "path": [
-                "${env:windir}\\Sysnative\\cmd.exe",
-                "${env:windir}\\System32\\cmd.exe"
-            ],
-            "args": [
-                "/K",
-                "${workspaceFolder}/msvc-cmake.bat",
-            ],
-            "icon": "terminal-cmd"
-        }
-    },
     "files.associations": {
         "*.tcc": "cpp",
         "algorithm": "cpp",
