@@ -34,9 +34,7 @@ if (MSVC)
     set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS /W4)
 
     # UTF-8 charset
-    target_compile_options(terminal PRIVATE
-        /utf-8
-        /EHsc)
+    target_compile_options(terminal PRIVATE /utf-8)
 
     # Use MSVC's Unicode character set and prevent clashing macros
     target_compile_definitions(terminal PRIVATE UNICODE _UNICODE NOMINMAX)

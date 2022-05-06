@@ -48,9 +48,7 @@ class Task {
         std::exception_ptr exception; // Any exception that was thrown in the coroutine
 
         // Called first when a coroutine is entered. This specifies the Task object returned from a coroutine function.
-        Task get_return_object() noexcept {
-            return *this;
-        }
+        Task get_return_object() noexcept { return *this; }
 
         // Called second when a coroutine is entered. This dictates how the coroutine starts.
         // Returning suspend_never starts the coroutine immediately.
@@ -64,7 +62,7 @@ class Task {
             struct Awaiter {
                 bool await_ready() const noexcept { return false; }
 
-                std::coroutine_handle<> await_suspend(std::coroutine_handle<promise_type> current) noexcept {
+                std::coroutine_handle<> await_suspend(std::coroutine_handle<promise_type> current) const noexcept {
                     // Get the caller coroutine's handle (stored in the private variable)
                     auto continuation = current.promise().continuation;
 
@@ -124,7 +122,7 @@ public:
     */
     T await_resume() const {
         // Propagate any exception that was thrown inside the coroutine to the caller
-        const auto& exception = _handle.promise().exception;
+        auto exception = _handle.promise().exception;
         if (exception) std::rethrow_exception(exception);
 
         // Return a value if this template instantiation is non-void
