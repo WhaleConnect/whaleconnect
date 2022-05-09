@@ -68,7 +68,7 @@ class Task {
 
                     // Return the handle, or a no-op handle if there is no caller coroutine
                     // Returning the caller's handle allows it to be resumed.
-                    return (continuation) ? continuation : std::noop_coroutine();
+                    return continuation ? continuation : std::noop_coroutine();
                 }
 
                 void await_resume() const noexcept {}

@@ -94,7 +94,7 @@ static void drawIPConnectionTab() {
     static ConnectionType type = TCP; // Type of connection to create
     static bool isNew = true; // If the attempted connection is unique
 
-    ImGui::BeginChild("Output", { 0, (isNew) ? 0 : -ImGui::GetFrameHeightWithSpacing() });
+    ImGui::BeginChild("Output", { 0, isNew ? 0 : -ImGui::GetFrameHeightWithSpacing() });
 
     // Widget labels
     static const char* portLabel = "Port";
@@ -221,7 +221,7 @@ static void drawBTConnOptions(const Sockets::DeviceData& target, uint16_t port, 
 
 // Begins a child window with an optional one-line spacing at the bottom.
 static void beginChildWithSpacing(bool spacing, bool border) {
-    ImGui::BeginChild("output", { 0, (spacing) ? 0 : -ImGui::GetFrameHeightWithSpacing() }, border);
+    ImGui::BeginChild("output", { 0, spacing ? 0 : -ImGui::GetFrameHeightWithSpacing() }, border);
 }
 
 // Displays the entries from an SDP lookup (with buttons to connect to each) in a tree format.
@@ -237,13 +237,13 @@ static void drawSDPList(const BTUtils::SDPResultList& list, const Sockets::Devic
     // ID to use in case multiple services have the same name
     unsigned int id = 0;
     for (const auto& [protos, services, profiles, port, name, desc] : list) {
-        const char* serviceName = (name.empty()) ? "Unnamed service" : name.c_str();
+        const char* serviceName = name.empty() ? "Unnamed service" : name.c_str();
 
         ImGui::PushID(id++); // Push the ID, then increment it
 
         if (ImGui::TreeNode(serviceName)) {
             // Print the description (if there is one)
-            ImGui::Text("Description: %s", (desc.empty()) ? "(none)" : desc.c_str());
+            ImGui::Text("Description: %s", desc.empty() ? "(none)" : desc.c_str());
 
             // Print UUIDs
             if (!protos.empty()) ImGui::Text("Protocol UUIDs:");

@@ -160,8 +160,8 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
         ADDRINFOW hints{
             .ai_flags = AI_NUMERICHOST,
             .ai_family = AF_UNSPEC,
-            .ai_socktype = (isUDP) ? SOCK_DGRAM : SOCK_STREAM,
-            .ai_protocol = (isUDP) ? IPPROTO_UDP : IPPROTO_TCP
+            .ai_socktype = isUDP ? SOCK_DGRAM : SOCK_STREAM,
+            .ai_protocol = isUDP ? IPPROTO_UDP : IPPROTO_TCP
         };
 
         // Wide encoding conversions for Windows

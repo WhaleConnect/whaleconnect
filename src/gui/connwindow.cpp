@@ -14,7 +14,7 @@ ConnWindow::ConnWindow(const Sockets::DeviceData& data, std::string_view title, 
     // Set the window text (not in initializer list because of length)
     // If there's no extra info, use the title as the window text; otherwise, format both the extra info and title
     // into the window text.
-    _windowText = (extraInfo.empty()) ? std::string{ title } : std::format("({}) {}", extraInfo, title);
+    _windowText = extraInfo.empty() ? std::string{ title } : std::format("({}) {}", extraInfo, title);
 
     _connect(data);
 }

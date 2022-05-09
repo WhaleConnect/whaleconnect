@@ -153,8 +153,8 @@ void ImGui::Overlay(const ImVec2& padding, ImGuiOverlayCorner corner, const char
 
     // Window position calculations
     ImVec2 windowPos{
-        (isRight) ? (workPos.x + workSize.x - padding.x) : (workPos.x + padding.x), // Offset X
-        (isBottom) ? (workPos.y + workSize.y - padding.y) : (workPos.y + padding.y) // Offset Y
+        isRight ? (workPos.x + workSize.x - padding.x) : (workPos.x + padding.x), // Offset X
+        isBottom ? (workPos.y + workSize.y - padding.y) : (workPos.y + padding.y) // Offset Y
     };
 
     ImVec2 windowPosPivot{ static_cast<float>(isRight), static_cast<float>(isBottom) };

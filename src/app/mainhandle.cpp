@@ -36,11 +36,11 @@ static void configImGui() {
 
     // Set styles
     ImGuiStyle& style = ImGui::GetStyle();
-    style.Colors[ImGuiCol_WindowBg].w = (windowTransparency) ? 0.92f : 1.0f;
+    style.Colors[ImGuiCol_WindowBg].w = windowTransparency ? 0.92f : 1.0f;
     style.Colors[ImGuiCol_Tab].w = 0.0f;
 
     // Set corner rounding
-    style.WindowRounding = (roundedCorners) ? 8.0f : 0.0f;
+    style.WindowRounding = roundedCorners ? 8.0f : 0.0f;
 
     style.ChildRounding
         = style.FrameRounding
@@ -48,7 +48,7 @@ static void configImGui() {
         = style.ScrollbarRounding
         = style.GrabRounding
         = style.TabRounding
-        = (roundedCorners) ? 4.0f : 0.0f;
+        = roundedCorners ? 4.0f : 0.0f;
 
     // If the default font is used, the rest of this function can be skipped
     if (useDefaultFont) return;
