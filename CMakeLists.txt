@@ -66,9 +66,14 @@ if (NOT WIN32)
 endif()
 
 # Build source documentation with Doxygen in release builds
-find_package(Doxygen)
 option(BUILD_DOCS "Build documentation for sources" OFF)
-if (DOXYGEN_FOUND AND BUILD_DOCS)
+if (BUILD_DOCS)
+    find_package(Doxygen)
+
+    if (NOT DOXYGEN_FOUND)
+        message(FATAL_ERROR "Doxygen is required to build source documentation")
+    endif()
+
     set(DOXYGEN_PROJECT_NAME "Network Socket Terminal")
     set(DOXYGEN_PROJECT_BRIEF "Cross-platform network communication software")
     set(DOXYGEN_STRIP_FROM_PATH src)
