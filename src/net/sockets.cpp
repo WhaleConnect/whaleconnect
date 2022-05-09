@@ -8,9 +8,6 @@
 #include <MSWSock.h>
 #include <mstcpip.h>
 
-// Link with Winsock static library
-#pragma comment(lib, "Ws2_32")
-
 // These don't exist on Windows
 constexpr auto EAI_SYSTEM = 0;
 

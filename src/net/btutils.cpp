@@ -16,9 +16,6 @@
 #include "sys/handlewrapper.hpp"
 #include "util/strings.hpp"
 
-// Link with Bluetooth lib
-#pragma comment(lib, "Bthprops.lib")
-
 static bool wsInitialized = false;
 #else
 #include <cstring> // std::memcpy()

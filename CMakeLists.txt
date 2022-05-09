@@ -38,6 +38,9 @@ if (MSVC)
 
     # Use MSVC's Unicode character set and prevent clashing macros
     target_compile_definitions(terminal PRIVATE UNICODE _UNICODE NOMINMAX)
+
+    # Windows API static libraries
+    target_link_libraries(terminal PRIVATE Ws2_32 Bthprops)
 else()
     # Warnings
     set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wno-missing-field-initializers)
