@@ -1,6 +1,7 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <algorithm> // std::max()
 #include <map>
 #include <future>
 #include <chrono> // std::chrono
@@ -105,8 +106,7 @@ static void drawIPConnectionTab() {
 
     // The horizontal space available in the window
     float spaceAvail
-        = ImGui::GetWindowWidth()                       // The entire width of the child window
-        - ImGui::GetCurrentWindow()->ScrollbarSizes.x   // Horizontal space taken up by the vertical scrollbar
+        = ImGui::GetContentRegionAvail().x              // The width of the child window without scrollbars
         - ImGui::CalcTextWidthWithSpacing(addressLabel) // Width of address input label
         - ImGui::GetStyle().ItemSpacing.x               // Space between the address and port inputs
         - ImGui::CalcTextWidthWithSpacing(portLabel)    // Width of the port input label
@@ -114,7 +114,7 @@ static void drawIPConnectionTab() {
 
     // Server address, set the textbox width to the space not taken up by everything else
     // Use ImMax to set a minimum size for the texbox; it will not resize past a certain min bound.
-    ImGui::SetNextItemWidth(ImMax(spaceAvail, minAddressWidth));
+    ImGui::SetNextItemWidth(std::max(spaceAvail, minAddressWidth));
     ImGui::InputText(addressLabel, addr);
 
     // Server port, keep it on the same line as the textbox if there's enough space
