@@ -9,7 +9,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include <string_view>
 #include <concepts> // std::integral, std::floating_point
 
