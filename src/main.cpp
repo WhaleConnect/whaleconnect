@@ -113,7 +113,7 @@ static void drawIPConnectionTab() {
         - portWidth;                                    // Width of the port input
 
     // Server address, set the textbox width to the space not taken up by everything else
-    // Use ImMax to set a minimum size for the texbox; it will not resize past a certain min bound.
+    // Use std::max to set a minimum size for the texbox; it will not resize past a certain min bound.
     ImGui::SetNextItemWidth(std::max(spaceAvail, minAddressWidth));
     ImGui::InputText(addressLabel, addr);
 
