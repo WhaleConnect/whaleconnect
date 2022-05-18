@@ -13,9 +13,10 @@
 #include "util/formatcompat.hpp"
 
 template <>
-constexpr std::string_view magic_enum::customize::enum_name<System::ErrorType>(System::ErrorType value) noexcept {
+constexpr magic_enum::customize::customize_t
+magic_enum::customize::enum_name<System::ErrorType>(System::ErrorType value) noexcept {
     if (value == System::ErrorType::AddrInfo) return "getaddrinfo";
-    return {};
+    return default_tag;
 }
 
 std::string System::SystemError::formatted() const {

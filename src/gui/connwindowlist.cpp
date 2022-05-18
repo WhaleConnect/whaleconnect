@@ -8,7 +8,7 @@
 #include "util/formatcompat.hpp"
 
 template <>
-constexpr std::string_view
+constexpr magic_enum::customize::customize_t
 magic_enum::customize::enum_name<Sockets::ConnectionType>(Sockets::ConnectionType value) noexcept {
     using enum Sockets::ConnectionType;
 
@@ -20,7 +20,7 @@ magic_enum::customize::enum_name<Sockets::ConnectionType>(Sockets::ConnectionTyp
     case L2CAPDgram:
         return "L2CAP Datagram";
     default:
-        return {};
+        return default_tag;
     }
 }
 
