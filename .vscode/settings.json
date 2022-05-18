@@ -6,6 +6,7 @@
     },
     "cmake.configureOnOpen": true,
     "cmake.configureOnEdit": true,
+    "cmake.generator": "Ninja",
     "doxdocgen.c.lastLine": "*/",
     "doxdocgen.generic.boolReturnsTrueFalse": false,
     "doxdocgen.generic.includeTypeAtReturn": false,

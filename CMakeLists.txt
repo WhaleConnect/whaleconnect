@@ -5,7 +5,17 @@
 
 cmake_minimum_required(VERSION 3.20)
 
+# Toolchain file for vcpkg
+if (DEFINED ENV{VCPKG_ROOT})
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
+else()
+    message(FATAL_ERROR "VCPKG_ROOT environment variable not set. See docs/BUILDING.md for details.")
+endif()
+
 project(terminal)
+
+# Generate compilation database for SonarLint
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # C++ language standard
 set(CMAKE_CXX_STANDARD 23)
