@@ -5,14 +5,14 @@
       "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${projectDir}\\build\\${name}"
+      "buildRoot": "${projectDir}\\build"
     },
     {
       "name": "Release",
       "generator": "Ninja",
       "configurationType": "Release",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${projectDir}\\build\\${name}"
+      "buildRoot": "${projectDir}\\build"
     }
   ]
 }
