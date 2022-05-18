@@ -43,8 +43,10 @@ if (MSVC)
     # Warnings
     set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS /W4)
 
-    # UTF-8 charset
-    target_compile_options(terminal PRIVATE /utf-8)
+    target_compile_options(terminal PRIVATE
+        /utf-8                  # UTF-8 charset
+        /external:anglebrackets # Specify which headers are installed libraries
+        /external:W0)           # Suppress warnings in libraries
 
     # Use MSVC's Unicode character set and prevent clashing macros
     target_compile_definitions(terminal PRIVATE UNICODE _UNICODE NOMINMAX)
