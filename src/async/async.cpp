@@ -33,7 +33,7 @@ static HANDLE completionPort = nullptr;
 // Runs in each thread to handle completion results.
 static void worker() {
     DWORD numBytes;
-    uint64_t completionKey;
+    ULONG_PTR completionKey;
     LPOVERLAPPED overlapped = nullptr;
 
     while (true) {
