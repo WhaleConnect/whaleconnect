@@ -1,6 +1,6 @@
 # Building Network Socket Terminal
 
-To build NST from source code, you will need CMake, Ninja, vcpkg, and an up-to-date compiler. MSVC is recommended on Windows, and GCC is recommended on Linux.
+To build NST from source code, you will need CMake, vcpkg, Ninja (if building in VS or VSCode), and an up-to-date compiler. MSVC is recommended on Windows, and GCC is recommended on Linux.
 
 ## Integration with vcpkg
 
@@ -22,36 +22,25 @@ TODO: Add package names for pacman and dnf
 
 ## Compiling
 
-This project uses C++23 features, so be sure to update your compiler(s) if needed. Compilation has been tested successfully with the following compiler versions:
+This project uses C++23 features, so be sure to update your compiler(s) if needed. Compilation has been tested successfully with the following compilers:
 
 - GCC 12.1+
 - Visual Studio 2022 17.1+
 
-All code is standards-compliant. However, because it uses a recent C++ revision, some compilers may not be supported at the moment.
+All code is standards-compliant. However, because it uses a recent C++ revision, some compilers may not currently be supported.
 
 ### Build Commands with CMake
 
-These commands need to be run in the repository's root path.
+To build NST from the command line, start in the root of the repository and execute the commands below.
 
-If building with the Visual Studio toolchain on Windows, run these commands in the VS command prompt.
+If you are building on Windows and are not using the default Visual Studio generator, run these commands in the Visual Studio command prompt.
 
-#### Debug Build
-
-```shell
-mkdir build
-cd build
-cmake .. --preset=debug
-cd debug
-cmake --build .
-```
-
-#### Release Build
+**Note**: Specify additional configuration options as needed in the `cmake ..` step, such as the build type (`-DCMAKE_BUILD_TYPE=(Debug|Release)`) and generator (`-G (generator name)`).
 
 ```shell
 mkdir build
 cd build
-cmake .. --preset=release
-cd release
+cmake ..
 cmake --build .
 ```
 
