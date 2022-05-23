@@ -4,14 +4,14 @@
 
 *Note: This software is currently in alpha status. All feedback/feature requests welcome.*
 
-![Screenshot](/docs/img/shot1.png)
+![Screenshot](docs/img/shot1.png)
 
 ## Documentation Links
 
-- [Building from Source](/docs/BUILDING.md)
-- [IDE Extensions](/docs/EXTENSIONS.md)
-- [Screenshots](/docs/SCREENSHOTS.md)
-- [Todo List](/docs/TODO.txt)
+- [Building from Source](docs/BUILDING.md)
+- [IDE Extensions](docs/EXTENSIONS.md)
+- [Screenshots](docs/SCREENSHOTS.md)
+- [Todo List](docs/TODO.txt)
 
 ## Development Branch
 
@@ -21,7 +21,7 @@ When a feature is merged into `main` it is ready for release.
 
 ## License
 
-NST and its build scripts are licensed under the [GPLv3+ license](/COPYING).
+NST and its build scripts are licensed under the [GPLv3+ license](COPYING).
 
 ## Libraries and Dependencies
 
