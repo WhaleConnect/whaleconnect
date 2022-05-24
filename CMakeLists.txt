@@ -22,8 +22,20 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
 # Source files to compile
-file(GLOB_RECURSE SRCS src/*.cpp)
-add_executable(terminal WIN32 ${SRCS})
+add_executable(terminal WIN32
+    "src/main.cpp"
+    "src/app/mainhandle.cpp"
+    "src/async/async.cpp"
+    "src/gui/connwindow.cpp"
+    "src/gui/connwindowlist.cpp"
+    "src/gui/console.cpp"
+    "src/net/btutils.cpp"
+    "src/net/sockets.cpp"
+    "src/sys/error.cpp"
+    "src/sys/filesystem.cpp"
+    "src/util/imguiext.cpp"
+    "src/util/strings.cpp")
+
 target_include_directories(terminal PRIVATE src)
 
 # Libraries (installed with vcpkg)
