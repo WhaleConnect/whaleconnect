@@ -47,7 +47,7 @@ target_link_libraries(terminal PRIVATE imgui::imgui glfw fmt::fmt magic_enum::ma
 
 # Copy GNU Unifont file next to built executable on post-build
 add_custom_command(TARGET terminal POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-    ${CMAKE_SOURCE_DIR}/unifont/unifont-14.0.03.otf
+    ${CMAKE_SOURCE_DIR}/unifont/unifont-14.0.04.otf
     $<TARGET_FILE_DIR:terminal>/unifont.otf)
 
 # Compiler-dependent options
