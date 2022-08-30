@@ -1,18 +1,14 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <bit> // std::bit_cast()
+
 #ifdef _WIN32
 // Winsock headers
-#include <ws2tcpip.h>
+#include <WS2tcpip.h>
 #include <ws2bth.h>
 #include <MSWSock.h>
 #include <mstcpip.h>
-
-// These don't exist on Windows
-constexpr auto EAI_SYSTEM = 0;
-
-// Berkeley sockets int types
-using socklen_t = int;
 #else
 // Linux Bluetooth headers
 #include <bluetooth/bluetooth.h>
@@ -23,7 +19,21 @@ using socklen_t = int;
 #include <sys/socket.h> // Socket definitions
 #include <unistd.h> // close()
 #include <netdb.h> // addrinfo/getaddrinfo() related identifiers
+#endif
 
+#include "sockets.hpp"
+#include "sys/errcheck.hpp"
+#include "sys/handlewrapper.hpp"
+#include "util/formatcompat.hpp"
+#include "util/strings.hpp"
+
+#ifdef _WIN32
+// These don't exist on Windows
+constexpr auto EAI_SYSTEM = 0;
+
+// Berkeley sockets int types
+using socklen_t = int;
+#else
 // Winsock-specific definitions and their Berkeley equivalents
 constexpr auto GetAddrInfo = getaddrinfo;
 constexpr auto FreeAddrInfo = freeaddrinfo;
@@ -39,12 +49,6 @@ constexpr auto AF_BTH = AF_BLUETOOTH;
 constexpr auto BTHPROTO_RFCOMM = BTPROTO_RFCOMM;
 constexpr auto BTHPROTO_L2CAP = BTPROTO_L2CAP;
 #endif
-
-#include "sockets.hpp"
-#include "sys/errcheck.hpp"
-#include "sys/handlewrapper.hpp"
-#include "util/formatcompat.hpp"
-#include "util/strings.hpp"
 
 void Sockets::init() {
 #ifdef _WIN32
@@ -218,12 +222,12 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
         bool isDgram = (data.type == L2CAPDgram);
 
         // Connect, then check if connection failed
-        co_await connectSocket(ret.get(), reinterpret_cast<sockaddr*>(&sAddrBT), addrSize, isDgram);
+        co_await connectSocket(ret.get(), std::bit_cast<sockaddr*>(&sAddrBT), addrSize, isDgram);
 
         co_return std::move(ret);
     } else {
         // None type
-        throw std::runtime_error{ "None type specified in socket creation" };
+        throw std::invalid_argument{ "None type specified in socket creation" };
     }
 }
 
@@ -251,7 +255,8 @@ Task<> Sockets::sendData(SOCKET sockfd, std::string_view data) {
     co_await result;
 
 #ifdef _WIN32
-    WSABUF buf{ static_cast<ULONG>(data.length()), const_cast<char*>(data.data()) };
+    std::string sendBuf{ data };
+    WSABUF buf{ static_cast<ULONG>(sendBuf.size()), sendBuf.data() };
     CALL_EXPECT_NONERROR(WSASend, sockfd, &buf, 1, nullptr, 0, &result, nullptr);
 #else
     int sendRet = send(sockfd, data.data(), data.size(), MSG_NOSIGNAL);
@@ -275,10 +280,10 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
     co_await result;
 
     // Receive and check bytes received
-    char recvBuf[1024]{};
+    std::string recvBuf(1024, '\0');
 
 #ifdef _WIN32
-    WSABUF buf{ static_cast<ULONG>(std::ssize(recvBuf)), recvBuf };
+    WSABUF buf{ static_cast<ULONG>(recvBuf.size()), recvBuf.data() };
     DWORD flags = 0;
     CALL_EXPECT_NONERROR(WSARecv, sockfd, &buf, 1, nullptr, &flags, &result, nullptr);
 #else
@@ -288,6 +293,5 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
     co_await std::suspend_always{};
     CALL_EXPECT_ZERO(result.errorResult);
 
-    buf.buf[result.numBytes] = '\0'; // Add a null char to the end of the buffer
-    co_return RecvResult{ static_cast<ULONG>(result.numBytes), buf.buf };
+    co_return RecvResult{ static_cast<ULONG>(result.numBytes), std::move(recvBuf) };
 }

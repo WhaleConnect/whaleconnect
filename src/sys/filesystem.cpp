@@ -11,8 +11,8 @@
 
 fs::path System::getProgramDir() {
 #ifdef _WIN32
-    wchar_t path[_MAX_PATH + 1]{};
-    GetModuleFileName(nullptr, path, _MAX_PATH);
+    std::wstring path(_MAX_PATH, '\0');
+    GetModuleFileName(nullptr, path.data(), static_cast<DWORD>(path.size()));
     return fs::path{ Strings::fromSys(path) }.parent_path();
 #endif
 }

@@ -21,7 +21,7 @@
 enum class ImGuiOverlayCorner { TopLeft, TopRight, BottomLeft, BottomRight };
 
 namespace ImGui {
-    constexpr float FILL = -FLT_MIN; /**< Make a widget fill a dimension. Use with ImVec2.*/
+    constexpr float FILL = -FLT_MIN; /**< Make a widget fill a dimension. Use with @p ImVec2.*/
 
     /**
      * @brief A wrapper for @p TextUnformatted() to allow a @p string_view parameter.
@@ -29,6 +29,17 @@ namespace ImGui {
     */
     inline void TextUnformatted(std::string_view s) {
         TextUnformatted(s.data());
+    }
+
+    /**
+     * @brief Begins a child window with space at the bottom.
+     * @param id The ID of the child window
+     * @param space The space to reserve at the bottom (multiplied by frame height with item spacing)
+     * @param border If the child window has a border
+     * @param flags Flags to modify the child window
+    */
+    inline void BeginChildSpacing(const char* id, float space, bool border = false, ImGuiWindowFlags flags = 0) {
+        BeginChild(id, { 0, space * -ImGui::GetFrameHeightWithSpacing() }, border, flags);
     }
 
     /**

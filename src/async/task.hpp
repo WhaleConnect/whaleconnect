@@ -23,7 +23,7 @@ class Task {
 
     // Base class containing definitions for a void-returning coroutine.
     struct PromiseTypeVoid {
-        void return_void() noexcept {}
+        void return_void() const noexcept {}
     };
 
     // Base class containing definitions for a value-returning coroutine.
@@ -48,7 +48,7 @@ class Task {
         std::exception_ptr exception; // Any exception that was thrown in the coroutine
 
         // Called first when a coroutine is entered. This specifies the Task object returned from a coroutine function.
-        Task get_return_object() noexcept { return *this; }
+        Task get_return_object() noexcept { return Task{ *this }; }
 
         // Called second when a coroutine is entered. This dictates how the coroutine starts.
         // Returning suspend_never starts the coroutine immediately.
@@ -63,12 +63,12 @@ class Task {
                 bool await_ready() const noexcept { return false; }
 
                 std::coroutine_handle<> await_suspend(std::coroutine_handle<promise_type> current) const noexcept {
-                    // Get the caller coroutine's handle (stored in the private variable)
-                    auto continuation = current.promise().continuation;
+                    // Get the caller coroutine's handle
+                    auto promiseContinuation = current.promise().continuation;
 
                     // Return the handle, or a no-op handle if there is no caller coroutine
                     // Returning the caller's handle allows it to be resumed.
-                    return continuation ? continuation : std::noop_coroutine();
+                    return promiseContinuation ? promiseContinuation : std::noop_coroutine();
                 }
 
                 void await_resume() const noexcept {}
@@ -81,7 +81,7 @@ class Task {
     std::coroutine_handle<PromiseType> _handle;
 
     // Constructs a task object from a coroutine promise object.
-    Task(PromiseType& promiseType) : _handle(std::coroutine_handle<PromiseType>::from_promise(promiseType)) {}
+    explicit Task(PromiseType& promiseType) : _handle(std::coroutine_handle<PromiseType>::from_promise(promiseType)) {}
 
 public:
     /**
@@ -122,8 +122,7 @@ public:
     */
     T await_resume() const {
         // Propagate any exception that was thrown inside the coroutine to the caller
-        auto exception = _handle.promise().exception;
-        if (exception) std::rethrow_exception(exception);
+        if (auto exception = _handle.promise().exception) std::rethrow_exception(exception);
 
         // Return a value if this template instantiation is non-void
         if constexpr (!_isVoid) return std::move(_handle.promise().data);

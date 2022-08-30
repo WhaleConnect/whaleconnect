@@ -1,7 +1,8 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <string> // std::string
+#include <bit>
+#include <string>
 
 #include <imgui.h>
 
@@ -9,7 +10,7 @@
 
 static int stringCallback(ImGuiInputTextCallbackData* data) {
     // Get user data (assume it's a string pointer)
-    std::string& str = *reinterpret_cast<std::string*>(data->UserData);
+    std::string& str = *std::bit_cast<std::string*>(data->UserData);
 
     // Resize the string, then set the callback data buffer
     str.resize(data->BufTextLen);

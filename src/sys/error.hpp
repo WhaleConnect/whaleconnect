@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <stdexcept>
 
 // Error status codes
@@ -76,13 +77,13 @@ namespace System {
          * @param type The error type
          * @param fnName The name of the function the error is from
         */
-        SystemError(ErrorCode code, ErrorType type, std::string fnName) : code(code), type(type), fnName(fnName) {}
+        SystemError(ErrorCode code, ErrorType type, std::string_view fnName) : code(code), type(type), fnName(fnName) {}
 
         /**
          * @brief Checks if this object represents a fatal error.
          * @sa System::isFatal()
         */
-        operator bool() const { return isFatal(code); }
+        explicit operator bool() const { return isFatal(code); }
 
         /**
          * @brief Represents this object as a readable string.

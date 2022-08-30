@@ -27,7 +27,7 @@ public:
      * @param deleter The handle's deleter function
     */
     template <class Fn>
-    HandleWrapper(Fn&& deleter) : HandleWrapper({}, deleter) {}
+    explicit HandleWrapper(const Fn& deleter) : HandleWrapper({}, deleter) {}
 
     /**
      * @brief Constructs an object owning a handle.
@@ -36,7 +36,7 @@ public:
      * @param deleter The handle's deleter function
     */
     template <class Fn>
-    HandleWrapper(const T& handle, Fn&& deleter) : _handle(handle), _deleter(deleter) {}
+    HandleWrapper(const T& handle, const Fn& deleter) : _handle(handle), _deleter(deleter) {}
 
     /**
      * @brief Calls the deleter function on the owned handle.

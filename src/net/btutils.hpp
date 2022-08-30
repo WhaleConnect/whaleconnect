@@ -69,15 +69,6 @@ namespace BTUtils {
     void cleanup();
 
     /**
-     * @brief Checks if initialization has been performed.
-     * @return If the OS APIs are initialized
-     *
-     * On Windows, this function checks if Winsock is initialized.
-     * On Linux, this function checks if the process has a D-Bus connection to the Bluetooth daemon.
-    */
-    bool initialized();
-
-    /**
      * @brief Constructs a 128-bit Bluetooth UUID given the short UUID.
      * @param uuidShort A 16- or 32-bit UUID value
      * @return The 128-bit UUID constructed from merging the given UUID with the Bluetooth base UUID
@@ -107,5 +98,5 @@ namespace BTUtils {
      * @param flushCache If previous caches are ignored during the inquiry (Windows only)
      * @return A vector of each service found
     */
-    SDPResultList sdpLookup(std::string_view addr, const UUID& uuid, bool flushCache);
+    SDPResultList sdpLookup(std::string_view addr, UUID uuid, bool flushCache);
 }

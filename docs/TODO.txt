@@ -45,4 +45,5 @@ Beta:
 Other things:
   [ ] Setup GitHub Actions (whenever)
   [ ] Drop formatcompat.hpp and {fmt}, use std::format()
+  [ ] Remove #if checks for chrono in console.cpp
   [ ] Replace many index-based loops with `views::zip()` and `views::enumerate()` in C++23/C++26

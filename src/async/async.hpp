@@ -40,7 +40,7 @@ namespace Async {
          *
          * This is provided for compatibility with the @p CALL_EXPECT_* macros in @p errcheck.hpp.
         */
-        System::ErrorCode errorResult() { return error; }
+        System::ErrorCode errorResult() const { return error; }
 
         /**
          * @brief Checks if coroutine suspension is necessary.

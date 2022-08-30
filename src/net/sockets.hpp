@@ -88,7 +88,7 @@ namespace Sockets {
     void cleanup();
 
     /**
-     * @brief Creates a client socket and connect to a server.
+     * @brief Creates a client socket and connects it to a server.
      * @param data The target server to connect to
      * @return The created socket
     */
@@ -174,7 +174,7 @@ public:
     }
 
     /**
-     * @brief Closes the managed socket, then acquire ownership of a new one.
+     * @brief Closes the managed socket, then acquires ownership of a new one.
      * @param fd The new socket file descriptor to own (by default invalid)
     */
     void reset(SOCKET fd = INVALID_SOCKET) {
@@ -191,5 +191,5 @@ public:
     /**
      * @brief Checks the validity of the managed socket.
     */
-    operator bool() const { return _fd != INVALID_SOCKET; }
+    explicit operator bool() const { return _fd != INVALID_SOCKET; }
 };

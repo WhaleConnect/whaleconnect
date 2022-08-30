@@ -8,13 +8,13 @@
 #endif
 
 #include <magic_enum.hpp>
+#include <magic_enum_format.hpp>
 
 #include "error.hpp"
 #include "util/formatcompat.hpp"
 
 template <>
-constexpr magic_enum::customize::customize_t
-magic_enum::customize::enum_name<System::ErrorType>(System::ErrorType value) noexcept {
+constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(System::ErrorType value) noexcept {
     if (value == System::ErrorType::AddrInfo) return "getaddrinfo";
     return default_tag;
 }
@@ -22,24 +22,19 @@ magic_enum::customize::enum_name<System::ErrorType>(System::ErrorType value) noe
 std::string System::SystemError::formatted() const {
 #ifdef _WIN32
     // Message buffer
-    char msg[512];
+    std::string msg(512, '\0');
 
     // Get the message text
     FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK,
-                   nullptr,
-                   code,
-                   LocaleNameToLCID(L"en-US", 0),
-                   msg,
-                   static_cast<DWORD>(std::ssize(msg)),
-                   nullptr);
+                   nullptr, code, LocaleNameToLCID(L"en-US", 0), msg.data(), static_cast<DWORD>(msg.size()), nullptr);
 
 #else
     // strerrordesc_np (a GNU extension) is used since it doesn't translate the error message. A translation is
     // undesirable since the rest of the program isn't translated either.
-    const char* msg = (type == ErrorType::System) ? strerrordesc_np(code) : gai_strerror(code);
+    auto msg = (type == ErrorType::System) ? strerrordesc_np(code) : gai_strerror(code);
 #endif
 
-    return std::format("{} (type {}, in {}): {}", code, magic_enum::enum_name(type), fnName, msg);
+    return std::format("{} (type {}, in {}): {}", code, type, fnName, msg);
 }
 
 System::ErrorCode System::getLastError() {

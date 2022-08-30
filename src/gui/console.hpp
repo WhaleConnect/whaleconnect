@@ -59,12 +59,13 @@ public:
      * function is the contents of the textbox at the time of the callback.
     */
     template <class Fn>
-    Console(Fn&& fn) : _inputCallback(fn) {}
+    explicit Console(const Fn& fn) : _inputCallback(fn) {}
 
     /**
      * @brief Draws the input textbox, output pane, and option selectors.
+     * @param textboxHeight The height of the input textbox in lines
     */
-    void update();
+    void update(float textboxHeight);
 
     /**
      * @brief Adds text to the console. Accepts multiline strings.

@@ -1,16 +1,14 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <vector>
-#include <thread>
 #include <algorithm> // std::max()
+#include <thread>
+#include <vector>
 
 #ifdef _WIN32
-#include <unordered_map>
-
 #include <WinSock2.h>
 #include <WS2tcpip.h>
-#include <Mswsock.h>
+#include <MSWSock.h>
 #endif
 
 #include "async.hpp"
@@ -21,7 +19,7 @@
 static const auto numThreads = std::max(std::thread::hardware_concurrency(), 1U);
 
 // A vector of threads to serve as a thread pool
-static std::vector<std::thread> workerThreadPool(numThreads);
+static std::vector<std::jthread> workerThreadPool(numThreads);
 
 #ifdef _WIN32
 // A completion key value to indicate a signaled interrupt
@@ -64,7 +62,7 @@ void Async::init() {
 #endif
 
     // Populate thread pool
-    for (auto& i : workerThreadPool) i = std::thread{ worker };
+    for (auto& i : workerThreadPool) i = std::jthread{ worker };
 }
 
 void Async::cleanup() {
@@ -72,11 +70,8 @@ void Async::cleanup() {
 
 #ifdef _WIN32
     // Signal threads to terminate
-    for (size_t i = 0; i < workerThreadPool.size(); i++)
+    for ([[maybe_unused]] const auto& _ : workerThreadPool)
         PostQueuedCompletionStatus(completionPort, 0, iocpInterrupt, nullptr);
-
-    // Join each thread
-    for (auto& i : workerThreadPool) if (i.joinable()) i.join();
 
     // Close the IOCP handle
     CloseHandle(completionPort);

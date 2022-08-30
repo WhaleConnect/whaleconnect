@@ -1,6 +1,7 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <array>
 #include <chrono> // std::chrono
 
 #include <imgui.h>
@@ -56,9 +57,9 @@ static void configImGui() {
     // Select glyphs for loading
     // Include all in Unicode plane 0 except for control characters (U+0000 - U+0019), surrogates (U+D800 - U+DFFF),
     // private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
-    static const ImWchar ranges[] = { 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
+    static std::array<ImWchar, 5> ranges{ 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
     static auto fontFile = System::getProgramDir() / "unifont.otf";
-    io.Fonts->AddFontFromFileTTF(fontFile.string().c_str(), fontSize, nullptr, ranges);
+    io.Fonts->AddFontFromFileTTF(fontFile.string().c_str(), fontSize, nullptr, ranges.data());
 }
 
 bool MainHandler::initApp() {
@@ -140,7 +141,8 @@ void MainHandler::handleNewFrame() {
 void MainHandler::renderWindow() {
     // Render the main application window
     ImGui::Render();
-    int w, h;
+    int w;
+    int h;
     glfwGetFramebufferSize(window, &w, &h);
     glViewport(0, 0, w, h);
     glClearColor(0.45f, 0.55f, 0.60f, 1.00f);

@@ -26,8 +26,11 @@ add_executable(terminal WIN32
     "src/main.cpp"
     "src/app/mainhandle.cpp"
     "src/async/async.cpp"
+    "src/core/newconnbt.cpp"
+    "src/core/newconnip.cpp"
     "src/gui/connwindow.cpp"
-    "src/gui/connwindowlist.cpp"
+    
+    "src/gui/sdpwindow.cpp"
     "src/gui/console.cpp"
     "src/net/btutils.cpp"
     "src/net/sockets.cpp"

@@ -13,7 +13,7 @@ Strings::SysStr Strings::toSys(std::string_view from) {
     if (from.empty()) return {};
 
     // Size of UTF-8 string in UTF-16 wide encoding
-    int stringSize = MultiByteToWideChar(CP_UTF8, 0, from.data(), static_cast<int>(from.size()), 0, 0);
+    int stringSize = MultiByteToWideChar(CP_UTF8, 0, from.data(), static_cast<int>(from.size()), nullptr, 0);
 
     // Buffer to contain new string
     std::wstring buf(stringSize, '\0');
@@ -32,7 +32,8 @@ std::string Strings::fromSys(SysStrView from) {
     if (from.empty()) return {};
 
     // Size of UTF-16 wide string in UTF-8 encoding
-    int stringSize = WideCharToMultiByte(CP_UTF8, 0, from.data(), static_cast<int>(from.size()), 0, 0, 0, 0);
+    int stringSize = WideCharToMultiByte(CP_UTF8, 0, from.data(), static_cast<int>(from.size()), nullptr, 0, nullptr,
+                                         nullptr);
 
     // Buffer to contain new string
     std::string buf(stringSize, '\0');

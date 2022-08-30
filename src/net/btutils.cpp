@@ -1,11 +1,12 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <bit>
+
 #include "btutils.hpp"
 #include "sockets.hpp"
 
 #ifdef _WIN32
-#include <memory> // std::make_unique()
 #include <format>
 
 #include <WinSock2.h>
@@ -15,8 +16,6 @@
 #include "sys/errcheck.hpp"
 #include "sys/handlewrapper.hpp"
 #include "util/strings.hpp"
-
-static bool wsInitialized = false;
 #else
 #include <cstring> // std::memcpy()
 
@@ -29,12 +28,9 @@ static DBusConnection* conn = nullptr;
 #endif
 
 void BTUtils::init() {
-    if (initialized()) return;
-
 #ifdef _WIN32
     // Initialize Winsock
     Sockets::init();
-    wsInitialized = true;
 #else
     // Connect to the system D-Bus
     conn = CALL_EXPECT_TRUE(dbus_bus_get, DBUS_BUS_SYSTEM, nullptr);
@@ -46,23 +42,12 @@ void BTUtils::init() {
 }
 
 void BTUtils::cleanup() {
-    if (!initialized()) return;
-
 #ifdef _WIN32
     Sockets::cleanup();
-    wsInitialized = false;
 #else
     // Shut down the connection
     dbus_connection_unref(conn);
     conn = nullptr;
-#endif
-}
-
-bool BTUtils::initialized() {
-#ifdef _WIN32
-    return wsInitialized;
-#else
-    return conn && dbus_connection_get_is_connected(conn);
 #endif
 }
 
@@ -331,7 +316,7 @@ static void extractVersionNums(uint16_t version, BTUtils::ProfileDesc& desc) {
     desc.versionMinor = version & 0xFF;
 }
 
-BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, const UUID& uuid, [[maybe_unused]] bool flushCache) {
+BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[maybe_unused]] bool flushCache) {
     // Return value
     SDPResultList ret;
 
@@ -341,7 +326,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, const UUID& uui
     // Set up the query set restrictions
     WSAQUERYSET wsaQuery{
         .dwSize = sizeof(WSAQUERYSET),
-        .lpServiceClassId = const_cast<LPUUID>(&uuid),
+        .lpServiceClassId = &uuid,
         .dwNameSpace = NS_BTH,
         .lpszContext = addrWide.data(),
         .dwNumberOfCsAddrs = 0
@@ -364,8 +349,8 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, const UUID& uui
 
     // Continue the lookup
     DWORD size = 2048;
-    auto resultsBuf = std::make_unique<BYTE[]>(size);
-    LPWSAQUERYSET wsaResults = reinterpret_cast<LPWSAQUERYSET>(resultsBuf.get());
+    std::vector<BYTE> resultsBuf(size);
+    auto wsaResults = std::bit_cast<LPWSAQUERYSET>(resultsBuf.data());
     wsaResults->dwSize = size;
     wsaResults->dwNameSpace = NS_BTH;
 
@@ -403,8 +388,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, const UUID& uui
         }
 
         // Service class UUIDs
-        auto svClassList = getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_CLASS_ID_LIST);
-        for (const auto& [_, specificType, data] : svClassList) {
+        for (const auto& [_, specificType, data] : getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_CLASS_ID_LIST)) {
             switch (specificType) {
             case SDP_ST_UUID16:
                 result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid16));
@@ -418,8 +402,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, const UUID& uui
         }
 
         // Profile descriptors
-        auto profileList = getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_PROFILE_DESCRIPTOR_LIST);
-        for (auto& element : profileList) {
+        for (auto& element : getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_PROFILE_DESCRIPTOR_LIST)) {
             // Construct a profile descriptor and populate it with the data in the nested container
             ProfileDesc pd;
             for (const auto& [_, specificType, data] : getSDPListData(element)) {

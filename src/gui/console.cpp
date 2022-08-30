@@ -1,16 +1,15 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <array>
 #include <iomanip> // std::hex, std::uppercase, std::setw(), std::setfill()
 #include <ranges> // std::views::split()
 
-// TODO: Remove the #if check once all major compilers implement timezones for <chrono>
 #if __cpp_lib_chrono >= 201803L
 #include <chrono> // std::chrono
 #endif
 
 #include "console.hpp"
-#include "app/settings.hpp"
 #include "util/strings.hpp"
 #include "util/imguiext.hpp"
 #include "util/formatcompat.hpp"
@@ -21,12 +20,10 @@ void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
     if (s.empty()) return;
 
     // Get timestamp
-    // TODO: Remove the #if check once all major compilers implement timezones for <chrono>
 #if __cpp_lib_chrono >= 201803L
     using namespace std::chrono;
 
-    // TODO: Limitations with {fmt} - time_since_epoch is added. Remove when standard std::format() is used
-    std::string timestamp = std::format("{:%T} >", current_zone()->to_local(system_clock::now()).time_since_epoch());
+    std::string timestamp = std::format("{:%T} >", current_zone()->to_local(system_clock::now()));
 #else
     std::string timestamp;
 #endif
@@ -61,8 +58,7 @@ void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
 
 void Console::_updateOutput() {
     // Reserve space at bottom for more elements
-    static const float reservedSpace = -ImGui::GetFrameHeightWithSpacing();
-    ImGui::BeginChild("output", { 0, reservedSpace }, true, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::BeginChildSpacing("output", 1, true, ImGuiWindowFlags_HorizontalScrollbar);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 4, 1 }); // Tighten line spacing
 
     // Add each item
@@ -111,7 +107,6 @@ void Console::_updateOutput() {
     if (ImGui::BeginPopup("options")) {
         ImGui::MenuItem("Autoscroll", nullptr, &_autoscroll);
 
-        // TODO: Remove the #if check once all major compilers implement timezones for <chrono>
 #if __cpp_lib_chrono >= 201803L
         ImGui::MenuItem("Show timestamps", nullptr, &_showTimestamps);
 #endif
@@ -138,20 +133,17 @@ void Console::_updateOutput() {
     ImGui::Combo("##lineEnding", &_currentLE, "Newline\0Carriage return\0Both\0");
 }
 
-void Console::update() {
+void Console::update(float textboxHeight) {
     ImGui::PushID("Console");
     ImGui::BeginGroup();
 
-    // Textbox flags
-    ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
-        | ImGuiInputTextFlags_AllowTabInput;
-
     // Textbox
-    ImVec2 size{ ImGui::FILL, ImGui::GetTextLineHeight() * Settings::sendTextboxHeight };
-    if (ImGui::InputTextMultiline("##input", _textBuf, size, flags)) {
+    if (ImGui::InputTextMultiline("##input", _textBuf, { ImGui::FILL, ImGui::GetTextLineHeight() * textboxHeight },
+                                  ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
+                                  | ImGuiInputTextFlags_AllowTabInput)) {
         // Line ending
-        const char* endings[] = { "\n", "\r", "\r\n" };
-        const char* selectedEnding = endings[_currentLE];
+        std::array endings{ "\n", "\r", "\r\n" };
+        auto selectedEnding = endings[_currentLE];
 
         // InputTextMultiline() always uses \n as a line ending, replace all occurences of \n with the selected ending
         std::string sendString = Strings::replaceAll(_textBuf, "\n", selectedEnding);
