@@ -521,6 +521,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
 
         // Get the relevant strings
         // (Clear a string field if it can't be retreived to ensure it's empty)
+        // TODO: Change code to resize strings so trailing null terminators are removed
         if (sdp_get_service_name(rec, result.name.data(), strBufLen) == SOCKET_ERROR) result.name.clear();
         if (sdp_get_service_desc(rec, result.desc.data(), strBufLen) == SOCKET_ERROR) result.desc.clear();
 
