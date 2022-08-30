@@ -293,5 +293,6 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
     co_await std::suspend_always{};
     CALL_EXPECT_ZERO(result.errorResult);
 
+    recvBuf.resize(result.numBytes);
     co_return RecvResult{ static_cast<ULONG>(result.numBytes), std::move(recvBuf) };
 }

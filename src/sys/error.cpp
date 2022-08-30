@@ -25,8 +25,11 @@ std::string System::SystemError::formatted() const {
     std::string msg(512, '\0');
 
     // Get the message text
-    FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK,
-                   nullptr, code, LocaleNameToLCID(L"en-US", 0), msg.data(), static_cast<DWORD>(msg.size()), nullptr);
+    auto formatFlags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK;
+    DWORD length = FormatMessageA(formatFlags, nullptr, code, LocaleNameToLCID(L"en-US", 0), msg.data(),
+                                  static_cast<DWORD>(msg.size()), nullptr);
+
+    msg.resize(length);
 
 #else
     // strerrordesc_np (a GNU extension) is used since it doesn't translate the error message. A translation is
