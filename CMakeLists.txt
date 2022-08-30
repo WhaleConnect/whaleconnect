@@ -29,7 +29,6 @@ add_executable(terminal WIN32
     "src/core/newconnbt.cpp"
     "src/core/newconnip.cpp"
     "src/gui/connwindow.cpp"
-    
     "src/gui/sdpwindow.cpp"
     "src/gui/console.cpp"
     "src/net/btutils.cpp"

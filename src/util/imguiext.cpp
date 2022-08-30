@@ -10,7 +10,7 @@
 
 static int stringCallback(ImGuiInputTextCallbackData* data) {
     // Get user data (assume it's a string pointer)
-    std::string& str = *std::bit_cast<std::string*>(data->UserData);
+    auto& str = *std::bit_cast<std::string*>(data->UserData);
 
     // Resize the string, then set the callback data buffer
     str.resize(data->BufTextLen);
@@ -30,7 +30,6 @@ bool ImGui::InputTextMultiline(const char* label, std::string& s, const ImVec2& 
 
 void ImGui::HelpMarker(const char* desc) {
     // Adapted from imgui_demo.cpp.
-
     SameLine();
     TextDisabled("(?)");
     if (!IsItemHovered()) return;

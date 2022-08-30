@@ -127,7 +127,7 @@ namespace ImGui {
 }
 
 template <class T>
-constexpr ImGuiDataType ImGui::GetDataType([[maybe_unused]] T val) {
+constexpr ImGuiDataType ImGui::GetDataType(T) {
     if constexpr (std::is_same_v<T, int8_t>) return ImGuiDataType_S8;
     else if constexpr (std::is_same_v<T, uint8_t>) return ImGuiDataType_U8;
     else if constexpr (std::is_same_v<T, int16_t>) return ImGuiDataType_S16;
