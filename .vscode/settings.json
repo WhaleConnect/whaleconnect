@@ -4,12 +4,11 @@
             120
         ]
     },
+    "C_Cpp.doxygen.generatedStyle": "/**",
+    "C_Cpp.doxygen.generateOnType": true,
     "cmake.configureOnOpen": true,
     "cmake.configureOnEdit": true,
     "cmake.generator": "Ninja",
-    "doxdocgen.c.lastLine": "*/",
-    "doxdocgen.generic.boolReturnsTrueFalse": false,
-    "doxdocgen.generic.includeTypeAtReturn": false,
     "editor.formatOnType": true,
     "files.associations": {
         "*.tcc": "cpp",
