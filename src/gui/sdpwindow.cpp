@@ -73,9 +73,9 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
     return ret;
 }
 
-void SDPWindow::_drawConnectionOptions(uint16_t port, std::string_view extraInfo) {
+void SDPWindow::_drawConnectionOptions(uint16_t port, std::string_view info) {
     if (_drawBTConnOptions())
-        _isNew = _list.add<ConnWindow>(Sockets::DeviceData{ _connType, _target.name, _target.address, port }, extraInfo);
+        _isNew = _list.add<ConnWindow>(Sockets::DeviceData{ _connType, _target.name, _target.address, port }, info);
 }
 
 void SDPWindow::_checkInquiryStatus() {
