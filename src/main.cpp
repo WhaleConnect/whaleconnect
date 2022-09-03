@@ -46,17 +46,19 @@ int MAIN_FUNC(MAIN_ARGS) {
             ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopLeft, "Could not initialize thread pool.");
 
         static WindowList connections; // List of open windows
+        static WindowList sdpWindows; // List of windows for creating Bluetooth connections
 
         // New connection window
         ImGui::SetNextWindowSize({ 600, 170 }, ImGuiCond_FirstUseEver);
         if (ImGui::Begin("New Connection") && ImGui::BeginTabBar("ConnectionTypes")) {
             drawIPConnectionTab(connections);
-            drawBTConnectionTab(connections);
+            drawBTConnectionTab(connections, sdpWindows);
             ImGui::EndTabBar();
         }
         ImGui::End();
 
         connections.update();
+        sdpWindows.update();
 
         MainHandler::renderWindow();
     }

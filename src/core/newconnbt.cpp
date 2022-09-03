@@ -69,10 +69,8 @@ static const Sockets::DeviceData* drawPairedDevices(Sockets::DeviceDataList& dev
     return ret;
 }
 
-void drawBTConnectionTab(WindowList& connections) {
+void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
     if (!ImGui::BeginTabItem("Bluetooth")) return;
-
-    static WindowList sdpWindows;
 
     static std::variant<std::monostate, Sockets::DeviceDataList, System::SystemError> pairedDevices; // Paired devices
 
@@ -95,7 +93,7 @@ void drawBTConnectionTab(WindowList& connections) {
 
     std::visit(Overload{
         [](std::monostate) { /* Nothing to do when paired devices not found */ },
-        [needsSort, &connections](Sockets::DeviceDataList& deviceList) {
+        [needsSort, &connections, &sdpWindows](Sockets::DeviceDataList& deviceList) {
             if (deviceList.empty()) {
                 ImGui::Text("No paired devices.");
                 return;
@@ -114,6 +112,4 @@ void drawBTConnectionTab(WindowList& connections) {
     }, pairedDevices);
 
     ImGui::EndTabItem();
-
-    sdpWindows.update();
 }
