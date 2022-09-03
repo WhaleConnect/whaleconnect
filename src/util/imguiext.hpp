@@ -32,6 +32,18 @@ namespace ImGui {
     }
 
     /**
+     * @brief A wrapper for @p RadioButton() to control a variable and its value.
+     * @tparam T The type of the variable
+     * @param label The widget label
+     * @param var The variable to associate with the radiobutton
+     * @param value The value to set to the variable when the radiobutton is selected
+    */
+    template <class T>
+    void RadioButton(const char* label, T& var, T value) {
+        if (RadioButton(label, var == value)) var = value;
+    }
+
+    /**
      * @brief Begins a child window with space at the bottom.
      * @param id The ID of the child window
      * @param space The space to reserve at the bottom (multiplied by frame height with item spacing)

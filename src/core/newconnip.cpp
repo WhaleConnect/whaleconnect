@@ -49,8 +49,8 @@ void drawIPConnectionTab(WindowList& connections) {
     ImGui::InputScalar(portLabel, port, 1, 10);
 
     // Connection type selection
-    if (ImGui::RadioButton("TCP", type == TCP)) type = TCP;
-    if (ImGui::RadioButton("UDP", type == UDP)) type = UDP;
+    ImGui::RadioButton("TCP", type, TCP);
+    ImGui::RadioButton("UDP", type, UDP);
 
     // Connect button
     ImGui::Spacing();
