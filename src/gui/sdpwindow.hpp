@@ -70,6 +70,6 @@ class SDPWindow : public Window {
 
 public:
     SDPWindow(const Sockets::DeviceData& target, const UUIDMap& uuids, WindowList& list)
-        : Window(std::format("Connect To {}##{}", target.name, target.address)), _target(target), _uuids(uuids),
-        _selectedUUID(_uuids.begin()->first), _list(list) {}
+        : Window(std::format("Connect To {}##{}", target.name, target.address), { 450, 250 }), _target(target),
+        _uuids(uuids), _selectedUUID(_uuids.begin()->first), _list(list) {}
 };

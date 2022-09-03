@@ -48,7 +48,7 @@ int MAIN_FUNC(MAIN_ARGS) {
         static WindowList connections; // List of open windows
 
         // New connection window
-        ImGui::SetNextWindowSize({ 600, 250 }, ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize({ 600, 170 }, ImGuiCond_FirstUseEver);
         if (ImGui::Begin("New Connection") && ImGui::BeginTabBar("ConnectionTypes")) {
             drawIPConnectionTab(connections);
             drawBTConnectionTab(connections);
