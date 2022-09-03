@@ -9,24 +9,21 @@
 #include "util/imguiext.hpp"
 #include "util/overload.hpp"
 
-// Draws the options for connecting to a device with Bluetooth.
-static Sockets::ConnectionType drawBTConnOptions() {
+bool SDPWindow::_drawBTConnOptions() {
     using enum Sockets::ConnectionType;
 
-    static Sockets::ConnectionType type = RFCOMM;
-
     // Connection type selection
-    if (ImGui::RadioButton("RFCOMM", type == RFCOMM)) type = RFCOMM;
-    if (ImGui::RadioButton("L2CAP Sequential Packet", type == L2CAPSeqPacket)) type = L2CAPSeqPacket;
-    if (ImGui::RadioButton("L2CAP Stream", type == L2CAPStream)) type = L2CAPStream;
-    if (ImGui::RadioButton("L2CAP Datagram", type == L2CAPDgram)) type = L2CAPDgram;
+    ImGui::RadioButton("RFCOMM", _connType, RFCOMM);
+    ImGui::RadioButton("L2CAP Sequential Packet", _connType, L2CAPSeqPacket);
+    ImGui::RadioButton("L2CAP Stream", _connType, L2CAPStream);
+    ImGui::RadioButton("L2CAP Datagram", _connType, L2CAPDgram);
 
     ImGui::Spacing();
-    return ImGui::Button("Connect") ? type : None;
+    return ImGui::Button("Connect");
 }
 
-// Displays the entries from an SDP lookup with buttons to connect to each in a tree format.
-static bool drawSDPList(const BTUtils::SDPResultList& list, uint16_t& portOut, std::string& serviceNameOut) {
+bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
+    ImGui::BeginChildSpacing("sdpList", _isNew ? 0 : 1, true);
     bool ret = false;
 
     // ID to use in case multiple services have the same name
@@ -63,21 +60,22 @@ static bool drawSDPList(const BTUtils::SDPResultList& list, uint16_t& portOut, s
 
             // Connection options
             if (ImGui::Button("Connect...")) {
-                serviceNameOut = serviceName;
-                portOut = port;
+                _serviceName = serviceName;
+                _sdpPort = port;
                 ret = true;
             }
             ImGui::TreePop();
         }
         ImGui::PopID();
     }
+
+    ImGui::EndChild();
     return ret;
 }
 
 void SDPWindow::_drawConnectionOptions(uint16_t port, std::string_view extraInfo) {
-    auto type = drawBTConnOptions();
-    if (type != Sockets::ConnectionType::None)
-        _isNew = _list.add<ConnWindow>(Sockets::DeviceData{ type, _target.name, _target.address, port }, extraInfo);
+    if (_drawBTConnOptions())
+        _isNew = _list.add<ConnWindow>(Sockets::DeviceData{ _connType, _target.name, _target.address, port }, extraInfo);
 }
 
 void SDPWindow::_checkInquiryStatus() {
@@ -112,11 +110,9 @@ void SDPWindow::_checkInquiryStatus() {
                 return;
             }
 
-            static uint16_t port = 0;
-            static std::string serviceName;
-            if (drawSDPList(list, port, serviceName)) ImGui::OpenPopup("options");
+            if (_drawSDPList(list)) ImGui::OpenPopup("options");
             if (ImGui::BeginPopup("options")) {
-                _drawConnectionOptions(port, serviceName);
+                _drawConnectionOptions(_sdpPort, _serviceName);
                 ImGui::EndPopup();
             }
         }
@@ -124,10 +120,12 @@ void SDPWindow::_checkInquiryStatus() {
 }
 
 void SDPWindow::_drawSDPOptions() {
+    if (!ImGui::BeginTabItem("Connect with SDP")) return;
+
     ImGui::BeginDisabled(std::holds_alternative<AsyncSDPInquiry>(_sdpInquiry));
 
     // UUID selection combobox
-    ImGui::SetNextItemWidth(150.0f);
+    ImGui::SetNextItemWidth(150);
     if (ImGui::BeginCombo("Protocol/Service UUID", _selectedUUID.c_str())) {
         for (const auto& [name, _] : _uuids) if (ImGui::Selectable(name.c_str())) _selectedUUID = name;
         ImGui::EndCombo();
@@ -142,8 +140,8 @@ void SDPWindow::_drawSDPOptions() {
 
     if (ImGui::Button("Run SDP Inquiry")) {
         try {
-            _sdpInquiry = std::async(std::launch::async, BTUtils::sdpLookup,
-                                     _target.address, _uuids[_selectedUUID], _flushCache);
+            _sdpInquiry = std::async(std::launch::async, BTUtils::sdpLookup, _target.address, _uuids.at(_selectedUUID),
+                                     _flushCache);
         } catch (const std::system_error& error) {
             _sdpInquiry = error;
         }
@@ -151,19 +149,25 @@ void SDPWindow::_drawSDPOptions() {
 
     ImGui::EndDisabled();
     _checkInquiryStatus();
+    ImGui::EndTabItem();
 }
 
 void SDPWindow::_drawManualOptions() {
-    ImGui::Spacing();
-    ImGui::SetNextItemWidth(100.0f);
+    if (!ImGui::BeginTabItem("Connect Manually")) return;
+
+    ImGui::SetNextItemWidth(100);
     ImGui::InputScalar("Port", _port, 1, 10);
 
     _drawConnectionOptions(_port, std::format("Port {}", _port));
+    ImGui::EndTabItem();
 }
 
 void SDPWindow::_updateContents() {
-    if (ImGui::CollapsingHeader("Connect with SDP")) _drawSDPOptions();
-    if (ImGui::CollapsingHeader("Connect Manually")) _drawManualOptions();
+    if (ImGui::BeginTabBar("ConnectionOptions")) {
+        _drawSDPOptions();
+        _drawManualOptions();
+        ImGui::EndTabBar();
+    }
 
     // If the connection exists, show a message
     if (!_isNew) ImGui::Text("This connection is already open.");

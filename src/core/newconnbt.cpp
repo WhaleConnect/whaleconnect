@@ -23,30 +23,27 @@ static void sortTable(Sockets::DeviceDataList& devices) {
 
     auto sortSpecs = ImGui::TableGetSortSpecs();
     if (!sortSpecs) return;
-
     if (!sortSpecs->SpecsDirty) return;
 
-    auto sortSpec = sortSpecs->Specs[0];
-    auto proj = (sortSpec.ColumnIndex == 0) ? &Sockets::DeviceData::name : &Sockets::DeviceData::address;
+    auto spec = sortSpecs->Specs[0];
+    auto proj = (spec.ColumnIndex == 0) ? &Sockets::DeviceData::name : &Sockets::DeviceData::address;
 
-    if (sortSpec.SortDirection == ImGuiSortDirection_Ascending)
-        std::ranges::stable_sort(devices, std::less{}, proj);
-    else
-        std::ranges::stable_sort(devices, std::greater{}, proj);
+    if (spec.SortDirection == ImGuiSortDirection_Ascending) std::ranges::stable_sort(devices, std::less{}, proj);
+    else std::ranges::stable_sort(devices, std::greater{}, proj);
 
     sortSpecs->SpecsDirty = false;
 }
 
 // Draws a menu composed of the paired Bluetooth devices.
-static const Sockets::DeviceData* drawPairedDevices(Sockets::DeviceDataList& devices, bool showAddrs, bool needsSort) {
+static const Sockets::DeviceData* drawPairedDevices(Sockets::DeviceDataList& devices, bool needsSort) {
     const Sockets::DeviceData* ret = nullptr;
 
-    int numCols = showAddrs ? 3 : 2;
-    if (!ImGui::BeginTable("paired", numCols,
-                           ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY)) return ret;
+    int numCols = 3;
+    if (!ImGui::BeginTable("paired", numCols, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable
+                           | ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY)) return ret;
 
     ImGui::TableSetupColumn("Name");
-    if (showAddrs) ImGui::TableSetupColumn("Address");
+    ImGui::TableSetupColumn("Address");
     ImGui::TableSetupColumn("Actions", ImGuiTableColumnFlags_NoSort);
     ImGui::TableSetupScrollFreeze(numCols, 1);
     ImGui::TableHeadersRow();
@@ -59,13 +56,13 @@ static const Sockets::DeviceData* drawPairedDevices(Sockets::DeviceDataList& dev
         ImGui::TableNextColumn();
         ImGui::Text("%s", i.name.c_str());
 
-        if (showAddrs) {
-            ImGui::TableNextColumn();
-            ImGui::Text("%s", i.address.c_str());
-        }
+        ImGui::TableNextColumn();
+        ImGui::Text("%s", i.address.c_str());
 
         ImGui::TableNextColumn();
+        ImGui::PushID(i.address.c_str());
         if (ImGui::Button("Connect")) ret = &i;
+        ImGui::PopID();
     }
 
     ImGui::EndTable();
@@ -75,7 +72,15 @@ static const Sockets::DeviceData* drawPairedDevices(Sockets::DeviceDataList& dev
 void drawBTConnectionTab(WindowList& connections) {
     if (!ImGui::BeginTabItem("Bluetooth")) return;
 
+    static WindowList sdpWindows;
+
     static std::variant<std::monostate, Sockets::DeviceDataList, System::SystemError> pairedDevices; // Paired devices
+
+    // Map of UUIDs, associating a UUID value with a user-given name
+    static std::map<std::string, UUID, std::less<>> uuidList = {
+        { "L2CAP", BTUtils::createUUIDFromBase(0x0100) },
+        { "RFCOMM", BTUtils::createUUIDFromBase(0x0003) }
+    };
 
     bool needsSort = false;
 
@@ -90,20 +95,17 @@ void drawBTConnectionTab(WindowList& connections) {
 
     std::visit(Overload{
         [](std::monostate) { /* Nothing to do when paired devices not found */ },
-        [needsSort](Sockets::DeviceDataList& deviceList) {
+        [needsSort, &connections](Sockets::DeviceDataList& deviceList) {
             if (deviceList.empty()) {
                 ImGui::Text("No paired devices.");
                 return;
             }
 
-            // Checkbox to display device addresses
-            static bool showAddrs = false;
-            ImGui::SameLine();
-            ImGui::Checkbox("Show Addresses", &showAddrs);
             ImGui::Spacing();
 
             // There are devices, display them
-            drawPairedDevices(deviceList, showAddrs, needsSort);
+            auto device = drawPairedDevices(deviceList, needsSort);
+            if (device) sdpWindows.add<SDPWindow>(*device, uuidList, connections);
         },
         [](const System::SystemError& error) {
             // Error occurred
@@ -112,4 +114,6 @@ void drawBTConnectionTab(WindowList& connections) {
     }, pairedDevices);
 
     ImGui::EndTabItem();
+
+    sdpWindows.update();
 }

@@ -27,11 +27,19 @@ class SDPWindow : public Window {
     using UUIDMap = std::map<std::string, UUID, std::less<>>;
 
     Sockets::DeviceData _target;
-    UUIDMap _uuids;
+
+    // Fields for SDP connections
+    const UUIDMap& _uuids;
     std::string _selectedUUID;
     bool _flushCache = false;
+    uint16_t _sdpPort = 0;
+    std::string _serviceName;
+
+    // Fields for manual connections
+    Sockets::ConnectionType _connType = Sockets::ConnectionType::RFCOMM;
     uint16_t _port = 0;
 
+    // Fields for connection window management
     WindowList& _list;
     bool _isNew = true;
 
@@ -43,6 +51,12 @@ class SDPWindow : public Window {
         System::SystemError, // A system error when an error occurred during the inquiry
         BTUtils::SDPResultList // The results of the inquiry when it has completed
     > _sdpInquiry;
+
+    // Draws the options for connecting to a device with Bluetooth.
+    bool _drawBTConnOptions();
+
+    // Displays the entries from an SDP lookup with buttons to connect to each in a tree format.
+    bool _drawSDPList(const BTUtils::SDPResultList& list);
 
     void _drawConnectionOptions(uint16_t port, std::string_view extraInfo);
 
@@ -56,6 +70,6 @@ class SDPWindow : public Window {
 
 public:
     SDPWindow(const Sockets::DeviceData& target, const UUIDMap& uuids, WindowList& list)
-        : Window(std::format("Connect To {}##{}", _target.name, _target.address)), _target(target), _uuids(uuids),
-        _selectedUUID(_uuids.begin()->first), _list(list) { }
+        : Window(std::format("Connect To {}##{}", target.name, target.address)), _target(target), _uuids(uuids),
+        _selectedUUID(_uuids.begin()->first), _list(list) {}
 };

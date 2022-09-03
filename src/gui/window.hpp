@@ -20,7 +20,7 @@ class Window {
 
     bool _initialized = false;
 
-    virtual void _init() = 0;
+    virtual void _init() { /* May optionally be overridden in derived classes */ }
 
     virtual void _updateContents() = 0;
 
