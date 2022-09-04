@@ -61,7 +61,7 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
             // Connection options
             if (ImGui::Button("Connect...")) {
                 _serviceName = serviceName;
-                _sdpPort = port;
+                _port = port;
                 ret = true;
             }
             ImGui::TreePop();
@@ -73,9 +73,9 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
     return ret;
 }
 
-void SDPWindow::_drawConnectionOptions(uint16_t port, std::string_view info) {
+void SDPWindow::_drawConnectionOptions(std::string_view info) {
     if (_drawBTConnOptions())
-        _isNew = _list.add<ConnWindow>(Sockets::DeviceData{ _connType, _target.name, _target.address, port }, info);
+        _isNew = _list.add<ConnWindow>(Sockets::DeviceData{ _connType, _target.name, _target.address, _port }, info);
 }
 
 void SDPWindow::_checkInquiryStatus() {
@@ -112,7 +112,7 @@ void SDPWindow::_checkInquiryStatus() {
 
             if (_drawSDPList(list)) ImGui::OpenPopup("options");
             if (ImGui::BeginPopup("options")) {
-                _drawConnectionOptions(_sdpPort, _serviceName);
+                _drawConnectionOptions(_serviceName);
                 ImGui::EndPopup();
             }
         }
@@ -158,7 +158,7 @@ void SDPWindow::_drawManualOptions() {
     ImGui::SetNextItemWidth(100);
     ImGui::InputScalar("Port", _port, 1, 10);
 
-    _drawConnectionOptions(_port, std::format("Port {}", _port));
+    _drawConnectionOptions(std::format("Port {}", _port));
     ImGui::EndTabItem();
 }
 

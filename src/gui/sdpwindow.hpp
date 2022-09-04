@@ -32,10 +32,9 @@ class SDPWindow : public Window {
     const UUIDMap& _uuids;
     std::string _selectedUUID;
     bool _flushCache = false;
-    uint16_t _sdpPort = 0;
     std::string _serviceName;
 
-    // Fields for manual connections
+    // Fields for SDP and manual connection state
     Sockets::ConnectionType _connType = Sockets::ConnectionType::RFCOMM;
     uint16_t _port = 0;
 
@@ -58,7 +57,7 @@ class SDPWindow : public Window {
     // Displays the entries from an SDP lookup with buttons to connect to each in a tree format.
     bool _drawSDPList(const BTUtils::SDPResultList& list);
 
-    void _drawConnectionOptions(uint16_t port, std::string_view extraInfo);
+    void _drawConnectionOptions(std::string_view extraInfo);
 
     void _checkInquiryStatus();
 
