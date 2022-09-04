@@ -134,7 +134,7 @@ public:
     */
     explicit Socket(SOCKET fd) : _fd(fd) {}
 
-    Socket(const Socket& other) = delete;
+    Socket(const Socket&) = delete;
 
     /**
      * @brief Constructs an object, and transfers ownership from another object.
@@ -147,7 +147,7 @@ public:
     */
     ~Socket() { reset(); }
 
-    Socket& operator=(const Socket& other) = delete;
+    Socket& operator=(const Socket&) = delete;
 
     /**
      * @brief Transfers ownership from another object.
