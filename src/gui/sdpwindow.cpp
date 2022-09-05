@@ -9,20 +9,8 @@
 #include "util/imguiext.hpp"
 #include "util/overload.hpp"
 
-bool SDPWindow::_drawBTConnOptions() {
-    using enum Sockets::ConnectionType;
-
-    // Connection type selection
-    ImGui::RadioButton("RFCOMM", _connType, RFCOMM);
-    ImGui::RadioButton("L2CAP Sequential Packet", _connType, L2CAPSeqPacket);
-    ImGui::RadioButton("L2CAP Stream", _connType, L2CAPStream);
-    ImGui::RadioButton("L2CAP Datagram", _connType, L2CAPDgram);
-
-    ImGui::Spacing();
-    return ImGui::Button("Connect");
-}
-
 bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
+    // Begin a scrollable child window to contain the list
     ImGui::BeginChildSpacing("sdpList", _isNew ? 0 : 1, true);
     bool ret = false;
 
@@ -73,8 +61,18 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
     return ret;
 }
 
-void SDPWindow::_drawConnectionOptions(std::string_view info) {
-    if (_drawBTConnOptions())
+void SDPWindow::_drawConnOptions(std::string_view info) {
+    using enum Sockets::ConnectionType;
+
+    // Connection type selection
+    ImGui::RadioButton("RFCOMM", _connType, RFCOMM);
+    ImGui::RadioButton("L2CAP Sequential Packet", _connType, L2CAPSeqPacket);
+    ImGui::RadioButton("L2CAP Stream", _connType, L2CAPStream);
+    ImGui::RadioButton("L2CAP Datagram", _connType, L2CAPDgram);
+
+    // Connect button
+    ImGui::Spacing();
+    if (ImGui::Button("Connect"))
         _isNew = _list.add<ConnWindow>(Sockets::DeviceData{ _connType, _target.name, _target.address, _port }, info);
 }
 
@@ -91,6 +89,7 @@ void SDPWindow::_checkInquiryStatus() {
                 return;
             }
 
+            // The async operation has completed, attempt to get its results
             try {
                 _sdpInquiry = asyncInq.get();
             } catch (const System::SystemError& error) {
@@ -111,17 +110,19 @@ void SDPWindow::_checkInquiryStatus() {
             }
 
             if (_drawSDPList(list)) ImGui::OpenPopup("options");
+
             if (ImGui::BeginPopup("options")) {
-                _drawConnectionOptions(_serviceName);
+                _drawConnOptions(_serviceName);
                 ImGui::EndPopup();
             }
         }
     }, _sdpInquiry);
 }
 
-void SDPWindow::_drawSDPOptions() {
+void SDPWindow::_drawSDPTab() {
     if (!ImGui::BeginTabItem("Connect with SDP")) return;
 
+    // Disable the widgets if the async inquiry is running
     ImGui::BeginDisabled(std::holds_alternative<AsyncSDPInquiry>(_sdpInquiry));
 
     // UUID selection combobox
@@ -132,14 +133,16 @@ void SDPWindow::_drawSDPOptions() {
     }
 
 #ifdef _WIN32
-    // "Flush cache" option (Windows only)
+    // Flush cache option (Windows only)
     ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x * 4);
     ImGui::Checkbox("Flush cache", &_flushCache);
     ImGui::HelpMarker("Ignore previous cached advertising data on this inquiry.");
 #endif
 
+    // Run button
     if (ImGui::Button("Run SDP Inquiry")) {
         try {
+            // Start the inquiry
             _sdpInquiry = std::async(std::launch::async, BTUtils::sdpLookup, _target.address, _uuids.at(_selectedUUID),
                                      _flushCache);
         } catch (const std::system_error& error) {
@@ -152,20 +155,20 @@ void SDPWindow::_drawSDPOptions() {
     ImGui::EndTabItem();
 }
 
-void SDPWindow::_drawManualOptions() {
+void SDPWindow::_drawManualTab() {
     if (!ImGui::BeginTabItem("Connect Manually")) return;
 
     ImGui::SetNextItemWidth(100);
     ImGui::InputScalar("Port", _port, 1, 10);
 
-    _drawConnectionOptions(std::format("Port {}", _port));
+    _drawConnOptions(std::format("Port {}", _port));
     ImGui::EndTabItem();
 }
 
 void SDPWindow::_updateContents() {
     if (ImGui::BeginTabBar("ConnectionOptions")) {
-        _drawSDPOptions();
-        _drawManualOptions();
+        _drawSDPTab();
+        _drawManualTab();
         ImGui::EndTabBar();
     }
 

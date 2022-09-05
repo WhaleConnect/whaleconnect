@@ -22,52 +22,65 @@
 #include "sys/error.hpp"
 #include "util/formatcompat.hpp"
 
+/**
+ * @brief A class to handle an SDP inquiry in a GUI window.
+*/
 class SDPWindow : public Window {
-    using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>;
-    using UUIDMap = std::map<std::string, UUID, std::less<>>;
+    using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>; // Results of an SDP search
+    using UUIDMap = std::map<std::string, UUID, std::less<>>; // List of UUIDs used for SDP filtering
 
-    Sockets::DeviceData _target;
+    Sockets::DeviceData _target; // The target to perform SDP inquiries on and connect to
 
     // Fields for SDP connections
-    const UUIDMap& _uuids;
-    std::string _selectedUUID;
-    bool _flushCache = false;
-    std::string _serviceName;
+    const UUIDMap& _uuids; // The available UUIDs used for SDP inquiries
+    std::string _selectedUUID; // The UUID selected for an inquiry
+    bool _flushCache = false; // If data should be flushed on the next inquiry
+    std::string _serviceName; // The service name of the selected SDP result, displayed in the connection window title
 
     // Fields for SDP and manual connection state
-    Sockets::ConnectionType _connType = Sockets::ConnectionType::RFCOMM;
-    uint16_t _port = 0;
+    Sockets::ConnectionType _connType = Sockets::ConnectionType::RFCOMM; // The selected connection type
+    uint16_t _port = 0; // The port to connect to
 
-    // Fields for connection window management
-    WindowList& _list;
-    bool _isNew = true;
+    // Fields for connection management
+    WindowList& _list; // The list of connection window objects to add to when making a new connection
+    bool _isNew = true; // If the current connection is unique
 
     // SDP inquiry data
+    // The value this variant currently holds contains data about the SDP inquiry.
+    // The type of the value represents the inquiry's state.
     std::variant<
-        std::monostate, // Default variant value when no SDP inquiries have been run yet
+        std::monostate, // Default value when no inquiries have been run yet
         AsyncSDPInquiry, // A future object corresponding to an in-progress inquiry
-        std::system_error, // A system error when the asynchronous thread couldn't be created
-        System::SystemError, // A system error when an error occurred during the inquiry
+        std::system_error, // An error when the asynchronous thread couldn't be created
+        System::SystemError, // An error that occurred during an in-progress inquiry
         BTUtils::SDPResultList // The results of the inquiry when it has completed
     > _sdpInquiry;
 
-    // Draws the options for connecting to a device with Bluetooth.
-    bool _drawBTConnOptions();
-
-    // Displays the entries from an SDP lookup with buttons to connect to each in a tree format.
+    // Draws the entries from an SDP lookup with buttons to connect to each in a tree format.
     bool _drawSDPList(const BTUtils::SDPResultList& list);
 
-    void _drawConnectionOptions(std::string_view extraInfo);
+    // Draws the options for connecting to a device with Bluetooth.
+    void _drawConnOptions(std::string_view info);
 
+    // Draws information about the SDP inquiry.
     void _checkInquiryStatus();
 
-    void _drawSDPOptions();
+    // Draws the tab to initiate an SDP inquiry.
+    void _drawSDPTab();
 
-    void _drawManualOptions();
+    // Draws the tab to initiate a connection without SDP.
+    void _drawManualTab();
 
+    // Draws the window contents.
     void _updateContents() override;
 
 public:
+    /**
+     * @brief Sets the information needed to create connections.
+     * @param target The target to connect to
+     * @param uuids A map of UUIDs to perform SDP inquiries with
+     * @param list The list of @p ConnWindow objects to add to with a new connection
+    */
     SDPWindow(const Sockets::DeviceData& target, const UUIDMap& uuids, WindowList& list)
         : Window(std::format("Connect To {}##{}", target.name, target.address), { 450, 250 }), _target(target),
         _uuids(uuids), _selectedUUID(_uuids.begin()->first), _list(list) {}

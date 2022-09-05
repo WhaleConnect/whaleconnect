@@ -8,6 +8,10 @@
 
 #pragma once
 
+/**
+ * @brief A struct to apply the overload pattern to @p std::visit().
+ * @tparam ...Ts A variadic sequence of lambdas/functors to apply to the visit operation
+*/
 template<class... Ts>
 struct Overload : Ts... {
     using Ts::operator()...;

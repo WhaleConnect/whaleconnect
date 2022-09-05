@@ -18,8 +18,9 @@
 #include "window.hpp"
 
 class WindowList {
-    std::vector<std::unique_ptr<Window>> _windows; // All windows
+    std::vector<std::unique_ptr<Window>> _windows; // List of window pointers
 
+    // Checks if the list contains a window with the specified title.
     bool _validateDuplicate(std::string_view title) {
         return std::ranges::find_if(_windows, [title](const auto& current) {
             return current->getTitle() == title;
@@ -30,15 +31,17 @@ public:
     /**
      * @brief Adds a new window to the list.
      * @tparam T The type of the window to add
-     * @tparam ...Args Arguments to construct the window object with
-     * @param ...args Arguments to construct the window object with
+     * @tparam ...Args A sequence of arguments to construct the window object with
+     * @param ...args Arguments to pass to the window class' constructor
      * @return If the window is unique and was added
     */
     template <class T, class... Args> requires std::derived_from<T, Window>
     bool add(Args&&... args) {
+        // Create the pointer
         auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
         if (!_validateDuplicate(ptr->getTitle())) return false;
 
+        // Add it to the list
         ptr->init();
         _windows.push_back(std::move(ptr));
         return true;

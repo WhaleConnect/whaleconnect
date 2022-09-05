@@ -36,7 +36,7 @@ class ConnWindow : public Window {
     // Sends a string through the socket.
     Task<> _sendHandler(std::string_view s);
 
-    // Receives a string from the socket, and displays it in the console output.
+    // Receives a string from the socket and displays it in the console output.
     Task<> _readHandler();
 
     // Prints the details of a thrown exception.
@@ -45,13 +45,15 @@ class ConnWindow : public Window {
         if (error) _output.addError(error.formatted());
     }
 
+    // Connects to the target server.
     void _init() override { _connect(); }
 
+    // Draws the window contents and handles I/O.
     void _updateContents() override;
 
 public:
     /**
-     * @brief Sets the window title and creates the connection.
+     * @brief Sets the window information.
      * @param data The server to connect to
      * @param extraInfo Extra information to display in the window's titlebar
     */

@@ -21,7 +21,7 @@
 enum class ImGuiOverlayCorner { TopLeft, TopRight, BottomLeft, BottomRight };
 
 namespace ImGui {
-    constexpr float FILL = -FLT_MIN; /**< Make a widget fill a dimension. Use with @p ImVec2.*/
+    constexpr float FILL = -FLT_MIN; /**< Makes a widget fill a dimension. Use with @p ImVec2.*/
 
     /**
      * @brief A wrapper for @p TextUnformatted() to allow a @p string_view parameter.

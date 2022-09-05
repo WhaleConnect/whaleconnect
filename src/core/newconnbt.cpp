@@ -19,15 +19,19 @@
 #include "util/overload.hpp"
 
 static void sortTable(Sockets::DeviceDataList& devices) {
+    // A sort is only needed for 2 or more entries
     if (devices.size() < 2) return;
 
+    // Get sort specs
     auto sortSpecs = ImGui::TableGetSortSpecs();
     if (!sortSpecs) return;
     if (!sortSpecs->SpecsDirty) return;
 
+    // Get sort data
     auto spec = sortSpecs->Specs[0];
     auto proj = (spec.ColumnIndex == 0) ? &Sockets::DeviceData::name : &Sockets::DeviceData::address;
 
+    // Sort according to user specified direction
     if (spec.SortDirection == ImGuiSortDirection_Ascending) std::ranges::stable_sort(devices, std::less{}, proj);
     else std::ranges::stable_sort(devices, std::greater{}, proj);
 
@@ -36,8 +40,10 @@ static void sortTable(Sockets::DeviceDataList& devices) {
 
 // Draws a menu composed of the paired Bluetooth devices.
 static const Sockets::DeviceData* drawPairedDevices(Sockets::DeviceDataList& devices, bool needsSort) {
+    // Using a pointer so the return value can be nullable without copying large objects.
     const Sockets::DeviceData* ret = nullptr;
 
+    // Setup table
     int numCols = 3;
     if (!ImGui::BeginTable("paired", numCols, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable
                            | ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY)) return ret;
@@ -48,9 +54,11 @@ static const Sockets::DeviceData* drawPairedDevices(Sockets::DeviceDataList& dev
     ImGui::TableSetupScrollFreeze(numCols, 1);
     ImGui::TableHeadersRow();
 
+    // The default sort is ascending according to column 0
     if (needsSort) ImGui::TableSetColumnSortDirection(0, ImGuiSortDirection_Ascending, false);
     sortTable(devices);
 
+    // Render each table row
     for (const auto& i : devices) {
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
@@ -82,6 +90,7 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
 
     bool needsSort = false;
 
+    // Get paired devices if the button is clicked or if the variant currently holds nothing
     if (ImGui::Button("Refresh List") || (pairedDevices.index() == 0)) {
         try {
             pairedDevices = BTUtils::getPaired();
@@ -91,9 +100,11 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
         }
     }
 
+    // Check paired devices list
     std::visit(Overload{
-        [](std::monostate) { /* Nothing to do when paired devices not found */ },
+        [](std::monostate) { /* Nothing to do when devices not found */ },
         [needsSort, &connections, &sdpWindows](Sockets::DeviceDataList& deviceList) {
+            // Check if the device list is empty
             if (deviceList.empty()) {
                 ImGui::Text("No paired devices.");
                 return;
