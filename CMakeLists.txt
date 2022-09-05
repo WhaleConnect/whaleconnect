@@ -88,7 +88,7 @@ if (NOT WIN32)
     find_package(Threads REQUIRED)
 
     # Link to libraries
-    target_link_libraries(terminal ${DBUS_LIBRARIES} Threads::Threads ${CMAKE_DL_LIBS} -lbluetooth)
+    target_link_libraries(terminal PRIVATE ${DBUS_LIBRARIES} Threads::Threads -lbluetooth)
 endif()
 
 # Build source documentation with Doxygen in release builds
