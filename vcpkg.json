@@ -10,6 +10,10 @@
                 "opengl3-binding"
             ]
         },
+        {
+            "name": "liburing",
+            "platform": "linux"
+        },
         "glfw3",
         "fmt",
         "magic-enum"
