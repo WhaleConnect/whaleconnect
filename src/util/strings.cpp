@@ -22,7 +22,7 @@ Strings::SysStr Strings::toSys(std::string_view from) {
     MultiByteToWideChar(CP_UTF8, 0, from.data(), -1, buf.data(), stringSize);
     return buf;
 #else
-    return from;
+    return Strings::SysStr{ from };
 #endif
 }
 
@@ -42,13 +42,13 @@ std::string Strings::fromSys(SysStrView from) {
     WideCharToMultiByte(CP_UTF8, 0, from.data(), -1, buf.data(), stringSize, nullptr, nullptr);
     return buf;
 #else
-    return from;
+    return std::string{ from };
 #endif
 }
 
 std::string Strings::replaceAll(std::string str, std::string_view from, std::string_view to) {
     // Adapted from https://stackoverflow.com/a/3418285
- 
+
     // Preliminary checks
     // 1. Nothing to replace in an empty string
     // 2. Can't replace an empty string
