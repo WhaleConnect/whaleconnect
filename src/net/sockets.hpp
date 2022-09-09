@@ -12,7 +12,6 @@
 #include <vector>
 #include <string_view>
 
-#include "async/async.hpp"
 #include "async/task.hpp"
 #include "sys/error.hpp"
 

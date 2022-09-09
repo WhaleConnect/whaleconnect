@@ -8,12 +8,9 @@
 
 #pragma once
 
-#ifdef _WIN32
-#include <WinSock2.h>
-#endif
-
 #include <coroutine>
 
+#include "net/sockets.hpp"
 #include "sys/error.hpp"
 
 namespace Async {
@@ -32,7 +29,7 @@ namespace Async {
     {
         std::coroutine_handle<> coroHandle; /**< The handle to the coroutine that started the operation */
         System::ErrorCode error; /**< The return code of the asynchronous function (returned to caller) */
-        int numBytes; /**< The number of bytes transferred during the operation (returned to caller) */
+        size_t numBytes; /**< The number of bytes transferred during the operation (returned to caller) */
 
         /**
          * @brief Gets the return code of the asynchronous function.

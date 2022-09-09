@@ -27,9 +27,11 @@ static constexpr int iocpInterrupt = 1;
 
 // The IOCP handle
 static HANDLE completionPort = nullptr;
+#endif
 
 // Runs in each thread to handle completion results.
 static void worker() {
+#ifdef _WIN32
     DWORD numBytes;
     ULONG_PTR completionKey;
     LPOVERLAPPED overlapped = nullptr;
@@ -52,8 +54,8 @@ static void worker() {
         // Resume the coroutine that started the operation
         if (result.coroHandle) result.coroHandle();
     }
-}
 #endif
+}
 
 void Async::init() {
 #ifdef _WIN32
@@ -66,9 +68,9 @@ void Async::init() {
 }
 
 void Async::cleanup() {
+#ifdef _WIN32
     if (!completionPort) return;
 
-#ifdef _WIN32
     // Signal threads to terminate
     for ([[maybe_unused]] const auto& _ : workerThreadPool)
         PostQueuedCompletionStatus(completionPort, 0, iocpInterrupt, nullptr);

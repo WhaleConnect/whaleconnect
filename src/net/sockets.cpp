@@ -22,6 +22,7 @@
 #endif
 
 #include "sockets.hpp"
+#include "async/async.hpp"
 #include "compat/outptr.hpp"
 #include "sys/errcheck.hpp"
 #include "sys/handleptr.hpp"
@@ -148,6 +149,8 @@ static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, b
 
     // Make the socket behave more like a regular socket connected with connect()
     CALL_EXPECT_ZERO(setsockopt, s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
+#else
+    co_return; // TODO: Implement function
 #endif
 }
 
@@ -170,7 +173,7 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
         Strings::SysStr portWide = Strings::toSys(data.port);
 
         // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
-        HandlePtr<ADDRINFOW, &FreeAddrInfo> addr;
+        HandlePtr<ADDRINFOW, FreeAddrInfo> addr;
         CALL_EXPECT_ZERO_RC_ERROR_TYPE(GetAddrInfo, System::ErrorType::AddrInfo,
                                        addrWide.c_str(), portWide.c_str(), &hints, std2::out_ptr(addr));
 
@@ -287,12 +290,12 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
     DWORD flags = 0;
     CALL_EXPECT_NONERROR(WSARecv, sockfd, &buf, 1, nullptr, &flags, &result, nullptr);
 #else
-    int recvRet = recv(asyncData.sockfd, recvBuf, static_cast<int>(std::ssize(recvBuf)) - 1, MSG_NOSIGNAL);
+    int recvRet = recv(sockfd, recvBuf.data(), recvBuf.size(), MSG_NOSIGNAL);
 #endif
 
     co_await std::suspend_always{};
     CALL_EXPECT_ZERO(result.errorResult);
 
     recvBuf.resize(result.numBytes);
-    co_return RecvResult{ static_cast<ULONG>(result.numBytes), std::move(recvBuf) };
+    co_return RecvResult{ result.numBytes, std::move(recvBuf) };
 }

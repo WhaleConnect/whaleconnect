@@ -94,14 +94,13 @@ Sockets::DeviceDataList BTUtils::getPaired() {
     } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
 #else
     // Set up the method call
-    HandleWrapper<DBusMessage*> msg{ CALL_EXPECT_TRUE(dbus_message_new_method_call,
-                                                      "org.bluez", "/",
-                                                      "org.freedesktop.DBus.ObjectManager", "GetManagedObjects"),
-                                     dbus_message_unref };
+    using MessagePtr = HandlePtr<DBusMessage, dbus_message_unref>;
 
-    HandleWrapper<DBusMessage*> response{ CALL_EXPECT_TRUE(dbus_connection_send_with_reply_and_block,
-                                                           conn, msg.get(), DBUS_TIMEOUT_USE_DEFAULT, nullptr),
-                                          dbus_message_unref };
+    MessagePtr msg{ CALL_EXPECT_TRUE(dbus_message_new_method_call, "org.bluez", "/",
+                                     "org.freedesktop.DBus.ObjectManager", "GetManagedObjects") };
+
+    MessagePtr response{ CALL_EXPECT_TRUE(dbus_connection_send_with_reply_and_block, conn, msg.get(),
+                                          DBUS_TIMEOUT_USE_DEFAULT, nullptr) };
 
     DBusMessageIter responseIter;
     dbus_message_iter_init(response.get(), &responseIter);
@@ -338,7 +337,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
     if (flushCache) flags |= LUP_FLUSHCACHE;
 
     // Start the lookup
-    HandlePtr<void, &WSALookupServiceEnd> lookup;
+    HandlePtr<void, WSALookupServiceEnd> lookup;
 
     try {
         CALL_EXPECT_NONERROR(WSALookupServiceBegin, &wsaQuery, flags, std2::out_ptr(lookup));
@@ -418,90 +417,78 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
         ret.push_back(result);
     }
 #else
+    // TODO: Use std::bind_back() instead of lambda in C++23
+    using SDPListPtr = HandlePtr<sdp_list_t, [](sdp_list_t* p) { sdp_list_free(p, nullptr); }>;
+
     // Parse the MAC address into a Bluetooth address structure
-    bdaddr_t deviceAddr;
-    str2ba(addr.c_str(), &deviceAddr);
+    bdaddr_t bdAddr;
+    str2ba(addr.data(), &bdAddr);
 
     // Initialize SDP session
     // We can't directly pass BDADDR_ANY to sdp_connect() because a "taking the address of an rvalue" error is thrown.
     bdaddr_t addrAny{};
-    sdp_session_t* session = sdp_connect(&addrAny, &deviceAddr, SDP_RETRY_IF_BUSY);
-    if (!session) return std::nullopt; // Failed to connect to SDP session
+    HandlePtr<sdp_session_t, sdp_close> session{ CALL_EXPECT_TRUE(sdp_connect, &addrAny, &bdAddr, SDP_RETRY_IF_BUSY) };
 
     uuid_t serviceUUID = uuidWindowsToLinux(uuid);
 
     // Start SDP service search
-    sdp_list_t* searchList = sdp_list_append(nullptr, &serviceUUID);
-    sdp_list_t* responseList = nullptr;
+    SDPListPtr searchList{ sdp_list_append(nullptr, &serviceUUID) };
+    SDPListPtr responseList;
 
     uint32_t range = 0x0000FFFF;
-    sdp_list_t* attridList = sdp_list_append(nullptr, &range);
+    SDPListPtr attridList{ sdp_list_append(nullptr, &range) };
 
-    int err = sdp_service_search_attr_req(session, searchList, SDP_ATTR_REQ_RANGE, attridList, &responseList);
-    sdp_close(session);
-
-    if (err == SOCKET_ERROR) {
-        // Failed to initialize service search, free all lists and return
-        sdp_list_free(responseList, nullptr);
-        sdp_list_free(searchList, nullptr);
-        sdp_list_free(attridList, nullptr);
-        return std::nullopt;
-    }
+    CALL_EXPECT_NONERROR(sdp_service_search_attr_req, session.get(), searchList.get(), SDP_ATTR_REQ_RANGE,
+                         attridList.get(), std2::out_ptr(responseList));
 
     // Iterate through each of the service records
-    for (sdp_list_t* r = responseList; r; r = r->next) {
+    for (sdp_list_t* r = responseList.get(); r; r = r->next) {
         SDPResult result;
 
-        sdp_record_t* rec = static_cast<sdp_record_t*>(r->data);
-        sdp_list_t* protoList;
+        HandlePtr<sdp_record_t, sdp_record_free> rec{ static_cast<sdp_record_t*>(r->data) };
+        SDPListPtr protoList;
 
         // Get a list of the protocol sequences
-        if (sdp_get_access_protos(rec, &protoList) == NO_ERROR) {
-            // Iterate through each protocol sequence
-            for (sdp_list_t* p = protoList; p; p = p->next) {
-                // Iterate through each protocol list of the protocol sequence
-                for (sdp_list_t* pds = static_cast<sdp_list_t*>(p->data); pds; pds = pds->next) {
-                    // Check protocol attributes
-                    uint16_t proto = 0;
-                    for (sdp_data_t* d = static_cast<sdp_data_t*>(pds->data); d; d = d->next) {
-                        switch (d->dtd) {
-                        case SDP_UUID16:
-                        case SDP_UUID32:
-                        case SDP_UUID128:
-                            // Keep track of protocol UUIDs
-                            proto = sdp_uuid_to_proto(&d->val.uuid);
-                            result.protoUUIDs.push_back(proto);
-                            break;
-                        case SDP_UINT8:
-                            // RFCOMM channel is stored in an 8-bit integer
-                            if (proto == RFCOMM_UUID) result.port = d->val.int8;
-                            break;
-                        case SDP_UINT16:
-                            // L2CAP PSM is stored in a 16-bit integer
-                            if (proto == L2CAP_UUID) result.port = d->val.int16;
-                        }
+        if (sdp_get_access_protos(rec.get(), std2::out_ptr(protoList)) == SOCKET_ERROR) continue;
+
+        // Iterate through each protocol sequence
+        for (sdp_list_t* p = protoList.get(); p; p = p->next) {
+            // Iterate through each protocol list of the protocol sequence
+            for (SDPListPtr pds{ static_cast<sdp_list_t*>(p->data) }; pds; pds.reset(pds->next)) {
+                // Check protocol attributes
+                uint16_t proto = 0;
+                for (sdp_data_t* d = static_cast<sdp_data_t*>(pds->data); d; d = d->next) {
+                    switch (d->dtd) {
+                    case SDP_UUID16:
+                    case SDP_UUID32:
+                    case SDP_UUID128:
+                        // Keep track of protocol UUIDs
+                        proto = sdp_uuid_to_proto(&d->val.uuid);
+                        result.protoUUIDs.push_back(proto);
+                        break;
+                    case SDP_UINT8:
+                        // RFCOMM channel is stored in an 8-bit integer
+                        if (proto == RFCOMM_UUID) result.port = d->val.int8;
+                        break;
+                    case SDP_UINT16:
+                        // L2CAP PSM is stored in a 16-bit integer
+                        if (proto == L2CAP_UUID) result.port = d->val.int16;
                     }
                 }
-                sdp_list_free(static_cast<sdp_list_t*>(p->data), nullptr);
             }
-            sdp_list_free(protoList, nullptr);
-        } else {
-            continue;
         }
 
         // Get the list of service class IDs
-        sdp_list_t* svClassList;
-        if (sdp_get_service_classes(rec, &svClassList) == NO_ERROR) {
-            for (sdp_list_t* iter = svClassList; iter; iter = iter->next)
+        SDPListPtr svClassList;
+        if (sdp_get_service_classes(rec.get(), std2::out_ptr(svClassList)) == NO_ERROR) {
+            for (sdp_list_t* iter = svClassList.get(); iter; iter = iter->next)
                 result.serviceUUIDs.push_back(uuidLinuxToWindows(*static_cast<uuid_t*>(iter->data)));
-
-            sdp_list_free(svClassList, nullptr);
         }
 
         // Get the list of profile descriptors
-        sdp_list_t* profileDescList;
-        if (sdp_get_profile_descs(rec, &profileDescList) == NO_ERROR) {
-            for (sdp_list_t* iter = profileDescList; iter; iter = iter->next) {
+        SDPListPtr profileDescList;
+        if (sdp_get_profile_descs(rec.get(), std2::out_ptr(profileDescList)) == NO_ERROR) {
+            for (sdp_list_t* iter = profileDescList.get(); iter; iter = iter->next) {
                 sdp_profile_desc_t* desc = static_cast<sdp_profile_desc_t*>(iter->data);
 
                 // Extract information
@@ -511,8 +498,6 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
 
                 result.profileDescs.push_back(pd);
             }
-
-            sdp_list_free(profileDescList, nullptr);
         }
 
         // Allocate 1 kb for name/desc strings
@@ -523,17 +508,12 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
         // Get the relevant strings
         // (Clear a string field if it can't be retreived to ensure it's empty)
         // TODO: Change code to resize strings so trailing null terminators are removed
-        if (sdp_get_service_name(rec, result.name.data(), strBufLen) == SOCKET_ERROR) result.name.clear();
-        if (sdp_get_service_desc(rec, result.desc.data(), strBufLen) == SOCKET_ERROR) result.desc.clear();
+        if (sdp_get_service_name(rec.get(), result.name.data(), strBufLen) == SOCKET_ERROR) result.name.clear();
+        if (sdp_get_service_desc(rec.get(), result.desc.data(), strBufLen) == SOCKET_ERROR) result.desc.clear();
 
-        // Add to return vector, then free SDP record
+        // Add to return vector
         ret.push_back(result);
-        sdp_record_free(rec);
     }
-
-    sdp_list_free(responseList, nullptr);
-    sdp_list_free(searchList, nullptr);
-    sdp_list_free(attridList, nullptr);
 #endif
 
     // Return result
