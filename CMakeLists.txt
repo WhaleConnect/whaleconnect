@@ -38,7 +38,7 @@ add_executable(terminal WIN32
     "src/util/imguiext.cpp"
     "src/util/strings.cpp")
 
-target_include_directories(terminal PRIVATE src)
+target_include_directories(terminal PRIVATE src stdcompat)
 
 # Libraries (installed with vcpkg)
 find_package(imgui CONFIG REQUIRED)
