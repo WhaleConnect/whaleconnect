@@ -24,6 +24,7 @@
 static DBusConnection* conn = nullptr;
 #endif
 
+#include "compat/outptr.hpp"
 #include "sys/errcheck.hpp"
 #include "sys/handleptr.hpp"
 
@@ -337,18 +338,15 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
     if (flushCache) flags |= LUP_FLUSHCACHE;
 
     // Start the lookup
-    HANDLE lookup = nullptr;
+    HandlePtr<void, &WSALookupServiceEnd> lookup;
 
     try {
-        CALL_EXPECT_NONERROR(WSALookupServiceBegin, &wsaQuery, flags, &lookup);
+        CALL_EXPECT_NONERROR(WSALookupServiceBegin, &wsaQuery, flags, std2::out_ptr(lookup));
     } catch (const System::SystemError& error) {
         if (error.code == WSASERVICE_NOT_FOUND) return {}; // No services found
 
         throw;
     }
-
-    // Create the wrapper pointer for RAII
-    HandlePtr<void, &WSALookupServiceEnd> lookupPtr{ lookup };
 
     // Continue the lookup
     DWORD size = 2048;
@@ -358,7 +356,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
     wsaResults->dwNameSpace = NS_BTH;
 
     // Get various service information
-    while (WSALookupServiceNext(lookup, flags, &size, wsaResults) == NO_ERROR) {
+    while (WSALookupServiceNext(lookup.get(), flags, &size, wsaResults) == NO_ERROR) {
         SDPResult result;
 
         // The name and description

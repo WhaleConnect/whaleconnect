@@ -22,6 +22,7 @@
 #endif
 
 #include "sockets.hpp"
+#include "compat/outptr.hpp"
 #include "sys/errcheck.hpp"
 #include "sys/handleptr.hpp"
 #include "util/strings.hpp"
@@ -169,14 +170,9 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
         Strings::SysStr portWide = Strings::toSys(data.port);
 
         // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
-        ADDRINFOW* addr = nullptr;
+        HandlePtr<ADDRINFOW, &FreeAddrInfo> addr;
         CALL_EXPECT_ZERO_RC_ERROR_TYPE(GetAddrInfo, System::ErrorType::AddrInfo,
-                                       addrWide.c_str(), portWide.c_str(), &hints, &addr);
-
-        // Create the wrapping pointer for automatic memory management (RAII)
-        // The raw pointer is created first, then passed to this smart pointer for ownership.
-        // This is because we supply the pointer for GetAddrInfo() to populate, rather than it returning one it created.
-        HandlePtr<ADDRINFOW, &FreeAddrInfo> addrPtr{ addr };
+                                       addrWide.c_str(), portWide.c_str(), &hints, std2::out_ptr(addr));
 
         // Initialize socket
         Socket ret{ CALL_EXPECT_NONERROR(socket, addr->ai_family, addr->ai_socktype, addr->ai_protocol) };
