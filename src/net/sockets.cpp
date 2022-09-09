@@ -24,7 +24,6 @@
 #include "sockets.hpp"
 #include "sys/errcheck.hpp"
 #include "sys/handleptr.hpp"
-#include "util/formatcompat.hpp"
 #include "util/strings.hpp"
 
 #ifdef _WIN32

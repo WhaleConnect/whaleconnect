@@ -16,7 +16,7 @@
 #include <imgui.h>
 
 #include "app/settings.hpp"
-#include "util/formatcompat.hpp"
+#include "compat/format.hpp"
 
 /**
  * @brief A class to represent a text panel with an input textbox.

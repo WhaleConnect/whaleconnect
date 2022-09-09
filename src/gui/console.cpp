@@ -12,7 +12,7 @@
 #include "console.hpp"
 #include "util/strings.hpp"
 #include "util/imguiext.hpp"
-#include "util/formatcompat.hpp"
+#include "compat/format.hpp"
 
 void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
     // Don't add an empty string
@@ -23,7 +23,7 @@ void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
 #if __cpp_lib_chrono >= 201803L
     using namespace std::chrono;
 
-    std::string timestamp = std::format("{:%T} >", current_zone()->to_local(system_clock::now()));
+    std::string timestamp = std2::format("{:%T} >", current_zone()->to_local(system_clock::now()));
 #else
     std::string timestamp;
 #endif
@@ -179,6 +179,6 @@ void Console::addText(std::string_view s, std::string_view pre, const ImVec4& co
         // Otherwise, there are more lines after, add a newline so subsequent lines are independent of this one.
         auto end = (s.begin() + endIdx == s.end()) ? "" : "\n";
 
-        _add(std::format("{}{}{}", pre, std::string_view{ i }, end), color, canUseHex);
+        _add(std2::format("{}{}{}", pre, std::string_view{ i }, end), color, canUseHex);
     }
 }

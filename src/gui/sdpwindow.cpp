@@ -5,7 +5,7 @@
 
 #include "sdpwindow.hpp"
 #include "connwindow.hpp"
-#include "util/formatcompat.hpp"
+#include "compat/format.hpp"
 #include "util/imguiext.hpp"
 #include "util/overload.hpp"
 
@@ -161,7 +161,7 @@ void SDPWindow::_drawManualTab() {
     ImGui::SetNextItemWidth(100);
     ImGui::InputScalar("Port", _port, 1, 10);
 
-    _drawConnOptions(std::format("Port {}", _port));
+    _drawConnOptions(std2::format("Port {}", _port));
     ImGui::EndTabItem();
 }
 

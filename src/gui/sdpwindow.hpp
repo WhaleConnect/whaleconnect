@@ -20,7 +20,7 @@
 #include "net/sockets.hpp"
 #include "net/btutils.hpp"
 #include "sys/error.hpp"
-#include "util/formatcompat.hpp"
+#include "compat/format.hpp"
 
 /**
  * @brief A class to handle an SDP inquiry in a GUI window.
@@ -82,6 +82,6 @@ public:
      * @param list The list of @p ConnWindow objects to add to with a new connection
     */
     SDPWindow(const Sockets::DeviceData& target, const UUIDMap& uuids, WindowList& list)
-        : Window(std::format("Connect To {}##{}", target.name, target.address), { 450, 250 }), _target(target),
+        : Window(std2::format("Connect To {}##{}", target.name, target.address), { 450, 250 }), _target(target),
         _uuids(uuids), _selectedUUID(_uuids.begin()->first), _list(list) {}
 };

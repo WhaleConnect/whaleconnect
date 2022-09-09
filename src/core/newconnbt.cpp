@@ -14,7 +14,6 @@
 #include "gui/windowlist.hpp"
 #include "net/btutils.hpp"
 #include "net/sockets.hpp"
-#include "util/formatcompat.hpp"
 #include "util/imguiext.hpp"
 #include "util/overload.hpp"
 

@@ -104,6 +104,7 @@ if (BUILD_DOCS)
     set(DOXYGEN_PROJECT_BRIEF "Cross-platform network communication software")
     set(DOXYGEN_STRIP_FROM_PATH src)
     set(DOXYGEN_STRIP_FROM_INC_PATH src)
+    set(DOXYGEN_EXCLUDE src/compat)
 
     set(DOXYGEN_FORCE_LOCAL_INCLUDES YES)
     set(DOXYGEN_SORT_MEMBERS_CTORS_1ST YES)

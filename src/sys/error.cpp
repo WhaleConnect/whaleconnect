@@ -11,7 +11,7 @@
 #include <magic_enum_format.hpp>
 
 #include "error.hpp"
-#include "util/formatcompat.hpp"
+#include "compat/format.hpp"
 
 template <>
 constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(System::ErrorType value) noexcept {
@@ -37,7 +37,7 @@ std::string System::SystemError::formatted() const {
     auto msg = (type == ErrorType::System) ? strerrordesc_np(code) : gai_strerror(code);
 #endif
 
-    return std::format("{} (type {}, in {}): {}", code, type, fnName, msg);
+    return std2::format("{} (type {}, in {}): {}", code, type, fnName, msg);
 }
 
 System::ErrorCode System::getLastError() {

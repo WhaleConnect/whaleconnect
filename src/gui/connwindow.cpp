@@ -8,7 +8,7 @@
 #include "app/settings.hpp"
 #include "net/sockets.hpp"
 #include "sys/error.hpp"
-#include "util/formatcompat.hpp"
+#include "compat/format.hpp"
 #include "util/strings.hpp"
 
 template <>
@@ -45,12 +45,12 @@ static std::string formatDeviceData(const Sockets::DeviceData& data, std::string
     // The address is always part of the id hash.
     // The port is not visible for a Bluetooth connection, instead, it is part of the id hash.
     std::string title = isBluetooth
-        ? std::format("{} Connection - {}##{} port {}", data.type, deviceString, data.address, data.port)
-        : std::format("{} Connection - {} port {}##{}", data.type, deviceString, data.port, data.address);
+        ? std2::format("{} Connection - {}##{} port {}", data.type, deviceString, data.address, data.port)
+        : std2::format("{} Connection - {} port {}##{}", data.type, deviceString, data.port, data.address);
 
     // If there's extra info, it is formatted before the window title.
     // If it were to be put after the title, it would be part of the invisible id hash (after the "##").
-    return extraInfo.empty() ? title : std::format("({}) {}", extraInfo, title);
+    return extraInfo.empty() ? title : std2::format("({}) {}", extraInfo, title);
 }
 
 ConnWindow::ConnWindow(const Sockets::DeviceData& data, std::string_view extraInfo)

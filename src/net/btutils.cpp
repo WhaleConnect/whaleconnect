@@ -7,12 +7,11 @@
 #include "sockets.hpp"
 
 #ifdef _WIN32
-#include <format>
-
 #include <WinSock2.h>
 #include <ws2bth.h>
 #include <bluetoothapis.h>
 
+#include "compat/format.hpp"
 #include "util/strings.hpp"
 #else
 #include <cstring> // std::memcpy()
@@ -83,7 +82,7 @@ Sockets::DeviceDataList BTUtils::getPaired() {
     do {
         // Format address byte array into MAC address
         const BYTE* addr = deviceInfo.Address.rgBytes;
-        std::string mac = std::format("{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
+        std::string mac = std2::format("{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
                                       addr[5], addr[4], addr[3], addr[2], addr[1], addr[0]);
 
         // Get the name of the device
