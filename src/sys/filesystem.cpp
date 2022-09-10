@@ -14,5 +14,7 @@ fs::path System::getProgramDir() {
     std::wstring path(_MAX_PATH, '\0');
     GetModuleFileName(nullptr, path.data(), static_cast<DWORD>(path.size()));
     return fs::path{ Strings::fromSys(path) }.parent_path();
+#else
+    return {}; // TODO: Implement function
 #endif
 }

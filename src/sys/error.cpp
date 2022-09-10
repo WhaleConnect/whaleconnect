@@ -5,6 +5,8 @@
 #include <WinSock2.h>
 #else
 #include <cerrno> // errno
+
+#include <netdb.h> // gai_strerror()
 #endif
 
 #include <magic_enum.hpp>

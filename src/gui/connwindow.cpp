@@ -97,9 +97,11 @@ Task<> ConnWindow::_readHandler() try {
 
     _pendingRecv = false;
 } catch (const System::SystemError& error) {
+#ifdef _WIN32
     // Don't handle errors caused by socket closure (this means this object has been destructed)
-    if (error.code != WSA_OPERATION_ABORTED) {
-        std::scoped_lock outputLock{ _outputMutex };
-        _errorHandler(error);
-    }
+    if (error.code == WSA_OPERATION_ABORTED) return;
+#endif
+
+    std::scoped_lock outputLock{ _outputMutex };
+    _errorHandler(error);
 }
