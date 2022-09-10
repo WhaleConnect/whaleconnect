@@ -55,7 +55,7 @@ void Sockets::init() {
 #ifdef _WIN32
     // Start Winsock on Windows
     WSADATA wsaData{};
-    EXPECT_ZERO_RC_ERROR(WSAStartup, MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
+    EXPECT_ZERO_RC(WSAStartup, MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
 #endif
 
     Async::init();
@@ -166,8 +166,8 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
 
         // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
         HandlePtr<ADDRINFOW, FreeAddrInfo> addr;
-        EXPECT_ZERO_RC_ERROR_TYPE(GetAddrInfo, System::ErrorType::AddrInfo, addrWide.c_str(), portWide.c_str(), &hints,
-                                  std2::out_ptr(addr));
+        EXPECT_ZERO_RC_TYPE(GetAddrInfo, System::ErrorType::AddrInfo, addrWide.c_str(), portWide.c_str(), &hints,
+                            std2::out_ptr(addr));
 
         // Initialize socket
         Socket ret{ EXPECT_NONERROR(socket, addr->ai_family, addr->ai_socktype, addr->ai_protocol) };

@@ -244,7 +244,7 @@ static std::vector<SDP_ELEMENT_DATA> getSDPListData(const LPBLOB blob, USHORT at
 
     // Get the list data by reading from the blob (the SDP stream)
     SDP_ELEMENT_DATA element{};
-    EXPECT_ZERO_RC_ERROR(BluetoothSdpGetAttributeValue, blob->pBlobData, blob->cbSize, attrib, &element);
+    EXPECT_ZERO_RC(BluetoothSdpGetAttributeValue, blob->pBlobData, blob->cbSize, attrib, &element);
     return getSDPListData(element);
 }
 #else
