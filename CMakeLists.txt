@@ -34,13 +34,13 @@ add_executable(terminal WIN32
 target_include_directories(terminal PRIVATE src bindings)
 
 # Libraries (installed with Conan)
-find_package(imgui REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(fmt REQUIRED)
-find_package(magic_enum REQUIRED)
+find_package(imgui CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(magic_enum CONFIG REQUIRED)
 
-find_package(liburing)
-find_package(out_ptr)
+find_package(liburing CONFIG)
+find_package(out_ptr CONFIG)
 
 # Dear ImGui backend files
 add_library(imguiBackends STATIC
@@ -50,11 +50,12 @@ add_library(imguiBackends STATIC
 target_link_libraries(imguiBackends PUBLIC imgui::imgui glfw)
 target_link_libraries(terminal PRIVATE imguiBackends fmt::fmt magic_enum::magic_enum)
 
-if (LIBURING_FOUND)
+# Check for additional package presence by looking for their version strings
+if (DEFINED liburing_VERSION_STRING)
     target_link_libraries(terminal PRIVATE liburing::liburing)
 endif()
 
-if (OUT_PTR_FOUND)
+if (DEFINED out_ptr_VERSION_STRING)
     target_link_libraries(terminal PRIVATE out_ptr::out_ptr)
 endif()
 
