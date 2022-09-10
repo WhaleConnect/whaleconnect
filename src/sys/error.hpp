@@ -12,6 +12,10 @@
 #include <string_view>
 #include <stdexcept>
 
+#ifdef _WIN32
+#include <WinSock2.h>
+#endif
+
 // Error status codes
 #ifndef _WIN32
 constexpr auto INVALID_SOCKET = -1; /**< An invalid socket descriptor */
