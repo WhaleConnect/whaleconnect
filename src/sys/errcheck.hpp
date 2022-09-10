@@ -43,43 +43,43 @@ CALL_WITH_DEFAULT_TYPE(CALL_SYSTEM_FUNCTION_TYPE, f, successCheck, __VA_ARGS__)
 /**
  * @brief Throws if the return code is not true. The exception's error type can be set.
 */
-#define CALL_EXPECT_TRUE_TYPE(f, type, ...) CALL_SYSTEM_FUNCTION_TYPE(f, type, rc, __VA_ARGS__)
+#define EXPECT_TRUE_TYPE(f, type, ...) CALL_SYSTEM_FUNCTION_TYPE(f, type, rc, __VA_ARGS__)
 
 /**
  * @brief Throws if the return code is not true.
 */
-#define CALL_EXPECT_TRUE(f, ...) CALL_WITH_DEFAULT_TYPE(CALL_EXPECT_TRUE_TYPE, f, __VA_ARGS__)
+#define EXPECT_TRUE(f, ...) CALL_WITH_DEFAULT_TYPE(EXPECT_TRUE_TYPE, f, __VA_ARGS__)
 
 /**
  * @brief Throws if the return code is not zero. The exception's error type can be set.
 */
-#define CALL_EXPECT_ZERO_TYPE(f, type, ...) CALL_SYSTEM_FUNCTION_TYPE(f, type, rc == NO_ERROR, __VA_ARGS__)
+#define EXPECT_ZERO_TYPE(f, type, ...) CALL_SYSTEM_FUNCTION_TYPE(f, type, rc == NO_ERROR, __VA_ARGS__)
 
 /**
  * @brief Throws if the return code is not zero.
 */
-#define CALL_EXPECT_ZERO(f, ...) CALL_WITH_DEFAULT_TYPE(CALL_EXPECT_ZERO_TYPE, f, __VA_ARGS__)
+#define EXPECT_ZERO(f, ...) CALL_WITH_DEFAULT_TYPE(EXPECT_ZERO_TYPE, f, __VA_ARGS__)
 
 /**
  * @brief Throws if the return code is equal to @p SOCKET_ERROR. The exception's error type can be set.
 */
-#define CALL_EXPECT_NONERROR_TYPE(f, type, ...) CALL_SYSTEM_FUNCTION_TYPE(f, type, rc != SOCKET_ERROR, __VA_ARGS__)
+#define EXPECT_NONERROR_TYPE(f, type, ...) CALL_SYSTEM_FUNCTION_TYPE(f, type, rc != SOCKET_ERROR, __VA_ARGS__)
 
 /**
  * @brief Throws if the return code is equal to @p SOCKET_ERROR.
 */
-#define CALL_EXPECT_NONERROR(f, ...) CALL_WITH_DEFAULT_TYPE(CALL_EXPECT_NONERROR_TYPE, f, __VA_ARGS__)
+#define EXPECT_NONERROR(f, ...) CALL_WITH_DEFAULT_TYPE(EXPECT_NONERROR_TYPE, f, __VA_ARGS__)
 
 /**
  * @brief Throws if the return code is not true. The exception's error type can be set.
  *
  * The exception's error value will be set to the function's return value.
 */
-#define CALL_EXPECT_ZERO_RC_ERROR_TYPE(f, type, ...) CALL_SYSTEM_FUNCTION_BASE(f, type, rc == NO_ERROR, rc, __VA_ARGS__)
+#define EXPECT_ZERO_RC_ERROR_TYPE(f, type, ...) CALL_SYSTEM_FUNCTION_BASE(f, type, rc == NO_ERROR, rc, __VA_ARGS__)
 
 /**
  * @brief Throws if the return code is not true.
  *
  * The exception's error value will be set to the function's return value.
 */
-#define CALL_EXPECT_ZERO_RC_ERROR(f, ...) CALL_WITH_DEFAULT_TYPE(CALL_EXPECT_ZERO_RC_ERROR_TYPE, f, __VA_ARGS__)
+#define EXPECT_ZERO_RC_ERROR(f, ...) CALL_WITH_DEFAULT_TYPE(EXPECT_ZERO_RC_ERROR_TYPE, f, __VA_ARGS__)

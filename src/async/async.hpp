@@ -35,7 +35,7 @@ namespace Async {
          * @brief Gets the return code of the asynchronous function.
          * @return The return code
          *
-         * This is provided for compatibility with the @p CALL_EXPECT_* macros in @p errcheck.hpp.
+         * This is provided for compatibility with the @p EXPECT_* macros in @p errcheck.hpp.
         */
         System::ErrorCode errorResult() const { return error; }
 

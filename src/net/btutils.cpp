@@ -34,7 +34,7 @@ void BTUtils::init() {
     Sockets::init();
 #else
     // Connect to the system D-Bus
-    conn = CALL_EXPECT_TRUE(dbus_bus_get, DBUS_BUS_SYSTEM, nullptr);
+    conn = EXPECT_TRUE(dbus_bus_get, DBUS_BUS_SYSTEM, nullptr);
 
     // The process will exit when a connection with dbus_bus_get closes.
     // The function below will undo this behavior:
@@ -72,7 +72,7 @@ Sockets::DeviceDataList BTUtils::getPaired() {
     HBLUETOOTH_DEVICE_FIND foundDevice;
 
     try {
-        foundDevice = CALL_EXPECT_TRUE(BluetoothFindFirstDevice, &searchCriteria, &deviceInfo);
+        foundDevice = EXPECT_TRUE(BluetoothFindFirstDevice, &searchCriteria, &deviceInfo);
     } catch (const System::SystemError& error) {
         if (error.code == ERROR_NO_MORE_ITEMS) return {}; // No paired devices
 
@@ -96,11 +96,11 @@ Sockets::DeviceDataList BTUtils::getPaired() {
     // Set up the method call
     using MessagePtr = HandlePtr<DBusMessage, dbus_message_unref>;
 
-    MessagePtr msg{ CALL_EXPECT_TRUE(dbus_message_new_method_call, "org.bluez", "/",
-                                     "org.freedesktop.DBus.ObjectManager", "GetManagedObjects") };
+    MessagePtr msg{ EXPECT_TRUE(dbus_message_new_method_call, "org.bluez", "/", "org.freedesktop.DBus.ObjectManager",
+                                "GetManagedObjects") };
 
-    MessagePtr response{ CALL_EXPECT_TRUE(dbus_connection_send_with_reply_and_block, conn, msg.get(),
-                                          DBUS_TIMEOUT_USE_DEFAULT, nullptr) };
+    MessagePtr response{ EXPECT_TRUE(dbus_connection_send_with_reply_and_block, conn, msg.get(),
+                                     DBUS_TIMEOUT_USE_DEFAULT, nullptr) };
 
     DBusMessageIter responseIter;
     dbus_message_iter_init(response.get(), &responseIter);
@@ -244,7 +244,7 @@ static std::vector<SDP_ELEMENT_DATA> getSDPListData(const LPBLOB blob, USHORT at
 
     // Get the list data by reading from the blob (the SDP stream)
     SDP_ELEMENT_DATA element{};
-    CALL_EXPECT_ZERO_RC_ERROR(BluetoothSdpGetAttributeValue, blob->pBlobData, blob->cbSize, attrib, &element);
+    EXPECT_ZERO_RC_ERROR(BluetoothSdpGetAttributeValue, blob->pBlobData, blob->cbSize, attrib, &element);
     return getSDPListData(element);
 }
 #else
@@ -340,7 +340,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
     HandlePtr<void, WSALookupServiceEnd> lookup;
 
     try {
-        CALL_EXPECT_NONERROR(WSALookupServiceBegin, &wsaQuery, flags, std2::out_ptr(lookup));
+        EXPECT_NONERROR(WSALookupServiceBegin, &wsaQuery, flags, std2::out_ptr(lookup));
     } catch (const System::SystemError& error) {
         if (error.code == WSASERVICE_NOT_FOUND) return {}; // No services found
 
@@ -427,7 +427,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
     // Initialize SDP session
     // We can't directly pass BDADDR_ANY to sdp_connect() because a "taking the address of an rvalue" error is thrown.
     bdaddr_t addrAny{};
-    HandlePtr<sdp_session_t, sdp_close> session{ CALL_EXPECT_TRUE(sdp_connect, &addrAny, &bdAddr, SDP_RETRY_IF_BUSY) };
+    HandlePtr<sdp_session_t, sdp_close> session{ EXPECT_TRUE(sdp_connect, &addrAny, &bdAddr, SDP_RETRY_IF_BUSY) };
 
     uuid_t serviceUUID = uuidWindowsToLinux(uuid);
 
@@ -438,8 +438,8 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
     uint32_t range = 0x0000FFFF;
     SDPListPtr attridList{ sdp_list_append(nullptr, &range) };
 
-    CALL_EXPECT_NONERROR(sdp_service_search_attr_req, session.get(), searchList.get(), SDP_ATTR_REQ_RANGE,
-                         attridList.get(), std2::out_ptr(responseList));
+    EXPECT_NONERROR(sdp_service_search_attr_req, session.get(), searchList.get(), SDP_ATTR_REQ_RANGE, attridList.get(),
+                    std2::out_ptr(responseList));
 
     // Iterate through each of the service records
     for (sdp_list_t* r = responseList.get(); r; r = r->next) {

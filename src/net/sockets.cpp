@@ -55,7 +55,7 @@ void Sockets::init() {
 #ifdef _WIN32
     // Start Winsock on Windows
     WSADATA wsaData{};
-    CALL_EXPECT_ZERO_RC_ERROR(WSAStartup, MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
+    EXPECT_ZERO_RC_ERROR(WSAStartup, MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
 #endif
 
     Async::init();
@@ -66,7 +66,7 @@ void Sockets::cleanup() {
 
 #ifdef _WIN32
     // Cleanup Winsock on Windows
-    CALL_EXPECT_ZERO(WSACleanup);
+    EXPECT_ZERO(WSACleanup);
 #endif
 }
 
@@ -106,7 +106,7 @@ static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, b
 #ifdef _WIN32
     // Datagram sockets can be directly connected (ConnectEx() doesn't support them)
     if (isDgram) {
-        CALL_EXPECT_ZERO(connect, s, addr, addrLen);
+        EXPECT_ZERO(connect, s, addr, addrLen);
         co_return;
     }
 
@@ -121,34 +121,26 @@ static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, b
     int addrSize = (addr->sa_family == AF_BTH) ? sizeof(SOCKADDR_BTH) : sizeof(sockaddr_storage);
 
     // Bind the socket
-    CALL_EXPECT_ZERO(bind, s, reinterpret_cast<sockaddr*>(&addrBind), addrSize);
+    EXPECT_ZERO(bind, s, reinterpret_cast<sockaddr*>(&addrBind), addrSize);
 
     // Load the ConnectEx() function
     LPFN_CONNECTEX connectExPtr = nullptr;
 
     GUID guid = WSAID_CONNECTEX;
     DWORD numBytes = 0;
-    CALL_EXPECT_ZERO(WSAIoctl,
-                     s,
-                     SIO_GET_EXTENSION_FUNCTION_POINTER,
-                     &guid,
-                     sizeof(guid),
-                     &connectExPtr,
-                     sizeof(connectExPtr),
-                     &numBytes,
-                     nullptr,
-                     nullptr);
+    EXPECT_ZERO(WSAIoctl, s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &connectExPtr,
+                sizeof(connectExPtr), &numBytes, nullptr, nullptr);
 
     Async::CompletionResult result{};
     co_await result;
 
     // Call ConnectEx()
-    CALL_EXPECT_TRUE(connectExPtr, s, addr, addrLen, nullptr, 0, nullptr, &result);
+    EXPECT_TRUE(connectExPtr, s, addr, addrLen, nullptr, 0, nullptr, &result);
     co_await std::suspend_always{};
-    CALL_EXPECT_ZERO(result.errorResult);
+    EXPECT_ZERO(result.errorResult);
 
     // Make the socket behave more like a regular socket connected with connect()
-    CALL_EXPECT_ZERO(setsockopt, s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
+    EXPECT_ZERO(setsockopt, s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
 #else
     co_return; // TODO: Implement function
 #endif
@@ -174,11 +166,11 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
 
         // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
         HandlePtr<ADDRINFOW, FreeAddrInfo> addr;
-        CALL_EXPECT_ZERO_RC_ERROR_TYPE(GetAddrInfo, System::ErrorType::AddrInfo,
-                                       addrWide.c_str(), portWide.c_str(), &hints, std2::out_ptr(addr));
+        EXPECT_ZERO_RC_ERROR_TYPE(GetAddrInfo, System::ErrorType::AddrInfo, addrWide.c_str(), portWide.c_str(), &hints,
+                                  std2::out_ptr(addr));
 
         // Initialize socket
-        Socket ret{ CALL_EXPECT_NONERROR(socket, addr->ai_family, addr->ai_socktype, addr->ai_protocol) };
+        Socket ret{ EXPECT_NONERROR(socket, addr->ai_family, addr->ai_socktype, addr->ai_protocol) };
 
         // Connect to the server
         // The cast to socklen_t is only needed on Windows because ai_addrlen is of type size_t.
@@ -188,7 +180,7 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
         co_return std::move(ret);
     } else if (connectionTypeIsBT(data.type)) {
         // Set up Bluetooth socket
-        Socket ret{ CALL_EXPECT_NONERROR(bluetoothSocket, data.type) };
+        Socket ret{ EXPECT_NONERROR(bluetoothSocket, data.type) };
 
         // Set up server address structure
         socklen_t addrSize;
@@ -260,13 +252,13 @@ Task<> Sockets::sendData(SOCKET sockfd, std::string_view data) {
 #ifdef _WIN32
     std::string sendBuf{ data };
     WSABUF buf{ static_cast<ULONG>(sendBuf.size()), sendBuf.data() };
-    CALL_EXPECT_NONERROR(WSASend, sockfd, &buf, 1, nullptr, 0, &result, nullptr);
+    EXPECT_NONERROR(WSASend, sockfd, &buf, 1, nullptr, 0, &result, nullptr);
 #else
     int sendRet = send(sockfd, data.data(), data.size(), MSG_NOSIGNAL);
 #endif
 
     co_await std::suspend_always{};
-    CALL_EXPECT_ZERO(result.errorResult);
+    EXPECT_ZERO(result.errorResult);
 
     // Note: Typically, sendto() and recvfrom() are used with a UDP connection.
     // However, these require a sockaddr parameter, which becomes hard to get with getaddrinfo().
@@ -288,13 +280,13 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
 #ifdef _WIN32
     WSABUF buf{ static_cast<ULONG>(recvBuf.size()), recvBuf.data() };
     DWORD flags = 0;
-    CALL_EXPECT_NONERROR(WSARecv, sockfd, &buf, 1, nullptr, &flags, &result, nullptr);
+    EXPECT_NONERROR(WSARecv, sockfd, &buf, 1, nullptr, &flags, &result, nullptr);
 #else
     int recvRet = recv(sockfd, recvBuf.data(), recvBuf.size(), MSG_NOSIGNAL);
 #endif
 
     co_await std::suspend_always{};
-    CALL_EXPECT_ZERO(result.errorResult);
+    EXPECT_ZERO(result.errorResult);
 
     recvBuf.resize(result.numBytes);
     co_return RecvResult{ result.numBytes, std::move(recvBuf) };

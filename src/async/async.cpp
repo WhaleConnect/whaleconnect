@@ -60,7 +60,7 @@ static void worker() {
 void Async::init() {
 #ifdef _WIN32
     // Initialize IOCP
-    completionPort = CALL_EXPECT_TRUE(CreateIoCompletionPort, INVALID_HANDLE_VALUE, nullptr, 0, numThreads);
+    completionPort = EXPECT_TRUE(CreateIoCompletionPort, INVALID_HANDLE_VALUE, nullptr, 0, numThreads);
 #endif
 
     // Populate thread pool
@@ -83,6 +83,6 @@ void Async::cleanup() {
 void Async::add(SOCKET sockfd) {
 #ifdef _WIN32
     // Create a new handle for the socket
-    CALL_EXPECT_TRUE(CreateIoCompletionPort, reinterpret_cast<HANDLE>(sockfd), completionPort, 0, 0);
+    EXPECT_TRUE(CreateIoCompletionPort, reinterpret_cast<HANDLE>(sockfd), completionPort, 0, 0);
 #endif
 }
