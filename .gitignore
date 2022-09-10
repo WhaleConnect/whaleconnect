@@ -6,4 +6,13 @@ desktop.ini
 
 # Build output
 build/
-vcpkg_installed/
+
+# Conan generated files
+bindings/
+CMakeSettings.json
+CMakeUserPresets.json
+conan_imports_manifest.txt
+conan.lock
+conanbuildinfo.txt
+conaninfo.txt
+graph_info.json

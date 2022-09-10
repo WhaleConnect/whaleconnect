@@ -1,14 +1,21 @@
 # Building Network Socket Terminal
 
-To build NST from source code, you will need CMake, vcpkg, Ninja (if building in VS or VSCode), and an up-to-date compiler. MSVC is recommended on Windows, and GCC is recommended on Linux.
+To build NST from source code, you will need CMake, Conan, Ninja, and an up-to-date compiler. MSVC is recommended on Windows, and GCC is recommended on Linux.
 
-## Integration with vcpkg
+## Integration with Conan
 
-NST uses [vcpkg](https://github.com/microsoft/vcpkg) to manage dependencies. Follow its installation guide if it's not present on your system.
+NST uses [Conan](https://conan.io/) to manage dependencies. Follow its installation guide if it's not present on your system.
 
-Then, create an enviroment variable called `VCPKG_ROOT` and point it to your vcpkg install path (for example, `C:\dev\vcpkg`). This allows the CMake script to know where vcpkg is installed.
+To install the required dependencies, run the following commands in the repository's root directory:
 
-When CMake configures the project, vcpkg should automatically download the required packages.
+```shell
+conan install . --build=missing -s build_type=Debug   # For a Debug build
+conan install . --build=missing -s build_type=Release # For a Release build
+```
+
+If needed, specify a build profile in this step (such as `-pr:b=default`).
+
+Conan will let you know if you need additional packages installed with your system's package manager.
 
 ## Required Linux Packages
 
@@ -16,13 +23,12 @@ You will need to install the following packages (if you're using a Debian-based 
 
 - `libbluetooth-dev` (BlueZ API)
 - `libdbus-1-dev` (D-Bus API)
-- `libgl-dev` (OpenGL API)
 
 TODO: Add package names for pacman and dnf
 
 ## Compiling
 
-This project uses C++23 features, so be sure to update your compiler(s) if needed. Compilation has been tested successfully with the following compilers:
+This project uses C++23 features, so be sure to update your compiler(s) if needed. Compilation is officially supported on the following compilers:
 
 - GCC 12.1+
 - Visual Studio 2022 17.1+
@@ -33,19 +39,22 @@ All code is standards-compliant. However, because it uses a recent C++ revision,
 
 To build NST from the command line, start in the root of the repository and execute the commands below.
 
-If you are building on Windows and are not using the default Visual Studio generator, run these commands in the Visual Studio command prompt.
-
-**Note**: Specify additional configuration options as needed in the `cmake ..` step, such as the build type (`-DCMAKE_BUILD_TYPE=(Debug|Release)`) and generator (`-G (generator name)`).
+If you are building on Windows, run these commands in the Visual Studio command prompt.
 
 ```shell
-mkdir build
+cmake -S . --preset (debug|release)
 cd build
-cmake ..
 cmake --build .
+```
+
+Alternatively, to build in one step with Conan:
+
+```shell
+conan build .
 ```
 
 ## Building Source Documentation
 
 To build the documentation for the source code, you will need [Doxygen](https://www.doxygen.nl).
 
-If it is installed, specify `-DBUILD_DOCS=ON` when configuring CMake. The documentation exports in HTML format in `build/<config>/src-docs`.
+If it is installed, specify `-DBUILD_DOCS=ON` when configuring CMake. The documentation exports in HTML format in `build/src-docs`.

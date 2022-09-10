@@ -8,8 +8,8 @@
     "C_Cpp.doxygen.generateOnType": true,
     "cmake.configureOnOpen": true,
     "cmake.configureOnEdit": true,
-    "cmake.generator": "Ninja",
     "editor.formatOnType": true,
+    "explorer.excludeGitIgnore": true,
     "files.associations": {
         "*.tcc": "cpp",
         "algorithm": "cpp",

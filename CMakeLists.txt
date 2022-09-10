@@ -5,13 +5,6 @@
 
 cmake_minimum_required(VERSION 3.20)
 
-# Toolchain file for vcpkg
-if (DEFINED ENV{VCPKG_ROOT})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
-else()
-    message(FATAL_ERROR "VCPKG_ROOT environment variable not set. See docs/BUILDING.md for details.")
-endif()
-
 project(terminal)
 
 # Generate compilation database for SonarLint
@@ -38,14 +31,32 @@ add_executable(terminal WIN32
     "src/util/imguiext.cpp"
     "src/util/strings.cpp")
 
-target_include_directories(terminal PRIVATE src stdcompat)
+target_include_directories(terminal PRIVATE src bindings)
 
-# Libraries (installed with vcpkg)
-find_package(imgui CONFIG REQUIRED)
-find_package(glfw3 CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
-find_package(magic_enum CONFIG REQUIRED)
-target_link_libraries(terminal PRIVATE imgui::imgui glfw fmt::fmt magic_enum::magic_enum)
+# Libraries (installed with Conan)
+find_package(imgui REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(fmt REQUIRED)
+find_package(magic_enum REQUIRED)
+
+find_package(liburing)
+find_package(out_ptr)
+
+# Dear ImGui backend files
+add_library(imguiBackends STATIC
+    "bindings/imgui_impl_glfw.cpp"
+    "bindings/imgui_impl_opengl3.cpp")
+
+target_link_libraries(imguiBackends PUBLIC imgui::imgui glfw)
+target_link_libraries(terminal PRIVATE imguiBackends fmt::fmt magic_enum::magic_enum)
+
+if (LIBURING_FOUND)
+    target_link_libraries(terminal PRIVATE liburing::liburing)
+endif()
+
+if (OUT_PTR_FOUND)
+    target_link_libraries(terminal PRIVATE out_ptr::out_ptr)
+endif()
 
 # Copy GNU Unifont file next to built executable on post-build
 add_custom_command(TARGET terminal POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
