@@ -8,7 +8,6 @@
 #endif
 
 #include <magic_enum.hpp>
-#include <magic_enum_format.hpp>
 
 #include "error.hpp"
 #include "compat/format.hpp"
@@ -37,7 +36,7 @@ std::string System::SystemError::formatted() const {
     auto msg = (type == ErrorType::System) ? strerrordesc_np(code) : gai_strerror(code);
 #endif
 
-    return std2::format("{} (type {}, in {}): {}", code, type, fnName, msg);
+    return std2::format("{} (type {}, in {}): {}", code, magic_enum::enum_name(type), fnName, msg);
 }
 
 System::ErrorCode System::getLastError() {

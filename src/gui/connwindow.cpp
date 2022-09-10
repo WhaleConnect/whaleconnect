@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <magic_enum.hpp>
-#include <magic_enum_format.hpp>
 
 #include "connwindow.hpp"
 #include "app/settings.hpp"
@@ -31,6 +30,7 @@ constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(So
 static std::string formatDeviceData(const Sockets::DeviceData& data, std::string_view extraInfo) {
     // Type of the connection
     bool isBluetooth = Sockets::connectionTypeIsBT(data.type);
+    auto typeString = magic_enum::enum_name(data.type);
 
     // Bluetooth connections are described using the device's name (e.g. "MyESP32"),
     // IP-based connections use the device's IP address (e.g. 192.168.0.178).
@@ -45,8 +45,8 @@ static std::string formatDeviceData(const Sockets::DeviceData& data, std::string
     // The address is always part of the id hash.
     // The port is not visible for a Bluetooth connection, instead, it is part of the id hash.
     std::string title = isBluetooth
-        ? std2::format("{} Connection - {}##{} port {}", data.type, deviceString, data.address, data.port)
-        : std2::format("{} Connection - {} port {}##{}", data.type, deviceString, data.port, data.address);
+        ? std2::format("{} Connection - {}##{} port {}", typeString, deviceString, data.address, data.port)
+        : std2::format("{} Connection - {} port {}##{}", typeString, deviceString, data.port, data.address);
 
     // If there's extra info, it is formatted before the window title.
     // If it were to be put after the title, it would be part of the invisible id hash (after the "##").
