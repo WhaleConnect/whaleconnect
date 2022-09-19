@@ -3,18 +3,24 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#else
+#include <limits.h>
+#include <unistd.h>
 
-#include "util/strings.hpp"
+#include "errcheck.hpp"
 #endif
 
 #include "filesystem.hpp"
+#include "util/strings.hpp"
 
 fs::path System::getProgramDir() {
 #ifdef _WIN32
     std::wstring path(_MAX_PATH, '\0');
     GetModuleFileName(nullptr, path.data(), static_cast<DWORD>(path.size()));
-    return fs::path{ Strings::fromSys(path) }.parent_path();
 #else
-    return {}; // TODO: Implement function
+    std::string path(PATH_MAX, '\0');
+    EXPECT_NONERROR(readlink, "/proc/self/exe", path.data(), path.size());
 #endif
+
+    return fs::path{ Strings::fromSys(path) }.parent_path();
 }
