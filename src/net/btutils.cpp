@@ -293,10 +293,10 @@ static UUID uuidLinuxToWindows(const uuid_t& uuid) {
         std::memcpy(&ret.Data3, data128 + 6, 2);
         std::memcpy(&ret.Data4, data128 + 8, 8);
 
-        // Make the necessary host byte => network byte ordering conversion
-        ret.Data1 = htonl(ret.Data1);
-        ret.Data2 = htons(ret.Data2);
-        ret.Data3 = htons(ret.Data3);
+        // Make the necessary network byte => host byte ordering conversion
+        ret.Data1 = ntohl(ret.Data1);
+        ret.Data2 = ntohs(ret.Data2);
+        ret.Data3 = ntohs(ret.Data3);
 
         return ret;
     }
