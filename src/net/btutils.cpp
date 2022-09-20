@@ -29,13 +29,12 @@ static DBusConnection* conn = nullptr;
 #include "sys/handleptr.hpp"
 
 void BTUtils::init() {
-#ifdef _WIN32
-    // Initialize Winsock
     Sockets::init();
-#else
+
     // Connect to the system D-Bus
     conn = EXPECT_TRUE(dbus_bus_get, DBUS_BUS_SYSTEM, nullptr);
 
+#ifndef _WIN32
     // The process will exit when a connection with dbus_bus_get closes.
     // The function below will undo this behavior:
     dbus_connection_set_exit_on_disconnect(conn, FALSE);
@@ -43,9 +42,9 @@ void BTUtils::init() {
 }
 
 void BTUtils::cleanup() {
-#ifdef _WIN32
     Sockets::cleanup();
-#else
+
+#ifndef _WIN32
     // Shut down the connection
     dbus_connection_unref(conn);
     conn = nullptr;
@@ -94,13 +93,13 @@ Sockets::DeviceDataList BTUtils::getPaired() {
     } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
 #else
     // Set up the method call
-    using MessagePtr = HandlePtr<DBusMessage, dbus_message_unref>;
+    using MsgPtr = HandlePtr<DBusMessage, dbus_message_unref>;
 
-    MessagePtr msg{ EXPECT_TRUE(dbus_message_new_method_call, "org.bluez", "/", "org.freedesktop.DBus.ObjectManager",
-                                "GetManagedObjects") };
+    MsgPtr msg{ EXPECT_TRUE(dbus_message_new_method_call, "org.bluez", "/", "org.freedesktop.DBus.ObjectManager",
+                            "GetManagedObjects") };
 
-    MessagePtr response{ EXPECT_TRUE(dbus_connection_send_with_reply_and_block, conn, msg.get(),
-                                     DBUS_TIMEOUT_USE_DEFAULT, nullptr) };
+    MsgPtr response{ EXPECT_TRUE(dbus_connection_send_with_reply_and_block, conn, msg.get(), DBUS_TIMEOUT_USE_DEFAULT,
+                                 nullptr) };
 
     DBusMessageIter responseIter;
     dbus_message_iter_init(response.get(), &responseIter);
