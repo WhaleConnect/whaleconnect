@@ -10,7 +10,12 @@
 
 #include <coroutine>
 
-#include "net/sockets.hpp"
+#ifdef _WIN32
+#include <WinSock2.h>
+#else
+#include <liburing.h>
+#endif
+
 #include "sys/error.hpp"
 
 namespace Async {
@@ -71,9 +76,22 @@ namespace Async {
     */
     void cleanup();
 
+#ifdef _WIN32
     /**
      * @brief Adds a socket to the I/O queue.
      * @param sockfd The socket file descriptor
     */
     void add(SOCKET sockfd);
+#else
+    /**
+     * @brief Gets a submission queue entry from io_uring.
+     * @return A pointer to the entry
+     */
+    io_uring_sqe* getUringSQE();
+
+    /**
+     * @brief Submits entries into the io_uring submission queue.
+     */
+    void submitRing();
+#endif
 }

@@ -15,6 +15,8 @@
 #include <bluetooth/rfcomm.h>
 #include <bluetooth/l2cap.h>
 
+#include <liburing.h>
+
 #include <netinet/in.h> // sockaddr
 #include <sys/socket.h> // Socket definitions
 #include <unistd.h> // close()
@@ -100,10 +102,13 @@ static SOCKET bluetoothSocket(Sockets::ConnectionType type) {
 }
 
 static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, bool isDgram) {
+    Async::CompletionResult result{};
+    co_await result;
+
+#ifdef _WIN32
     // Add the socket to the async queue
     Async::add(s);
 
-#ifdef _WIN32
     // Datagram sockets can be directly connected (ConnectEx() doesn't support them)
     if (isDgram) {
         EXPECT_ZERO(connect, s, addr, addrLen);
@@ -131,9 +136,6 @@ static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, b
     EXPECT_ZERO(WSAIoctl, s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &connectExPtr,
                 sizeof(connectExPtr), &numBytes, nullptr, nullptr);
 
-    Async::CompletionResult result{};
-    co_await result;
-
     // Call ConnectEx()
     EXPECT_TRUE(connectExPtr, s, addr, addrLen, nullptr, 0, nullptr, &result);
     co_await std::suspend_always{};
@@ -142,7 +144,13 @@ static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, b
     // Make the socket behave more like a regular socket connected with connect()
     EXPECT_ZERO(setsockopt, s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
 #else
-    co_return; // TODO: Implement function
+    io_uring_sqe *sqe = Async::getUringSQE();
+    io_uring_prep_connect(sqe, s, addr, addrLen);
+    io_uring_sqe_set_data(sqe, &result);
+    Async::submitRing();
+
+    co_await std::suspend_always{};
+    EXPECT_ZERO(result.errorResult);
 #endif
 }
 
@@ -254,7 +262,10 @@ Task<> Sockets::sendData(SOCKET sockfd, std::string_view data) {
     WSABUF buf{ static_cast<ULONG>(sendBuf.size()), sendBuf.data() };
     EXPECT_NONERROR(WSASend, sockfd, &buf, 1, nullptr, 0, &result, nullptr);
 #else
-    int sendRet = send(sockfd, data.data(), data.size(), MSG_NOSIGNAL);
+    io_uring_sqe* sqe = Async::getUringSQE();
+    io_uring_prep_send(sqe, sockfd, data.data(), data.size(), MSG_NOSIGNAL);
+    io_uring_sqe_set_data(sqe, &result);
+    Async::submitRing();
 #endif
 
     co_await std::suspend_always{};
@@ -282,7 +293,10 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
     DWORD flags = 0;
     EXPECT_NONERROR(WSARecv, sockfd, &buf, 1, nullptr, &flags, &result, nullptr);
 #else
-    int recvRet = recv(sockfd, recvBuf.data(), recvBuf.size(), MSG_NOSIGNAL);
+    io_uring_sqe* sqe = Async::getUringSQE();
+    io_uring_prep_recv(sqe, sockfd, recvBuf.data(), recvBuf.size(), MSG_NOSIGNAL);
+    io_uring_sqe_set_data(sqe, &result);
+    Async::submitRing();
 #endif
 
     co_await std::suspend_always{};
