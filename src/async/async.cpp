@@ -130,6 +130,7 @@ void Async::cleanup() {
     for ([[maybe_unused]] const auto& _ : workerThreadPool) {
         // Submit a no-op to the queue to get the waiting call terminated
         io_uring_sqe* sqe = getUringSQE();
+        sqe->user_data = ASYNC_INTERRUPT;
         io_uring_prep_nop(sqe);
     }
     submitRing();
