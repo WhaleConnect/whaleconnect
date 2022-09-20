@@ -61,7 +61,7 @@ endif()
 
 # Copy GNU Unifont file next to built executable on post-build
 add_custom_command(TARGET terminal POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-    ${CMAKE_SOURCE_DIR}/unifont/unifont-14.0.04.otf
+    ${CMAKE_SOURCE_DIR}/unifont/unifont-15.0.01.otf
     $<TARGET_FILE_DIR:terminal>/unifont.otf)
 
 # Compiler-dependent options
