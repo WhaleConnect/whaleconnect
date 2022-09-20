@@ -78,7 +78,7 @@
 /**
  * @brief See behavior for @p EXPECT_ZERO_RC_TYPE.
 */
-#define EXPECT_ZERO_RC(f, ...) CALL_WITH_DEFAULT_TYPE(EXPECT_ZERO_RC_ERROR_TYPE, f, __VA_ARGS__)
+#define EXPECT_ZERO_RC(f, ...) CALL_WITH_DEFAULT_TYPE(EXPECT_ZERO_RC_TYPE, f, __VA_ARGS__)
 
 /**
  * @brief Throws if the return code is negative. The exception's error type can be set.

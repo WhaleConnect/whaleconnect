@@ -31,10 +31,10 @@ static DBusConnection* conn = nullptr;
 void BTUtils::init() {
     Sockets::init();
 
+#ifndef _WIN32
     // Connect to the system D-Bus
     conn = EXPECT_TRUE(dbus_bus_get, DBUS_BUS_SYSTEM, nullptr);
 
-#ifndef _WIN32
     // The process will exit when a connection with dbus_bus_get closes.
     // The function below will undo this behavior:
     dbus_connection_set_exit_on_disconnect(conn, FALSE);
