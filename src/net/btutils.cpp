@@ -442,21 +442,38 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
 
     // Iterate through each of the service records
     for (sdp_list_t* r = responseList.get(); r; r = r->next) {
+        HandlePtr<sdp_record_t, sdp_record_free> rec{ static_cast<sdp_record_t*>(r->data) };
         SDPResult result;
 
-        HandlePtr<sdp_record_t, sdp_record_free> rec{ static_cast<sdp_record_t*>(r->data) };
-        SDPListPtr protoList;
+        // Allocate 1 kb for name/desc strings
+        int strBufLen = 1024;
+        result.name.resize(strBufLen);
+        result.desc.resize(strBufLen);
+        sdp_get_service_name(rec.get(), result.name.data(), strBufLen);
+        sdp_get_service_desc(rec.get(), result.desc.data(), strBufLen);
+
+        // Erase null chars (sdp_get_service_* doesn't return string length so erase must be used instead of resize)
+        std::erase(result.name, '\0');
+        std::erase(result.desc, '\0');
+
+        // Free function for the list returned from sdp_get_access_protos (inner lists must also be freed)
+        auto protoListFreeFn = [](sdp_list_t* p) {
+            for (auto list = p; list; list = list->next) sdp_list_free(static_cast<sdp_list_t*>(list->data), nullptr);
+
+            sdp_list_free(p, nullptr);
+        };
 
         // Get a list of the protocol sequences
+        HandlePtr<sdp_list_t, protoListFreeFn> protoList;
         if (sdp_get_access_protos(rec.get(), std2::out_ptr(protoList)) == SOCKET_ERROR) continue;
 
         // Iterate through each protocol sequence
-        for (sdp_list_t* p = protoList.get(); p; p = p->next) {
+        for (auto p = protoList.get(); p; p = p->next) {
             // Iterate through each protocol list of the protocol sequence
-            for (SDPListPtr pds{ static_cast<sdp_list_t*>(p->data) }; pds; pds.reset(pds->next)) {
+            for (auto pds = static_cast<sdp_list_t*>(p->data); pds; pds = pds->next) {
                 // Check protocol attributes
                 uint16_t proto = 0;
-                for (sdp_data_t* d = static_cast<sdp_data_t*>(pds->data); d; d = d->next) {
+                for (auto d = static_cast<sdp_data_t*>(pds->data); d; d = d->next) {
                     switch (d->dtd) {
                     case SDP_UUID16:
                     case SDP_UUID32:
@@ -480,15 +497,15 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
         // Get the list of service class IDs
         SDPListPtr svClassList;
         if (sdp_get_service_classes(rec.get(), std2::out_ptr(svClassList)) == NO_ERROR) {
-            for (sdp_list_t* iter = svClassList.get(); iter; iter = iter->next)
+            for (auto iter = svClassList.get(); iter; iter = iter->next)
                 result.serviceUUIDs.push_back(uuidLinuxToWindows(*static_cast<uuid_t*>(iter->data)));
         }
 
         // Get the list of profile descriptors
         SDPListPtr profileDescList;
         if (sdp_get_profile_descs(rec.get(), std2::out_ptr(profileDescList)) == NO_ERROR) {
-            for (sdp_list_t* iter = profileDescList.get(); iter; iter = iter->next) {
-                sdp_profile_desc_t* desc = static_cast<sdp_profile_desc_t*>(iter->data);
+            for (auto iter = profileDescList.get(); iter; iter = iter->next) {
+                auto desc = static_cast<sdp_profile_desc_t*>(iter->data);
 
                 // Extract information
                 ProfileDesc pd;
@@ -498,17 +515,6 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
                 result.profileDescs.push_back(pd);
             }
         }
-
-        // Allocate 1 kb for name/desc strings
-        int strBufLen = 1024;
-        result.name.resize(strBufLen);
-        result.desc.resize(strBufLen);
-
-        // Get the relevant strings
-        // (Clear a string field if it can't be retreived to ensure it's empty)
-        // TODO: Change code to resize strings so trailing null terminators are removed
-        if (sdp_get_service_name(rec.get(), result.name.data(), strBufLen) == SOCKET_ERROR) result.name.clear();
-        if (sdp_get_service_desc(rec.get(), result.desc.data(), strBufLen) == SOCKET_ERROR) result.desc.clear();
 
         // Add to return vector
         ret.push_back(result);
