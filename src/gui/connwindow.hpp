@@ -24,7 +24,6 @@
 class ConnWindow : public Window {
     Sockets::DeviceData _data; // The server to connect to
     Sockets::Socket _socket; // The socket
-    bool _connected = false; // If the socket has an active connection to a server
     bool _pendingRecv = false; // If a receive operation has not yet completed
 
     std::mutex _outputMutex; // The mutex for access to the console output

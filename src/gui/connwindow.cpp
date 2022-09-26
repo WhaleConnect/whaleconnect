@@ -68,7 +68,6 @@ Task<> ConnWindow::_connect() try {
 
     _socket = co_await Sockets::createClientSocket(_data);
     _output.addInfo("Connected.");
-    _connected = true;
 } catch (const System::SystemError& error) {
     _errorHandler(error);
 }
@@ -80,7 +79,7 @@ Task<> ConnWindow::_sendHandler(std::string_view s) try {
 }
 
 Task<> ConnWindow::_readHandler() try {
-    if (!_connected) co_return;
+    if (!_socket) co_return;
     if (_pendingRecv) co_return;
 
     _pendingRecv = true;
@@ -90,7 +89,6 @@ Task<> ConnWindow::_readHandler() try {
         // Peer closed connection (here, 0 does not necessarily mean success, i.e. NO_ERROR)
         _output.addInfo("Remote host closed connection.");
         _socket.reset();
-        _connected = false;
     } else {
         _output.addText(recvRet.data);
     }
