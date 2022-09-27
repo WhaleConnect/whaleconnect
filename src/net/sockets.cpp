@@ -238,19 +238,15 @@ void Sockets::closeSocket(SOCKET sockfd) {
     // Can't close an invalid socket
     if (sockfd == INVALID_SOCKET) return;
 
-    // This may reset the last error code to 0, save it first:
-    int lastErrBackup = System::getLastError();
-
 #ifdef _WIN32
     shutdown(sockfd, SD_BOTH);
     closesocket(sockfd);
 #else
-    shutdown(sockfd, SHUT_RDWR);
-    close(sockfd);
+    io_uring_prep_cancel_fd(Async::getUringSQE(), sockfd, 0);
+    io_uring_prep_shutdown(Async::getUringSQE(), sockfd, SHUT_RDWR);
+    io_uring_prep_close(Async::getUringSQE(), sockfd);
+    Async::submitRing();
 #endif
-
-    // Restore the last error code:
-    System::setLastError(lastErrBackup);
 }
 
 Task<> Sockets::sendData(SOCKET sockfd, std::string_view data) {

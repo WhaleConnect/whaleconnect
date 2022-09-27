@@ -88,6 +88,7 @@ static void worker() {
         // Wait for new completion queue entry (locked by mutex)
         int ret = waitCQE(cqe, userData);
         if (ret < 0) continue;
+        if (!userData) continue;
 
         // Check for interrupt
         if (std::bit_cast<unsigned long long>(userData) == ASYNC_INTERRUPT) break;
@@ -130,7 +131,7 @@ void Async::cleanup() {
     for ([[maybe_unused]] const auto& _ : workerThreadPool) {
         // Submit a no-op to the queue to get the waiting call terminated
         io_uring_sqe* sqe = getUringSQE();
-        sqe->user_data = ASYNC_INTERRUPT;
+        io_uring_sqe_set_data64(sqe, ASYNC_INTERRUPT);
         io_uring_prep_nop(sqe);
     }
     submitRing();
