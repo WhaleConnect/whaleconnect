@@ -18,7 +18,7 @@
 */
 #define CALL_FN_BASE(f, type, successCheck, errorValue, ...) [&] { \
     auto rc = f(__VA_ARGS__); \
-    return ((successCheck) || !System::isFatal(System::getLastError())) \
+    return ((successCheck) || !System::isFatal(errorValue)) \
         ? rc \
         : throw System::SystemError{ static_cast<System::ErrorCode>(errorValue), type, #f }; \
 }()
