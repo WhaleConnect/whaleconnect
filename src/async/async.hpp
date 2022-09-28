@@ -37,12 +37,12 @@ namespace Async {
         size_t numBytes; /**< The number of bytes transferred during the operation (returned to caller) */
 
         /**
-         * @brief Gets the return code of the asynchronous function.
-         * @return The return code
-         *
-         * This is provided for compatibility with the @p EXPECT_* macros in @p errcheck.hpp.
-        */
-        System::ErrorCode errorResult() const { return error; }
+         * @brief Throws an exception if a fatal error occurred asynchronously.
+         */
+        void checkError() const {
+            if (System::isFatal(error))
+                throw System::SystemError{ error, System::ErrorType::System, "<asynchronous function>" };
+        }
 
         /**
          * @brief Checks if coroutine suspension is necessary.

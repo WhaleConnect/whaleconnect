@@ -139,7 +139,7 @@ static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, b
     // Call ConnectEx()
     EXPECT_TRUE(connectExPtr, s, addr, addrLen, nullptr, 0, nullptr, &result);
     co_await std::suspend_always{};
-    EXPECT_ZERO(result.errorResult);
+    result.checkError();
 
     // Make the socket behave more like a regular socket connected with connect()
     EXPECT_ZERO(setsockopt, s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
@@ -150,7 +150,7 @@ static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, b
     Async::submitRing();
 
     co_await std::suspend_always{};
-    EXPECT_ZERO(result.errorResult);
+    result.checkError();
 #endif
 }
 
@@ -265,7 +265,7 @@ Task<> Sockets::sendData(SOCKET sockfd, std::string_view data) {
 #endif
 
     co_await std::suspend_always{};
-    EXPECT_ZERO(result.errorResult);
+    result.checkError();
 
     // Note: Typically, sendto() and recvfrom() are used with a UDP connection.
     // However, these require a sockaddr parameter, which becomes hard to get with getaddrinfo().
@@ -296,7 +296,7 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
 #endif
 
     co_await std::suspend_always{};
-    EXPECT_ZERO(result.errorResult);
+    result.checkError();
 
     recvBuf.resize(result.numBytes);
     co_return RecvResult{ result.numBytes, std::move(recvBuf) };
