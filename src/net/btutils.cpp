@@ -46,7 +46,7 @@ void BTUtils::cleanup() {
 
 #ifndef _WIN32
     // Shut down the connection
-    dbus_connection_unref(conn);
+    if (conn) dbus_connection_unref(conn);
     conn = nullptr;
 #endif
 }
