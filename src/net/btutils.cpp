@@ -51,6 +51,21 @@ void BTUtils::cleanup() {
 #endif
 }
 
+#ifndef _WIN32
+void recurseDictIter(DBusMessageIter& dictIter, auto fn) {
+    do {
+        DBusMessageIter iter;
+        dbus_message_iter_recurse(&dictIter, &iter);
+
+        do {
+            DBusMessageIter sub;
+            dbus_message_iter_recurse(&iter, &sub);
+            fn(sub);
+        } while (dbus_message_iter_next(&iter));
+    } while (dbus_message_iter_next(&dictIter));
+}
+#endif
+
 Sockets::DeviceDataList BTUtils::getPaired() {
     Sockets::DeviceDataList deviceList;
 
@@ -92,6 +107,8 @@ Sockets::DeviceDataList BTUtils::getPaired() {
         deviceList.emplace_back(Sockets::ConnectionType::None, name, mac, uint16_t{ 0 });
     } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
 #else
+    if (!conn) return deviceList;
+
     // Set up the method call
     using MsgPtr = HandlePtr<DBusMessage, dbus_message_unref>;
 
@@ -123,100 +140,63 @@ Sockets::DeviceDataList BTUtils::getPaired() {
     // https://dbus.freedesktop.org/doc/dbus-specification.html
 
     // Iterate through the "a{o" part of the signature - array of object paths
+    recurseDictIter(responseIter, [&deviceList](DBusMessageIter& objectDict) {
+        // Object path - o
+        // If this statement is hit, the object path is found - something like
+        // "/org/bluez" or "/org/bluez/hci0/dev_FC_77_74_EB_C1_92".
+        // We can ignore this, and move on with the message iterator.
+        if (dbus_message_iter_get_arg_type(&objectDict) == DBUS_TYPE_OBJECT_PATH) dbus_message_iter_next(&objectDict);
 
-    // Array iterator - a
-    DBusMessageIter objectsArr;
-    do {
-        dbus_message_iter_recurse(&responseIter, &objectsArr);
+        // Iterate through the a{s part of the signature - array of interfaces
+        recurseDictIter(objectDict, [&deviceList](DBusMessageIter& ifaceDict) {
+            // Interface name - s
+            // Most of what's returned from GetManagedObjects we don't care about,
+            // e.g. org.freedesktop.DBus.Introspectable, org.bluez.LEAdvertisingManager1.
+            // We only want devices (org.bluez.Device1).
+            const char* ifaceName;
+            dbus_message_iter_get_basic(&ifaceDict, &ifaceName);
+            if (std::strcmp(ifaceName, "org.bluez.Device1") != 0) return;
 
-        // Dict iterator - {
-        DBusMessageIter objectDict;
-        do {
-            dbus_message_iter_recurse(&objectsArr, &objectDict);
+            // Advance the iterator to get the next part of the dict
+            dbus_message_iter_next(&ifaceDict);
 
-            // Object path - o
-            // If this statement is hit, the object path is found - something like
-            // "/org/bluez" or "/org/bluez/hci0/dev_FC_77_74_EB_C1_92".
-            // We can ignore this, and move on with the message iterator.
-            if (dbus_message_iter_get_arg_type(&objectDict) == DBUS_TYPE_OBJECT_PATH)
-                dbus_message_iter_next(&objectDict);
+            // The following iterators will collect information about each device.
+            // Set up variables to represent each:
+            Sockets::DeviceData device;
+            dbus_bool_t paired = false;
 
-            // Iterate through the a{s part of the signature - array of interfaces
+            // Iterate through the a{s part of the signature - array of properties
+            recurseDictIter(ifaceDict, [&paired, &device](DBusMessageIter& propDict) {
+                // Property name - s
+                const char* propName;
+                dbus_message_iter_get_basic(&propDict, &propName);
+                dbus_message_iter_next(&propDict);
 
-            // Array iterator - a
-            DBusMessageIter ifacesArr;
-            do {
-                dbus_message_iter_recurse(&objectDict, &ifacesArr);
+                // Property value - v
+                // Since this is a variant type, we'll need another message iterator for it.
+                DBusMessageIter propVal;
+                dbus_message_iter_recurse(&propDict, &propVal);
 
-                // Dict iterator - {
-                DBusMessageIter ifaceDict;
-                do {
-                    dbus_message_iter_recurse(&ifacesArr, &ifaceDict);
+                // Check if the device is paired (boolean value)
+                if (std::strcmp(propName, "Paired") == 0) dbus_message_iter_get_basic(&propVal, &paired);
 
-                    // Interface name - s
-                    // Most of what's returned from GetManagedObjects we don't care about,
-                    // e.g. org.freedesktop.DBus.Introspectable, org.bluez.LEAdvertisingManager1.
-                    // We only want devices (org.bluez.Device1).
-                    const char* ifaceName;
-                    dbus_message_iter_get_basic(&ifaceDict, &ifaceName);
-                    if (std::strcmp(ifaceName, "org.bluez.Device1") != 0) continue;
+                // Get the name of the device (string value)
+                if (std::strcmp(propName, "Name") == 0) {
+                    const char* name;
+                    dbus_message_iter_get_basic(&propVal, &name);
+                    device.name = name;
+                }
 
-                    // Advance the iterator to get the next part of the dict
-                    dbus_message_iter_next(&ifaceDict);
-
-                    // The following iterators will collect information about each device.
-                    // Set up variables to represent each:
-                    Sockets::DeviceData device;
-                    dbus_bool_t paired = false;
-
-                    // Iterate through the a{s part of the signature - array of properties
-
-                    // Array iterator - a
-                    DBusMessageIter propsArr;
-                    do {
-                        dbus_message_iter_recurse(&ifaceDict, &propsArr);
-
-                        // Dict iterator - {
-                        DBusMessageIter propDict;
-                        do {
-                            dbus_message_iter_recurse(&propsArr, &propDict);
-
-                            // Property name - s
-                            const char* propName;
-                            dbus_message_iter_get_basic(&propDict, &propName);
-                            dbus_message_iter_next(&propDict);
-
-                            // Property value - v
-                            // Since this is a variant type, we'll need another message iterator for it.
-                            DBusMessageIter propVal;
-                            dbus_message_iter_recurse(&propDict, &propVal);
-
-                            // Check if the device is paired (boolean value)
-                            if (std::strcmp(propName, "Paired") == 0)
-                                dbus_message_iter_get_basic(&propVal, &paired);
-
-                            // Get the name of the device (string value)
-                            if (std::strcmp(propName, "Name") == 0) {
-                                const char* name;
-                                dbus_message_iter_get_basic(&propVal, &name);
-                                device.name = name;
-                            }
-
-                            // Get the address of the device (string value)
-                            if (std::strcmp(propName, "Address") == 0) {
-                                const char* address;
-                                dbus_message_iter_get_basic(&propVal, &address);
-                                device.address = address;
-                            }
-                        } while (dbus_message_iter_next(&propsArr));
-                    } while (dbus_message_iter_next(&ifaceDict));
-
-                    // If the device is paired, add it to the results
-                    if (paired) deviceList.push_back(device);
-                } while (dbus_message_iter_next(&ifacesArr));
-            } while (dbus_message_iter_next(&objectDict));
-        } while (dbus_message_iter_next(&objectsArr));
-    } while (dbus_message_iter_next(&responseIter));
+                // Get the address of the device (string value)
+                if (std::strcmp(propName, "Address") == 0) {
+                    const char* address;
+                    dbus_message_iter_get_basic(&propVal, &address);
+                    device.address = address;
+                }
+            });
+            if (paired) deviceList.push_back(device); // If the device is paired, add it to the results
+        });
+    });
 #endif
 
     // Done
