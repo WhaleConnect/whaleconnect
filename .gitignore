@@ -1,11 +1,11 @@
-# Windows desktop configuration file
+# Desktop configuration files
 desktop.ini
+.DS_Store
 
-# Visual Studio generated files
-.vs/
-
-# Build output
+# Build/cache directories
 build/
+.cache/
+.vs/
 
 # Conan generated files
 bindings/
