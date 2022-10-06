@@ -6,14 +6,14 @@
 #include "btutils.hpp"
 #include "sockets.hpp"
 
-#ifdef _WIN32
+#if OS_WINDOWS
 #include <WinSock2.h>
 #include <ws2bth.h>
 #include <bluetoothapis.h>
 
 #include "compat/format.hpp"
 #include "util/strings.hpp"
-#else
+#elif OS_LINUX
 #include <cstring> // std::memcpy()
 
 #include <dbus/dbus.h>
@@ -31,7 +31,7 @@ static DBusConnection* conn = nullptr;
 void BTUtils::init() {
     Sockets::init();
 
-#ifndef _WIN32
+#if OS_LINUX
     // Connect to the system D-Bus
     conn = EXPECT_TRUE(dbus_bus_get, DBUS_BUS_SYSTEM, nullptr);
 
@@ -44,14 +44,14 @@ void BTUtils::init() {
 void BTUtils::cleanup() {
     Sockets::cleanup();
 
-#ifndef _WIN32
+#if OS_LINUX
     // Shut down the connection
     if (conn) dbus_connection_unref(conn);
     conn = nullptr;
 #endif
 }
 
-#ifndef _WIN32
+#if OS_LINUX
 void recurseDictIter(DBusMessageIter& dictIter, auto fn) {
     do {
         DBusMessageIter iter;
@@ -69,7 +69,7 @@ void recurseDictIter(DBusMessageIter& dictIter, auto fn) {
 Sockets::DeviceDataList BTUtils::getPaired() {
     Sockets::DeviceDataList deviceList;
 
-#ifdef _WIN32
+#if OS_WINDOWS
     // Bluetooth search criteria - only return remembered (paired) devices, and don't start a new inquiry search
     BLUETOOTH_DEVICE_SEARCH_PARAMS searchCriteria{
         .dwSize = sizeof(BLUETOOTH_DEVICE_SEARCH_PARAMS),
@@ -106,7 +106,7 @@ Sockets::DeviceDataList BTUtils::getPaired() {
         // Add to results
         deviceList.emplace_back(Sockets::ConnectionType::None, name, mac, uint16_t{ 0 });
     } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
-#else
+#elif OS_LINUX
     if (!conn) return deviceList;
 
     // Set up the method call
@@ -203,7 +203,7 @@ Sockets::DeviceDataList BTUtils::getPaired() {
     return deviceList;
 }
 
-#ifdef _WIN32
+#if OS_WINDOWS
 // Gets the SDP container data in an SDP element.
 static std::vector<SDP_ELEMENT_DATA> getSDPListData(SDP_ELEMENT_DATA& element) {
     std::vector<SDP_ELEMENT_DATA> ret;
@@ -226,7 +226,7 @@ static std::vector<SDP_ELEMENT_DATA> getSDPListData(const LPBLOB blob, USHORT at
     EXPECT_ZERO_RC(BluetoothSdpGetAttributeValue, blob->pBlobData, blob->cbSize, attrib, &element);
     return getSDPListData(element);
 }
-#else
+#elif OS_LINUX
 // Converts a Windows-style UUID struct into a Linux-style uuid_t struct.
 static uuid_t uuidWindowsToLinux(const UUID& uuid) {
     // Array of 16 bytes to create the UUID used for SDP search
@@ -299,7 +299,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
     // Return value
     SDPResultList ret;
 
-#ifdef _WIN32
+#if OS_WINDOWS
     Strings::SysStr addrWide = Strings::toSys(addr);
 
     // Set up the query set restrictions
@@ -395,7 +395,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[ma
         // Add to return vector
         ret.push_back(result);
     }
-#else
+#elif OS_LINUX
     // TODO: Use std::bind_back() instead of lambda in C++23
     using SDPListPtr = HandlePtr<sdp_list_t, [](sdp_list_t* p) { sdp_list_free(p, nullptr); }>;
 

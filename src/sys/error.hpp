@@ -12,12 +12,10 @@
 #include <string_view>
 #include <stdexcept>
 
-#ifdef _WIN32
+#if OS_WINDOWS
 #include <WinSock2.h>
-#endif
-
+#else
 // Error status codes
-#ifndef _WIN32
 constexpr auto INVALID_SOCKET = -1; /**< An invalid socket descriptor */
 constexpr auto SOCKET_ERROR = -1; /**< An error has occurred (returned from a function) */
 constexpr auto NO_ERROR = 0; /**< Done successfully (returned from a function) */
@@ -28,7 +26,7 @@ namespace System {
      * @brief A generalized type for system error codes across platforms.
     */
     using ErrorCode =
-#ifdef _WIN32
+#if OS_WINDOWS
         DWORD
 #else
         int

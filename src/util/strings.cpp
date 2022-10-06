@@ -1,14 +1,14 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifdef _WIN32
+#if OS_WINDOWS
 #include <Windows.h>
 #endif
 
 #include "strings.hpp"
 
 Strings::SysStr Strings::toSys(std::string_view from) {
-#ifdef _WIN32
+#if OS_WINDOWS
     // Nothing to convert in an empty string
     if (from.empty()) return {};
 
@@ -27,7 +27,7 @@ Strings::SysStr Strings::toSys(std::string_view from) {
 }
 
 std::string Strings::fromSys(SysStrView from) {
-#ifdef _WIN32
+#if OS_WINDOWS
     // Nothing to convert in an empty string
     if (from.empty()) return {};
 

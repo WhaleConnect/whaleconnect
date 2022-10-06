@@ -14,7 +14,7 @@
 #include "sockets.hpp"
 #include "sys/error.hpp"
 
-#ifndef _WIN32
+#if !OS_WINDOWS
 /**
  * @brief A UUID structure. Provided on Linux for compatibility with the Windows API.
 */

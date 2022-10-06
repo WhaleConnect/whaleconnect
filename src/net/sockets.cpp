@@ -3,13 +3,17 @@
 
 #include <bit> // std::bit_cast()
 
-#ifdef _WIN32
+#if OS_WINDOWS
 // Winsock headers
 #include <WS2tcpip.h>
 #include <ws2bth.h>
 #include <MSWSock.h>
 #include <mstcpip.h>
-#else
+#elif OS_APPLE
+#include <netinet/in.h> // sockaddr
+#include <sys/socket.h> // Socket definitions
+#include <netdb.h> // addrinfo/getaddrinfo() related identifiers
+#elif OS_LINUX
 // Linux Bluetooth headers
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
@@ -19,7 +23,6 @@
 
 #include <netinet/in.h> // sockaddr
 #include <sys/socket.h> // Socket definitions
-#include <unistd.h> // close()
 #include <netdb.h> // addrinfo/getaddrinfo() related identifiers
 #endif
 
@@ -30,10 +33,7 @@
 #include "sys/handleptr.hpp"
 #include "util/strings.hpp"
 
-#ifdef _WIN32
-// These don't exist on Windows
-constexpr auto EAI_SYSTEM = 0;
-
+#if OS_WINDOWS
 // Berkeley sockets int types
 using socklen_t = int;
 #else
@@ -46,7 +46,9 @@ using ADDRINFOW = addrinfo;
 constexpr auto WSAEWOULDBLOCK = EWOULDBLOCK;
 constexpr auto WSAEINPROGRESS = EINPROGRESS;
 constexpr auto WSAEINVAL = EINVAL;
+#endif
 
+#if OS_LINUX
 // Bluetooth definitions
 constexpr auto AF_BTH = AF_BLUETOOTH;
 constexpr auto BTHPROTO_RFCOMM = BTPROTO_RFCOMM;
@@ -54,7 +56,7 @@ constexpr auto BTHPROTO_L2CAP = BTPROTO_L2CAP;
 #endif
 
 void Sockets::init() {
-#ifdef _WIN32
+#if OS_WINDOWS
     // Start Winsock on Windows
     WSADATA wsaData{};
     EXPECT_ZERO_RC(WSAStartup, MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
@@ -66,12 +68,13 @@ void Sockets::init() {
 void Sockets::cleanup() {
     Async::cleanup();
 
-#ifdef _WIN32
+#if OS_WINDOWS
     // Cleanup Winsock on Windows
     EXPECT_ZERO(WSACleanup);
 #endif
 }
 
+#if !OS_APPLE
 static SOCKET bluetoothSocket(Sockets::ConnectionType type) {
     using enum Sockets::ConnectionType;
 
@@ -100,12 +103,13 @@ static SOCKET bluetoothSocket(Sockets::ConnectionType type) {
     // Create the socket
     return socket(AF_BTH, sockType, sockProto);
 }
+#endif
 
 static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, bool isDgram) {
     Async::CompletionResult result{};
     co_await result;
 
-#ifdef _WIN32
+#if OS_WINDOWS
     // Add the socket to the async queue
     Async::add(s);
 
@@ -143,7 +147,7 @@ static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, b
 
     // Make the socket behave more like a regular socket connected with connect()
     EXPECT_ZERO(setsockopt, s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
-#else
+#elif OS_LINUX
     io_uring_sqe *sqe = Async::getUringSQE();
     io_uring_prep_connect(sqe, s, addr, addrLen);
     io_uring_sqe_set_data(sqe, &result);
@@ -193,7 +197,7 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
         // Set up server address structure
         socklen_t addrSize;
 
-#ifdef _WIN32
+#if OS_WINDOWS
         // Convert the MAC address from string form into integer form
         // This is done by removing all colons in the address string, then parsing the resultant string as an
         // integer in base-16 (which is how a MAC address is structured).
@@ -201,7 +205,7 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
 
         SOCKADDR_BTH sAddrBT{ .addressFamily = AF_BTH, .btAddr = btAddr, .port = data.port };
         addrSize = sizeof(sAddrBT);
-#else
+#elif OS_LINUX
         // Address of the device to connect to
         bdaddr_t bdaddr;
         str2ba(data.address.c_str(), &bdaddr);
@@ -238,10 +242,10 @@ void Sockets::closeSocket(SOCKET sockfd) {
     // Can't close an invalid socket
     if (sockfd == INVALID_SOCKET) return;
 
-#ifdef _WIN32
+#if OS_WINDOWS
     shutdown(sockfd, SD_BOTH);
     closesocket(sockfd);
-#else
+#elif OS_LINUX
     io_uring_prep_cancel_fd(Async::getUringSQE(), sockfd, IORING_ASYNC_CANCEL_ALL);
     io_uring_prep_shutdown(Async::getUringSQE(), sockfd, SHUT_RDWR);
     io_uring_prep_close(Async::getUringSQE(), sockfd);
@@ -253,11 +257,11 @@ Task<> Sockets::sendData(SOCKET sockfd, std::string_view data) {
     Async::CompletionResult result{};
     co_await result;
 
-#ifdef _WIN32
+#if OS_WINDOWS
     std::string sendBuf{ data };
     WSABUF buf{ static_cast<ULONG>(sendBuf.size()), sendBuf.data() };
     EXPECT_NONERROR(WSASend, sockfd, &buf, 1, nullptr, 0, &result, nullptr);
-#else
+#elif OS_LINUX
     io_uring_sqe* sqe = Async::getUringSQE();
     io_uring_prep_send(sqe, sockfd, data.data(), data.size(), MSG_NOSIGNAL);
     io_uring_sqe_set_data(sqe, &result);
@@ -284,11 +288,11 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
     // Receive and check bytes received
     std::string recvBuf(1024, '\0');
 
-#ifdef _WIN32
+#if OS_WINDOWS
     WSABUF buf{ static_cast<ULONG>(recvBuf.size()), recvBuf.data() };
     DWORD flags = 0;
     EXPECT_NONERROR(WSARecv, sockfd, &buf, 1, nullptr, &flags, &result, nullptr);
-#else
+#elif OS_LINUX
     io_uring_sqe* sqe = Async::getUringSQE();
     io_uring_prep_recv(sqe, sockfd, recvBuf.data(), recvBuf.size(), MSG_NOSIGNAL);
     io_uring_sqe_set_data(sqe, &result);

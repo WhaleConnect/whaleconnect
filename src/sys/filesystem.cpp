@@ -1,7 +1,7 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifdef _WIN32
+#if OS_WINDOWS
 #include <Windows.h>
 #else
 #include <limits.h>
@@ -14,7 +14,7 @@
 #include "util/strings.hpp"
 
 fs::path System::getProgramDir() {
-#ifdef _WIN32
+#if OS_WINDOWS
     std::wstring path(_MAX_PATH, '\0');
     GetModuleFileName(nullptr, path.data(), static_cast<DWORD>(path.size()));
 #else

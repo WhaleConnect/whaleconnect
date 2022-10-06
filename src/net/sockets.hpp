@@ -15,7 +15,7 @@
 #include "async/task.hpp"
 #include "sys/error.hpp"
 
-#ifdef _WIN32
+#if OS_WINDOWS
 // Winsock header
 #include <WinSock2.h>
 #else

@@ -132,7 +132,7 @@ void SDPWindow::_drawSDPTab() {
         ImGui::EndCombo();
     }
 
-#ifdef _WIN32
+#if OS_WINDOWS
     // Flush cache option (Windows only)
     ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x * 4);
     ImGui::Checkbox("Flush cache", &_flushCache);

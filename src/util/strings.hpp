@@ -21,7 +21,7 @@ namespace Strings {
      * Other platforms can use strings of @p char which are UTF-8 encoded and can handle Unicode.<br>
     */
     using SysStr =
-#ifdef _WIN32
+#if OS_WINDOWS
         std::wstring
 #else
         std::string
@@ -55,7 +55,7 @@ namespace Strings {
     */
     template <class T>
     inline SysStr toSys(T from) requires std::integral<T> || std::floating_point<T> {
-#ifdef _WIN32
+#if OS_WINDOWS
         return std::to_wstring(from);
 #else
         return std::to_string(from);

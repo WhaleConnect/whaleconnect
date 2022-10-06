@@ -5,11 +5,11 @@
 #include <thread>
 #include <vector>
 
-#ifdef _WIN32
+#if OS_WINDOWS
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <MSWSock.h>
-#else
+#elif OS_LINUX
 #include <bit>
 #include <mutex>
 
@@ -29,10 +29,10 @@ static std::vector<std::thread> workerThreadPool(numThreads);
 // A completion key value to indicate a signaled interrupt
 static constexpr int ASYNC_INTERRUPT = 1;
 
-#ifdef _WIN32
+#if OS_WINDOWS
 // The IOCP handle
 static HANDLE completionPort = nullptr;
-#else
+#elif OS_LINUX
 static std::mutex ringMutex;
 
 static io_uring ring;
@@ -57,7 +57,7 @@ int waitCQE(io_uring_cqe*& cqe, void*& userData) {
 
 // Runs in each thread to handle completion results.
 static void worker() {
-#ifdef _WIN32
+#if OS_WINDOWS
     DWORD numBytes;
     ULONG_PTR completionKey;
     LPOVERLAPPED overlapped = nullptr;
@@ -80,7 +80,7 @@ static void worker() {
         // Resume the coroutine that started the operation
         if (result.coroHandle) result.coroHandle();
     }
-#else
+#elif OS_LINUX
     while (true) {
         io_uring_cqe* cqe;
         void* userData = nullptr;
@@ -105,10 +105,10 @@ static void worker() {
 }
 
 void Async::init() {
-#ifdef _WIN32
+#if OS_WINDOWS
     // Initialize IOCP
     completionPort = EXPECT_TRUE(CreateIoCompletionPort, INVALID_HANDLE_VALUE, nullptr, 0, numThreads);
-#else
+#elif OS_LINUX
     EXPECT_POSITIVE_RC(io_uring_queue_init, 128, &ring, 0);
 #endif
 
@@ -118,12 +118,12 @@ void Async::init() {
 
 void Async::cleanup() {
     // Signal threads to terminate
-#ifdef _WIN32
+#if OS_WINDOWS
     if (!completionPort) return;
 
     for ([[maybe_unused]] const auto& _ : workerThreadPool)
         PostQueuedCompletionStatus(completionPort, 0, ASYNC_INTERRUPT, nullptr);
-#else
+#elif OS_LINUX
     for ([[maybe_unused]] const auto& _ : workerThreadPool) {
         // Submit a no-op to the queue to get the waiting call terminated
         io_uring_sqe* sqe = getUringSQE();
@@ -138,19 +138,19 @@ void Async::cleanup() {
     // before cleaning up.
     for (auto& i : workerThreadPool) i.join();
 
-#ifdef _WIN32
+#if OS_WINDOWS
     CloseHandle(completionPort);
-#else
+#elif OS_LINUX
     io_uring_queue_exit(&ring);
 #endif
 }
 
-#ifdef _WIN32
+#if OS_WINDOWS
 void Async::add(SOCKET sockfd) {
     // Create a new handle for the socket
     EXPECT_TRUE(CreateIoCompletionPort, reinterpret_cast<HANDLE>(sockfd), completionPort, 0, 0);
 }
-#else
+#elif OS_LINUX
 io_uring_sqe* Async::getUringSQE() { return io_uring_get_sqe(&ring); }
 
 void Async::submitRing() { io_uring_submit(&ring); }

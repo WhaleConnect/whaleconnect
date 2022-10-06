@@ -10,9 +10,9 @@
 
 #include <coroutine>
 
-#ifdef _WIN32
+#if OS_WINDOWS
 #include <WinSock2.h>
-#else
+#elif OS_LINUX
 #include <liburing.h>
 #endif
 
@@ -26,7 +26,7 @@ namespace Async {
      * current coroutine handle to allow it to be resumed when the asynchronous operation finishes.
     */
     struct CompletionResult
-#ifdef _WIN32
+#if OS_WINDOWS
         // Inherit from OVERLAPPED on Windows to pass this struct as IOCP user data
         // https://devblogs.microsoft.com/oldnewthing/20101217-00/?p=11983
         : OVERLAPPED
@@ -76,13 +76,13 @@ namespace Async {
     */
     void cleanup();
 
-#ifdef _WIN32
+#if OS_WINDOWS
     /**
      * @brief Adds a socket to the I/O queue.
      * @param sockfd The socket file descriptor
     */
     void add(SOCKET sockfd);
-#else
+#elif OS_LINUX
     /**
      * @brief Gets a submission queue entry from io_uring.
      * @return A pointer to the entry

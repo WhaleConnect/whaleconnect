@@ -11,7 +11,7 @@
 #include "net/btutils.hpp"
 #include "util/imguiext.hpp"
 
-#ifdef _WIN32
+#if OS_WINDOWS
 // Use WinMain() as an entry point on MSVC
 #define MAIN_FUNC CALLBACK WinMain
 #define MAIN_ARGS _In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int

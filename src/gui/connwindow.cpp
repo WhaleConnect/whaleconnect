@@ -89,9 +89,9 @@ Task<> ConnWindow::_readHandler() try {
     _pendingRecv = false;
 } catch (const System::SystemError& error) {
     // Don't handle errors caused by socket closure (this means this object has been destructed)
-#ifdef _WIN32
+#if OS_WINDOWS
     if (error.code == WSA_OPERATION_ABORTED) co_return;
-#else
+#elif OS_LINUX
     if (error.code == ECANCELED) co_return;
 #endif
 
