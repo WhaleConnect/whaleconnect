@@ -21,32 +21,21 @@
 #define MAIN_ARGS
 #endif
 
-int MAIN_FUNC(MAIN_ARGS) {
-    if (!MainHandler::initApp()) return EXIT_FAILURE; // Create a main application window
+using InitResult = std::variant<std::monostate, System::SystemError, std::system_error>;
 
-    // Initialize APIs for sockets and Bluetooth
-    std::variant<std::monostate, System::SystemError, std::system_error> initResult;
-    try {
-        BTUtils::init();
-    } catch (const System::SystemError& error) {
-        initResult = error;
-    } catch (const std::system_error& error) {
-        initResult = error;
-    }
+void mainLoop(const InitResult& initResult) {
+    WindowList connections; // List of open windows
+    WindowList sdpWindows; // List of windows for creating Bluetooth connections
 
-    // Main loop
     while (MainHandler::isActive()) {
         MainHandler::handleNewFrame();
 
         // Error message for failed initialization
         if (std::holds_alternative<System::SystemError>(initResult))
-            ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopLeft,
-                           "Initialization failed - %s", std::get<System::SystemError>(initResult).formatted().c_str());
+            ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopLeft, "Initialization failed - %s",
+                        std::get<System::SystemError>(initResult).formatted().c_str());
         else if (std::holds_alternative<std::system_error>(initResult))
             ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopLeft, "Could not initialize thread pool.");
-
-        static WindowList connections; // List of open windows
-        static WindowList sdpWindows; // List of windows for creating Bluetooth connections
 
         // New connection window
         ImGui::SetNextWindowSize({ 600, 170 }, ImGuiCond_FirstUseEver);
@@ -62,6 +51,22 @@ int MAIN_FUNC(MAIN_ARGS) {
 
         MainHandler::renderWindow();
     }
+}
+
+int MAIN_FUNC(MAIN_ARGS) {
+    if (!MainHandler::initApp()) return EXIT_FAILURE; // Create a main application window
+
+    // Initialize APIs for sockets and Bluetooth
+    InitResult initResult;
+    try {
+        BTUtils::init();
+    } catch (const System::SystemError& error) {
+        initResult = error;
+    } catch (const std::system_error& error) {
+        initResult = error;
+    }
+
+    mainLoop(initResult);
 
     BTUtils::cleanup();
     MainHandler::cleanupApp();
