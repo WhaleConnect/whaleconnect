@@ -242,7 +242,7 @@ void Sockets::closeSocket(SOCKET sockfd) {
     shutdown(sockfd, SD_BOTH);
     closesocket(sockfd);
 #else
-    io_uring_prep_cancel_fd(Async::getUringSQE(), sockfd, 0);
+    io_uring_prep_cancel_fd(Async::getUringSQE(), sockfd, IORING_ASYNC_CANCEL_ALL);
     io_uring_prep_shutdown(Async::getUringSQE(), sockfd, SHUT_RDWR);
     io_uring_prep_close(Async::getUringSQE(), sockfd);
     Async::submitRing();
