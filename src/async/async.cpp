@@ -24,7 +24,7 @@
 static const auto numThreads = std::max(std::thread::hardware_concurrency(), 1U);
 
 // A vector of threads to serve as a thread pool
-static std::vector<std::jthread> workerThreadPool(numThreads);
+static std::vector<std::thread> workerThreadPool(numThreads);
 
 // A completion key value to indicate a signaled interrupt
 static constexpr int ASYNC_INTERRUPT = 1;
@@ -113,30 +113,34 @@ void Async::init() {
 #endif
 
     // Populate thread pool
-    for (auto& i : workerThreadPool) i = std::jthread{ worker };
+    for (auto& i : workerThreadPool) i = std::thread{ worker };
 }
 
 void Async::cleanup() {
+    // Signal threads to terminate
 #ifdef _WIN32
     if (!completionPort) return;
 
-    // Signal threads to terminate
     for ([[maybe_unused]] const auto& _ : workerThreadPool)
         PostQueuedCompletionStatus(completionPort, 0, ASYNC_INTERRUPT, nullptr);
-
-    // Close the IOCP handle
-    CloseHandle(completionPort);
 #else
-    // Signal threads to terminate
     for ([[maybe_unused]] const auto& _ : workerThreadPool) {
         // Submit a no-op to the queue to get the waiting call terminated
         io_uring_sqe* sqe = getUringSQE();
-        io_uring_sqe_set_data64(sqe, ASYNC_INTERRUPT);
         io_uring_prep_nop(sqe);
+        io_uring_sqe_set_data64(sqe, ASYNC_INTERRUPT);
     }
     submitRing();
+#endif
 
-    // Close the io_uring instance
+    // Join threads
+    // Manual join calls are used instead of a jthread so the program can wait (briefly) for all threads to exit
+    // before cleaning up.
+    for (auto& i : workerThreadPool) i.join();
+
+#ifdef _WIN32
+    CloseHandle(completionPort);
+#else
     io_uring_queue_exit(&ring);
 #endif
 }
