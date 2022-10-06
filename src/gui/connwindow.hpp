@@ -47,7 +47,10 @@ class ConnWindow : public Window {
     // Connects to the target server.
     void _init() override { _connect(); }
 
-    // Draws the window contents and handles I/O.
+    // Handles incoming I/O.
+    void _beforeUpdate() override;
+
+    // Draws the window contents.
     void _updateContents() override;
 
 public:

@@ -54,14 +54,7 @@ static std::string formatDeviceData(const Sockets::DeviceData& data, std::string
 }
 
 ConnWindow::ConnWindow(const Sockets::DeviceData& data, std::string_view extraInfo)
-    : Window(formatDeviceData(data, extraInfo), { 500, 300 }), _data(data) {}
-
-void ConnWindow::_updateContents() {
-    _readHandler();
-
-    std::scoped_lock outputLock{ _outputMutex };
-    _output.update(Settings::sendTextboxHeight);
-}
+    : Window(formatDeviceData(data, extraInfo)), _data(data) {}
 
 Task<> ConnWindow::_connect() try {
     _output.addInfo("Connecting...");
@@ -104,4 +97,14 @@ Task<> ConnWindow::_readHandler() try {
 
     std::scoped_lock outputLock{ _outputMutex };
     _errorHandler(error);
+}
+
+void ConnWindow::_beforeUpdate() {
+    ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
+    _readHandler();
+}
+
+void ConnWindow::_updateContents() {
+    std::scoped_lock outputLock{ _outputMutex };
+    _output.update(Settings::sendTextboxHeight);
 }
