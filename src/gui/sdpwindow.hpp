@@ -71,6 +71,9 @@ class SDPWindow : public Window {
     // Draws the tab to initiate a connection without SDP.
     void _drawManualTab();
 
+    // Checks the status of the inquiry and prevents closing the window if it is running.
+    void _beforeUpdate() override;
+
     // Draws the window contents.
     void _updateContents() override;
 
@@ -82,6 +85,6 @@ public:
      * @param list The list of @p ConnWindow objects to add to with a new connection
     */
     SDPWindow(const Sockets::DeviceData& target, const UUIDMap& uuids, WindowList& list)
-        : Window(std2::format("Connect To {}##{}", target.name, target.address), { 450, 250 }), _target(target),
-        _uuids(uuids), _selectedUUID(_uuids.begin()->first), _list(list) {}
+        : Window(std2::format("Connect To {}##{}", target.name, target.address)), _target(target), _uuids(uuids),
+        _selectedUUID(_uuids.begin()->first), _list(list) {}
 };
