@@ -1,28 +1,29 @@
 This is a list of the tasks to complete before each release.
 
-Alpha 1:
+0.2.0:
+  [ ] macOS Support
   [ ] Add option to export Console output to a file in the user's Documents folder
   [ ] Export the GLFW error file (mainhandle.cpp) in a better location
 
-Alpha 2:
+0.3.0:
   [ ] Implement the server-side
     - This will get more detailed in the future when we get there.
 
-Beta:
+0.4.0:
   [ ] System of saving IP addresses+names to make a "contacts list"
   [ ] Pre-defined window dimensions
   [ ] Screenshot helper
-    - On the Dear ImGui wiki: https://github.com/ocornut/imgui/wiki/screenshot_tool
+    - On the Dear ImGui wiki: https://github.com/ocornut/imgui/wiki/screenshot_tool (now broken link)
     - Add stb_image.h: https://github.com/nothings/stb
   [ ] Make settings configurable
     [ ] Settings UI (like in VSCode)
     [ ] Save in JSON format
       - Add JSON for Modern C++: https://github.com/nlohmann/json
     [ ] Allow saving/editing of Bluetooth SDP UUIDs
-  [ ] Display first-party (GPLv3) and third-party licenses in app
+  [ ] Display licenses in app
   [ ] Display version/build information (build date/platform/compiler etc.)
     [ ] Display library versions (Dear ImGui/OpenGL/GLFW etc.) if applicable
-  [ ] TEST EVERYTHING
+  [ ] Final tests
 
 1.0:
   [ ] Add relevant topics to repository
@@ -44,6 +45,6 @@ Beta:
 
 Other things:
   [ ] Setup GitHub Actions (whenever)
-  [ ] Drop formatcompat.hpp and {fmt}, use std::format()
+  [ ] Use std::format()
   [ ] Remove #if checks for chrono in console.cpp
   [ ] Replace many index-based loops with `views::zip()` and `views::enumerate()` in C++23/C++26
