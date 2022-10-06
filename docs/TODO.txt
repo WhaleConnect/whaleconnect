@@ -2,6 +2,7 @@ This is a list of the tasks to complete before each release.
 
 0.2.0:
   [ ] macOS Support
+  [ ] Add setting to change number of worker threads (unsigned integer, 0 means auto-detect)
   [ ] Add option to export Console output to a file in the user's Documents folder
   [ ] Export the GLFW error file (mainhandle.cpp) in a better location
 
