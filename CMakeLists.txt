@@ -64,6 +64,18 @@ add_custom_command(TARGET terminal POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     ${CMAKE_SOURCE_DIR}/unifont/unifont-15.0.01.otf
     $<TARGET_FILE_DIR:terminal>/unifont.otf)
 
+# Platform detection
+if (UNIX AND NOT APPLE)
+    set(LINUX 1 CACHE INTERNAL "")
+else()
+    set(LINUX 0 CACHE INTERNAL "")
+endif()
+
+target_compile_definitions(terminal PRIVATE
+    OS_WINDOWS=$<BOOL:${WIN32}>
+    OS_APPLE=$<BOOL:${APPLE}>
+    OS_LINUX=$<BOOL:${LINUX}>)
+
 # Compiler-dependent options
 if (MSVC)
     # Warnings
@@ -88,7 +100,7 @@ else()
     target_compile_options(terminal PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
 endif()
 
-if (NOT WIN32)
+if (LINUX)
     # DBus
     find_package(PkgConfig REQUIRED)
     pkg_search_module(DBUS REQUIRED dbus-1)
