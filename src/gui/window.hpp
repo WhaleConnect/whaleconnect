@@ -18,24 +18,30 @@
 */
 class Window {
     std::string _title; // The window title
-    ImVec2 _size; // The window size
     bool _open = true; // If the window is open
+    bool* _openPtr = &_open; // The pointer passed to ImGui::Begin
 
     bool _initialized = false; // If the initialize function has been called
 
     // Performs initialization required by a window object.
     virtual void _init() { /* May optionally be overridden in derived classes */ }
 
+    // Always runs on every frame, before _updateContents is called.
+    virtual void _beforeUpdate() { /* May optionally be overridden in derived classes */ }
+
     // Redraws the contents of the window. Must be overridden in derived classes.
     virtual void _updateContents() = 0;
 
+protected:
+    // Enables or disables the window's close button.
+    void _setClosable(bool closable) { _openPtr = closable ? &_open : nullptr; }
+
 public:
     /**
-     * @brief Sets the window information.
+     * @brief Sets the window title.
      * @param title The title
-     * @param size The initial dimensions
     */
-    Window(std::string_view title, const ImVec2& size = {}) : _title(title), _size(size) {}
+    Window(std::string_view title) : _title(title) {}
 
     /**
      * @brief Virtual destructor provided for derived classes.
@@ -68,11 +74,10 @@ public:
      * @brief Updates the window and its contents.
     */
     void update() {
-        // Set window size if provided
-        if ((_size.x > 0) && (_size.y > 0)) ImGui::SetNextWindowSize(_size, ImGuiCond_FirstUseEver);
+        _beforeUpdate();
 
         // Render window
-        if (ImGui::Begin(_title.c_str(), &_open)) _updateContents();
+        if (ImGui::Begin(_title.c_str(), _openPtr)) _updateContents();
         ImGui::End();
     }
 };
