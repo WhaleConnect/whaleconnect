@@ -137,7 +137,6 @@ void Async::cleanup() {
     submitRing();
 
     // Close the io_uring instance
-    std::scoped_lock cqeLock{ ringMutex };
     io_uring_queue_exit(&ring);
 #endif
 }
