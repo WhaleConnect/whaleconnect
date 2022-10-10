@@ -27,7 +27,7 @@ class App(ConanFile):
         self.requires("fmt/9.1.0")
         self.requires("glfw/3.3.8")
         self.requires("imgui/cci.20220621+1.88.docking")
-        self.requires("magic_enum/0.8.0")
+        self.requires("magic_enum/0.8.1")
 
         # Dependencies on Linux
         if self.settings.os == "Linux":
