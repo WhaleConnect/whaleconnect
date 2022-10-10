@@ -16,3 +16,8 @@ template<class... Ts>
 struct Overload : Ts... {
     using Ts::operator()...;
 };
+
+#ifdef __clang__
+// Clang does not yet support CTAD for aggregates (P1816R0)
+template<class... Ts> Overload(Ts...) -> Overload<Ts...>;
+#endif
