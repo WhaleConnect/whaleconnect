@@ -12,9 +12,6 @@ trim_trailing_whitespace = true
 [**.{c,h}pp]
 indent_size = 4
 
-# Set guidelines length, requires Visual Studio extension "Editor Guidelines"
-guidelines = 120 1px solid A0A9A9A9
-
 # Visual Studio generated .editorconfig file with C++ settings.
 
 [*.{c++,cc,cpp,cppm,cxx,h,h++,hh,hpp,hxx,inl,ipp,ixx,tlh,tli}]

@@ -9,7 +9,6 @@ build/
 
 # Conan generated files
 bindings/
-CMakeSettings.json
 CMakeUserPresets.json
 conan_imports_manifest.txt
 conan.lock

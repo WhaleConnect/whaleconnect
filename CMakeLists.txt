@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(terminal)
 
-# Generate compilation database for SonarLint
+# Generate compilation database
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # C++ language standard

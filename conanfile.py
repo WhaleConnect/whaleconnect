@@ -3,21 +3,6 @@
 
 from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain
-from conan.tools.files import save
-
-# CMakeSettings.json file for SonarLint analysis (it doesn't support Presets yet)
-cmake_settings_file = r"""{
-  "configurations": [
-    {
-      "name": "'debug' config",
-      "buildRoot": "${projectDir}\\build"
-    },
-    {
-      "name": "'release' config",
-      "buildRoot": "${projectDir}\\build"
-    }
-  ]
-}"""
 
 class App(ConanFile):
     settings = ("os", "arch", "compiler", "build_type")
@@ -52,9 +37,6 @@ class App(ConanFile):
 
         deps = CMakeDeps(self)
         deps.generate()
-
-        # Generate CMake Settings
-        save(self, "../CMakeSettings.json", cmake_settings_file)
 
     def build(self):
         cmake = CMake(self)
