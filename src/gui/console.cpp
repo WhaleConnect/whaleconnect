@@ -4,7 +4,8 @@
 #include <array>
 #include <format>
 #include <iomanip> // std::hex, std::uppercase, std::setw(), std::setfill()
-#include <ranges> // std::views::split()
+#include <string>
+#include <string_view>
 
 #if __cpp_lib_chrono >= 201803L
 #include <chrono> // std::chrono
@@ -168,17 +169,22 @@ void Console::update(float textboxHeight) {
 void Console::addText(std::string_view s, std::string_view pre, const ImVec4& color, bool canUseHex) {
     using namespace std::literals;
 
+    // Start and end iterators for each line
+    auto start = s.begin();
+    auto end = start;
+
     // Split the string by newlines to get each line, then add each line
-    for (auto i : std::views::split(s, "\n"sv)) {
-        // Check if there's a newline after the current string:
-        // Get the end position of the split string
-        auto endIdx = std::ranges::distance(s.begin(), i.end());
+    while (end != s.end()) {
+        // Advance the end iterator until a newline is seen
+        while (*end != '\n') end++;
 
-        // Check if the end position is at the end of the input string
-        // If it is, there will be nothing after so no newline is added.
-        // Otherwise, there are more lines after, add a newline so subsequent lines are independent of this one.
-        auto end = (s.begin() + endIdx == s.end()) ? "" : "\n";
+        // Get substring
+        end++; // Increment end to include the newline in the substring
+        auto subStart = std::distance(s.begin(), start);
+        auto subLength = std::distance(start, end);
 
-        _add(std::format("{}{}{}", pre, std::string_view{ i }, end), color, canUseHex);
+        // Add the line
+        _add(std::format("{}{}", pre, s.substr(subStart, subLength)), color, canUseHex);
+        start = end;
     }
 }
