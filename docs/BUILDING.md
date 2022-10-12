@@ -1,6 +1,6 @@
 # Building Network Socket Terminal
 
-To build NST from source code, you will need CMake, Conan, Ninja, and an up-to-date compiler. MSVC is recommended on Windows, and GCC is recommended on Linux.
+To build NST from source code, you will need CMake, Conan, Ninja, and an up-to-date compiler.
 
 ## Integration with Conan
 
@@ -30,7 +30,7 @@ TODO: Add package names for pacman and dnf
 
 This project uses C++23 features, so be sure to update your compiler(s) if needed. Compilation is officially supported on the following compilers:
 
-- GCC 12.1+
+- Clang 15+ (with experimental library)
 - Visual Studio 2022 17.1+
 
 All code is standards-compliant. However, because it uses a recent C++ revision, some compilers may not currently be supported.
@@ -42,7 +42,7 @@ To build NST from the command line, start in the root of the repository and exec
 If you are building on Windows, run these commands in the Visual Studio command prompt.
 
 ```shell
-cmake -S . --preset (debug|release)
+cmake --preset (debug|release)
 cd build
 cmake --build .
 ```
