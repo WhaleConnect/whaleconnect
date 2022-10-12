@@ -167,12 +167,9 @@ void Console::update(float textboxHeight) {
 }
 
 void Console::addText(std::string_view s, std::string_view pre, const ImVec4& color, bool canUseHex) {
-    using namespace std::literals;
-
     // Split the string by newlines to get each line, then add each line
     for (auto start = s.begin(), end = start; end != s.end(); start = end) {
-        // Find the next newline
-        end = std::find(start, s.end(), '\n');
+        end = std::find(start, s.end(), '\n'); // Find the next newline
 
         // Get substring
         if (end != s.end()) end++; // Increment end to include the newline in the substring
