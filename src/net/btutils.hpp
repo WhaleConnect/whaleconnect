@@ -14,11 +14,13 @@
 #include "sockets.hpp"
 #include "sys/error.hpp"
 
-#if !OS_WINDOWS
+#if OS_WINDOWS
+#include <guiddef.h>
+#else
 /**
- * @brief A UUID structure. Provided on Linux for compatibility with the Windows API.
+ * @brief A GUID structure. Provided on Linux for compatibility with the Windows API.
 */
-struct UUID {
+struct GUID {
     unsigned long Data1; /**< The first 8 hex digits */
     unsigned short Data2; /**< The first group of 4 hex digits */
     unsigned short Data3; /**< The second group of 4 hex digits */
@@ -29,7 +31,7 @@ struct UUID {
 /**
  * @brief An alias for a pointer to a @p UUID.
 */
-using LPUUID = UUID*;
+using LPUUID = GUID*;
 
 namespace BTUtils {
     /**
@@ -46,7 +48,7 @@ namespace BTUtils {
     */
     struct SDPResult {
         std::vector<uint16_t> protoUUIDs; /**< The list of 16-bit protocol UUIDs */
-        std::vector<UUID> serviceUUIDs; /**< The list of 128-bit service class UUIDs */
+        std::vector<GUID> serviceUUIDs; /**< The list of 128-bit service class UUIDs */
         std::vector<ProfileDesc> profileDescs; /**< The list of profile descriptors */
         uint16_t port = 0; /**< The port advertised (PSM for L2CAP, channel for RFCOMM) */
         std::string name; /**< The name of the service */
@@ -73,7 +75,7 @@ namespace BTUtils {
      * @param uuidShort A 16- or 32-bit UUID value
      * @return The 128-bit UUID constructed from merging the given UUID with the Bluetooth base UUID
     */
-    constexpr UUID createUUIDFromBase(uint32_t uuidShort) {
+    constexpr GUID createUUIDFromBase(uint32_t uuidShort) {
         // To turn a 16-bit UUID into a 128-bit UUID:
         //   | The 16-bit Attribute UUID replaces the x's in the following:
         //   | 0000xxxx - 0000 - 1000 - 8000 - 00805F9B34FB
@@ -98,5 +100,5 @@ namespace BTUtils {
      * @param flushCache If previous caches are ignored during the inquiry (Windows only)
      * @return A vector of each service found
     */
-    SDPResultList sdpLookup(std::string_view addr, UUID uuid, bool flushCache);
+    SDPResultList sdpLookup(std::string_view addr, GUID uuid, bool flushCache);
 }

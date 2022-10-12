@@ -229,7 +229,7 @@ static std::vector<SDP_ELEMENT_DATA> getSDPListData(const LPBLOB blob, USHORT at
 }
 #elif OS_LINUX
 // Converts a Windows-style UUID struct into a Linux-style uuid_t struct.
-static uuid_t uuidWindowsToLinux(const UUID& uuid) {
+static uuid_t uuidWindowsToLinux(const GUID& uuid) {
     // Array of 16 bytes to create the UUID used for SDP search
     uint8_t uuidArr[16];
 
@@ -255,7 +255,7 @@ static uuid_t uuidWindowsToLinux(const UUID& uuid) {
 }
 
 // Converts a Linux-style uuid_t struct into a Windows-style UUID struct.
-static UUID uuidLinuxToWindows(const uuid_t& uuid) {
+static GUID uuidLinuxToWindows(const uuid_t& uuid) {
     // For 16- and 32-bit UUIDs we can derive the rest of the UUID from the Bluetooth base UUID.
     // See the comments inside createUUIDFromBase for details.
     switch (uuid.type) {
@@ -265,7 +265,7 @@ static UUID uuidLinuxToWindows(const uuid_t& uuid) {
         return BTUtils::createUUIDFromBase(uuid.value.uuid32);
     case SDP_UUID128:
         // For a 128-bit UUID we need some more conversions to deal with how both UUID structures are
-        UUID ret;
+        GUID ret;
         const uint8_t* data128 = uuid.value.uuid128.data;
 
         // Copy data into return value
@@ -296,7 +296,7 @@ static void extractVersionNums(uint16_t version, BTUtils::ProfileDesc& desc) {
     desc.versionMinor = version & 0xFF;
 }
 
-BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID uuid, [[maybe_unused]] bool flushCache) {
+BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, GUID uuid, [[maybe_unused]] bool flushCache) {
     // Return value
     SDPResultList ret;
 
