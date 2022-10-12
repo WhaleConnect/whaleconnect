@@ -1,35 +1,36 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <cstdlib> // EXIT_FAILURE, EXIT_SUCCESS
 #include <system_error>
 #include <variant>
 
-#include "app/mainhandle.hpp"
+#include <SDL_main.h> // For definition of main function
+
+#include "app/app.hpp"
 #include "core/newconnbt.hpp"
 #include "core/newconnip.hpp"
 #include "gui/windowlist.hpp"
 #include "net/btutils.hpp"
 #include "util/imguiext.hpp"
 
-#if OS_WINDOWS
-// Use WinMain() as an entry point on MSVC
-#define MAIN_FUNC CALLBACK WinMain
-#define MAIN_ARGS _In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int
-#else
-// Use the standard main() as an entry point on other compilers
-#define MAIN_FUNC main
-#define MAIN_ARGS
-#endif
+// Contains the app's core logic and functions.
+void mainLoop(const App::SDLData &sdlData) {
+    // Initialize APIs for sockets and Bluetooth
+    std::variant<std::monostate, System::SystemError, std::system_error> initResult;
+    try {
+        BTUtils::init();
+    } catch (const System::SystemError& error) {
+        initResult = error;
+    } catch (const std::system_error& error) {
+        initResult = error;
+    }
 
-using InitResult = std::variant<std::monostate, System::SystemError, std::system_error>;
-
-void mainLoop(const InitResult& initResult) {
+    // These variables must be in a separate scope from the cleanup function so they can be destructed before cleanup
     WindowList connections; // List of open windows
     WindowList sdpWindows; // List of windows for creating Bluetooth connections
 
-    while (MainHandler::isActive()) {
-        MainHandler::handleNewFrame();
-
+    while (App::newFrame()) {
         // Error message for failed initialization
         if (std::holds_alternative<System::SystemError>(initResult))
             ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopLeft, "Initialization failed - %s",
@@ -48,27 +49,19 @@ void mainLoop(const InitResult& initResult) {
 
         connections.update();
         sdpWindows.update();
-
-        MainHandler::renderWindow();
+        App::render(sdlData);
     }
 }
 
-int MAIN_FUNC(MAIN_ARGS) {
-    if (!MainHandler::initApp()) return EXIT_FAILURE; // Create a main application window
+int main(int, char**) {
+    // Create a main application window
+    auto sdlData = App::init();
+    if (!sdlData.window || !sdlData.glContext) return EXIT_FAILURE;
 
-    // Initialize APIs for sockets and Bluetooth
-    InitResult initResult;
-    try {
-        BTUtils::init();
-    } catch (const System::SystemError& error) {
-        initResult = error;
-    } catch (const std::system_error& error) {
-        initResult = error;
-    }
-
-    mainLoop(initResult);
+    // Run app
+    mainLoop(sdlData);
 
     BTUtils::cleanup();
-    MainHandler::cleanupApp();
+    App::cleanup(sdlData);
     return EXIT_SUCCESS;
 }

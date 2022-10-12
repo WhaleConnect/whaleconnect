@@ -25,9 +25,9 @@ class App(ConanFile):
     def requirements(self):
         # Common dependencies
         self.requires("fmt/9.1.0")
-        self.requires("glfw/3.3.8")
         self.requires("imgui/cci.20220621+1.88.docking")
         self.requires("magic_enum/0.8.1")
+        self.requires("sdl/2.24.0")
 
         # Dependencies on Linux
         if self.settings.os == "Linux":
@@ -39,7 +39,7 @@ class App(ConanFile):
 
     def imports(self):
         # Copy the Dear ImGui backend files into the project
-        self.copy("imgui_impl_glfw*", dst="bindings", src="res/bindings")
+        self.copy("imgui_impl_sdl.*", dst="bindings", src="res/bindings")
         self.copy("imgui_impl_opengl3*", dst="bindings", src="res/bindings")
 
     def layout(self):

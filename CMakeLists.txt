@@ -17,7 +17,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED true)
 # Source files to compile
 add_executable(terminal WIN32
     "src/main.cpp"
-    "src/app/mainhandle.cpp"
+    "src/app/app.cpp"
     "src/async/async.cpp"
     "src/core/newconnbt.cpp"
     "src/core/newconnip.cpp"
@@ -27,28 +27,30 @@ add_executable(terminal WIN32
     "src/net/btutils.cpp"
     "src/net/sockets.cpp"
     "src/sys/error.cpp"
-    "src/sys/filesystem.cpp"
     "src/util/imguiext.cpp"
     "src/util/strings.cpp")
 
 target_include_directories(terminal PRIVATE src bindings)
 
 # Libraries (installed with Conan)
-find_package(imgui CONFIG REQUIRED)
-find_package(glfw3 CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
 
 find_package(liburing CONFIG)
 find_package(out_ptr CONFIG)
 
+# OpenGL
+find_package(OpenGL REQUIRED)
+
 # Dear ImGui backend files
 add_library(imguiBackends STATIC
-    "bindings/imgui_impl_glfw.cpp"
+    "bindings/imgui_impl_sdl.cpp"
     "bindings/imgui_impl_opengl3.cpp")
 
-target_link_libraries(imguiBackends PUBLIC imgui::imgui glfw)
-target_link_libraries(terminal PRIVATE imguiBackends fmt::fmt magic_enum::magic_enum)
+target_link_libraries(imguiBackends PUBLIC imgui::imgui SDL2::SDL2)
+target_link_libraries(terminal PRIVATE imguiBackends fmt::fmt magic_enum::magic_enum SDL2::SDL2main OpenGL::GL)
 
 # Check for additional package presence by looking for their version strings
 if (DEFINED liburing_VERSION_STRING)
