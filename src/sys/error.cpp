@@ -1,7 +1,8 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <cstring>
+#include <format>
+
 #if OS_WINDOWS
 #include <WinSock2.h>
 #else
@@ -14,7 +15,6 @@
 #include <magic_enum.hpp>
 
 #include "error.hpp"
-#include "compat/format.hpp"
 
 template <>
 constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(System::ErrorType value) noexcept {
@@ -38,7 +38,7 @@ std::string System::SystemError::formatted() const {
     auto msg = (type == ErrorType::System) ? std::strerror(code) : gai_strerror(code);
 #endif
 
-    return std2::format("{} (type {}, in {}): {}", code, magic_enum::enum_name(type), fnName, msg);
+    return std::format("{} (type {}, in {}): {}", code, magic_enum::enum_name(type), fnName, msg);
 }
 
 System::ErrorCode System::getLastError() {

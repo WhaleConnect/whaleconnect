@@ -33,7 +33,6 @@ add_executable(terminal WIN32
 target_include_directories(terminal PRIVATE src bindings)
 
 # Libraries (installed with Conan)
-find_package(fmt CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(magic_enum CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
@@ -50,7 +49,7 @@ add_library(imguiBackends STATIC
     "bindings/imgui_impl_opengl3.cpp")
 
 target_link_libraries(imguiBackends PUBLIC imgui::imgui SDL2::SDL2)
-target_link_libraries(terminal PRIVATE imguiBackends fmt::fmt magic_enum::magic_enum SDL2::SDL2main OpenGL::GL)
+target_link_libraries(terminal PRIVATE imguiBackends magic_enum::magic_enum SDL2::SDL2main OpenGL::GL)
 
 # Check for additional package presence by looking for their version strings
 if (DEFINED liburing_VERSION_STRING)
@@ -98,8 +97,12 @@ else()
     # Warnings
     set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wno-missing-field-initializers)
 
-    # UTF-8
-    target_compile_options(terminal PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
+    target_compile_options(terminal PRIVATE
+        -finput-charset=UTF-8   # UTF-8 for input charset
+        -fexec-charset=UTF-8    # UTF-8 for execution charset
+        -fexperimental-library) # Enable Clang experimental library
+
+    target_link_options(terminal PRIVATE -fexperimental-library)
 endif()
 
 if (LINUX)

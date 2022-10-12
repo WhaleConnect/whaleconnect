@@ -1,11 +1,12 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <format>
+
 #include <imgui.h>
 
 #include "sdpwindow.hpp"
 #include "connwindow.hpp"
-#include "compat/format.hpp"
 #include "util/imguiext.hpp"
 #include "util/overload.hpp"
 
@@ -161,7 +162,7 @@ void SDPWindow::_drawManualTab() {
     ImGui::SetNextItemWidth(100);
     ImGui::InputScalar("Port", _port, 1, 10);
 
-    _drawConnOptions(std2::format("Port {}", _port));
+    _drawConnOptions(std::format("Port {}", _port));
     ImGui::EndTabItem();
 }
 

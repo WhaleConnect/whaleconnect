@@ -24,7 +24,6 @@ class App(ConanFile):
 
     def requirements(self):
         # Common dependencies
-        self.requires("fmt/9.1.0")
         self.requires("imgui/cci.20220621+1.88.docking")
         self.requires("magic_enum/0.8.1")
         self.requires("sdl/2.24.0")

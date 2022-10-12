@@ -9,6 +9,7 @@
 #pragma once
 
 #include <map>
+#include <format>
 #include <future>
 #include <string>
 #include <string_view>
@@ -20,7 +21,6 @@
 #include "net/sockets.hpp"
 #include "net/btutils.hpp"
 #include "sys/error.hpp"
-#include "compat/format.hpp"
 
 /**
  * @brief A class to handle an SDP inquiry in a GUI window.
@@ -85,6 +85,6 @@ public:
      * @param list The list of @p ConnWindow objects to add to with a new connection
     */
     SDPWindow(const Sockets::DeviceData& target, const UUIDMap& uuids, WindowList& list)
-        : Window(std2::format("Connect To {}##{}", target.name, target.address)), _target(target), _uuids(uuids),
+        : Window(std::format("Connect To {}##{}", target.name, target.address)), _target(target), _uuids(uuids),
         _selectedUUID(_uuids.begin()->first), _list(list) {}
 };

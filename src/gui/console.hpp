@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <format>
 #include <functional> // std::function
 #include <sstream> // std::ostringstream
 #include <string_view>
@@ -16,7 +17,6 @@
 #include <imgui.h>
 
 #include "app/settings.hpp"
-#include "compat/format.hpp"
 
 /**
  * @brief A class to represent a text panel with an input textbox.

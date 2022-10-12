@@ -4,10 +4,11 @@
             120
         ]
     },
-    "C_Cpp.doxygen.generatedStyle": "/**",
-    "C_Cpp.doxygen.generateOnType": true,
     "cmake.configureOnOpen": true,
     "cmake.configureOnEdit": true,
+    "doxdocgen.c.lastLine": "*/",
+    "doxdocgen.generic.boolReturnsTrueFalse": false,
+    "doxdocgen.generic.includeTypeAtReturn": false,
     "editor.formatOnType": true,
     "explorer.excludeGitIgnore": true,
     "files.associations": {
