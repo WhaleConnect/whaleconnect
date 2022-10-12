@@ -10,9 +10,12 @@
 
 #pragma once
 
+#include <cfloat>
 #include <string>
 #include <string_view>
 #include <type_traits> // std::is_same_v
+
+#include <imgui.h>
 
 /**
  * @brief The corners of the application window where an overlay can be drawn.
