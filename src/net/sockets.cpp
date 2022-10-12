@@ -191,6 +191,9 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
         // Return the socket
         co_return std::move(ret);
     } else if (connectionTypeIsBT(data.type)) {
+#if OS_APPLE
+        co_return {}; // TODO: Implement function
+#else
         // Set up Bluetooth socket
         Socket ret{ EXPECT_NONERROR(bluetoothSocket, data.type) };
 
@@ -232,6 +235,7 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
         co_await connectSocket(ret.get(), std::bit_cast<sockaddr*>(&sAddrBT), addrSize, isDgram);
 
         co_return std::move(ret);
+#endif
     } else {
         // None type
         throw std::invalid_argument{ "None type specified in socket creation" };

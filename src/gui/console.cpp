@@ -30,7 +30,7 @@ void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
 
     if (_items.empty() || (_items.back().text.back() == '\n')) {
         // Text goes on its own line if there are no items or the last line ends with a newline
-        _items.emplace_back(canUseHex, std::string{ s }, std::ostringstream{}, color, timestamp);
+        _items.push_back({ canUseHex, std::string{ s }, {}, color, timestamp });
     } else {
         // Text goes on the last line (append)
         _items.back().text += s;
