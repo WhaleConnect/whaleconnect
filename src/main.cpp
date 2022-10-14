@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <cstdlib> // EXIT_FAILURE, EXIT_SUCCESS
+#include <optional>
 #include <system_error>
-#include <variant>
 
 #include <SDL_main.h> // For definition of main function
 
@@ -17,13 +17,13 @@
 // Contains the app's core logic and functions.
 void mainLoop(const App::SDLData &sdlData) {
     // Initialize APIs for sockets and Bluetooth
-    std::variant<std::monostate, System::SystemError, std::system_error> initResult;
+    std::optional<std::string> failureMessage;
     try {
         BTUtils::init();
     } catch (const System::SystemError& error) {
-        initResult = error;
+        failureMessage = "Initialization failed - " + error.formatted();
     } catch (const std::system_error& error) {
-        initResult = error;
+        failureMessage = "Initialization failed - Could not initialize thread pool";
     }
 
     // These variables must be in a separate scope from the cleanup function so they can be destructed before cleanup
@@ -32,11 +32,8 @@ void mainLoop(const App::SDLData &sdlData) {
 
     while (App::newFrame()) {
         // Error message for failed initialization
-        if (std::holds_alternative<System::SystemError>(initResult))
-            ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopLeft, "Initialization failed - %s",
-                        std::get<System::SystemError>(initResult).formatted().c_str());
-        else if (std::holds_alternative<std::system_error>(initResult))
-            ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopLeft, "Could not initialize thread pool.");
+        if (failureMessage)
+            ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopLeft, failureMessage->c_str());
 
         // New connection window
         ImGui::SetNextWindowSize({ 600, 170 }, ImGuiCond_FirstUseEver);
