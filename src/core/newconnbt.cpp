@@ -82,7 +82,7 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
     static std::variant<std::monostate, Sockets::DeviceDataList, System::SystemError> pairedDevices; // Paired devices
 
     // Map of UUIDs, associating a UUID value with a user-given name
-    static std::map<std::string, UUID, std::less<>> uuidList = {
+    static std::map<std::string, GUID, std::less<>> uuidList = {
         { "L2CAP", BTUtils::createUUIDFromBase(0x0100) },
         { "RFCOMM", BTUtils::createUUIDFromBase(0x0003) }
     };

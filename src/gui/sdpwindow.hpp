@@ -27,7 +27,7 @@
 */
 class SDPWindow : public Window {
     using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>; // Results of an SDP search
-    using UUIDMap = std::map<std::string, UUID, std::less<>>; // List of UUIDs used for SDP filtering
+    using UUIDMap = std::map<std::string, GUID, std::less<>>; // List of UUIDs used for SDP filtering
 
     Sockets::DeviceData _target; // The target to perform SDP inquiries on and connect to
 
