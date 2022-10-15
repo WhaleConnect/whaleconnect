@@ -58,7 +58,7 @@ SpacesInLineCommentPrefix:
   Minimum: 1
   Maximum: -1
 
-BitFieldColonSpacing: After
+BitFieldColonSpacing: Both
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: true
 SpaceBeforeCaseColon: false
