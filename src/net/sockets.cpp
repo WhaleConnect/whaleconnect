@@ -2,33 +2,32 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <bit> // std::bit_cast()
+#include "sys/error.hpp"
 
 #if OS_WINDOWS
 // Winsock headers
-#include <WS2tcpip.h>
-#include <ws2bth.h>
-#include <MSWSock.h>
 #include <mstcpip.h>
+#include <MSWSock.h>
+#include <ws2bth.h>
+#include <WS2tcpip.h>
 #elif OS_APPLE
+#include <netdb.h>      // addrinfo/getaddrinfo() related identifiers
 #include <netinet/in.h> // sockaddr
 #include <sys/socket.h> // Socket definitions
-#include <netdb.h> // addrinfo/getaddrinfo() related identifiers
 #elif OS_LINUX
 // Linux Bluetooth headers
 #include <bluetooth/bluetooth.h>
-#include <bluetooth/rfcomm.h>
 #include <bluetooth/l2cap.h>
-
+#include <bluetooth/rfcomm.h>
 #include <liburing.h>
-
+#include <netdb.h>      // addrinfo/getaddrinfo() related identifiers
 #include <netinet/in.h> // sockaddr
 #include <sys/socket.h> // Socket definitions
-#include <netdb.h> // addrinfo/getaddrinfo() related identifiers
 #endif
 
-#include "sockets.hpp"
 #include "async/async.hpp"
 #include "compat/outptr.hpp"
+#include "sockets.hpp"
 #include "sys/errcheck.hpp"
 #include "sys/handleptr.hpp"
 #include "util/strings.hpp"
@@ -81,17 +80,13 @@ static SOCKET bluetoothSocket(Sockets::ConnectionType type) {
     // Determine the socket type
     int sockType = 0;
     switch (type) {
-    case L2CAPSeqPacket:
-        sockType = SOCK_SEQPACKET;
-        break;
+    case L2CAPSeqPacket: sockType = SOCK_SEQPACKET; break;
     case L2CAPStream:
     case RFCOMM:
         // L2CAP can use a stream-based protocol, RFCOMM is stream-only.
         sockType = SOCK_STREAM;
         break;
-    case L2CAPDgram:
-        sockType = SOCK_DGRAM;
-        break;
+    case L2CAPDgram: sockType = SOCK_DGRAM; break;
     default:
         // Should never get here since this function is used internally.
         return INVALID_SOCKET;
@@ -148,7 +143,7 @@ static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, b
     // Make the socket behave more like a regular socket connected with connect()
     EXPECT_ZERO(setsockopt, s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
 #elif OS_LINUX
-    io_uring_sqe *sqe = Async::getUringSQE();
+    io_uring_sqe* sqe = Async::getUringSQE();
     io_uring_prep_connect(sqe, s, addr, addrLen);
     io_uring_sqe_set_data(sqe, &result);
     Async::submitRing();
@@ -169,7 +164,7 @@ Task<Sockets::Socket> Sockets::createClientSocket(const DeviceData& data) {
             .ai_flags = AI_NUMERICHOST,
             .ai_family = AF_UNSPEC,
             .ai_socktype = isUDP ? SOCK_DGRAM : SOCK_STREAM,
-            .ai_protocol = isUDP ? IPPROTO_UDP : IPPROTO_TCP
+            .ai_protocol = isUDP ? IPPROTO_UDP : IPPROTO_TCP,
         };
 
         // Wide encoding conversions for Windows

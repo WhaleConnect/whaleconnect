@@ -4,29 +4,30 @@
 /**
  * @file
  * @brief A class to handle a socket connection in a GUI window
-*/
+ */
 
 #pragma once
 
-#include <string>
-#include <mutex>
 #include <functional> // std::bind_front()
+#include <mutex>
+#include <string>
 #include <string_view>
 
-#include "console.hpp"
-#include "window.hpp"
 #include "async/async.hpp"
+#include "console.hpp"
 #include "net/sockets.hpp"
+#include "window.hpp"
 
 /**
  * @brief A class to handle a socket connection in a GUI window.
-*/
+ */
 class ConnWindow : public Window {
     Sockets::DeviceData _data; // The server to connect to
-    Sockets::Socket _socket; // The socket
+    Sockets::Socket _socket;   // The socket
     bool _pendingRecv = false; // If a receive operation has not yet completed
 
     std::mutex _outputMutex; // The mutex for access to the console output
+
     Console _output{ std::bind_front(&ConnWindow::_sendHandler, this) }; // The console output
 
     // Connects to the server.
@@ -58,6 +59,6 @@ public:
      * @brief Sets the window information.
      * @param data The server to connect to
      * @param extraInfo Extra information to display in the window's titlebar
-    */
+     */
     ConnWindow(const Sockets::DeviceData& data, std::string_view extraInfo);
 };

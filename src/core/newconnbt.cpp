@@ -1,6 +1,8 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "newconnbt.hpp"
+
 #include <algorithm>
 #include <map>
 #include <string>
@@ -44,8 +46,9 @@ static const Sockets::DeviceData* drawPairedDevices(Sockets::DeviceDataList& dev
 
     // Setup table
     int numCols = 3;
-    if (!ImGui::BeginTable("paired", numCols, ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable
-                           | ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY)) return ret;
+    ImGuiTableFlags flags
+        = ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY;
+    if (!ImGui::BeginTable("paired", numCols, flags)) return ret;
 
     ImGui::TableSetupColumn("Name");
     ImGui::TableSetupColumn("Address");
@@ -84,7 +87,7 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
     // Map of UUIDs, associating a UUID value with a user-given name
     static std::map<std::string, GUID, std::less<>> uuidList = {
         { "L2CAP", BTUtils::createUUIDFromBase(0x0100) },
-        { "RFCOMM", BTUtils::createUUIDFromBase(0x0003) }
+        { "RFCOMM", BTUtils::createUUIDFromBase(0x0003) },
     };
 
     bool needsSort = false;
@@ -94,13 +97,11 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
         try {
             pairedDevices = BTUtils::getPaired();
             needsSort = true;
-        } catch (const System::SystemError& error) {
-            pairedDevices = error;
-        }
+        } catch (const System::SystemError& error) { pairedDevices = error; }
     }
 
     // Check paired devices list
-    std::visit(Overload{
+    Overload visitor{
         [](std::monostate) { /* Nothing to do when devices not found */ },
         [needsSort, &connections, &sdpWindows](Sockets::DeviceDataList& deviceList) {
             // Check if the device list is empty
@@ -118,8 +119,9 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
         [](const System::SystemError& error) {
             // Error occurred
             ImGui::TextWrapped("Error %s", error.formatted().c_str());
-        }
-    }, pairedDevices);
+        },
+    };
 
+    std::visit(visitor, pairedDevices);
     ImGui::EndTabItem();
 }

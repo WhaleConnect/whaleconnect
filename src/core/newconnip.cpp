@@ -1,11 +1,12 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "newconnip.hpp"
+
 #include <string>
 
 #include <imgui.h>
 
-#include "newconnip.hpp"
 #include "gui/connwindow.hpp"
 #include "gui/windowlist.hpp"
 #include "net/sockets.hpp"
@@ -16,10 +17,10 @@ void drawIPConnectionTab(WindowList& connections) {
     using Sockets::ConnectionType;
     using enum ConnectionType;
 
-    static std::string addr; // Server address
-    static uint16_t port = 0; // Server port
+    static std::string addr;          // Server address
+    static uint16_t port = 0;         // Server port
     static ConnectionType type = TCP; // Type of connection to create
-    static bool isNew = true; // If the attempted connection is unique
+    static bool isNew = true;         // If the attempted connection is unique
 
     ImGui::BeginChildSpacing("Output", !isNew);
 
@@ -27,16 +28,15 @@ void drawIPConnectionTab(WindowList& connections) {
     static const char* portLabel = "Port";
     static const char* addressLabel = "Address";
 
-    static float portWidth = 100.0f; // The width of the port input (hardcoded)
+    static float portWidth = 100.0f;       // The width of the port input (hardcoded)
     static float minAddressWidth = 120.0f; // The minimum width of the address textbox
 
     // The horizontal space available in the window
-    float spaceAvailable
-        = ImGui::GetContentRegionAvail().x              // The width of the child window without scrollbars
-        - ImGui::CalcTextWidthWithSpacing(addressLabel) // Width of address input label
-        - ImGui::GetStyle().ItemSpacing.x               // Space between the address and port inputs
-        - ImGui::CalcTextWidthWithSpacing(portLabel)    // Width of the port input label
-        - portWidth;                                    // Width of the port input
+    float spaceAvailable = ImGui::GetContentRegionAvail().x              // Child window width without scrollbars
+                         - ImGui::CalcTextWidthWithSpacing(addressLabel) // Address input label width
+                         - ImGui::GetStyle().ItemSpacing.x               // Space between address and port inputs
+                         - ImGui::CalcTextWidthWithSpacing(portLabel)    // Port input label width
+                         - portWidth;                                    // Port input width
 
     // Server address, set the textbox width to the space not taken up by everything else
     // Use std::max to set a minimum size for the texbox; it will not resize past a certain min bound.

@@ -1,11 +1,12 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "sdpwindow.hpp"
+
 #include <format>
 
 #include <imgui.h>
 
-#include "sdpwindow.hpp"
 #include "connwindow.hpp"
 #include "util/imguiext.hpp"
 #include "util/overload.hpp"
@@ -21,7 +22,7 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
         const char* serviceName = name.empty() ? "Unnamed service" : name.c_str();
 
         ImGui::PushID(id); // Push the ID, then increment it
-        id++; // TODO: Use views::enumerate() in C++26
+        id++;              // TODO: Use views::enumerate() in C++26
 
         if (ImGui::TreeNode(serviceName)) {
             // Print the description (if there is one)
@@ -34,10 +35,9 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
             // Print service class UUIDs
             if (!services.empty()) ImGui::Text("Service class UUIDs:");
             for (const auto& i : services)
-                ImGui::BulletText("%08lX-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X",
-                                  i.Data1, i.Data2, i.Data3,
-                                  i.Data4[0], i.Data4[1], i.Data4[2], i.Data4[3],
-                                  i.Data4[4], i.Data4[5], i.Data4[6], i.Data4[7]);
+                ImGui::BulletText("%08lX-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", i.Data1, i.Data2, i.Data3,
+                                  i.Data4[0], i.Data4[1], i.Data4[2], i.Data4[3], i.Data4[4], i.Data4[5], i.Data4[6],
+                                  i.Data4[7]);
 
             // Print profile descriptors
             if (!profiles.empty()) ImGui::Text("Profile descriptors:");
@@ -78,10 +78,8 @@ void SDPWindow::_drawConnOptions(std::string_view info) {
 }
 
 void SDPWindow::_checkInquiryStatus() {
-    std::visit(Overload{
-        [](std::monostate) {
-            ImGui::TextUnformatted("No inquiry run");
-        },
+    Overload visitor{
+        [](std::monostate) { ImGui::TextUnformatted("No inquiry run"); },
         [this](AsyncSDPInquiry& asyncInq) {
             using namespace std::literals;
             if (asyncInq.wait_for(0s) != std::future_status::ready) {
@@ -93,16 +91,10 @@ void SDPWindow::_checkInquiryStatus() {
             // The async operation has completed, attempt to get its results
             try {
                 _sdpInquiry = asyncInq.get();
-            } catch (const System::SystemError& error) {
-                _sdpInquiry = error;
-            }
+            } catch (const System::SystemError& error) { _sdpInquiry = error; }
         },
-        [](const std::system_error&) {
-            ImGui::TextWrapped("System error: Failed to launch thread.");
-        },
-        [](const System::SystemError& error) {
-            ImGui::TextWrapped("Error %s", error.formatted().c_str());
-        },
+        [](const std::system_error&) { ImGui::TextWrapped("System error: Failed to launch thread."); },
+        [](const System::SystemError& error) { ImGui::TextWrapped("Error %s", error.formatted().c_str()); },
         [this](const BTUtils::SDPResultList& list) {
             // Done, print results
             if (list.empty()) {
@@ -116,8 +108,10 @@ void SDPWindow::_checkInquiryStatus() {
                 _drawConnOptions(_serviceName);
                 ImGui::EndPopup();
             }
-        }
-    }, _sdpInquiry);
+        },
+    };
+
+    std::visit(visitor, _sdpInquiry);
 }
 
 void SDPWindow::_drawSDPTab() {
@@ -129,7 +123,8 @@ void SDPWindow::_drawSDPTab() {
     // UUID selection combobox
     ImGui::SetNextItemWidth(150);
     if (ImGui::BeginCombo("Protocol/Service UUID", _selectedUUID.c_str())) {
-        for (const auto& [name, _] : _uuids) if (ImGui::Selectable(name.c_str())) _selectedUUID = name;
+        for (const auto& [name, _] : _uuids)
+            if (ImGui::Selectable(name.c_str())) _selectedUUID = name;
         ImGui::EndCombo();
     }
 
@@ -146,9 +141,7 @@ void SDPWindow::_drawSDPTab() {
             // Start the inquiry
             _sdpInquiry = std::async(std::launch::async, BTUtils::sdpLookup, _target.address, _uuids.at(_selectedUUID),
                                      _flushCache);
-        } catch (const std::system_error& error) {
-            _sdpInquiry = error;
-        }
+        } catch (const std::system_error& error) { _sdpInquiry = error; }
     }
 
     ImGui::EndDisabled();

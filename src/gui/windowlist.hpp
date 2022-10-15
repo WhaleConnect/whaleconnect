@@ -4,7 +4,7 @@
 /**
  * @file
  * @brief A class to manage multiple related @p Window objects
-*/
+ */
 
 #pragma once
 
@@ -22,9 +22,8 @@ class WindowList {
 
     // Checks if the list contains a window with the specified title.
     bool _validateDuplicate(std::string_view title) {
-        return std::ranges::find_if(_windows, [title](const auto& current) {
-            return current->getTitle() == title;
-        }) == _windows.end();
+        return std::ranges::find_if(_windows, [title](const auto& current) { return current->getTitle() == title; })
+            == _windows.end();
     }
 
 public:
@@ -34,9 +33,10 @@ public:
      * @tparam ...Args A sequence of arguments to construct the window object with
      * @param ...args Arguments to pass to the window class' constructor
      * @return If the window is unique and was added
-    */
-    template <class T, class... Args> requires std::derived_from<T, Window>
-    bool add(Args&&... args) {
+     */
+    template <class T, class... Args>
+    requires std::derived_from<T, Window>
+    auto add(Args&&... args) {
         // Create the pointer
         auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
         if (!_validateDuplicate(ptr->getTitle())) return false;
@@ -49,7 +49,7 @@ public:
 
     /**
      * @brief Redraws all contained windows and deletes any that have been closed.
-    */
+     */
     void update() {
         // Remove all closed windows
         std::erase_if(_windows, [](const auto& window) { return !window->isOpen(); });

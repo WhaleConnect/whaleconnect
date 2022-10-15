@@ -32,8 +32,8 @@ std::string Strings::fromSys(SysStrView from) {
     if (from.empty()) return {};
 
     // Size of UTF-16 wide string in UTF-8 encoding
-    int stringSize = WideCharToMultiByte(CP_UTF8, 0, from.data(), static_cast<int>(from.size()), nullptr, 0, nullptr,
-                                         nullptr);
+    int stringSize
+        = WideCharToMultiByte(CP_UTF8, 0, from.data(), static_cast<int>(from.size()), nullptr, 0, nullptr, nullptr);
 
     // Buffer to contain new string
     std::string buf(stringSize, '\0');

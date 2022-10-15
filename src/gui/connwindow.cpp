@@ -1,11 +1,12 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "connwindow.hpp"
+
 #include <format>
 
 #include <magic_enum.hpp>
 
-#include "connwindow.hpp"
 #include "app/settings.hpp"
 #include "net/sockets.hpp"
 #include "sys/error.hpp"
@@ -16,14 +17,10 @@ constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(So
     using enum Sockets::ConnectionType;
 
     switch (value) {
-    case L2CAPSeqPacket:
-        return "L2CAP SeqPacket";
-    case L2CAPStream:
-        return "L2CAP Stream";
-    case L2CAPDgram:
-        return "L2CAP Datagram";
-    default:
-        return default_tag;
+    case L2CAPSeqPacket: return "L2CAP SeqPacket";
+    case L2CAPStream: return "L2CAP Stream";
+    case L2CAPDgram: return "L2CAP Datagram";
+    default: return default_tag;
     }
 }
 
@@ -45,32 +42,29 @@ static std::string formatDeviceData(const Sockets::DeviceData& data, std::string
     // Format the values into a string as the title
     // The address is always part of the id hash.
     // The port is not visible for a Bluetooth connection, instead, it is part of the id hash.
-    std::string title = isBluetooth
-        ? std::format("{} Connection - {}##{} port {}", typeString, deviceString, data.address, data.port)
-        : std::format("{} Connection - {} port {}##{}", typeString, deviceString, data.port, data.address);
+    std::string title
+        = isBluetooth
+            ? std::format("{} Connection - {}##{} port {}", typeString, deviceString, data.address, data.port)
+            : std::format("{} Connection - {} port {}##{}", typeString, deviceString, data.port, data.address);
 
     // If there's extra info, it is formatted before the window title.
     // If it were to be put after the title, it would be part of the invisible id hash (after the "##").
     return extraInfo.empty() ? title : std::format("({}) {}", extraInfo, title);
 }
 
-ConnWindow::ConnWindow(const Sockets::DeviceData& data, std::string_view extraInfo)
-    : Window(formatDeviceData(data, extraInfo)), _data(data) {}
+ConnWindow::ConnWindow(const Sockets::DeviceData& data, std::string_view extraInfo) :
+    Window(formatDeviceData(data, extraInfo)), _data(data) {}
 
 Task<> ConnWindow::_connect() try {
     _output.addInfo("Connecting...");
 
     _socket = co_await Sockets::createClientSocket(_data);
     _output.addInfo("Connected.");
-} catch (const System::SystemError& error) {
-    _errorHandler(error);
-}
+} catch (const System::SystemError& error) { _errorHandler(error); }
 
 Task<> ConnWindow::_sendHandler(std::string_view s) try {
     co_await Sockets::sendData(_socket.get(), s);
-} catch (const System::SystemError& error) {
-    _errorHandler(error);
-}
+} catch (const System::SystemError& error) { _errorHandler(error); }
 
 Task<> ConnWindow::_readHandler() try {
     if (!_socket) co_return;

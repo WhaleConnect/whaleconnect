@@ -1,14 +1,16 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "async.hpp"
+
 #include <algorithm> // std::max()
 #include <thread>
 #include <vector>
 
 #if OS_WINDOWS
+#include <MSWSock.h>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
-#include <MSWSock.h>
 #elif OS_LINUX
 #include <bit>
 #include <mutex>
@@ -16,7 +18,6 @@
 #include <liburing.h>
 #endif
 
-#include "async.hpp"
 #include "sys/errcheck.hpp"
 
 // The number of threads to start

@@ -15,7 +15,7 @@
 #include "util/imguiext.hpp"
 
 // Contains the app's core logic and functions.
-void mainLoop(const App::SDLData &sdlData) {
+void mainLoop(const App::SDLData& sdlData) {
     // Initialize APIs for sockets and Bluetooth
     std::optional<std::string> failureMessage;
     try {
@@ -28,12 +28,11 @@ void mainLoop(const App::SDLData &sdlData) {
 
     // These variables must be in a separate scope from the cleanup function so they can be destructed before cleanup
     WindowList connections; // List of open windows
-    WindowList sdpWindows; // List of windows for creating Bluetooth connections
+    WindowList sdpWindows;  // List of windows for creating Bluetooth connections
 
     while (App::newFrame()) {
         // Error message for failed initialization
-        if (failureMessage)
-            ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopLeft, failureMessage->c_str());
+        if (failureMessage) ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopLeft, failureMessage->c_str());
 
         // New connection window
         ImGui::SetNextWindowSize({ 600, 170 }, ImGuiCond_FirstUseEver);

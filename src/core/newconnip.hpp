@@ -4,7 +4,7 @@
 /**
  * @file
  * @brief Functions to draw the tab for a new Internet Protocol connection
-*/
+ */
 
 #pragma once
 
@@ -13,5 +13,5 @@
 /**
  * @brief Renders the tab in the "New Connection" window for Internet-based connections.
  * @param connections The list of @p ConnWindow objects to add to when making a new connection
-*/
+ */
 void drawIPConnectionTab(WindowList& connections);

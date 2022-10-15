@@ -4,57 +4,57 @@
 /**
  * @file
  * @brief A class to handle an SDP inquiry in a GUI window
-*/
+ */
 
 #pragma once
 
-#include <map>
 #include <format>
 #include <future>
+#include <map>
 #include <string>
 #include <string_view>
 #include <system_error>
 #include <variant>
 
-#include "windowlist.hpp"
-#include "window.hpp"
-#include "net/sockets.hpp"
 #include "net/btutils.hpp"
+#include "net/sockets.hpp"
 #include "sys/error.hpp"
+#include "window.hpp"
+#include "windowlist.hpp"
 
 /**
  * @brief A class to handle an SDP inquiry in a GUI window.
-*/
+ */
 class SDPWindow : public Window {
     using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>; // Results of an SDP search
-    using UUIDMap = std::map<std::string, GUID, std::less<>>; // List of UUIDs used for SDP filtering
+    using UUIDMap = std::map<std::string, GUID, std::less<>>;    // List of UUIDs used for SDP filtering
 
     Sockets::DeviceData _target; // The target to perform SDP inquiries on and connect to
 
     // Fields for SDP connections
-    const UUIDMap& _uuids; // The available UUIDs used for SDP inquiries
+    const UUIDMap& _uuids;     // The available UUIDs used for SDP inquiries
     std::string _selectedUUID; // The UUID selected for an inquiry
-    bool _flushCache = false; // If data should be flushed on the next inquiry
-    std::string _serviceName; // The service name of the selected SDP result, displayed in the connection window title
+    bool _flushCache = false;  // If data should be flushed on the next inquiry
+    std::string _serviceName;  // The service name of the selected SDP result, displayed in the connection window title
 
     // Fields for SDP and manual connection state
     Sockets::ConnectionType _connType = Sockets::ConnectionType::RFCOMM; // The selected connection type
-    uint16_t _port = 0; // The port to connect to
+    uint16_t _port = 0;                                                  // The port to connect to
 
     // Fields for connection management
-    WindowList& _list; // The list of connection window objects to add to when making a new connection
+    WindowList& _list;  // The list of connection window objects to add to when making a new connection
     bool _isNew = true; // If the current connection is unique
 
     // SDP inquiry data
     // The value this variant currently holds contains data about the SDP inquiry.
     // The type of the value represents the inquiry's state.
-    std::variant<
-        std::monostate, // Default value when no inquiries have been run yet
-        AsyncSDPInquiry, // A future object corresponding to an in-progress inquiry
-        std::system_error, // An error when the asynchronous thread couldn't be created
-        System::SystemError, // An error that occurred during an in-progress inquiry
-        BTUtils::SDPResultList // The results of the inquiry when it has completed
-    > _sdpInquiry;
+    std::variant<std::monostate,        // Default value when no inquiries have been run yet
+                 AsyncSDPInquiry,       // A future object corresponding to an in-progress inquiry
+                 std::system_error,     // An error when the asynchronous thread couldn't be created
+                 System::SystemError,   // An error that occurred during an in-progress inquiry
+                 BTUtils::SDPResultList // The results of the inquiry when it has completed
+                 >
+        _sdpInquiry;
 
     // Draws the entries from an SDP lookup with buttons to connect to each in a tree format.
     bool _drawSDPList(const BTUtils::SDPResultList& list);
@@ -83,8 +83,8 @@ public:
      * @param target The target to connect to
      * @param uuids A map of UUIDs to perform SDP inquiries with
      * @param list The list of @p ConnWindow objects to add to with a new connection
-    */
-    SDPWindow(const Sockets::DeviceData& target, const UUIDMap& uuids, WindowList& list)
-        : Window(std::format("Connect To {}##{}", target.name, target.address)), _target(target), _uuids(uuids),
+     */
+    SDPWindow(const Sockets::DeviceData& target, const UUIDMap& uuids, WindowList& list) :
+        Window(std::format("Connect To {}##{}", target.name, target.address)), _target(target), _uuids(uuids),
         _selectedUUID(_uuids.begin()->first), _list(list) {}
 };

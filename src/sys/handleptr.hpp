@@ -4,7 +4,7 @@
 /**
  * @file
  * @brief A typedef to manage system handles with RAII
-*/
+ */
 
 #include <memory>
 
@@ -12,6 +12,6 @@
  * @brief A typedef to manage system handles with RAII.
  * @tparam T The type of the handle to manage (pointer removed)
  * @tparam Fn The address of the function to free the handle (takes a parameter of @p T*)
-*/
+ */
 template <class T, auto Fn>
 using HandlePtr = std::unique_ptr<T, decltype([](T* p) { Fn(p); })>;

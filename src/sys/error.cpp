@@ -6,8 +6,8 @@
 #if OS_WINDOWS
 #include <WinSock2.h>
 #else
+#include <cerrno>  // errno
 #include <cstring> // std::strerror()
-#include <cerrno> // errno
 
 #include <netdb.h> // gai_strerror()
 #endif

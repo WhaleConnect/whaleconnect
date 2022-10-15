@@ -1,26 +1,26 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "btutils.hpp"
+
 #include <bit>
 
-#include "btutils.hpp"
 #include "sockets.hpp"
 
 #if OS_WINDOWS
 #include <format>
 
+#include <bluetoothapis.h>
 #include <WinSock2.h>
 #include <ws2bth.h>
-#include <bluetoothapis.h>
 
 #include "util/strings.hpp"
 #elif OS_LINUX
 #include <cstring> // std::memcpy()
 
-#include <dbus/dbus.h>
-
 #include <bluetooth/sdp.h>
 #include <bluetooth/sdp_lib.h>
+#include <dbus/dbus.h>
 
 static DBusConnection* conn = nullptr;
 #endif
@@ -79,7 +79,7 @@ Sockets::DeviceDataList BTUtils::getPaired() {
         .fReturnUnknown = false,
         .fReturnConnected = false,
         .fIssueInquiry = false,
-        .cTimeoutMultiplier = 0
+        .cTimeoutMultiplier = 0,
     };
 
     // Find the first device
@@ -98,8 +98,8 @@ Sockets::DeviceDataList BTUtils::getPaired() {
     do {
         // Format address byte array into MAC address
         const BYTE* addr = deviceInfo.Address.rgBytes;
-        std::string mac = std::format("{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
-                                      addr[5], addr[4], addr[3], addr[2], addr[1], addr[0]);
+        std::string mac = std::format("{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}", addr[5], addr[4], addr[3], addr[2],
+                                      addr[1], addr[0]);
 
         // Get the name of the device
         std::string name = Strings::fromSys(deviceInfo.szName);
@@ -259,10 +259,8 @@ static GUID uuidLinuxToWindows(const uuid_t& uuid) {
     // For 16- and 32-bit UUIDs we can derive the rest of the UUID from the Bluetooth base UUID.
     // See the comments inside createUUIDFromBase for details.
     switch (uuid.type) {
-    case SDP_UUID16:
-        return BTUtils::createUUIDFromBase(uuid.value.uuid16);
-    case SDP_UUID32:
-        return BTUtils::createUUIDFromBase(uuid.value.uuid32);
+    case SDP_UUID16: return BTUtils::createUUIDFromBase(uuid.value.uuid16);
+    case SDP_UUID32: return BTUtils::createUUIDFromBase(uuid.value.uuid32);
     case SDP_UUID128:
         // For a 128-bit UUID we need some more conversions to deal with how both UUID structures are
         GUID ret;
@@ -309,7 +307,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, GUID uuid, [[ma
         .lpServiceClassId = &uuid,
         .dwNameSpace = NS_BTH,
         .lpszContext = addrWide.data(),
-        .dwNumberOfCsAddrs = 0
+        .dwNumberOfCsAddrs = 0,
     };
 
     // Lookup service flags
@@ -370,14 +368,9 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, GUID uuid, [[ma
         // Service class UUIDs
         for (const auto& [_, specificType, data] : getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_CLASS_ID_LIST)) {
             switch (specificType) {
-            case SDP_ST_UUID16:
-                result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid16));
-                break;
-            case SDP_ST_UUID32:
-                result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid32));
-                break;
-            case SDP_ST_UUID128:
-                result.serviceUUIDs.push_back(data.uuid128);
+            case SDP_ST_UUID16: result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid16)); break;
+            case SDP_ST_UUID32: result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid32)); break;
+            case SDP_ST_UUID128: result.serviceUUIDs.push_back(data.uuid128);
             }
         }
 

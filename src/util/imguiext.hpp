@@ -6,7 +6,7 @@
  * @brief Extension functions for Dear ImGui
  *
  * The naming conventions used in this file are selected to remain consistent with the official Dear ImGui API.
-*/
+ */
 
 #pragma once
 
@@ -20,7 +20,7 @@
 /**
  * @brief The corners of the application window where an overlay can be drawn.
  * @sa ImGui::Overlay()
-*/
+ */
 enum class ImGuiOverlayCorner { TopLeft, TopRight, BottomLeft, BottomRight };
 
 namespace ImGui {
@@ -29,10 +29,8 @@ namespace ImGui {
     /**
      * @brief A wrapper for @p TextUnformatted() to allow a @p string_view parameter.
      * @param s The string to display
-    */
-    inline void TextUnformatted(std::string_view s) {
-        TextUnformatted(s.data());
-    }
+     */
+    inline void TextUnformatted(std::string_view s) { TextUnformatted(s.data()); }
 
     /**
      * @brief A wrapper for @p RadioButton() to control a variable and its value.
@@ -40,7 +38,7 @@ namespace ImGui {
      * @param label The widget label
      * @param var The variable to associate with the radiobutton
      * @param value The value to set to the variable when the radiobutton is selected
-    */
+     */
     template <class T>
     void RadioButton(const char* label, T& var, T value) {
         if (RadioButton(label, var == value)) var = value;
@@ -52,7 +50,7 @@ namespace ImGui {
      * @param space The space to reserve at the bottom (multiplied by frame height with item spacing)
      * @param border If the child window has a border
      * @param flags Flags to modify the child window
-    */
+     */
     inline void BeginChildSpacing(const char* id, float space, bool border = false, ImGuiWindowFlags flags = 0) {
         BeginChild(id, { 0, space * -ImGui::GetFrameHeightWithSpacing() }, border, flags);
     }
@@ -61,7 +59,7 @@ namespace ImGui {
      * @brief Gets the width of a rendered string added with the item inner spacing specified in the Dear ImGui style.
      * @param text The string to calculate the width from
      * @return The width of the string in pixels with the current font and item inner spacing settings
-    */
+     */
     inline float CalcTextWidthWithSpacing(const char* text) {
         return GetStyle().ItemInnerSpacing.x + CalcTextSize(text).x;
     }
@@ -71,7 +69,7 @@ namespace ImGui {
      * @tparam T A signed or unsigned numeric type
      * @param val The variable to get the type of
      * @return The corresponding @p ImGuiDataType enum for the given variable
-    */
+     */
     template <class T>
     constexpr ImGuiDataType GetDataType(T val);
 
@@ -83,7 +81,7 @@ namespace ImGui {
      * @param data The numeric buffer to use
      * @param step Value change when the step buttons are clicked (0 to disable)
      * @param stepFast Value change when the step buttons are Ctrl-clicked (0 to disable)
-    */
+     */
     template <class T, class U = int>
     inline void InputScalar(const char* label, T& data, U step = 0, U stepFast = 0) {
         // Any negative step value is considered invalid and nullptr is passed to disable the step buttons
@@ -99,7 +97,7 @@ namespace ImGui {
      * @param s The buffer to use
      * @param flags A set of @p ImGuiInputTextFlags to change how the textbox behaves
      * @return The value from @p InputText() called internally
-    */
+     */
     bool InputText(const char* label, std::string& s, ImGuiInputTextFlags flags = 0);
 
     /**
@@ -109,7 +107,7 @@ namespace ImGui {
      * @param size The size of the textbox in pixels
      * @param flags A set of ImGuiInputTextFlags to change how the textbox behaves
      * @return The value from @p InputTextMultiline() called internally
-    */
+     */
     bool InputTextMultiline(const char* label, std::string& s, const ImVec2& size = {}, ImGuiInputTextFlags flags = 0);
 
     /**
@@ -117,7 +115,7 @@ namespace ImGui {
      * @param desc The text to show in the tooltip
      *
      * Place this next to a widget to provide more details about it.
-    */
+     */
     void HelpMarker(const char* desc);
 
     /**
@@ -127,14 +125,14 @@ namespace ImGui {
      * @param corner The corner to put the overlay in
      * @param text The string to display in the overlay, accepts format specifiers
      * @param ...args Parameters to format into the text
-    */
-    template<class... Args>
+     */
+    template <class... Args>
     void Overlay(const ImVec2& padding, ImGuiOverlayCorner corner, const char* text, Args&&... args);
 
     /**
      * @brief Displays a basic spinner which rotates every few frames.
      * @param label Text to display next to the spinner
-    */
+     */
     inline void LoadingSpinner(const char* label) {
         // Taken from https://github.com/ocornut/imgui/issues/1901#issuecomment-400563921
         Text("%s... %c", label, "|/-\\"[static_cast<int>(GetTime() / 0.05f) & 3]);
@@ -162,7 +160,7 @@ void ImGui::Overlay(const ImVec2& padding, ImGuiOverlayCorner corner, const char
 
     // Window flags to make the overlay be fixed, immobile, and have no decoration
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav
-        | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize;
+                           | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize;
 
     // Get main viewport
     ImGuiViewport& viewport = *GetMainViewport();

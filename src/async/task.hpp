@@ -4,7 +4,7 @@
 /**
  * @file
  * @brief A class to use as an asynchronous coroutine's return object
-*/
+ */
 
 #pragma once
 
@@ -15,7 +15,7 @@
 /**
  * @brief A class to use as an asynchronous coroutine's return object.
  * @tparam T The datatype of the value(s) produced by the coroutine
-*/
+ */
 template <class T = void>
 class Task {
     // If this template type is void-returning
@@ -73,6 +73,7 @@ class Task {
 
                 void await_resume() const noexcept {}
             };
+
             return Awaiter{};
         }
     };
@@ -86,7 +87,7 @@ class Task {
 public:
     /**
      * @brief Typedef for the promise object for use by the compiler.
-    */
+     */
     using promise_type = PromiseType;
 
     // The three await methods below allow us to co_await a task.
@@ -96,7 +97,7 @@ public:
      * @return If this task has completed or has nothing to do
      *
      * Called first when the coroutine is awaited.
-    */
+     */
     bool await_ready() const noexcept {
         // There is no need to suspend if this task has no work to do.
         // If done() is false, this coroutine is suspended and await_suspend is called.
@@ -108,7 +109,7 @@ public:
      * @param current A handle to the current coroutine
      *
      * Called when the coroutine is suspended.
-    */
+     */
     void await_suspend(std::coroutine_handle<> current) const noexcept {
         // Keep track of the current coroutine so it can be resumed in final_suspend
         _handle.promise().continuation = current;
@@ -119,7 +120,7 @@ public:
      * @return The value that the coroutine produced (for a value-returning coroutine)
      *
      * Called last when the coroutine is awaited.
-    */
+     */
     T await_resume() const {
         // Propagate any exception that was thrown inside the coroutine to the caller
         if (auto exception = _handle.promise().exception) std::rethrow_exception(exception);

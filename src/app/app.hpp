@@ -4,7 +4,7 @@
 /**
  * @file
  * @brief Main window handling functions
-*/
+ */
 
 #pragma once
 
@@ -13,10 +13,10 @@
 
 namespace App {
     /**
-    * @brief Information returned from initializing SDL.
-    */
+     * @brief Information returned from initializing SDL.
+     */
     struct SDLData {
-        SDL_Window *window; /**< The main application window */
+        SDL_Window* window;      /**< The main application window */
         SDL_GLContext glContext; /**< The OpenGL context */
     };
 
@@ -24,27 +24,27 @@ namespace App {
      * @brief Sets up backends/context, configures Dear ImGui, and creates a main application window.
      *
      * @return The window and context created
-    */
+     */
     SDLData init();
 
     /**
      * @brief Checks if the main window should be closed and creates a new frame at the start of every loop iteration.
      *
      * @return If the main loop should continue (window not yet closed)
-    */
+     */
     bool newFrame();
 
     /**
      * @brief Handles the rendering of the window at the end of every loop iteration.
      *
      * @param sdlData The data obtained from initialization
-    */
+     */
     void render(const SDLData& sdlData);
 
     /**
      * @brief Cleans up all backends and destroys the main window.
      *
      * @param sdlData The data obtained from initialization
-    */
+     */
     void cleanup(const SDLData& sdlData);
 }

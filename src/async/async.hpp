@@ -4,7 +4,7 @@
 /**
  * @file
  * @brief A system to perform I/O asynchronously using a completion-based model
-*/
+ */
 
 #pragma once
 
@@ -24,7 +24,7 @@ namespace Async {
      *
      * This structure contains functions to make it an awaitable type. Calling @p co_await on an instance stores the
      * current coroutine handle to allow it to be resumed when the asynchronous operation finishes.
-    */
+     */
     struct CompletionResult
 #if OS_WINDOWS
         // Inherit from OVERLAPPED on Windows to pass this struct as IOCP user data
@@ -33,7 +33,7 @@ namespace Async {
 #endif
     {
         std::coroutine_handle<> coroHandle; /**< The handle to the coroutine that started the operation */
-        System::ErrorCode error; /**< The return code of the asynchronous function (returned to caller) */
+        System::ErrorCode error;            /**< The return code of the asynchronous function (returned to caller) */
         size_t numBytes; /**< The number of bytes transferred during the operation (returned to caller) */
 
         /**
@@ -47,14 +47,14 @@ namespace Async {
         /**
          * @brief Checks if coroutine suspension is necessary.
          * @return If this object holds a coroutine handle
-        */
+         */
         bool await_ready() const noexcept { return static_cast<bool>(coroHandle); }
 
         /**
          * @brief Stores the current coroutine handle to be resumed on completion.
          * @param coroutine The handle
          * @return False to resume the caller coroutine
-        */
+         */
         bool await_suspend(std::coroutine_handle<> coroutine) noexcept {
             coroHandle = coroutine;
             return false;
@@ -62,25 +62,25 @@ namespace Async {
 
         /**
          * @brief Does nothing (nothing to do on coroutine resume).
-        */
+         */
         void await_resume() const noexcept {}
     };
 
     /**
      * @brief Initializes the OS asynchronous I/O queue and starts the background thread pool.
-    */
+     */
     void init();
 
     /**
      * @brief Cleans up the I/O queue and stops the thread pool.
-    */
+     */
     void cleanup();
 
 #if OS_WINDOWS
     /**
      * @brief Adds a socket to the I/O queue.
      * @param sockfd The socket file descriptor
-    */
+     */
     void add(SOCKET sockfd);
 #elif OS_LINUX
     /**

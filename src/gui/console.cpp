@@ -1,27 +1,30 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "console.hpp"
+
 #include <array>
 #include <format>
 #include <iomanip> // std::hex, std::uppercase, std::setw(), std::setfill()
 #include <string>
 #include <string_view>
 
+#include <imgui.h>
+
 #if __cpp_lib_chrono >= 201803L
 #include <chrono> // std::chrono
 #endif
 
-#include "console.hpp"
-#include "util/strings.hpp"
 #include "util/imguiext.hpp"
+#include "util/strings.hpp"
 
 void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
     // Don't add an empty string
     // (highly unlikely, but still check as string::back() called on an empty string throws a fatal exception)
     if (s.empty()) return;
 
-    // Get timestamp
 #if __cpp_lib_chrono >= 201803L
+    // Get timestamp
     using namespace std::chrono;
 
     std::string timestamp = std::format("{:%T} >", current_zone()->to_local(system_clock::now()));
@@ -139,9 +142,11 @@ void Console::update(float textboxHeight) {
     ImGui::BeginGroup();
 
     // Textbox
-    if (ImGui::InputTextMultiline("##input", _textBuf, { ImGui::FILL, ImGui::GetTextLineHeight() * textboxHeight },
-                                  ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
-                                  | ImGuiInputTextFlags_AllowTabInput)) {
+    ImVec2 size{ ImGui::FILL, ImGui::GetTextLineHeight() * textboxHeight };
+    ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
+                              | ImGuiInputTextFlags_AllowTabInput;
+
+    if (ImGui::InputTextMultiline("##input", _textBuf, size, flags)) {
         // Line ending
         std::array endings{ "\n", "\r", "\r\n" };
         auto selectedEnding = endings[_currentLE];

@@ -4,13 +4,13 @@
 /**
  * @file
  * @brief String utilities that are not present in the C++ Standard
-*/
+ */
 
 #pragma once
 
+#include <concepts> // std::integral, std::floating_point
 #include <string>
 #include <string_view>
-#include <concepts> // std::integral, std::floating_point
 
 namespace Strings {
     /**
@@ -19,7 +19,7 @@ namespace Strings {
      * On Windows, for a program to be Unicode-aware, it needs to use the Windows API functions ending in "W",
      * indicating the function takes strings of @p wchar_t which are UTF-16 encoded.<br>
      * Other platforms can use strings of @p char which are UTF-8 encoded and can handle Unicode.<br>
-    */
+     */
     using SysStr =
 #if OS_WINDOWS
         std::wstring
@@ -30,21 +30,21 @@ namespace Strings {
 
     /**
      * @brief A generalized string view type for system functions.
-    */
+     */
     using SysStrView = std::basic_string_view<SysStr::value_type>;
 
     /**
      * @brief Converts a UTF-8 string into a UTF-16 string on Windows.
      * @param from The input string
      * @return The converted string
-    */
+     */
     SysStr toSys(std::string_view from);
 
     /**
      * @brief Converts a UTF-16 string into a UTF-8 string on Windows.
      * @param from The input string
      * @return The converted string
-    */
+     */
     std::string fromSys(SysStrView from);
 
     /**
@@ -52,9 +52,10 @@ namespace Strings {
      * @tparam T A numeric type
      * @param from The input numeric value
      * @return The converted string
-    */
+     */
     template <class T>
-    inline SysStr toSys(T from) requires std::integral<T> || std::floating_point<T> {
+    requires std::integral<T> || std::floating_point<T>
+    inline SysStr toSys(T from) {
 #if OS_WINDOWS
         return std::to_wstring(from);
 #else
@@ -68,6 +69,6 @@ namespace Strings {
      * @param from The substring to replace
      * @param to What to replace the substring with
      * @return The original string with all occurrences of @p from replaced with @p to
-    */
+     */
     std::string replaceAll(std::string str, std::string_view from, std::string_view to);
 }

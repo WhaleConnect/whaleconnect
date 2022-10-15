@@ -4,7 +4,7 @@
 /**
  * @file
  * @brief A class to represent a Dear ImGui window
-*/
+ */
 
 #pragma once
 
@@ -15,19 +15,19 @@
 
 /**
  * @brief A class to represent a Dear ImGui window.
-*/
+ */
 class Window {
-    std::string _title; // The window title
-    bool _open = true; // If the window is open
+    std::string _title;      // The window title
+    bool _open = true;       // If the window is open
     bool* _openPtr = &_open; // The pointer passed to ImGui::Begin
 
     bool _initialized = false; // If the initialize function has been called
 
-    // Performs initialization required by a window object.
-    virtual void _init() { /* May optionally be overridden in derived classes */ }
+    // Performs initialization required by a window object, may be overridden optionally.
+    virtual void _init() {}
 
-    // Always runs on every frame, before _updateContents is called.
-    virtual void _beforeUpdate() { /* May optionally be overridden in derived classes */ }
+    // Always runs on every frame, before _updateContents is called, may be overridden optionally.
+    virtual void _beforeUpdate() {}
 
     // Redraws the contents of the window. Must be overridden in derived classes.
     virtual void _updateContents() = 0;
@@ -40,29 +40,29 @@ public:
     /**
      * @brief Sets the window title.
      * @param title The title
-    */
+     */
     Window(std::string_view title) : _title(title) {}
 
     /**
      * @brief Virtual destructor provided for derived classes.
-    */
+     */
     virtual ~Window() = default;
 
     /**
      * @brief Gets the window title.
      * @return The title
-    */
+     */
     std::string_view getTitle() const { return _title; }
 
     /**
      * @brief Gets the window's open/closed state.
      * @return If the window is open
-    */
+     */
     bool isOpen() const { return _open; }
 
     /**
      * @brief Performs any extra required initialization. This may be called once; subsequent calls will do nothing.
-    */
+     */
     void init() {
         if (_initialized) return;
 
@@ -72,7 +72,7 @@ public:
 
     /**
      * @brief Updates the window and its contents.
-    */
+     */
     void update() {
         _beforeUpdate();
 

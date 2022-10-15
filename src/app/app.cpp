@@ -1,17 +1,17 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "app.hpp"
+
 #include <string>
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl.h>
-
 #include <SDL.h>
 #include <SDL_filesystem.h>
 #include <SDL_opengl.h>
 
-#include "app.hpp"
 #include "settings.hpp"
 #include "sys/handleptr.hpp"
 #include "util/imguiext.hpp"
@@ -37,13 +37,14 @@ static void configImGui() {
     // Set corner rounding
     style.WindowRounding = roundedCorners ? 8.0f : 0.0f;
 
-    style.ChildRounding
-        = style.FrameRounding
-        = style.PopupRounding
-        = style.ScrollbarRounding
-        = style.GrabRounding
-        = style.TabRounding
-        = roundedCorners ? 4.0f : 0.0f;
+    // clang-format off
+    style.ChildRounding = style.FrameRounding
+                        = style.PopupRounding
+                        = style.ScrollbarRounding
+                        = style.GrabRounding
+                        = style.TabRounding
+                        = roundedCorners ? 4.0f : 0.0f;
+    // clang-format on
 
     // If the default font is used, the rest of this function can be skipped
     if (useDefaultFont) return;
@@ -75,7 +76,7 @@ App::SDLData App::init() {
 
     // Create window
     auto window = SDL_CreateWindow("Network Socket Terminal", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720,
-                            SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+                                   SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
     // Create context
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
