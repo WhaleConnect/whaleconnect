@@ -1,7 +1,7 @@
 {
     "cmake.configureOnOpen": true,
     "cmake.configureOnEdit": true,
-    "doxdocgen.c.lastLine": "*/",
+    "doxdocgen.c.lastLine": " */",
     "doxdocgen.generic.boolReturnsTrueFalse": false,
     "doxdocgen.generic.includeTypeAtReturn": false,
     "editor.formatOnType": true,

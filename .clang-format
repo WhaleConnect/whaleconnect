@@ -1,0 +1,112 @@
+# This file defines the formatting style for Network Socket Terminal.
+# Minimum clang-format version required: 15
+
+#################### Language settings ####################
+Language: Cpp
+Standard: Latest
+
+#################### Line length ####################
+ColumnLimit: 120
+ReflowComments: true
+
+#################### Indentation ####################
+IndentWidth: 4
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+AccessModifierOffset: -4
+UseTab: Never
+
+LambdaBodyIndentation: Signature
+NamespaceIndentation: All
+
+IndentAccessModifiers: false
+IndentCaseBlocks: false
+IndentCaseLabels: false
+IndentPPDirectives: None
+IndentRequiresClause: false
+IndentWrappedFunctionNames: false
+
+#################### Empty lines ####################
+MaxEmptyLinesToKeep: 1
+SeparateDefinitionBlocks: Always
+EmptyLineAfterAccessModifier: Never
+EmptyLineBeforeAccessModifier: Always
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+#################### Short blocks ####################
+AllowShortBlocksOnASingleLine: Always
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+AllowShortLambdasOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+InsertBraces: false
+
+#################### Spacing/padding ####################
+Cpp11BracedListStyle: false
+SpacesInParentheses: false
+SpaceInEmptyParentheses: false
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterControlStatements: true
+  AfterRequiresInClause: true
+  AfterRequiresInExpression: true
+
+SpacesBeforeTrailingComments: 1
+SpacesInLineCommentPrefix:
+  Minimum: 1
+  Maximum: -1
+
+BitFieldColonSpacing: After
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeCaseColon: false
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceBeforeSquareBrackets: false
+SpaceInEmptyBlock: false
+SpacesInAngles: Never
+SpacesInConditionalStatement: false
+SpacesInSquareBrackets: false
+
+#################### Alignment ####################
+AlignAfterOpenBracket: Align
+AlignEscapedNewlines: Left
+AlignOperands: AlignAfterOperator
+AlignTrailingComments: true
+
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+#################### Packing ####################
+BinPackArguments: true
+BinPackParameters: true
+PackConstructorInitializers: BinPack
+
+#################### Line breaks ####################
+AlwaysBreakTemplateDeclarations: Yes
+BreakBeforeBinaryOperators: All
+BreakBeforeBraces: Attach
+BreakBeforeConceptDeclarations: Always
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: AfterColon
+BreakInheritanceList: AfterComma
+RequiresClausePosition: OwnLine
+
+#################### Sorting ####################
+SortUsingDeclarations: true
+SortIncludes: CaseInsensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '<[a-z_]+>' # C++ standard headers
+    Priority: 1
+  - Regex: '<.+\..+>' # Library headers
+    Priority: 2
+  - Regex: '".+"' # Project headers
+    Priority: 3
+
+#################### Other ####################
+FixNamespaceComments: false
