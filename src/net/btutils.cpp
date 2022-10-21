@@ -5,8 +5,6 @@
 
 #include <bit>
 
-#include "sockets.hpp"
-
 #if OS_WINDOWS
 #include <format>
 
@@ -26,6 +24,7 @@ static DBusConnection* conn = nullptr;
 #endif
 
 #include "compat/outptr.hpp"
+#include "sockets.hpp"
 #include "sys/errcheck.hpp"
 #include "sys/handleptr.hpp"
 

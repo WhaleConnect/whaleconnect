@@ -1,11 +1,12 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "sockets.hpp"
+
 #include <bit> // std::bit_cast()
 
 #if OS_WINDOWS
 // Winsock headers
-#include <mstcpip.h>
 #include <MSWSock.h>
 #include <ws2bth.h>
 #include <WS2tcpip.h>
@@ -29,7 +30,6 @@
 
 #include "async/async.hpp"
 #include "compat/outptr.hpp"
-#include "sockets.hpp"
 #include "sys/errcheck.hpp"
 #include "sys/error.hpp"
 #include "sys/handleptr.hpp"
