@@ -61,10 +61,14 @@ bool System::isFatal(ErrorCode code) {
     // Check if the code is actually an error
     if (code == NO_ERROR) return false;
 
-#if OS_WINDOWS
-    // This error means an operation hasn't failed, it's still waiting.
+    // These errors mean an operation hasn't failed, it's still waiting.
     // Tell the calling function that there's no error, and it should check back later.
+#if OS_WINDOWS
+    // Pending I/O for overlapped sockets
     else if (code == WSA_IO_PENDING) return false;
+#elif OS_APPLE
+    // Pending I/O for non-blocking sockets
+    else if (code == EINPROGRESS) return false;
 #endif
 
     return true;

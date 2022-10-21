@@ -12,6 +12,8 @@
 
 #if OS_WINDOWS
 #include <WinSock2.h>
+#elif OS_APPLE
+#include <sys/event.h>
 #elif OS_LINUX
 #include <liburing.h>
 #endif
@@ -82,6 +84,15 @@ namespace Async {
      * @param sockfd The socket file descriptor
      */
     void add(SOCKET sockfd);
+#elif OS_APPLE
+    /**
+     * @brief Submits an event to the kernel queue.
+     *
+     * @param ident The identifier of the event (socket file descriptor)
+     * @param filter The event filter
+     * @param result The completion result containing the coroutine handle to resume
+     */
+    void submitKqueue(int ident, int filter, CompletionResult& result);
 #elif OS_LINUX
     /**
      * @brief Gets a submission queue entry from io_uring.

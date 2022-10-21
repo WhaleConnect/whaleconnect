@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <bit> // std::bit_cast()
-#include "sys/error.hpp"
 
 #if OS_WINDOWS
 // Winsock headers
@@ -11,15 +10,18 @@
 #include <ws2bth.h>
 #include <WS2tcpip.h>
 #elif OS_APPLE
-#include <netdb.h>      // addrinfo/getaddrinfo() related identifiers
-#include <netinet/in.h> // sockaddr
-#include <sys/socket.h> // Socket definitions
+#include <fcntl.h>
+#include <sys/event.h>
+#include <unistd.h> // close()
 #elif OS_LINUX
 // Linux Bluetooth headers
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/l2cap.h>
 #include <bluetooth/rfcomm.h>
 #include <liburing.h>
+#endif
+
+#if !OS_WINDOWS
 #include <netdb.h>      // addrinfo/getaddrinfo() related identifiers
 #include <netinet/in.h> // sockaddr
 #include <sys/socket.h> // Socket definitions
@@ -29,6 +31,7 @@
 #include "compat/outptr.hpp"
 #include "sockets.hpp"
 #include "sys/errcheck.hpp"
+#include "sys/error.hpp"
 #include "sys/handleptr.hpp"
 #include "util/strings.hpp"
 
@@ -137,19 +140,28 @@ static Task<> connectSocket(SOCKET s, const sockaddr* addr, socklen_t addrLen, b
 
     // Call ConnectEx()
     EXPECT_TRUE(connectExPtr, s, addr, addrLen, nullptr, 0, nullptr, &result);
-    co_await std::suspend_always{};
-    result.checkError();
+#elif OS_APPLE
+    // Make socket non-blocking
+    int flags = EXPECT_NONERROR(fcntl, s, F_GETFL, 0);
+    EXPECT_NONERROR(fcntl, s, F_SETFL, flags | O_NONBLOCK);
 
-    // Make the socket behave more like a regular socket connected with connect()
-    EXPECT_ZERO(setsockopt, s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
+    // Start connect
+    EXPECT_ZERO(connect, s, addr, addrLen);
+    Async::submitKqueue(s, EVFILT_WRITE, result);
 #elif OS_LINUX
     io_uring_sqe* sqe = Async::getUringSQE();
     io_uring_prep_connect(sqe, s, addr, addrLen);
     io_uring_sqe_set_data(sqe, &result);
     Async::submitRing();
+#endif
 
+    // Wait for operation to finish
     co_await std::suspend_always{};
     result.checkError();
+
+#if OS_WINDOWS
+    // Make the socket behave more like a regular socket connected with connect()
+    EXPECT_ZERO(setsockopt, s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
 #endif
 }
 
@@ -244,6 +256,9 @@ void Sockets::closeSocket(SOCKET sockfd) {
 #if OS_WINDOWS
     shutdown(sockfd, SD_BOTH);
     closesocket(sockfd);
+#elif OS_APPLE
+    shutdown(sockfd, SHUT_RDWR);
+    close(sockfd);
 #elif OS_LINUX
     io_uring_prep_cancel_fd(Async::getUringSQE(), sockfd, IORING_ASYNC_CANCEL_ALL);
     io_uring_prep_shutdown(Async::getUringSQE(), sockfd, SHUT_RDWR);
@@ -260,6 +275,8 @@ Task<> Sockets::sendData(SOCKET sockfd, std::string_view data) {
     std::string sendBuf{ data };
     WSABUF buf{ static_cast<ULONG>(sendBuf.size()), sendBuf.data() };
     EXPECT_NONERROR(WSASend, sockfd, &buf, 1, nullptr, 0, &result, nullptr);
+#elif OS_APPLE
+    Async::submitKqueue(sockfd, EVFILT_WRITE, result);
 #elif OS_LINUX
     io_uring_sqe* sqe = Async::getUringSQE();
     io_uring_prep_send(sqe, sockfd, data.data(), data.size(), MSG_NOSIGNAL);
@@ -269,6 +286,13 @@ Task<> Sockets::sendData(SOCKET sockfd, std::string_view data) {
 
     co_await std::suspend_always{};
     result.checkError();
+
+#if OS_APPLE
+    // IOCP and io_uring are completion-based (signal after operation completed)
+    // kqueue is readiness-based (signal once operation can be done)
+    // This means the socket operation is done after the coroutine is resumed.
+    EXPECT_NONERROR(send, sockfd, data.data(), data.size(), 0);
+#endif
 
     // Note: Typically, sendto() and recvfrom() are used with a UDP connection.
     // However, these require a sockaddr parameter, which becomes hard to get with getaddrinfo().
@@ -285,15 +309,17 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
     co_await result;
 
     // Receive and check bytes received
-    std::string recvBuf(1024, '\0');
+    char recvBuf[1024]{};
 
 #if OS_WINDOWS
-    WSABUF buf{ static_cast<ULONG>(recvBuf.size()), recvBuf.data() };
+    WSABUF buf{ static_cast<ULONG>(std::ssize(recvBuf)), recvBuf };
     DWORD flags = 0;
     EXPECT_NONERROR(WSARecv, sockfd, &buf, 1, nullptr, &flags, &result, nullptr);
+#elif OS_APPLE
+    Async::submitKqueue(sockfd, EVFILT_READ, result);
 #elif OS_LINUX
     io_uring_sqe* sqe = Async::getUringSQE();
-    io_uring_prep_recv(sqe, sockfd, recvBuf.data(), recvBuf.size(), MSG_NOSIGNAL);
+    io_uring_prep_recv(sqe, sockfd, recvBuf, std::ssize(recvBuf), MSG_NOSIGNAL);
     io_uring_sqe_set_data(sqe, &result);
     Async::submitRing();
 #endif
@@ -301,6 +327,9 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
     co_await std::suspend_always{};
     result.checkError();
 
-    recvBuf.resize(result.numBytes);
-    co_return RecvResult{ result.numBytes, std::move(recvBuf) };
+#if OS_APPLE
+    result.numBytes = EXPECT_NONERROR(recv, sockfd, recvBuf, std::ssize(recvBuf), 0);
+#endif
+
+    co_return RecvResult{ result.numBytes, recvBuf };
 }
