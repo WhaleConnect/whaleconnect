@@ -309,17 +309,18 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
     co_await result;
 
     // Receive and check bytes received
-    char recvBuf[1024]{};
+    constexpr size_t recvLen = 1023;
+    char recvBuf[recvLen + 1]{}; // 1 extra char for null terminator
 
 #if OS_WINDOWS
-    WSABUF buf{ static_cast<ULONG>(std::ssize(recvBuf)), recvBuf };
+    WSABUF buf{ static_cast<ULONG>(recvLen), recvBuf };
     DWORD flags = 0;
     EXPECT_NONERROR(WSARecv, sockfd, &buf, 1, nullptr, &flags, &result, nullptr);
 #elif OS_APPLE
     Async::submitKqueue(sockfd, EVFILT_READ, result);
 #elif OS_LINUX
     io_uring_sqe* sqe = Async::getUringSQE();
-    io_uring_prep_recv(sqe, sockfd, recvBuf, std::ssize(recvBuf), MSG_NOSIGNAL);
+    io_uring_prep_recv(sqe, sockfd, recvBuf, recvLen, MSG_NOSIGNAL);
     io_uring_sqe_set_data(sqe, &result);
     Async::submitRing();
 #endif
@@ -328,7 +329,7 @@ Task<Sockets::RecvResult> Sockets::recvData(SOCKET sockfd) {
     result.checkError();
 
 #if OS_APPLE
-    result.numBytes = EXPECT_NONERROR(recv, sockfd, recvBuf, std::ssize(recvBuf), 0);
+    result.numBytes = EXPECT_NONERROR(recv, sockfd, recvBuf, recvLen, 0);
 #endif
 
     co_return RecvResult{ result.numBytes, recvBuf };
