@@ -16,6 +16,9 @@
 #include "sys/handleptr.hpp"
 #include "util/imguiext.hpp"
 
+static SDL_Window* window;      // The main application window
+static SDL_GLContext glContext; // The OpenGL context
+
 // Sets Dear ImGui's configuration for use by the application.
 static void configImGui() {
     using namespace Settings;
@@ -59,11 +62,11 @@ static void configImGui() {
     io.Fonts->AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges);
 }
 
-App::SDLData App::init() {
+bool App::init() {
     // Set up SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "SDL Initialization Error", SDL_GetError(), nullptr);
-        return { nullptr, nullptr };
+        return false;
     }
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
@@ -75,11 +78,11 @@ App::SDLData App::init() {
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     // Create window
-    auto window = SDL_CreateWindow("Network Socket Terminal", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720,
-                                   SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    window = SDL_CreateWindow("Network Socket Terminal", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720,
+                              SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
     // Create context
-    SDL_GLContext glContext = SDL_GL_CreateContext(window);
+    glContext = SDL_GL_CreateContext(window);
     SDL_GL_MakeCurrent(window, glContext);
     SDL_GL_SetSwapInterval(1); // Enable vsync
 
@@ -90,7 +93,7 @@ App::SDLData App::init() {
     ImGui_ImplSDL2_InitForOpenGL(window, glContext);
     ImGui_ImplOpenGL3_Init();
 
-    return { window, glContext };
+    return true;
 }
 
 bool App::newFrame() {
@@ -133,7 +136,7 @@ bool App::newFrame() {
     return true;
 }
 
-void App::render(const SDLData& sdlData) {
+void App::render() {
     // Render the main application window
     const ImVec2& displaySize = ImGui::GetIO().DisplaySize;
 
@@ -146,16 +149,16 @@ void App::render(const SDLData& sdlData) {
     // Render multi-viewport platform windows
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
-    SDL_GL_MakeCurrent(sdlData.window, sdlData.glContext);
-    SDL_GL_SwapWindow(sdlData.window);
+    SDL_GL_MakeCurrent(window, glContext);
+    SDL_GL_SwapWindow(window);
 }
 
-void App::cleanup(const SDLData& sdlData) {
+void App::cleanup() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 
-    SDL_GL_DeleteContext(sdlData.glContext);
-    SDL_DestroyWindow(sdlData.window);
+    SDL_GL_DeleteContext(glContext);
+    SDL_DestroyWindow(window);
     SDL_Quit();
 }

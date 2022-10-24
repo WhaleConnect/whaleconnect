@@ -15,7 +15,7 @@
 #include "util/imguiext.hpp"
 
 // Contains the app's core logic and functions.
-void mainLoop(const App::SDLData& sdlData) {
+void mainLoop() {
     // Initialize APIs for sockets and Bluetooth
     std::optional<std::string> failureMessage;
     try {
@@ -45,19 +45,18 @@ void mainLoop(const App::SDLData& sdlData) {
 
         connections.update();
         sdpWindows.update();
-        App::render(sdlData);
+        App::render();
     }
 }
 
 int main(int, char**) {
     // Create a main application window
-    auto sdlData = App::init();
-    if (!sdlData.window || !sdlData.glContext) return EXIT_FAILURE;
+    if (!App::init()) return EXIT_FAILURE;
 
     // Run app
-    mainLoop(sdlData);
+    mainLoop();
 
     BTUtils::cleanup();
-    App::cleanup(sdlData);
+    App::cleanup();
     return EXIT_SUCCESS;
 }
