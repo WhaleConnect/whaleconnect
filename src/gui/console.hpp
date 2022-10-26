@@ -31,7 +31,11 @@ class Console {
         std::string timestamp;      // The time when the item was added
     };
 
-    bool _scrollToEnd = false;         // If the console is force-scrolled to the end
+    // State variables
+    bool _scrollToEnd = false;    // If the console is force-scrolled to the end
+    bool _focusOnTextbox = false; // If keyboard focus is applied to the textbox
+
+    // Option variables
     bool _autoscroll = true;           // If the console autoscrolls when new data is put
     bool _showTimestamps = false;      // If timestamps are shown in the output
     bool _showHex = false;             // If items are shown in hexadecimal
@@ -39,9 +43,19 @@ class Console {
     bool _addFinalLineEnding = false;  // If a final line ending is added to the callback input string
 
     std::function<void(std::string_view)> _inputCallback; // The textbox callback function, called on Enter key
-    std::vector<ConsoleItem> _items;                      // The items in console output
-    std::string _textBuf;                                 // The buffer for the texbox
-    int _currentLE = 0;                                   // The index of the line ending selected
+
+    std::vector<ConsoleItem> _items; // The items in console output
+    std::string _textBuf;            // The buffer for the texbox
+    int _currentLE = 0;              // The index of the line ending selected
+
+    // Forces subsequent text to go on a new line.
+    void _forceNextLine() {
+        // If there are no items, new text will have to be on its own line.
+        if (_items.empty()) return;
+
+        std::string& lastItem = _items.back().text;
+        if (lastItem.back() != '\n') lastItem += '\n';
+    }
 
     // Adds text to the console. Does not make it go on its own line.
     void _add(std::string_view s, const ImVec4& color, bool canUseHex);
@@ -63,9 +77,8 @@ public:
 
     /**
      * @brief Draws the input textbox, output pane, and option selectors.
-     * @param textboxHeight The height of the input textbox in lines
      */
-    void update(float textboxHeight);
+    void update();
 
     /**
      * @brief Adds text to the console. Accepts multiline strings.
@@ -82,9 +95,9 @@ public:
      */
     void addError(std::string_view s) {
         // Error messages in red
-        forceNextLine();
+        _forceNextLine();
         addText(s, "[ERROR] ", { 1.0f, 0.4f, 0.4f, 1.0f }, false);
-        forceNextLine();
+        _forceNextLine();
     }
 
     /**
@@ -93,24 +106,8 @@ public:
      */
     void addInfo(std::string_view s) {
         // Information in yellow
-        forceNextLine();
+        _forceNextLine();
         addText(s, "[INFO ] ", { 1.0f, 0.8f, 0.6f, 1.0f }, false);
-        forceNextLine();
+        _forceNextLine();
     }
-
-    /**
-     * @brief Forces subsequent text to go on a new line.
-     */
-    void forceNextLine() {
-        // If the deque is empty, the item will have to be on its own line.
-        if (_items.empty()) return;
-
-        std::string& lastItem = _items.back().text;
-        if (lastItem.back() != '\n') lastItem += '\n';
-    }
-
-    /**
-     * @brief Clears the console output.
-     */
-    void clear() { _items.clear(); }
 };

@@ -7,7 +7,6 @@
 
 #include <magic_enum.hpp>
 
-#include "app/settings.hpp"
 #include "net/sockets.hpp"
 #include "sys/error.hpp"
 #include "util/strings.hpp"
@@ -101,5 +100,5 @@ void ConnWindow::_beforeUpdate() {
 
 void ConnWindow::_updateContents() {
     std::scoped_lock outputLock{ _outputMutex };
-    _output.update(Settings::sendTextboxHeight);
+    _output.update();
 }

@@ -3,7 +3,8 @@
 
 #include "console.hpp"
 
-#include <array>
+#include <chrono>
+#include <ctime>
 #include <format>
 #include <iomanip> // std::hex, std::uppercase, std::setw(), std::setfill()
 #include <string>
@@ -11,34 +12,33 @@
 
 #include <imgui.h>
 
-#if __cpp_lib_chrono >= 201803L
-#include <chrono> // std::chrono
-#endif
-
 #include "util/imguiext.hpp"
 #include "util/strings.hpp"
 
-void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
-    // Don't add an empty string
-    // (highly unlikely, but still check as string::back() called on an empty string throws a fatal exception)
-    if (s.empty()) return;
-
-#if __cpp_lib_chrono >= 201803L
-    // Get timestamp
+static std::string getTimestamp() {
     using namespace std::chrono;
 
-    std::string timestamp = std::format("{:%T} >", current_zone()->to_local(system_clock::now()));
-#else
-    std::string timestamp;
-#endif
+    auto now = system_clock::now();
 
-    if (_items.empty() || (_items.back().text.back() == '\n')) {
-        // Text goes on its own line if there are no items or the last line ends with a newline
-        _items.push_back({ canUseHex, std::string{ s }, {}, color, timestamp });
-    } else {
-        // Text goes on the last line (append)
-        _items.back().text += s;
-    }
+    // Get milliseconds (remainder from division into seconds)
+    auto ms = (duration_cast<milliseconds>(now.time_since_epoch()) % 1s).count();
+
+    // Get local time from current time point
+    auto timer = system_clock::to_time_t(now);
+    auto local = *std::localtime(&timer);
+
+    // Return formatted string
+    return std::format("{:02}:{:02}:{:02}.{:03} >", local.tm_hour, local.tm_min, local.tm_sec, ms);
+}
+
+void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
+    // Avoid empty strings
+    if (s.empty()) return;
+
+    // Text goes on its own line if there are no items or the last line ends with a newline
+    if (_items.empty() || (_items.back().text.back() == '\n'))
+        _items.push_back({ canUseHex, std::string{ s }, {}, color, getTimestamp() });
+    else _items.back().text += s;
 
     // Computing the string's hex representation here removes the need to recompute it every application frame.
     if (canUseHex) {
@@ -96,12 +96,11 @@ void Console::_updateOutput() {
         _scrollToEnd = false;
     }
 
-    // Clean up console
     ImGui::PopStyleVar();
     ImGui::EndChild();
 
     // "Clear output" button
-    if (ImGui::Button("Clear output")) clear();
+    if (ImGui::Button("Clear output")) _items.clear();
 
     // "Options" button
     ImGui::SameLine();
@@ -110,20 +109,13 @@ void Console::_updateOutput() {
     // Popup for more options
     if (ImGui::BeginPopup("options")) {
         ImGui::MenuItem("Autoscroll", nullptr, &_autoscroll);
-
-#if __cpp_lib_chrono >= 201803L
         ImGui::MenuItem("Show timestamps", nullptr, &_showTimestamps);
-#endif
-
         ImGui::MenuItem("Show hexadecimal", nullptr, &_showHex);
 
         // Options for the input textbox
         ImGui::Separator();
-
         ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSubmit);
-
         ImGui::MenuItem("Add final line ending", nullptr, &_addFinalLineEnding);
-
         ImGui::EndPopup();
     }
 
@@ -137,18 +129,27 @@ void Console::_updateOutput() {
     ImGui::Combo("##lineEnding", &_currentLE, "Newline\0Carriage return\0Both\0");
 }
 
-void Console::update(float textboxHeight) {
-    ImGui::PushID("Console");
+void Console::update() {
+    ImGui::PushID("console");
     ImGui::BeginGroup();
 
     // Textbox
+    int textboxHeight = 4; // Number of lines that can be displayed
     ImVec2 size{ ImGui::FILL, ImGui::GetTextLineHeight() * textboxHeight };
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
                               | ImGuiInputTextFlags_AllowTabInput;
 
+    // Apply foxus to textbox
+    // An InputTextMultiline is an InputText contained within a child window so focus must be set before rendering it to
+    // apply focus to the InputText.
+    if (_focusOnTextbox) {
+        ImGui::SetKeyboardFocusHere();
+        _focusOnTextbox = false;
+    }
+
     if (ImGui::InputTextMultiline("##input", _textBuf, size, flags)) {
         // Line ending
-        std::array endings{ "\n", "\r", "\r\n" };
+        const char* endings[] = { "\n", "\r", "\r\n" };
         auto selectedEnding = endings[_currentLE];
 
         // InputTextMultiline() always uses \n as a line ending, replace all occurences of \n with the selected ending
@@ -160,9 +161,10 @@ void Console::update(float textboxHeight) {
         // Invoke the callback function if the string is not empty
         if (!sendString.empty()) _inputCallback(sendString);
 
-        if (_clearTextboxOnSubmit) _textBuf.clear(); // Blank out input textbox
-        ImGui::SetItemDefaultFocus();
-        ImGui::SetKeyboardFocusHere(-1); // Auto focus on input textbox
+        // Blank out input textbox
+        if (_clearTextboxOnSubmit) _textBuf.clear();
+
+        _focusOnTextbox = true;
     }
 
     _updateOutput();
