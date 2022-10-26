@@ -1,10 +1,6 @@
 # This file defines the formatting style for Network Socket Terminal.
 # Minimum clang-format version required: 15
 
-#################### Language settings ####################
-Language: Cpp
-Standard: Latest
-
 #################### Line length ####################
 ColumnLimit: 120
 ReflowComments: true
@@ -58,7 +54,6 @@ SpacesInLineCommentPrefix:
   Minimum: 1
   Maximum: -1
 
-BitFieldColonSpacing: Both
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: true
 SpaceBeforeCaseColon: false
@@ -109,4 +104,5 @@ IncludeCategories:
     Priority: 3
 
 #################### Other ####################
+Standard: Latest
 FixNamespaceComments: false
