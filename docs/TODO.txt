@@ -4,7 +4,6 @@ This is a list of the tasks to complete before each release.
   [ ] macOS Support
   [ ] Add setting to change number of worker threads (unsigned integer, 0 means auto-detect)
   [ ] Add option to export Console output to a file in the user's Documents folder
-  [ ] Export the GLFW error file (mainhandle.cpp) in a better location
 
 0.3.0:
   [ ] Implement the server-side
@@ -23,7 +22,7 @@ This is a list of the tasks to complete before each release.
     [ ] Allow saving/editing of Bluetooth SDP UUIDs
   [ ] Display licenses in app
   [ ] Display version/build information (build date/platform/compiler etc.)
-    [ ] Display library versions (Dear ImGui/OpenGL/GLFW etc.) if applicable
+    [ ] Display libraries + licenses and versions
   [ ] Final tests
 
 1.0:
@@ -46,6 +45,4 @@ This is a list of the tasks to complete before each release.
 
 Other things:
   [ ] Setup GitHub Actions (whenever)
-  [ ] Use std::format()
-  [ ] Remove #if checks for chrono in console.cpp
   [ ] Replace many index-based loops with `views::zip()` and `views::enumerate()` in C++23/C++26
