@@ -89,7 +89,7 @@ void Console::_updateOutput() {
     }
     clipper.End();
 
-    // Scroll to end if autoscroll is set
+    // Scroll to end
     if (_scrollToEnd) {
         ImGui::SetScrollHereX(1.0f);
         ImGui::SetScrollHereY(1.0f);
