@@ -50,10 +50,8 @@ void ImGui::Spinner() {
     double time = GetTime() * 10; // Current time (multiplied to make the spinner faster)
 
     // Position to draw the spinner
-    ImVec2 windowPos = GetWindowPos();
-    ImVec2 cursorPos = GetCursorPos();
-    ImVec2 pos{ windowPos.x + cursorPos.x, windowPos.y + cursorPos.y };
-    ImVec2 center{ pos.x + textSizeHalf, pos.y + textSizeHalf };
+    ImVec2 cursorPos = GetCursorScreenPos();
+    ImVec2 center{ cursorPos.x + textSizeHalf, cursorPos.y + textSizeHalf };
 
     // Draw the spinner, arc from 0 radians to (3pi / 2) radians (270 degrees)
     ImDrawList& drawList = *GetWindowDrawList();
