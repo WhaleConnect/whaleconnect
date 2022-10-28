@@ -84,7 +84,9 @@ void SDPWindow::_checkInquiryStatus() {
             using namespace std::literals;
             if (asyncInq.wait_for(0s) != std::future_status::ready) {
                 // Running, display a spinner
-                ImGui::LoadingSpinner("Running SDP inquiry");
+                ImGui::TextUnformatted("Running SDP inquiry");
+                ImGui::SameLine();
+                ImGui::Spinner();
                 return;
             }
 

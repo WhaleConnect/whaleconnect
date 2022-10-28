@@ -4,6 +4,7 @@
 #include "imguiext.hpp"
 
 #include <bit>
+#include <numbers> // std::numbers::pi
 #include <string>
 
 #include <imgui.h>
@@ -39,4 +40,23 @@ void ImGui::HelpMarker(const char* desc) {
     TextUnformatted(desc);
     PopTextWrapPos();
     EndTooltip();
+}
+
+void ImGui::Spinner() {
+    // Text settings
+    float textSizeHalf = GetTextLineHeight() / 2;
+    ImU32 textColor = GetColorU32(ImGuiCol_Text);
+
+    double time = GetTime() * 10; // Current time (multiplied to make the spinner faster)
+
+    // Position to draw the spinner
+    ImVec2 windowPos = GetWindowPos();
+    ImVec2 cursorPos = GetCursorPos();
+    ImVec2 pos{ windowPos.x + cursorPos.x, windowPos.y + cursorPos.y };
+    ImVec2 center{ pos.x + textSizeHalf, pos.y + textSizeHalf };
+
+    // Draw the spinner, arc from 0 radians to (3pi / 2) radians (270 degrees)
+    ImDrawList& drawList = *GetWindowDrawList();
+    drawList.PathArcTo(center, textSizeHalf, time, time + std::numbers::pi * (3.0 / 2.0));
+    drawList.PathStroke(textColor, 0, textSizeHalf / 2);
 }

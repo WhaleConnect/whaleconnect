@@ -131,12 +131,8 @@ namespace ImGui {
 
     /**
      * @brief Displays a basic spinner which rotates every few frames.
-     * @param label Text to display next to the spinner
      */
-    inline void LoadingSpinner(const char* label) {
-        // Taken from https://github.com/ocornut/imgui/issues/1901#issuecomment-400563921
-        Text("%s... %c", label, "|/-\\"[static_cast<int>(GetTime() / 0.05f) & 3]);
-    }
+    void Spinner();
 }
 
 template <class T>
