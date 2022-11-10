@@ -85,6 +85,12 @@ void Console::_updateOutput() {
             if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, item.color);
             ImGui::TextUnformatted((_showHex && item.canUseHex) ? item.textHex.str() : item.text);
             if (hasColor) ImGui::PopStyleColor();
+
+            // Right-click context menu for each line
+            if (ImGui::BeginPopupContextItem(std::to_string(i).c_str())) {
+                if (ImGui::MenuItem("Copy line")) ImGui::SetClipboardText(item.text.c_str());
+                ImGui::EndPopup();
+            }
         }
     }
     clipper.End();
