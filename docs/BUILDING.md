@@ -52,9 +52,3 @@ Alternatively, to build in one step with Conan:
 ```shell
 conan build .
 ```
-
-## Building Source Documentation
-
-To build the documentation for the source code, you will need [Doxygen](https://www.doxygen.nl).
-
-If it is installed, specify `-DBUILD_DOCS=ON` when configuring CMake. The documentation exports in HTML format in `build/src-docs`.
