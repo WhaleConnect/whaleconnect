@@ -11,4 +11,3 @@ trim_trailing_whitespace = true
 ## Source files
 [**.{c,h}pp]
 indent_size = 4
-cpp_generate_documentation_comments = doxygen_slash_star
