@@ -1,11 +1,6 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/**
- * @file
- * @brief A class to handle an SDP inquiry in a GUI window
- */
-
 #pragma once
 
 #include <format>
@@ -16,33 +11,31 @@
 #include <system_error>
 #include <variant>
 
-#include "net/btutils.hpp"
-#include "net/sockets.hpp"
-#include "sys/error.hpp"
+#include "os/btutils.hpp"
+#include "os/error.hpp"
+#include "os/net.hpp"
 #include "window.hpp"
 #include "windowlist.hpp"
 
-/**
- * @brief A class to handle an SDP inquiry in a GUI window.
- */
+// A class to handle an SDP inquiry in a GUI window.
 class SDPWindow : public Window {
-    using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>; // Results of an SDP search
-    using UUIDMap = std::map<std::string, GUID, std::less<>>;    // List of UUIDs used for SDP filtering
+    using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>;          // Results of an SDP search
+    using UUIDMap = std::map<std::string, BTUtils::UUID128, std::less<>>; // List of UUIDs used for SDP filtering
 
-    Sockets::DeviceData _target; // The target to perform SDP inquiries on and connect to
+    Net::DeviceData _target; // Target to perform SDP inquiries on and connect to
 
     // Fields for SDP connections
-    const UUIDMap& _uuids;     // The available UUIDs used for SDP inquiries
-    std::string _selectedUUID; // The UUID selected for an inquiry
+    const UUIDMap& _uuids;     // Available UUIDs used for SDP inquiries
+    std::string _selectedUUID; // UUID selected for an inquiry
     bool _flushCache = false;  // If data should be flushed on the next inquiry
-    std::string _serviceName;  // The service name of the selected SDP result, displayed in the connection window title
+    std::string _serviceName;  // Service name of the selected SDP result, displayed in the connection window title
 
     // Fields for SDP and manual connection state
-    Sockets::ConnectionType _connType = Sockets::ConnectionType::RFCOMM; // The selected connection type
-    uint16_t _port = 0;                                                  // The port to connect to
+    Net::ConnectionType _connType = Net::ConnectionType::RFCOMM; // Selected connection type
+    uint16_t _port = 0;                                          // Port to connect to
 
     // Fields for connection management
-    WindowList& _list;  // The list of connection window objects to add to when making a new connection
+    WindowList& _list;  // List of connection window objects to add to when making a new connection
     bool _isNew = true; // If the current connection is unique
 
     // SDP inquiry data
@@ -78,13 +71,8 @@ class SDPWindow : public Window {
     void _updateContents() override;
 
 public:
-    /**
-     * @brief Sets the information needed to create connections.
-     * @param target The target to connect to
-     * @param uuids A map of UUIDs to perform SDP inquiries with
-     * @param list The list of @p ConnWindow objects to add to with a new connection
-     */
-    SDPWindow(const Sockets::DeviceData& target, const UUIDMap& uuids, WindowList& list) :
+    // Sets the information needed to create connections.
+    SDPWindow(const Net::DeviceData& target, const UUIDMap& uuids, WindowList& list) :
         Window(std::format("Connect To {}##{}", target.name, target.address)), _target(target), _uuids(uuids),
         _selectedUUID(_uuids.begin()->first), _list(list) {}
 };

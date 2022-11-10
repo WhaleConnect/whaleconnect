@@ -8,8 +8,15 @@
 #include <imgui.h>
 
 #include "connwindow.hpp"
-#include "util/imguiext.hpp"
-#include "util/overload.hpp"
+#include "imguiext.hpp"
+#include "os/btutils.hpp"
+#include "utils/overload.hpp"
+
+static void printUUID(BTUtils::UUID128 uuid) {
+    uint8_t* u = uuid.data();
+    ImGui::BulletText("%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X", u[0], u[1], u[2], u[3],
+                      u[4], u[5], u[6], u[7], u[8], u[9], u[10], u[11], u[12], u[13], u[14], u[15]);
+}
 
 bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
     // Begin a scrollable child window to contain the list
@@ -34,10 +41,7 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
 
             // Print service class UUIDs
             if (!services.empty()) ImGui::Text("Service class UUIDs:");
-            for (const auto& i : services)
-                ImGui::BulletText("%08lX-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X", i.Data1, i.Data2, i.Data3,
-                                  i.Data4[0], i.Data4[1], i.Data4[2], i.Data4[3], i.Data4[4], i.Data4[5], i.Data4[6],
-                                  i.Data4[7]);
+            for (const auto& i : services) printUUID(i);
 
             // Print profile descriptors
             if (!profiles.empty()) ImGui::Text("Profile descriptors:");
@@ -63,7 +67,7 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
 }
 
 void SDPWindow::_drawConnOptions(std::string_view info) {
-    using enum Sockets::ConnectionType;
+    using enum Net::ConnectionType;
 
     // Connection type selection
     ImGui::RadioButton("RFCOMM", _connType, RFCOMM);
@@ -74,7 +78,7 @@ void SDPWindow::_drawConnOptions(std::string_view info) {
     // Connect button
     ImGui::Spacing();
     if (ImGui::Button("Connect"))
-        _isNew = _list.add<ConnWindow>(Sockets::DeviceData{ _connType, _target.name, _target.address, _port }, info);
+        _isNew = _list.add<ConnWindow>(Net::DeviceData{ _connType, _target.name, _target.address, _port }, info);
 }
 
 void SDPWindow::_checkInquiryStatus() {

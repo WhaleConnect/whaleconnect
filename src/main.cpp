@@ -7,18 +7,22 @@
 
 #include <SDL_main.h> // For definition of main function
 
-#include "app/app.hpp"
-#include "core/newconnbt.hpp"
-#include "core/newconnip.hpp"
+#include "gui/app.hpp"
+#include "gui/imguiext.hpp"
+#include "gui/newconnbt.hpp"
+#include "gui/newconnip.hpp"
 #include "gui/windowlist.hpp"
-#include "net/btutils.hpp"
-#include "util/imguiext.hpp"
+#include "os/async.hpp"
+#include "os/btutils.hpp"
+#include "os/net.hpp"
 
 // Contains the app's core logic and functions.
 void mainLoop() {
     // Initialize APIs for sockets and Bluetooth
     std::optional<std::string> failureMessage;
     try {
+        Net::init();
+        Async::init();
         BTUtils::init();
     } catch (const System::SystemError& error) {
         failureMessage = "Initialization failed - " + error.formatted();
@@ -57,6 +61,8 @@ int main(int, char**) {
     mainLoop();
 
     BTUtils::cleanup();
+    Async::cleanup();
+    Net::cleanup();
     App::cleanup();
     return EXIT_SUCCESS;
 }

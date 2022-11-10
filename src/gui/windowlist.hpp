@@ -1,11 +1,6 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/**
- * @file
- * @brief A class to manage multiple related @p Window objects
- */
-
 #pragma once
 
 #include <algorithm>
@@ -27,13 +22,7 @@ class WindowList {
     }
 
 public:
-    /**
-     * @brief Adds a new window to the list.
-     * @tparam T The type of the window to add
-     * @tparam ...Args A sequence of arguments to construct the window object with
-     * @param ...args Arguments to pass to the window class' constructor
-     * @return If the window is unique and was added
-     */
+    // Adds a new window to the list.
     template <class T, class... Args>
     requires std::derived_from<T, Window>
     auto add(Args&&... args) {
@@ -47,9 +36,7 @@ public:
         return true;
     }
 
-    /**
-     * @brief Redraws all contained windows and deletes any that have been closed.
-     */
+    // Redraws all contained windows and deletes any that have been closed.
     void update() {
         // Remove all closed windows
         std::erase_if(_windows, [](const auto& window) { return !window->isOpen(); });

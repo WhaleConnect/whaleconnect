@@ -12,8 +12,8 @@
 
 #include <imgui.h>
 
-#include "util/imguiext.hpp"
-#include "util/strings.hpp"
+#include "imguiext.hpp"
+#include "utils/strings.hpp"
 
 static std::string getTimestamp() {
     using namespace std::chrono;

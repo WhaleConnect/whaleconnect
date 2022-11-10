@@ -96,6 +96,8 @@ SortUsingDeclarations: true
 SortIncludes: CaseInsensitive
 IncludeBlocks: Regroup
 IncludeCategories:
+  - Regex: '".+_internal.hpp"' # Internal headers
+    Priority: 0
   - Regex: '<[a-z_]+>' # C++ standard headers
     Priority: 1
   - Regex: '<.+\..+>' # Library headers

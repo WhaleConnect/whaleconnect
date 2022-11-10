@@ -12,14 +12,14 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#include "gui/sdpwindow.hpp"
-#include "gui/windowlist.hpp"
-#include "net/btutils.hpp"
-#include "net/sockets.hpp"
-#include "util/imguiext.hpp"
-#include "util/overload.hpp"
+#include "imguiext.hpp"
+#include "os/btutils.hpp"
+#include "os/net.hpp"
+#include "sdpwindow.hpp"
+#include "utils/overload.hpp"
+#include "windowlist.hpp"
 
-static void sortTable(Sockets::DeviceDataList& devices) {
+static void sortTable(Net::DeviceDataList& devices) {
     // A sort is only needed for 2 or more entries
     if (devices.size() < 2) return;
 
@@ -30,7 +30,7 @@ static void sortTable(Sockets::DeviceDataList& devices) {
 
     // Get sort data
     auto spec = sortSpecs->Specs[0];
-    auto proj = (spec.ColumnIndex == 0) ? &Sockets::DeviceData::name : &Sockets::DeviceData::address;
+    auto proj = (spec.ColumnIndex == 0) ? &Net::DeviceData::name : &Net::DeviceData::address;
 
     // Sort according to user specified direction
     if (spec.SortDirection == ImGuiSortDirection_Ascending) std::ranges::stable_sort(devices, std::less{}, proj);
@@ -40,9 +40,9 @@ static void sortTable(Sockets::DeviceDataList& devices) {
 }
 
 // Draws a menu composed of the paired Bluetooth devices.
-static const Sockets::DeviceData* drawPairedDevices(Sockets::DeviceDataList& devices, bool needsSort) {
+static const Net::DeviceData* drawPairedDevices(Net::DeviceDataList& devices, bool needsSort) {
     // Using a pointer so the return value can be nullable without copying large objects.
-    const Sockets::DeviceData* ret = nullptr;
+    const Net::DeviceData* ret = nullptr;
 
     // Setup table
     int numCols = 3;
@@ -82,10 +82,10 @@ static const Sockets::DeviceData* drawPairedDevices(Sockets::DeviceDataList& dev
 void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
     if (!ImGui::BeginTabItem("Bluetooth")) return;
 
-    static std::variant<std::monostate, Sockets::DeviceDataList, System::SystemError> pairedDevices; // Paired devices
+    static std::variant<std::monostate, Net::DeviceDataList, System::SystemError> pairedDevices; // Paired devices
 
     // Map of UUIDs, associating a UUID value with a user-given name
-    static std::map<std::string, GUID, std::less<>> uuidList = {
+    static std::map<std::string, BTUtils::UUID128, std::less<>> uuidList = {
         { "L2CAP", BTUtils::createUUIDFromBase(0x0100) },
         { "RFCOMM", BTUtils::createUUIDFromBase(0x0003) },
     };
@@ -102,8 +102,8 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
 
     // Check paired devices list
     Overload visitor{
-        [](std::monostate) { /* Nothing to do when devices not found */ },
-        [needsSort, &connections, &sdpWindows](Sockets::DeviceDataList& deviceList) {
+        [](std::monostate) {},
+        [needsSort, &connections, &sdpWindows](Net::DeviceDataList& deviceList) {
             // Check if the device list is empty
             if (deviceList.empty()) {
                 ImGui::Text("No paired devices.");

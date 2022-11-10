@@ -7,14 +7,14 @@
 
 #include <imgui.h>
 
-#include "gui/connwindow.hpp"
-#include "gui/windowlist.hpp"
-#include "net/sockets.hpp"
-#include "util/imguiext.hpp"
+#include "connwindow.hpp"
+#include "imguiext.hpp"
+#include "os/net.hpp"
+#include "windowlist.hpp"
 
 void drawIPConnectionTab(WindowList& connections) {
     if (!ImGui::BeginTabItem("Internet Protocol")) return;
-    using Sockets::ConnectionType;
+    using Net::ConnectionType;
     using enum ConnectionType;
 
     static std::string addr;          // Server address
@@ -55,7 +55,7 @@ void drawIPConnectionTab(WindowList& connections) {
     // Connect button
     ImGui::Spacing();
     ImGui::BeginDisabled(addr.empty());
-    if (ImGui::Button("Connect")) isNew = connections.add<ConnWindow>(Sockets::DeviceData{ type, "", addr, port }, "");
+    if (ImGui::Button("Connect")) isNew = connections.add<ConnWindow>(Net::DeviceData{ type, "", addr, port }, "");
     ImGui::EndDisabled();
     ImGui::EndChild();
 

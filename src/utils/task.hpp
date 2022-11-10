@@ -1,21 +1,14 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/**
- * @file
- * @brief A class to use as an asynchronous coroutine's return object
- */
-
 #pragma once
 
 #include <coroutine>
 #include <exception>
 #include <type_traits>
 
-/**
- * @brief A class to use as an asynchronous coroutine's return object.
- * @tparam T The datatype of the value(s) produced by the coroutine
- */
+// A class to use as an asynchronous coroutine's return object.
+// T: the datatype of the value(s) produced by the coroutine
 template <class T = void>
 class Task {
     // If this template type is void-returning
@@ -85,42 +78,28 @@ class Task {
     explicit Task(PromiseType& promiseType) : _handle(std::coroutine_handle<PromiseType>::from_promise(promiseType)) {}
 
 public:
-    /**
-     * @brief Typedef for the promise object for use by the compiler.
-     */
+    // Type alias for the promise object for use by the compiler.
     using promise_type = PromiseType;
 
     // The three await methods below allow us to co_await a task.
 
-    /**
-     * @brief Determines whether the coroutine needs to be suspended.
-     * @return If this task has completed or has nothing to do
-     *
-     * Called first when the coroutine is awaited.
-     */
+    // Determines whether the coroutine needs to be suspended.
+    // Called first when the coroutine is awaited, returns whether this task has completed/has nothing to do.
     bool await_ready() const noexcept {
         // There is no need to suspend if this task has no work to do.
         // If done() is false, this coroutine is suspended and await_suspend is called.
         return _handle.done();
     }
 
-    /**
-     * @brief Keeps track of the current coroutine to resume on suspend.
-     * @param current A handle to the current coroutine
-     *
-     * Called when the coroutine is suspended.
-     */
+    // Keeps track of the current coroutine to resume on suspend.
+    // Called when the coroutine is suspended.
     void await_suspend(std::coroutine_handle<> current) const noexcept {
         // Keep track of the current coroutine so it can be resumed in final_suspend
         _handle.promise().continuation = current;
     }
 
-    /**
-     * @brief Returns the result of the entire co_await expression.
-     * @return The value that the coroutine produced (for a value-returning coroutine)
-     *
-     * Called last when the coroutine is awaited.
-     */
+    // Returns the result of the entire co_await expression (the value the coroutine produced).
+    // Called last when the coroutine is awaited.
     T await_resume() const {
         // Propagate any exception that was thrown inside the coroutine to the caller
         if (auto exception = _handle.promise().exception) std::rethrow_exception(exception);

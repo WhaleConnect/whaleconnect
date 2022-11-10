@@ -1,11 +1,6 @@
 // Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/**
- * @file
- * @brief A class to handle a socket connection in a GUI window
- */
-
 #pragma once
 
 #include <functional> // std::bind_front()
@@ -13,20 +8,19 @@
 #include <string>
 #include <string_view>
 
-#include "async/async.hpp"
 #include "console.hpp"
-#include "net/sockets.hpp"
+#include "os/async.hpp"
+#include "os/net.hpp"
+#include "os/socket.hpp"
 #include "window.hpp"
 
-/**
- * @brief A class to handle a socket connection in a GUI window.
- */
+// A class to handle a socket connection in a GUI window.
 class ConnWindow : public Window {
-    Sockets::DeviceData _data; // The server to connect to
-    Sockets::Socket _socket;   // The socket
+    Net::DeviceData _data;     // Remote host to connect to
+    Socket _socket;            // Internal socket
     bool _pendingRecv = false; // If a receive operation has not yet completed
 
-    std::mutex _outputMutex; // The mutex for access to the console output
+    std::mutex _outputMutex; // Mutex for access to the console output
 
     Console _output{ std::bind_front(&ConnWindow::_sendHandler, this) }; // The console output
 
@@ -55,10 +49,6 @@ class ConnWindow : public Window {
     void _updateContents() override;
 
 public:
-    /**
-     * @brief Sets the window information.
-     * @param data The server to connect to
-     * @param extraInfo Extra information to display in the window's titlebar
-     */
-    ConnWindow(const Sockets::DeviceData& data, std::string_view extraInfo);
+    // Sets the window information (title and remote host).
+    ConnWindow(const Net::DeviceData& data, std::string_view extraInfo);
 };

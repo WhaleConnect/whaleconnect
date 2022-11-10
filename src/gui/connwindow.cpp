@@ -7,13 +7,13 @@
 
 #include <magic_enum.hpp>
 
-#include "net/sockets.hpp"
-#include "sys/error.hpp"
-#include "util/strings.hpp"
+#include "os/error.hpp"
+#include "os/net.hpp"
+#include "utils/strings.hpp"
 
 template <>
-constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(Sockets::ConnectionType value) noexcept {
-    using enum Sockets::ConnectionType;
+constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(Net::ConnectionType value) noexcept {
+    using enum Net::ConnectionType;
 
     switch (value) {
     case L2CAPSeqPacket: return "L2CAP SeqPacket";
@@ -24,9 +24,9 @@ constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(So
 }
 
 // Formats a DeviceData instance into a string for use in a ConnWindow title.
-static std::string formatDeviceData(const Sockets::DeviceData& data, std::string_view extraInfo) {
+static std::string formatDeviceData(const Net::DeviceData& data, std::string_view extraInfo) {
     // Type of the connection
-    bool isBluetooth = Sockets::connectionTypeIsBT(data.type);
+    bool isBluetooth = Net::connectionTypeIsBT(data.type);
     auto typeString = magic_enum::enum_name(data.type);
 
     // Bluetooth connections are described using the device's name (e.g. "MyESP32"),
@@ -51,18 +51,18 @@ static std::string formatDeviceData(const Sockets::DeviceData& data, std::string
     return extraInfo.empty() ? title : std::format("({}) {}", extraInfo, title);
 }
 
-ConnWindow::ConnWindow(const Sockets::DeviceData& data, std::string_view extraInfo) :
+ConnWindow::ConnWindow(const Net::DeviceData& data, std::string_view extraInfo) :
     Window(formatDeviceData(data, extraInfo)), _data(data) {}
 
 Task<> ConnWindow::_connect() try {
     _output.addInfo("Connecting...");
 
-    _socket = co_await Sockets::createClientSocket(_data);
+    _socket = co_await Net::createClientSocket(_data);
     _output.addInfo("Connected.");
 } catch (const System::SystemError& error) { _errorHandler(error); }
 
 Task<> ConnWindow::_sendHandler(std::string_view s) try {
-    co_await Sockets::sendData(_socket.get(), s);
+    co_await _socket.send(std::string{ s });
 } catch (const System::SystemError& error) { _errorHandler(error); }
 
 Task<> ConnWindow::_readHandler() try {
@@ -70,12 +70,12 @@ Task<> ConnWindow::_readHandler() try {
     if (_pendingRecv) co_return;
 
     _pendingRecv = true;
-    const auto& recvRet = co_await Sockets::recvData(_socket.get());
+    const auto& recvRet = co_await _socket.recv();
 
     if (recvRet.bytesRead == 0) {
         // Peer closed connection (here, 0 does not necessarily mean success, i.e. NO_ERROR)
         _output.addInfo("Remote host closed connection.");
-        _socket.reset();
+        _socket.close();
     } else {
         _output.addText(recvRet.data);
     }

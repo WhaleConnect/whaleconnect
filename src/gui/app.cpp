@@ -12,9 +12,9 @@
 #include <SDL_filesystem.h>
 #include <SDL_opengl.h>
 
-#include "settings.hpp"
-#include "sys/handleptr.hpp"
-#include "util/imguiext.hpp"
+#include "imguiext.hpp"
+#include "utils/handleptr.hpp"
+#include "utils/settings.hpp"
 
 static SDL_Window* window;      // The main application window
 static SDL_GLContext glContext; // The OpenGL context

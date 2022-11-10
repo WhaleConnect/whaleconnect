@@ -10,25 +10,54 @@ project(terminal)
 # Generate compilation database
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# C++ language standard
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED true)
+# Platform detection
+# TODO: Remove in CMake 3.25
+if (UNIX AND NOT APPLE)
+    set(LINUX 1 CACHE INTERNAL "")
+else()
+    set(LINUX 0 CACHE INTERNAL "")
+endif()
 
 # Source files to compile
-add_executable(terminal WIN32
+set(SRCS
     "src/main.cpp"
-    "src/app/app.cpp"
-    "src/async/async.cpp"
-    "src/core/newconnbt.cpp"
-    "src/core/newconnip.cpp"
+    "src/gui/app.cpp"
     "src/gui/connwindow.cpp"
-    "src/gui/sdpwindow.cpp"
     "src/gui/console.cpp"
-    "src/net/btutils.cpp"
-    "src/net/sockets.cpp"
-    "src/sys/error.cpp"
-    "src/util/imguiext.cpp"
-    "src/util/strings.cpp")
+    "src/gui/imguiext.cpp"
+    "src/gui/newconnbt.cpp"
+    "src/gui/newconnip.cpp"
+    "src/gui/sdpwindow.cpp"
+    "src/os/async.cpp"
+    "src/os/error.cpp"
+    "src/os/net.cpp"
+    "src/utils/strings.cpp")
+
+if (WIN32)
+    list(APPEND SRCS
+        "src/os/async_windows.cpp"
+        "src/os/btutils_windows.cpp"
+        "src/os/net_windows.cpp"
+        "src/os/socket_windows.cpp")
+elseif (APPLE)
+    list(APPEND SRCS
+        "src/os/async_macos.cpp"
+        "src/os/btutils_macos.mm"
+        "src/os/net_macos.mm"
+        "src/os/socket_macos.mm")
+elseif (LINUX)
+    list(APPEND SRCS
+        "src/os/async_linux.cpp"
+        "src/os/btutils_linux.cpp"
+        "src/os/net_linux.cpp"
+        "src/os/socket_linux.cpp")
+endif()
+
+add_executable(terminal WIN32 ${SRCS})
+set_target_properties(terminal
+    PROPERTIES
+    CXX_STANDARD 23
+    CXX_EXTENSIONS OFF)
 
 target_include_directories(terminal PRIVATE src bindings)
 
@@ -65,13 +94,6 @@ add_custom_command(TARGET terminal POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     ${CMAKE_SOURCE_DIR}/unifont/unifont-15.0.01.otf
     $<TARGET_FILE_DIR:terminal>/unifont.otf)
 
-# Platform detection
-if (UNIX AND NOT APPLE)
-    set(LINUX 1 CACHE INTERNAL "")
-else()
-    set(LINUX 0 CACHE INTERNAL "")
-endif()
-
 target_compile_definitions(terminal PRIVATE
     OS_WINDOWS=$<BOOL:${WIN32}>
     OS_APPLE=$<BOOL:${APPLE}>
@@ -90,9 +112,6 @@ if (MSVC)
 
     # Use MSVC's Unicode character set and prevent clashing macros
     target_compile_definitions(terminal PRIVATE UNICODE _UNICODE NOMINMAX)
-
-    # Windows API static libraries
-    target_link_libraries(terminal PRIVATE Ws2_32 Bthprops)
 else()
     # Warnings
     set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS -Wall -Wextra -Wno-missing-field-initializers)
@@ -105,7 +124,13 @@ else()
     target_link_options(terminal PRIVATE -fexperimental-library)
 endif()
 
-if (LINUX)
+if (WIN32)
+    # Windows API static libraries
+    target_link_libraries(terminal PRIVATE Ws2_32 Bthprops)
+elseif (APPLE)
+    # Objective-C frameworks
+    target_link_libraries(terminal PRIVATE "-framework Foundation" "-framework IOBluetooth")
+elseif (LINUX)
     # DBus
     find_package(PkgConfig REQUIRED)
     pkg_search_module(DBUS REQUIRED dbus-1)
@@ -119,33 +144,4 @@ if (LINUX)
 
     # Link to libraries
     target_link_libraries(terminal PRIVATE ${DBUS_LIBRARIES} Threads::Threads -lbluetooth)
-endif()
-
-# Build source documentation with Doxygen in release builds
-option(BUILD_DOCS "Build documentation for sources" OFF)
-if (BUILD_DOCS)
-    find_package(Doxygen)
-
-    if (NOT DOXYGEN_FOUND)
-        message(FATAL_ERROR "Doxygen is required to build source documentation")
-    endif()
-
-    set(DOXYGEN_PROJECT_NAME "Network Socket Terminal")
-    set(DOXYGEN_PROJECT_BRIEF "Cross-platform network communication software")
-    set(DOXYGEN_STRIP_FROM_PATH src)
-    set(DOXYGEN_STRIP_FROM_INC_PATH src)
-    set(DOXYGEN_EXCLUDE src/compat)
-
-    set(DOXYGEN_FORCE_LOCAL_INCLUDES YES)
-    set(DOXYGEN_SORT_MEMBERS_CTORS_1ST YES)
-    set(DOXYGEN_SORT_GROUP_NAMES YES)
-
-    set(DOXYGEN_WARN_NO_PARAMDOC YES)
-
-    set(DOXYGEN_HTML_OUTPUT src-docs)
-    set(DOXYGEN_GENERATE_TREEVIEW YES)
-
-    doxygen_add_docs(docs ALL
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        COMMENT "Generating HTML source documentation")
 endif()
