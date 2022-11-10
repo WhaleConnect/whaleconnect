@@ -2,39 +2,45 @@ This is a list of the tasks to complete before each release.
 
 0.2.0:
   [ ] macOS Support
+    [X] kqueue
+    [ ] IOBluetooth
   [ ] Add setting to change number of worker threads (unsigned integer, 0 means auto-detect)
-  [ ] Add option to export Console output to a file in the user's Documents folder
 
 0.3.0:
   [ ] Implement the server-side
     - This will get more detailed in the future when we get there.
 
 0.4.0:
+  - First beta release
+  [ ] Prep for community and publication
+    [ ] Add relevant topics to repository
+    [ ] Add contributing guidelines
+    [ ] Add code of conduct
+    [ ] Create issue/PR templates
+    [ ] List features in main README
+    [ ] Make app icon
+    [ ] Update screenshots in repository
+    [ ] Configure GitHub Actions
   [ ] System of saving IP addresses+names to make a "contacts list"
-  [ ] Pre-defined window dimensions
   [ ] Screenshot helper
     - On the Dear ImGui wiki: https://github.com/ocornut/imgui/wiki/screenshot_tool (now broken link)
-    - Add stb_image.h: https://github.com/nothings/stb
+    - Add stb_image.h or SDL_Image
   [ ] Make settings configurable
     [ ] Settings UI (like in VSCode)
     [ ] Save in JSON format
       - Add JSON for Modern C++: https://github.com/nlohmann/json
     [ ] Allow saving/editing of Bluetooth SDP UUIDs
-  [ ] Display licenses in app
   [ ] Display version/build information (build date/platform/compiler etc.)
     [ ] Display libraries + licenses and versions
   [ ] Final tests
 
 1.0:
-  [ ] Add relevant topics to repository
-  [ ] Create issue/PR templates
-  [ ] List features in main README
+  - First stable release
   [ ] UI reskin
     [ ] Change the app's colors from the default Dear ImGui styles
     [ ] Light and dark mode
     [ ] Figure out how to hide the spaces between tabs: https://github.com/ocornut/imgui/issues/4368
-  [ ] Make app icon
-  [ ] Update screenshots in repository
+    [ ] Update screenshots
   [ ] Create an installer executable
   [ ] Obtain a code signing certificate
 
@@ -44,5 +50,4 @@ This is a list of the tasks to complete before each release.
     - imgui_club Memory Editor (https://github.com/ocornut/imgui_club) should be helpful here (make a modification of it?)
 
 Other things:
-  [ ] Setup GitHub Actions (whenever)
-  [ ] Replace many index-based loops with `views::zip()` and `views::enumerate()` in C++23/C++26
+  [ ] Replace many index-based loops with `views::zip()` and `views::enumerate()` when they become available
