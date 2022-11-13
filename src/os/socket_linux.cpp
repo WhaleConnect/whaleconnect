@@ -20,7 +20,7 @@ void Socket::close() {
 }
 
 Task<> Socket::sendData(std::string data) const {
-    co_return co_await Async::run([this](Async::CompletionResult& result) {
+    co_await Async::run([this, &data](Async::CompletionResult& result) {
         io_uring_sqe* sqe = Async::getUringSQE();
         io_uring_prep_send(sqe, _handle, data.data(), data.size(), MSG_NOSIGNAL);
         io_uring_sqe_set_data(sqe, &result);
@@ -31,15 +31,13 @@ Task<> Socket::sendData(std::string data) const {
 Task<Socket::RecvResult> Socket::recvData() const {
     std::string buf(_recvLen, 0);
 
-    co_return co_await Async::run(
-        [this](Async::CompletionResult& result) {
-            io_uring_sqe* sqe = Async::getUringSQE();
-            io_uring_prep_recv(sqe, _handle, recvBuf, recvLen, MSG_NOSIGNAL);
-            io_uring_sqe_set_data(sqe, &result);
-            Async::submitRing();
-        },
-        [this, &buf](Async::CompletionResult& result) {
-            co_return RecvResult{ result.numBytes, buf.data() };
-        });
+    auto result = co_await Async::run([this, &buf](Async::CompletionResult& result) {
+        io_uring_sqe* sqe = Async::getUringSQE();
+        io_uring_prep_recv(sqe, _handle, buf.data(), _recvLen, MSG_NOSIGNAL);
+        io_uring_sqe_set_data(sqe, &result);
+        Async::submitRing();
+    });
+
+    co_return RecvResult{ result.numBytes, buf.data() };
 }
 #endif
