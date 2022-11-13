@@ -28,16 +28,17 @@ Task<> Socket::sendData(std::string data) const {
     });
 }
 
-Task<Socket::RecvResult> Socket::recvData() const {
-    std::string buf(_recvLen, 0);
+Task<std::string> Socket::recvData() const {
+    std::string data(_recvLen, 0);
 
-    auto result = co_await Async::run([this, &buf](Async::CompletionResult& result) {
+    auto result = co_await Async::run([this, &data](Async::CompletionResult& result) {
         io_uring_sqe* sqe = Async::getUringSQE();
-        io_uring_prep_recv(sqe, _handle, buf.data(), _recvLen, MSG_NOSIGNAL);
+        io_uring_prep_recv(sqe, _handle, data.data(), _recvLen, MSG_NOSIGNAL);
         io_uring_sqe_set_data(sqe, &result);
         Async::submitRing();
     });
 
-    co_return RecvResult{ result.numBytes, buf.data() };
+    data.resize(result.res);
+    co_return data;
 }
 #endif

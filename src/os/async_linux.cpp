@@ -64,7 +64,7 @@ Async::Internal::WorkerResult Async::Internal::worker() {
     // Fill in completion result information
     auto& result = toResult(userData);
     if (cqe->res < 0) result.error = -cqe->res;
-    else result.numBytes = cqe->res;
+    else result.res = cqe->res;
 
     return resultSuccess(result);
 }

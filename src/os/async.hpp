@@ -28,7 +28,7 @@ namespace Async {
     {
         std::coroutine_handle<> coroHandle; // The handle to the coroutine that started the operation
         System::ErrorCode error = NO_ERROR; // The return code of the asynchronous function (returned to caller)
-        size_t numBytes = 0; // The number of bytes transferred during the operation (returned to caller)
+        int res = 0; // The result the operation (returned to caller, exact meaning depends on operation)
 
         // Throws an exception if a fatal error occurred asynchronously.
         void checkError() const {

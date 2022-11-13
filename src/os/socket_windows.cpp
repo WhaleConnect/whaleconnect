@@ -25,15 +25,16 @@ Task<> Socket::send(std::string data) const {
     });
 }
 
-Task<Socket::RecvResult> Socket::recv() const {
-    std::string buf(_recvLen, 0);
+Task<std::string> Socket::recv() const {
+    std::string data(_recvLen, 0);
 
-    auto result = co_await Async::run([this, &buf](Async::CompletionResult& result) {
-        WSABUF wsaBuf{ static_cast<ULONG>(_recvLen), buf.data() };
+    auto result = co_await Async::run([this, &data](Async::CompletionResult& result) {
         DWORD flags = 0;
-        EXPECT_NONERROR(WSARecv, _handle, &wsaBuf, 1, nullptr, &flags, &result, nullptr);
+        WSABUF buf{ static_cast<ULONG>(_recvLen), data.data() };
+        EXPECT_NONERROR(WSARecv, _handle, &buf, 1, nullptr, &flags, &result, nullptr);
     });
 
-    co_return RecvResult{ result.numBytes, buf.data() };
+    data.resize(result.res);
+    co_return data;
 }
 #endif

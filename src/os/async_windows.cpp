@@ -39,7 +39,7 @@ Async::Internal::WorkerResult Async::Internal::worker() {
     // point so mutually-exclusive access is guaranteed.
     if (!overlapped) return resultError();
     auto& result = toResult(overlapped);
-    result.numBytes = numBytes;
+    result.res = numBytes;
 
     // Pass any failure back to the calling coroutine
     if (!ret) result.error = System::getLastError();

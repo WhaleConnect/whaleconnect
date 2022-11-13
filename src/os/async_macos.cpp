@@ -41,6 +41,7 @@ Async::Internal::WorkerResult Async::Internal::worker() {
     if (!event.udata) return resultError();
     auto& result = toResult(event.udata);
     if (event.flags & EV_EOF) result.error = event.fflags;
+    else result.res = event.data;
 
     return resultSuccess(result);
 }

@@ -48,12 +48,6 @@ class Socket {
     HandleType _release() { return std::exchange(_handle, _invalidHandle); }
 
 public:
-    // The result of a receive operation.
-    struct RecvResult {
-        size_t bytesRead = 0; // Number of bytes read
-        std::string data;     // String received
-    };
-
     // Constructs an object owning nothing.
     Socket() = default;
 
@@ -89,5 +83,5 @@ public:
     Task<> send(std::string data) const;
 
     // Receives a string from the socket.
-    Task<RecvResult> recv() const;
+    Task<std::string> recv() const;
 };

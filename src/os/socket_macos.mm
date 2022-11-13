@@ -57,16 +57,18 @@ Task<> Socket::send(std::string data) const {
     }
 }
 
-Task<Socket::RecvResult> Socket::recv() const {
+Task<std::string> Socket::recv() const {
     if (std::holds_alternative<SOCKET>(_handle)) {
         auto s = _getFd();
 
-        std::string buf(_recvLen, 0);
+        std::string data(_recvLen, 0);
 
-        co_await Async::run(std::bind_front(Async::submitKqueue, s, EVFILT_READ));
+        auto result = co_await Async::run(std::bind_front(Async::submitKqueue, s, EVFILT_READ));
 
-        size_t numBytes = EXPECT_NONERROR(::recv, s, buf.data(), buf.size(), 0);
-        co_return { numBytes, buf.data() };
+        EXPECT_NONERROR(::recv, s, data.data(), data.size(), 0);
+
+        data.resize(result.res);
+        co_return data;
     }
 
     co_return {};
