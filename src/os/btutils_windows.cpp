@@ -14,7 +14,7 @@
 
 #include "btutils.hpp"
 #include "errcheck.hpp"
-#include "sockets.hpp"
+#include "net.hpp"
 #include "utils/handleptr.hpp"
 #include "utils/out_ptr_compat.hpp"
 #include "utils/strings.hpp"
@@ -213,7 +213,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
             ProfileDesc pd;
             for (const auto& [_, specificType, data] : getSDPListData(element)) {
                 if (specificType == SDP_ST_UUID16) pd.uuid = data.uuid16;
-                else if (specificType == SDP_ST_UINT16) extractVersionNums(data.uint16, pd);
+                else if (specificType == SDP_ST_UINT16) Internal::extractVersionNums(data.uint16, pd);
             }
 
             result.profileDescs.push_back(pd);

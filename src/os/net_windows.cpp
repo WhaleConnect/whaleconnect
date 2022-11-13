@@ -14,6 +14,7 @@
 #include "error.hpp"
 #include "net.hpp"
 #include "socket.hpp"
+#include "utils/strings.hpp"
 
 void Net::init() {
     // Start Winsock on Windows
@@ -33,8 +34,8 @@ void Net::Internal::startConnect(SOCKET s, const sockaddr* addr, socklen_t len, 
 
     // Datagram sockets can be directly connected (ConnectEx() doesn't support them)
     if (isDgram) {
-        EXPECT_ZERO(connect, s, &addr, sizeof(addr));
-        co_return;
+        EXPECT_ZERO(connect, s, addr, len);
+        return;
     }
 
     // ConnectEx() requires the socket to be initially bound.
@@ -59,7 +60,7 @@ void Net::Internal::startConnect(SOCKET s, const sockaddr* addr, socklen_t len, 
                 sizeof(connectExPtr), &numBytes, nullptr, nullptr);
 
     // Call ConnectEx()
-    EXPECT_TRUE(connectExPtr, s, &addr, sizeof(addr), nullptr, 0, nullptr, &result);
+    EXPECT_TRUE(connectExPtr, s, addr, len, nullptr, 0, nullptr, &result);
 }
 
 void Net::Internal::finalizeConnect(SOCKET s, bool isDgram) {
@@ -81,9 +82,10 @@ Task<Socket> Net::Internal::createClientSocketBT(const DeviceData& data) {
     BTH_ADDR btAddr = std::stoull(Strings::replaceAll(data.address, ":", ""), nullptr, 16);
 
     SOCKADDR_BTH sAddrBT{ .addressFamily = AF_BTH, .btAddr = btAddr, .port = data.port };
-    int addrSize = sizeof(sAddrBT);
+    auto addr = std::bit_cast<sockaddr*>(&sAddrBT);
+    auto addrLen = static_cast<socklen_t>(sizeof(sAddrBT));
 
-    co_await Async::run(std::bind_front(Net::Internal::startConnect, fd, &sAddrBT, addrSize, false));
+    co_await Async::run(std::bind_front(Net::Internal::startConnect, fd, addr, addrLen, false));
     Net::Internal::finalizeConnect(fd, false);
 
     co_return std::move(ret);

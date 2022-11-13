@@ -54,7 +54,8 @@ static Task<Socket> createClientSocketIP(const Net::DeviceData& data) {
     Socket ret{ fd };
 
     // Connect to the server
-    co_await Async::run(std::bind_front(Net::Internal::startConnect, fd, addr->ai_addr, addr->ai_addrlen, isUDP));
+    auto addrLen = static_cast<socklen_t>(addr->ai_addrlen);
+    co_await Async::run(std::bind_front(Net::Internal::startConnect, fd, addr->ai_addr, addrLen, isUDP));
     Net::Internal::finalizeConnect(fd, isUDP);
 
     co_return std::move(ret);

@@ -32,10 +32,12 @@ class Socket {
     };
 
     using HandleType = std::variant<std::monostate, SOCKET, L2CAPChannelWrapper, RFCOMMChannelWrapper>;
+    static constexpr auto _invalidHandle = std::monostate{};
 
     SOCKET _getFd() const { return std::get<SOCKET>(_handle); }
 #else
     using HandleType = SOCKET;
+    static constexpr auto _invalidHandle = INVALID_SOCKET;
 #endif
 
     static constexpr size_t _recvLen = 1024;
@@ -43,7 +45,7 @@ class Socket {
     HandleType _handle;
 
     // Releases ownership of the managed handle.
-    HandleType _release() { return std::exchange(_handle, std::monostate{}); }
+    HandleType _release() { return std::exchange(_handle, _invalidHandle); }
 
 public:
     // The result of a receive operation.

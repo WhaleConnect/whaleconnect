@@ -28,8 +28,8 @@ namespace Async {
 #endif
     {
         std::coroutine_handle<> coroHandle; // The handle to the coroutine that started the operation
-        System::ErrorCode error;            // The return code of the asynchronous function (returned to caller)
-        size_t numBytes; // The number of bytes transferred during the operation (returned to caller)
+        System::ErrorCode error = NO_ERROR; // The return code of the asynchronous function (returned to caller)
+        size_t numBytes = 0; // The number of bytes transferred during the operation (returned to caller)
 
         // Throws an exception if a fatal error occurred asynchronously.
         void checkError() const {
@@ -51,17 +51,17 @@ namespace Async {
     };
 
     // Awaits an asynchronous operation and returns the result of the operation's end function (if given).
-    template <class StartFn, class EndFn = decltype([](const Async::CompletionResult&) {})>
-    Task<std::invoke_result_t<EndFn, Async::CompletionResult>> run(const StartFn& startFn, const EndFn& endFn = {}) {
-        Async::CompletionResult result{};
+    template <class Fn>
+    Task<CompletionResult> run(Fn fn) {
+        CompletionResult result{};
         co_await result;
 
-        startFn(result);
+        fn(result);
 
         co_await std::suspend_always{};
         result.checkError();
 
-        co_return endFn(result);
+        co_return result;
     }
 
     // Initializes the OS asynchronous I/O queue and starts the background thread pool.

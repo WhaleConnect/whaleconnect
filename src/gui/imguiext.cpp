@@ -55,6 +55,6 @@ void ImGui::Spinner() {
 
     // Draw the spinner, arc from 0 radians to (3pi / 2) radians (270 degrees)
     ImDrawList& drawList = *GetWindowDrawList();
-    drawList.PathArcTo(center, textSizeHalf, time, time + std::numbers::pi * (3.0 / 2.0));
+    drawList.PathArcTo(center, textSizeHalf, time, time + std::numbers::pi * (3.0f / 2.0f));
     drawList.PathStroke(textColor, 0, textSizeHalf / 2);
 }
