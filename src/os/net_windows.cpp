@@ -85,8 +85,8 @@ Task<Socket> Net::Internal::createClientSocketBT(const DeviceData& data) {
     auto addr = std::bit_cast<sockaddr*>(&sAddrBT);
     auto addrLen = static_cast<socklen_t>(sizeof(sAddrBT));
 
-    co_await Async::run(std::bind_front(Net::Internal::startConnect, fd, addr, addrLen, false));
-    Net::Internal::finalizeConnect(fd, false);
+    co_await Async::run(std::bind_front(startConnect, fd, addr, addrLen, false));
+    finalizeConnect(fd, false);
 
     co_return std::move(ret);
 }

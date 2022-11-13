@@ -67,8 +67,8 @@ Task<Socket> Net::Internal::createClientSocketBT(const DeviceData& data) {
 
     bool isDgram = (data.type == L2CAPDgram);
 
-    co_await Async::run(std::bind_front(Net::Internal::startConnect, fd, &sAddrBT, addrSize, isDgram));
-    Net::Internal::finalizeConnect(fd, false);
+    co_await Async::run(std::bind_front(Internal::startConnect, fd, &sAddrBT, addrSize, isDgram));
+    finalizeConnect(fd, false);
 
     co_return std::move(ret);
 }
