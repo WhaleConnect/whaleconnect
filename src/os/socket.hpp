@@ -42,7 +42,7 @@ class Socket {
 
     static constexpr size_t _recvLen = 1024;
 
-    HandleType _handle;
+    HandleType _handle = _invalidHandle;
 
     // Releases ownership of the managed handle.
     HandleType _release() { return std::exchange(_handle, _invalidHandle); }
