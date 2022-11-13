@@ -4,7 +4,6 @@
 #pragma once
 
 #include <coroutine>
-#include <type_traits>
 
 #if OS_WINDOWS
 #include <WinSock2.h>
