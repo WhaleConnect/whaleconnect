@@ -20,7 +20,7 @@ void Async::Internal::init() {
 }
 
 void Async::Internal::stopThreads() {
-    for (int i = 0; i < numThreads; i++) PostQueuedCompletionStatus(completionPort, 0, ASYNC_INTERRUPT, nullptr);
+    for (size_t i = 0; i < numThreads; i++) PostQueuedCompletionStatus(completionPort, 0, ASYNC_INTERRUPT, nullptr);
 }
 
 void Async::Internal::cleanup() { CloseHandle(completionPort); }
