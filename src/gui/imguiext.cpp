@@ -47,14 +47,15 @@ void ImGui::Spinner() {
     float textSizeHalf = GetTextLineHeight() / 2;
     ImU32 textColor = GetColorU32(ImGuiCol_Text);
 
-    double time = GetTime() * 10; // Current time (multiplied to make the spinner faster)
+    auto time = static_cast<float>(GetTime() * 10); // Current time (multiplied to make the spinner faster)
 
     // Position to draw the spinner
     ImVec2 cursorPos = GetCursorScreenPos();
     ImVec2 center{ cursorPos.x + textSizeHalf, cursorPos.y + textSizeHalf };
 
     // Draw the spinner, arc from 0 radians to (3pi / 2) radians (270 degrees)
+    constexpr auto arcLength = static_cast<float>(std::numbers::pi * (3.0 / 2.0));
     ImDrawList& drawList = *GetWindowDrawList();
-    drawList.PathArcTo(center, textSizeHalf, time, time + std::numbers::pi * (3.0f / 2.0f));
+    drawList.PathArcTo(center, textSizeHalf, time, time + arcLength);
     drawList.PathStroke(textColor, 0, textSizeHalf / 2);
 }
