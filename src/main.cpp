@@ -26,7 +26,7 @@ void mainLoop() {
         BTUtils::init();
     } catch (const System::SystemError& error) {
         failureMessage = "Initialization failed - " + error.formatted();
-    } catch (const std::system_error& error) {
+    } catch (const std::system_error&) {
         failureMessage = "Initialization failed - Could not initialize thread pool";
     }
 
