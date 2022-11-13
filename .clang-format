@@ -100,8 +100,12 @@ IncludeCategories:
     Priority: 0
   - Regex: '<[a-z_]+>' # C++ standard headers
     Priority: 1
+  - Regex: '<WinSock2.h>' # Winsock main header (included before others)
+    Priority: 2
+    SortPriority: 1
   - Regex: '<.+\..+>' # Library headers
     Priority: 2
+    SortPriority: 2
   - Regex: '".+"' # Project headers
     Priority: 3
 
