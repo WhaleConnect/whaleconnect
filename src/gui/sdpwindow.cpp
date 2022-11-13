@@ -29,7 +29,7 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
         const char* serviceName = name.empty() ? "Unnamed service" : name.c_str();
 
         ImGui::PushID(id); // Push the ID, then increment it
-        id++;              // TODO: Use views::enumerate() in C++26
+        id++;              // TODO: Use views::enumerate() in C++23
 
         if (ImGui::TreeNode(serviceName)) {
             // Print the description (if there is one)
