@@ -59,7 +59,7 @@ set_target_properties(terminal
     CXX_STANDARD 23
     CXX_EXTENSIONS OFF)
 
-target_include_directories(terminal PRIVATE src bindings)
+target_include_directories(terminal PRIVATE src conan_installed/backends)
 
 # Libraries (installed with Conan)
 find_package(imgui CONFIG REQUIRED)
@@ -74,8 +74,8 @@ find_package(OpenGL REQUIRED)
 
 # Dear ImGui backend files
 add_library(imguiBackends STATIC
-    "bindings/imgui_impl_sdl.cpp"
-    "bindings/imgui_impl_opengl3.cpp")
+    "conan_installed/backends/imgui_impl_sdl.cpp"
+    "conan_installed/backends/imgui_impl_opengl3.cpp")
 
 target_link_libraries(imguiBackends PUBLIC imgui::imgui SDL2::SDL2)
 target_link_libraries(terminal PRIVATE imguiBackends magic_enum::magic_enum SDL2::SDL2main OpenGL::GL)

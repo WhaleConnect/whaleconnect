@@ -3,6 +3,8 @@
 
 from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain
+import os
+
 
 class App(ConanFile):
     settings = ("os", "arch", "compiler", "build_type")
@@ -23,12 +25,13 @@ class App(ConanFile):
 
     def imports(self):
         # Copy the Dear ImGui backend files into the project
-        self.copy("imgui_impl_sdl.*", dst="bindings", src="res/bindings")
-        self.copy("imgui_impl_opengl3*", dst="bindings", src="res/bindings")
+        self.copy("imgui_impl_sdl.*", src="res/bindings")
+        self.copy("imgui_impl_opengl3*", src="res/bindings")
 
     def layout(self):
-        self.folders.build = "build"
-        self.folders.generators = "build"
+        self.folders.build = f"build_{str(self.settings.build_type).lower()}"
+        self.folders.generators = f"conan_installed"
+        self.folders.imports = f"conan_installed/backends"
 
     def generate(self):
         tc = CMakeToolchain(self)

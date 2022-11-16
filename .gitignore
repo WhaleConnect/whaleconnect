@@ -3,12 +3,12 @@ desktop.ini
 .DS_Store
 
 # Build/cache directories
-build/
+build_*/
 .cache/
 .vs/
 
 # Conan generated files
-bindings/
+conan_installed/
 CMakeUserPresets.json
 conan_imports_manifest.txt
 conan.lock
