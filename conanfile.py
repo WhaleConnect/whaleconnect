@@ -3,7 +3,6 @@
 
 from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain
-import os
 
 
 class App(ConanFile):
