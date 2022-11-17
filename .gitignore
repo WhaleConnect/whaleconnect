@@ -15,3 +15,7 @@ conan.lock
 conanbuildinfo.txt
 conaninfo.txt
 graph_info.json
+
+# JetBrains IDE files
+.idea/**/dictionaries
+cmake-build-*/
