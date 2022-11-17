@@ -1,5 +1,0 @@
-{
-    "cmake.configureOnOpen": true,
-    "cmake.configureOnEdit": true,
-    "explorer.excludeGitIgnore": true
-}
