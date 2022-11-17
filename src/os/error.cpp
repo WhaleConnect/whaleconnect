@@ -33,7 +33,6 @@ std::string System::SystemError::formatted() const {
                                   static_cast<DWORD>(msg.size()), nullptr);
 
     msg.resize(length);
-
 #else
     auto msg = (type == ErrorType::System) ? std::strerror(code) : gai_strerror(code);
 #endif
@@ -49,14 +48,6 @@ System::ErrorCode System::getLastError() {
 #endif
 }
 
-void System::setLastError(ErrorCode code) {
-#if OS_WINDOWS
-    SetLastError(code);
-#else
-    errno = code;
-#endif
-}
-
 bool System::isFatal(ErrorCode code) {
     // Check if the code is actually an error
     if (code == NO_ERROR) return false;
@@ -65,10 +56,10 @@ bool System::isFatal(ErrorCode code) {
     // Tell the calling function that there's no error, and it should check back later.
 #if OS_WINDOWS
     // Pending I/O for overlapped sockets
-    else if (code == WSA_IO_PENDING) return false;
+    if (code == WSA_IO_PENDING) return false;
 #elif OS_APPLE
     // Pending I/O for non-blocking sockets
-    else if (code == EINPROGRESS) return false;
+    if (code == EINPROGRESS) return false;
 #endif
 
     return true;

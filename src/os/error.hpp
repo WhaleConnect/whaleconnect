@@ -26,9 +26,6 @@ namespace System {
     // Gets the last error code. This is platform-specific.
     ErrorCode getLastError();
 
-    // Sets the last error code. This is platform-specific.
-    void setLastError(ErrorCode code);
-
     // Checks if an error code should be handled as a fatal error.
     bool isFatal(ErrorCode code);
 
@@ -51,6 +48,6 @@ namespace System {
         explicit operator bool() const { return isFatal(code); }
 
         // Represents this object as a readable string.
-        std::string formatted() const;
+        [[nodiscard]] std::string formatted() const;
     };
 }

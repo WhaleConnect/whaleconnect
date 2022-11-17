@@ -17,7 +17,7 @@ namespace Async::Internal {
     inline const auto numThreads = std::max(std::thread::hardware_concurrency(), 1U);
 
     struct WorkerResult {
-        bool interrupted;
+        bool interrupted = false;
         std::coroutine_handle<> coroHandle;
     };
 

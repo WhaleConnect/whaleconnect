@@ -5,7 +5,6 @@
 
 #include <bit>
 #include <numbers> // std::numbers::pi
-#include <string>
 
 #include <imgui.h>
 

@@ -45,7 +45,7 @@ class Task {
 
         // Called second when a coroutine is entered. This dictates how the coroutine starts.
         // Returning suspend_never starts the coroutine immediately.
-        std::suspend_never initial_suspend() const noexcept { return {}; }
+        [[nodiscard]] std::suspend_never initial_suspend() const noexcept { return {}; }
 
         // Handles any exceptions thrown in a coroutine.
         void unhandled_exception() noexcept { exception = std::current_exception(); }
@@ -53,7 +53,7 @@ class Task {
         // Called when a coroutine is about to complete.
         auto final_suspend() const noexcept {
             struct Awaiter {
-                bool await_ready() const noexcept { return false; }
+                [[nodiscard]] bool await_ready() const noexcept { return false; }
 
                 std::coroutine_handle<> await_suspend(std::coroutine_handle<promise_type> current) const noexcept {
                     // Get the caller coroutine's handle
@@ -85,7 +85,7 @@ public:
 
     // Determines whether the coroutine needs to be suspended.
     // Called first when the coroutine is awaited, returns whether this task has completed/has nothing to do.
-    bool await_ready() const noexcept {
+    [[nodiscard]] bool await_ready() const noexcept {
         // There is no need to suspend if this task has no work to do.
         // If done() is false, this coroutine is suspended and await_suspend is called.
         return _handle.done();

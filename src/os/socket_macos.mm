@@ -4,16 +4,13 @@
 #if OS_APPLE
 #include <bit>
 #include <functional>
-#include <variant>
 
 #include <IOBluetooth/IOBluetooth.h>
 #include <sys/event.h>
 #include <sys/socket.h>
-#include <unistd.h>
 
 #include "async.hpp"
 #include "errcheck.hpp"
-#include "error.hpp"
 #include "net.hpp"
 #include "socket.hpp"
 #include "utils/overload.hpp"
@@ -34,11 +31,11 @@ void Socket::close() {
             ::close(s);
         },
         [](L2CAPChannelWrapper wrapper) {
-            auto channel = std::bit_cast<IOBluetoothL2CAPChannel*>(wrapper.channel);
+            auto channel = [IOBluetoothL2CAPChannel withL2CAPChannelRef:wrapper.channel];
             [channel closeChannel];
         },
         [](RFCOMMChannelWrapper wrapper) {
-            auto channel = std::bit_cast<IOBluetoothRFCOMMChannel*>(wrapper.channel);
+            auto channel = [IOBluetoothRFCOMMChannel withRFCOMMChannelRef:wrapper.channel];
             [channel closeChannel];
         },
     };

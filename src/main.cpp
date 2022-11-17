@@ -5,8 +5,6 @@
 #include <optional>
 #include <system_error>
 
-#include <SDL_main.h> // For definition of main function
-
 #include "gui/app.hpp"
 #include "gui/imguiext.hpp"
 #include "gui/newconnbt.hpp"

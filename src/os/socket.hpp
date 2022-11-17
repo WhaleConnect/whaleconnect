@@ -34,7 +34,7 @@ class Socket {
     using HandleType = std::variant<std::monostate, SOCKET, L2CAPChannelWrapper, RFCOMMChannelWrapper>;
     static constexpr auto _invalidHandle = std::monostate{};
 
-    SOCKET _getFd() const { return std::get<SOCKET>(_handle); }
+    [[nodiscard]] SOCKET _getFd() const { return std::get<SOCKET>(_handle); }
 #else
     using HandleType = SOCKET;
     static constexpr auto _invalidHandle = INVALID_SOCKET;
@@ -80,8 +80,8 @@ public:
 
     // Sends a string through the socket.
     // The data is passed as a string (not a string_view) to make a copy and prevent dangling pointers in the coroutine.
-    Task<> send(std::string data) const;
+    [[nodiscard]] Task<> send(std::string data) const;
 
     // Receives a string from the socket.
-    Task<std::string> recv() const;
+    [[nodiscard]] Task<std::string> recv() const;
 };

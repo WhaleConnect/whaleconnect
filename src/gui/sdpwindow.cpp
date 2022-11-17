@@ -24,7 +24,7 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
     bool ret = false;
 
     // ID to use in case multiple services have the same name
-    unsigned int id = 0;
+    int id = 0;
     for (const auto& [protos, services, profiles, port, name, desc] : list) {
         const char* serviceName = name.empty() ? "Unnamed service" : name.c_str();
 

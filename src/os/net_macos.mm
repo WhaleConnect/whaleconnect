@@ -4,14 +4,9 @@
 #if OS_APPLE
 #include "net_internal.hpp"
 
-#include <fcntl.h>
 #include <sys/event.h>
-#include <sys/socket.h>
-#include <unistd.h> // close()
 
-#include "async.hpp"
 #include "errcheck.hpp"
-#include "net.hpp"
 
 void Net::init() {}
 

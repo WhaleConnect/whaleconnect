@@ -140,7 +140,7 @@ void Console::update() {
     ImGui::BeginGroup();
 
     // Textbox
-    int textboxHeight = 4; // Number of lines that can be displayed
+    float textboxHeight = 4.0f; // Number of lines that can be displayed
     ImVec2 size{ ImGui::FILL, ImGui::GetTextLineHeight() * textboxHeight };
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
                               | ImGuiInputTextFlags_AllowTabInput;

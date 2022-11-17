@@ -31,16 +31,16 @@ protected:
 
 public:
     // Sets the window title.
-    Window(std::string_view title) : _title(title) {}
+    explicit Window(std::string_view title) : _title(title) {}
 
     // Virtual destructor provided for derived classes.
     virtual ~Window() = default;
 
     // Gets the window title.
-    std::string_view getTitle() const { return _title; }
+    [[nodiscard]] std::string_view getTitle() const { return _title; }
 
     // Gets the window's open/closed state.
-    bool isOpen() const { return _open; }
+    [[nodiscard]] bool isOpen() const { return _open; }
 
     // Performs any extra required initialization. This may be called once; subsequent calls will do nothing.
     void init() {

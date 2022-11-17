@@ -72,7 +72,7 @@ Task<> ConnWindow::_readHandler() try {
     _pendingRecv = true;
     std::string recvRet = co_await _socket.recv();
 
-    if (recvRet.size() == 0) {
+    if (recvRet.empty()) {
         // Peer closed connection (here, 0 does not necessarily mean success, i.e. NO_ERROR)
         _output.addInfo("Remote host closed connection.");
         _socket.close();
