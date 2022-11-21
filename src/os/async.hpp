@@ -37,7 +37,7 @@ namespace Async {
         }
 
         // Checks if coroutine suspension is necessary.
-        bool await_ready() const noexcept { return static_cast<bool>(coroHandle); }
+        [[nodiscard]] bool await_ready() const noexcept { return static_cast<bool>(coroHandle); }
 
         // Stores the current coroutine handle to be resumed on completion.
         bool await_suspend(std::coroutine_handle<> coroutine) noexcept {
