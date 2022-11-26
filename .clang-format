@@ -88,7 +88,6 @@ BreakBeforeBraces: Attach
 BreakBeforeConceptDeclarations: Always
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: AfterColon
-BreakInheritanceList: AfterComma
 RequiresClausePosition: OwnLine
 
 #################### Sorting ####################
