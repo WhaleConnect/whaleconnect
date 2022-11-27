@@ -10,6 +10,9 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Added a "Copy line" right-click option in connection windows.
 - The "Show timestamps" feature is now available in connection windows on all platforms.
   - Timestamps are now displayed with three digits of subsecond precision instead of seven as in the previous release.
+- Added a notification system to display application messages.
+  - The notification area is shown on the right side of the app by default, but it can be moved and docked.
+  - A notification can close automatically after a few seconds; this can be canceled by hovering over its close button.
 
 ### Improvements
 

@@ -27,6 +27,7 @@ set(SRCS
     "src/gui/imguiext.cpp"
     "src/gui/newconnbt.cpp"
     "src/gui/newconnip.cpp"
+    "src/gui/notifications.cpp"
     "src/gui/sdpwindow.cpp"
     "src/os/async.cpp"
     "src/os/error.cpp"

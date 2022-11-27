@@ -13,6 +13,7 @@
 #include <SDL_opengl.h>
 
 #include "imguiext.hpp"
+#include "notifications.hpp"
 #include "utils/handleptr.hpp"
 #include "utils/settings.hpp"
 
@@ -109,7 +110,10 @@ bool App::newFrame() {
     ImGui::NewFrame();
 
     // Dockspace
-    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGuiID dockspaceID
+        = ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
+    ImGui::DrawNotificationArea(dockspaceID);
 
     // FPS counter
     if (Settings::showFPScounter)
@@ -130,6 +134,11 @@ bool App::newFrame() {
     if (showDemoWindow) ImGui::ShowDemoWindow(&showDemoWindow);
     if (showMetricsWindow) ImGui::ShowMetricsWindow(&showMetricsWindow);
     if (showStackToolWindow) ImGui::ShowStackToolWindow(&showStackToolWindow);
+
+    // Buttons to add notifications
+    if (ImGui::Button("Test Notification (3s)")) ImGui::AddNotification("Test Notification (3s)", 3);
+    if (ImGui::Button("Test Notification (5s)")) ImGui::AddNotification("Test Notification (5s)");
+
     ImGui::End();
 #endif
 
