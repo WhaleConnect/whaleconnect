@@ -17,6 +17,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Improvements
 
 - Redesigned the loading spinner shown during an SDP inquiry.
+- Initialization errors are now displayed in the notification area instead of as a corner overlay.
 
 ### Bug Fixes
 
