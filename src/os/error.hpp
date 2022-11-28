@@ -11,9 +11,8 @@
 #include <WinSock2.h>
 #else
 // Error status codes
-constexpr auto INVALID_SOCKET = -1; // An invalid socket descriptor
-constexpr auto SOCKET_ERROR = -1;   // An error has occurred (returned from a function)
-constexpr auto NO_ERROR = 0;        // Done successfully (returned from a function)
+constexpr auto SOCKET_ERROR = -1; // An error has occurred (returned from a function)
+constexpr auto NO_ERROR = 0;      // Done successfully (returned from a function)
 #endif
 
 namespace System {

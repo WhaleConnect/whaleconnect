@@ -7,8 +7,8 @@
 
 #include <imgui.h>
 
-#include "connwindow.hpp"
 #include "imguiext.hpp"
+#include "newconn.hpp"
 #include "os/btutils.hpp"
 #include "utils/overload.hpp"
 
@@ -20,7 +20,7 @@ static void printUUID(BTUtils::UUID128 uuid) {
 
 bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
     // Begin a scrollable child window to contain the list
-    ImGui::BeginChildSpacing("sdpList", _isNew ? 0.0f : 1.0f, true);
+    ImGui::BeginChild("sdpList", { 0, 0 }, true);
     bool ret = false;
 
     // ID to use in case multiple services have the same name
@@ -67,7 +67,7 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
 }
 
 void SDPWindow::_drawConnOptions(std::string_view info) {
-    using enum Net::ConnectionType;
+    using enum ConnectionType;
 
     // Connection type selection
     ImGui::RadioButton("RFCOMM", _connType, RFCOMM);
@@ -78,7 +78,7 @@ void SDPWindow::_drawConnOptions(std::string_view info) {
     // Connect button
     ImGui::Spacing();
     if (ImGui::Button("Connect"))
-        _isNew = _list.add<ConnWindow>(Net::DeviceData{ _connType, _target.name, _target.address, _port }, info);
+        addConnWindow<SocketTag::BT>(_list, { _connType, _target.name, _target.address, _port }, info);
 }
 
 void SDPWindow::_checkInquiryStatus() {
@@ -176,7 +176,4 @@ void SDPWindow::_updateContents() {
         _drawManualTab();
         ImGui::EndTabBar();
     }
-
-    // If the connection exists, show a message
-    if (!_isNew) ImGui::Text("This connection is already open.");
 }

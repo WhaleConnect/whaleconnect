@@ -5,21 +5,18 @@
 
 #include <algorithm>
 #include <map>
-#include <string>
-#include <string_view>
 #include <variant>
 
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#include "imguiext.hpp"
 #include "os/btutils.hpp"
-#include "os/net.hpp"
 #include "sdpwindow.hpp"
+#include "sockets/device.hpp"
 #include "utils/overload.hpp"
 #include "windowlist.hpp"
 
-static void sortTable(Net::DeviceDataList& devices) {
+static void sortTable(DeviceList& devices) {
     // A sort is only needed for 2 or more entries
     if (devices.size() < 2) return;
 
@@ -30,7 +27,7 @@ static void sortTable(Net::DeviceDataList& devices) {
 
     // Get sort data
     auto spec = sortSpecs->Specs[0];
-    auto proj = (spec.ColumnIndex == 0) ? &Net::DeviceData::name : &Net::DeviceData::address;
+    auto proj = (spec.ColumnIndex == 0) ? &Device::name : &Device::address;
 
     // Sort according to user specified direction
     if (spec.SortDirection == ImGuiSortDirection_Ascending) std::ranges::stable_sort(devices, std::less{}, proj);
@@ -40,9 +37,9 @@ static void sortTable(Net::DeviceDataList& devices) {
 }
 
 // Draws a menu composed of the paired Bluetooth devices.
-static const Net::DeviceData* drawPairedDevices(Net::DeviceDataList& devices, bool needsSort) {
+static const Device* drawPairedDevices(DeviceList& devices, bool needsSort) {
     // Using a pointer so the return value can be nullable without copying large objects.
-    const Net::DeviceData* ret = nullptr;
+    const Device* ret = nullptr;
 
     // Setup table
     int numCols = 3;
@@ -82,7 +79,7 @@ static const Net::DeviceData* drawPairedDevices(Net::DeviceDataList& devices, bo
 void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
     if (!ImGui::BeginTabItem("Bluetooth")) return;
 
-    static std::variant<std::monostate, Net::DeviceDataList, System::SystemError> pairedDevices; // Paired devices
+    static std::variant<std::monostate, DeviceList, System::SystemError> pairedDevices; // Paired devices
 
     // Map of UUIDs, associating a UUID value with a user-given name
     static std::map<std::string, BTUtils::UUID128, std::less<>> uuidList = {
@@ -103,7 +100,7 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
     // Check paired devices list
     Overload visitor{
         [](std::monostate) {},
-        [needsSort, &connections, &sdpWindows](Net::DeviceDataList& deviceList) {
+        [needsSort, &connections, &sdpWindows](DeviceList& deviceList) {
             // Check if the device list is empty
             if (deviceList.empty()) {
                 ImGui::Text("No paired devices.");

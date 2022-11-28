@@ -2,35 +2,33 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_LINUX
-#include "net_internal.hpp"
-
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/l2cap.h>
 #include <bluetooth/rfcomm.h>
 #include <liburing.h>
 
 #include "async.hpp"
-#include "net.hpp"
+#include "clientsocket.hpp"
 
-void Net::init() {}
-
-void Net::cleanup() {}
-
-void Net::Internal::startConnect(SOCKET s, const sockaddr* addr, socklen_t len, bool, Async::CompletionResult& result) {
+static void startConnect(SOCKET s, sockaddr* addr, socklen_t len) {
     io_uring_sqe* sqe = Async::getUringSQE();
     io_uring_prep_connect(sqe, s, addr, len);
     io_uring_sqe_set_data(sqe, &result);
     Async::submitRing();
 }
 
-void Net::Internal::finalizeConnect(SOCKET, bool) {}
+template <>
+Task<> ClientSocket<SocketTag::IP>::connect() const {
+    co_await Async::run(std::bind_front(startConnect, _handle, _addr->ai_addr, _addr->ai_addrlen));
+}
 
-Task<Socket> Net::Internal::createClientSocketBT(const DeviceData& data) {
-    using enum Net::ConnectionType;
+template <>
+std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& device) {
+    using enum ConnectionType;
 
     // Determine the socket type
     int sockType;
-    switch (type) {
+    switch (device.type) {
     case L2CAPStream:
     case RFCOMM: sockType = SOCK_STREAM; break;
     case L2CAPDgram: sockType = SOCK_DGRAM; break;
@@ -39,14 +37,17 @@ Task<Socket> Net::Internal::createClientSocketBT(const DeviceData& data) {
     }
 
     // Determine the socket protocol
-    int sockProto = (type == RFCOMM) ? BTPROTO_RFCOMM : BTPROTO_L2CAP;
+    int sockProto = (device.type == RFCOMM) ? BTPROTO_RFCOMM : BTPROTO_L2CAP;
 
-    SOCKET fd = EXPECT_NONERROR(socket, AF_BLUETOOTH, sockType, sockProto);
-    Socket ret{ fd };
+    auto fd = EXPECT_NONERROR(socket, AF_BLUETOOTH, sockType, sockProto);
+    return std::make_unique<ClientSocket<SocketTag::BT>>(fd, device);
+}
 
+template <>
+Task<> ClientSocket<SocketTag::IP>::connect() const {
     // Address of the device to connect to
     bdaddr_t bdaddr;
-    str2ba(data.address.c_str(), &bdaddr);
+    str2ba(_device.address.c_str(), &bdaddr);
 
     // The structure used depends on the protocol
     union {
@@ -57,7 +58,7 @@ Task<Socket> Net::Internal::createClientSocketBT(const DeviceData& data) {
     socklen_t addrSize;
 
     // Set the appropriate sockaddr struct based on the protocol
-    if (data.type == RFCOMM) {
+    if (_device.type == ConnectionType::RFCOMM) {
         sAddrBT.addrRC = { AF_BLUETOOTH, bdaddr, static_cast<uint8_t>(data.port) };
         addrSize = sizeof(sAddrBT.addrRC);
     } else {
@@ -65,11 +66,6 @@ Task<Socket> Net::Internal::createClientSocketBT(const DeviceData& data) {
         addrSize = sizeof(sAddrBT.addrL2);
     }
 
-    bool isDgram = (data.type == L2CAPDgram);
-
-    co_await Async::run(std::bind_front(startConnect, fd, &sAddrBT, addrSize, isDgram));
-    finalizeConnect(fd, false);
-
-    co_return std::move(ret);
+    co_await Async::run(std::bind_front(startConnect, fd, &sAddrBT, addrSize));
 }
 #endif

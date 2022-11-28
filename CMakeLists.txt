@@ -31,27 +31,27 @@ set(SRCS
     "src/gui/sdpwindow.cpp"
     "src/os/async.cpp"
     "src/os/error.cpp"
-    "src/os/net.cpp"
+    "src/sockets/clientsocket.cpp"
     "src/utils/strings.cpp")
 
 if (WIN32)
     list(APPEND SRCS
         "src/os/async_windows.cpp"
         "src/os/btutils_windows.cpp"
-        "src/os/net_windows.cpp"
-        "src/os/socket_windows.cpp")
+        "src/sockets/clientsocket_windows.cpp"
+        "src/sockets/socket_windows.cpp")
 elseif (APPLE)
     list(APPEND SRCS
         "src/os/async_macos.cpp"
         "src/os/btutils_macos.mm"
-        "src/os/net_macos.mm"
-        "src/os/socket_macos.mm")
+        "src/sockets/clientsocket_macos.mm"
+        "src/sockets/socket_macos.mm")
 elseif (LINUX)
     list(APPEND SRCS
         "src/os/async_linux.cpp"
         "src/os/btutils_linux.cpp"
-        "src/os/net_linux.cpp"
-        "src/os/socket_linux.cpp")
+        "src/sockets/clientsocket_linux.cpp"
+        "src/sockets/socket_linux.cpp")
 endif()
 
 add_executable(terminal WIN32 ${SRCS})

@@ -8,9 +8,7 @@ void BTUtils::init() {}
 
 void BTUtils::cleanup() {}
 
-Net::DeviceDataList BTUtils::getPaired() { return {}; }
+DeviceList BTUtils::getPaired() { return {}; }
 
-BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, bool) {
-    return {};
-}
+BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, bool) { return {}; }
 #endif

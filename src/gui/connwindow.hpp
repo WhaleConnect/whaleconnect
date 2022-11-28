@@ -4,23 +4,22 @@
 #pragma once
 
 #include <functional> // std::bind_front()
+#include <memory>
 #include <mutex>
 #include <string>
 #include <string_view>
 
 #include "console.hpp"
-#include "os/async.hpp"
-#include "os/net.hpp"
-#include "os/socket.hpp"
+#include "os/error.hpp"
+#include "sockets/device.hpp"
+#include "sockets/interfaces.hpp"
 #include "window.hpp"
 
 // A class to handle a socket connection in a GUI window.
 class ConnWindow : public Window {
-    Net::DeviceData _data;     // Remote host to connect to
-    Socket _socket;            // Internal socket
-    bool _pendingRecv = false; // If a receive operation has not yet completed
-
-    std::mutex _outputMutex; // Mutex for access to the console output
+    std::unique_ptr<Writable> _socket; // Internal socket
+    bool _pendingRecv = false;         // If a receive operation has not yet completed
+    std::mutex _outputMutex;           // Mutex for access to the console output
 
     Console _output{ std::bind_front(&ConnWindow::_sendHandler, this) }; // The console output
 
@@ -50,5 +49,5 @@ class ConnWindow : public Window {
 
 public:
     // Sets the window information (title and remote host).
-    ConnWindow(const Net::DeviceData& data, std::string_view extraInfo);
+    ConnWindow(std::unique_ptr<Writable>&& socket, const Device& device, std::string_view extraInfo);
 };

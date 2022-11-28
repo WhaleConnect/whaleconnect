@@ -7,29 +7,26 @@
 
 #include <imgui.h>
 
-#include "connwindow.hpp"
 #include "imguiext.hpp"
-#include "os/net.hpp"
+#include "newconn.hpp"
+#include "sockets/traits.hpp"
 #include "windowlist.hpp"
 
 void drawIPConnectionTab(WindowList& connections) {
     if (!ImGui::BeginTabItem("Internet Protocol")) return;
-    using Net::ConnectionType;
+    ImGui::BeginChild("Output");
+
     using enum ConnectionType;
 
     static std::string addr;          // Server address
     static uint16_t port = 0;         // Server port
     static ConnectionType type = TCP; // Type of connection to create
-    static bool isNew = true;         // If the attempted connection is unique
 
-    ImGui::BeginChildSpacing("Output", !isNew);
-
-    // Widget labels
+    // Widgets
     static const char* portLabel = "Port";
     static const char* addressLabel = "Address";
-
-    static float portWidth = 100.0f;       // The width of the port input (hardcoded)
-    static float minAddressWidth = 120.0f; // The minimum width of the address textbox
+    static const float portWidth = 100.0f;       // Port input width (hardcoded)
+    static const float minAddressWidth = 120.0f; // Address input min width
 
     // The horizontal space available in the window
     float spaceAvailable = ImGui::GetContentRegionAvail().x              // Child window width without scrollbars
@@ -55,12 +52,11 @@ void drawIPConnectionTab(WindowList& connections) {
     // Connect button
     ImGui::Spacing();
     ImGui::BeginDisabled(addr.empty());
-    if (ImGui::Button("Connect")) isNew = connections.add<ConnWindow>(Net::DeviceData{ type, "", addr, port }, "");
+
+    if (ImGui::Button("Connect")) addConnWindow<SocketTag::IP>(connections, { type, "", addr, port }, "");
+
     ImGui::EndDisabled();
+
     ImGui::EndChild();
-
-    // If the connection exists, show a message
-    if (!isNew) ImGui::Text("This connection is already open.");
-
     ImGui::EndTabItem();
 }

@@ -9,23 +9,23 @@
 #include "errcheck.hpp"
 #include "socket.hpp"
 
-Socket::operator bool() const { return _handle != INVALID_SOCKET; }
-
-void Socket::close() {
+template <>
+void SocketBase<SOCKET>::close() {
     shutdown(_handle, SD_BOTH);
     closesocket(_handle);
-
-    _handle = INVALID_SOCKET;
+    _release();
 }
 
-Task<> Socket::send(std::string data) const {
+template <>
+Task<> SocketBase<SOCKET>::send(std::string data) const {
     co_await Async::run([this, &data](Async::CompletionResult& result) {
         WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
         EXPECT_NONERROR(WSASend, _handle, &buf, 1, nullptr, 0, &result, nullptr);
     });
 }
 
-Task<std::string> Socket::recv() const {
+template <>
+Task<std::string> SocketBase<SOCKET>::recv() const {
     std::string data(_recvLen, 0);
 
     auto result = co_await Async::run([this, &data](Async::CompletionResult& result) {

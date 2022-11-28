@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "net.hpp"
+#include "sockets/device.hpp"
 
 namespace BTUtils {
     // A 128-bit UUID represented in a platform-independent way.
@@ -56,9 +56,9 @@ namespace BTUtils {
 
     // Gets the Bluetooth devices that are paired to this computer.
     //
-    // The DeviceData instances returned have no type set because the communication protocol to use with them is
+    // The Device instances returned have no type set because the communication protocol to use with them is
     // indeterminate (the function doesn't know if L2CAP or RFCOMM should be used with each).
-    Net::DeviceDataList getPaired();
+    DeviceList getPaired();
 
     // Runs a Service Discovery Protocol (SDP) inquiry on a remote device.
     SDPResultList sdpLookup(std::string_view addr, UUID128 uuid, bool flushCache);

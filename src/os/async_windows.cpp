@@ -15,6 +15,10 @@ static HANDLE completionPort = nullptr;
 bool Async::Internal::invalid() { return completionPort == nullptr; }
 
 void Async::Internal::init() {
+    // Start Winsock
+    WSADATA wsaData{};
+    EXPECT_ZERO_RC(WSAStartup, MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
+
     // Initialize IOCP
     completionPort = EXPECT_TRUE(CreateIoCompletionPort, INVALID_HANDLE_VALUE, nullptr, 0, numThreads);
 }
@@ -23,7 +27,12 @@ void Async::Internal::stopThreads() {
     for (size_t i = 0; i < numThreads; i++) PostQueuedCompletionStatus(completionPort, 0, ASYNC_INTERRUPT, nullptr);
 }
 
-void Async::Internal::cleanup() { CloseHandle(completionPort); }
+void Async::Internal::cleanup() {
+    CloseHandle(completionPort);
+
+    // Cleanup Winsock
+    EXPECT_ZERO(WSACleanup);
+}
 
 Async::Internal::WorkerResult Async::Internal::worker() {
     DWORD numBytes;

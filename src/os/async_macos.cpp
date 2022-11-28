@@ -17,21 +17,24 @@ void Async::Internal::init() { kq = EXPECT_NONERROR(kqueue); }
 
 void Async::Internal::stopThreads() {
     // Submit a single event to wake up all threads
-    struct kevent event{};
+    struct kevent event {};
+
     EV_SET(&event, ASYNC_INTERRUPT, EVFILT_USER, EV_ADD, NOTE_TRIGGER, 0, nullptr);
     kevent(kq, &event, 1, nullptr, 0, nullptr);
 }
 
 void Async::Internal::cleanup() {
     // Delete the user event
-    struct kevent event{};
+    struct kevent event {};
+
     EV_SET(&event, ASYNC_INTERRUPT, EVFILT_USER, EV_DELETE, 0, 0, nullptr);
     kevent(kq, &event, 1, nullptr, 0, nullptr);
 }
 
 Async::Internal::WorkerResult Async::Internal::worker() {
     // Wait for new event
-    struct kevent event{};
+    struct kevent event {};
+
     int nev = kevent(kq, nullptr, 0, &event, 1, nullptr);
     if (nev < 0) return resultError();
 
@@ -49,7 +52,8 @@ Async::Internal::WorkerResult Async::Internal::worker() {
 void Async::submitKqueue(int ident, int filter, CompletionResult& result) {
     // The EV_ONESHOT flag will delete the event once it is retrieved in one of the threads.
     // This ensures only one thread will wake up to handle the event.
-    struct kevent event{};
+    struct kevent event {};
+
     EV_SET(&event, ident, filter, EV_ADD | EV_ONESHOT, 0, 0, &result);
     EXPECT_NONERROR(kevent, kq, &event, 1, nullptr, 0, nullptr);
 }

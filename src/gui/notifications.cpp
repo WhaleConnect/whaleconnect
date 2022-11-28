@@ -15,12 +15,12 @@
 struct Notification {
     std::string text; // Text shown in the entry
     double timeAdded; // When the notification was added
-    bool active; // If the notification should still be shown
-    float timeout; // Number of seconds before automatically closing the notification
+    bool active;      // If the notification should still be shown
+    float timeout;    // Number of seconds before automatically closing the notification
 };
 
 static std::vector<Notification> notifications; // Currently active notifications
-static bool areNotificationsVisible = false; // If the notifications window is being rendered
+static bool areNotificationsVisible = false;    // If the notifications window is being rendered
 
 // Draws a single notification in the notification area.
 static void drawNotification(Notification& n, float areaWidth) {

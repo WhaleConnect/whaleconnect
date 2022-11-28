@@ -13,7 +13,8 @@
 
 #include "os/btutils.hpp"
 #include "os/error.hpp"
-#include "os/net.hpp"
+#include "sockets/device.hpp"
+#include "sockets/traits.hpp"
 #include "window.hpp"
 #include "windowlist.hpp"
 
@@ -22,7 +23,7 @@ class SDPWindow : public Window {
     using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>;          // Results of an SDP search
     using UUIDMap = std::map<std::string, BTUtils::UUID128, std::less<>>; // List of UUIDs used for SDP filtering
 
-    Net::DeviceData _target; // Target to perform SDP inquiries on and connect to
+    Device _target; // Target to perform SDP inquiries on and connect to
 
     // Fields for SDP connections
     const UUIDMap& _uuids;     // Available UUIDs used for SDP inquiries
@@ -31,12 +32,11 @@ class SDPWindow : public Window {
     std::string _serviceName;  // Service name of the selected SDP result, displayed in the connection window title
 
     // Fields for SDP and manual connection state
-    Net::ConnectionType _connType = Net::ConnectionType::RFCOMM; // Selected connection type
-    uint16_t _port = 0;                                          // Port to connect to
+    ConnectionType _connType = ConnectionType::RFCOMM; // Selected connection type
+    uint16_t _port = 0;                                // Port to connect to
 
     // Fields for connection management
-    WindowList& _list;  // List of connection window objects to add to when making a new connection
-    bool _isNew = true; // If the current connection is unique
+    WindowList& _list; // List of connection window objects to add to when making a new connection
 
     // SDP inquiry data
     // The value this variant currently holds contains data about the SDP inquiry.
@@ -72,7 +72,7 @@ class SDPWindow : public Window {
 
 public:
     // Sets the information needed to create connections.
-    SDPWindow(const Net::DeviceData& target, const UUIDMap& uuids, WindowList& list) :
+    SDPWindow(const Device& target, const UUIDMap& uuids, WindowList& list) :
         Window(std::format("Connect To {}##{}", target.name, target.address)), _target(target), _uuids(uuids),
         _selectedUUID(_uuids.begin()->first), _list(list) {}
 };

@@ -8,7 +8,7 @@
 
 #include <imgui.h>
 
-//A class to represent a Dear ImGui window.
+// A class to represent a Dear ImGui window.
 class Window {
     std::string _title;      // Window title
     bool _open = true;       // If this window is open

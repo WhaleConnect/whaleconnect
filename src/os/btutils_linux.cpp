@@ -47,8 +47,8 @@ void BTUtils::cleanup() {
     conn = nullptr;
 }
 
-Net::DeviceDataList BTUtils::getPaired() {
-    Net::DeviceDataList deviceList;
+Net::DeviceList BTUtils::getPaired() {
+    Net::DeviceList deviceList;
 
     if (!conn) return deviceList;
 
@@ -107,7 +107,7 @@ Net::DeviceDataList BTUtils::getPaired() {
 
             // The following iterators will collect information about each device.
             // Set up variables to represent each:
-            Net::DeviceData device;
+            Net::Device device;
             dbus_bool_t paired = false;
 
             // Iterate through the a{s part of the signature - array of properties

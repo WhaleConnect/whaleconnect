@@ -8,8 +8,8 @@
 #include <cstring> // std::memcpy()
 #include <format>
 
-#include <bluetoothapis.h>
 #include <WinSock2.h>
+#include <bluetoothapis.h>
 #include <ws2bth.h>
 
 #include "btutils.hpp"
@@ -85,8 +85,8 @@ void BTUtils::init() {}
 
 void BTUtils::cleanup() {}
 
-Net::DeviceDataList BTUtils::getPaired() {
-    Net::DeviceDataList deviceList;
+Net::DeviceList BTUtils::getPaired() {
+    Net::DeviceList deviceList;
 
     // Bluetooth search criteria - only return remembered (paired) devices, and don't start a new inquiry search
     BLUETOOTH_DEVICE_SEARCH_PARAMS searchCriteria{
@@ -122,7 +122,7 @@ Net::DeviceDataList BTUtils::getPaired() {
         std::string name = Strings::fromSys(deviceInfo.szName);
 
         // Add to results
-        deviceList.emplace_back(Net::ConnectionType::None, name, mac, uint16_t{ 0 });
+        deviceList.emplace_back(ConnectionType::None, name, mac, uint16_t{ 0 });
     } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
 
     return deviceList;
