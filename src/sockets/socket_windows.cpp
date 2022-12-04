@@ -3,38 +3,44 @@
 
 #if OS_WINDOWS
 #include <WinSock2.h>
-#include <MSWSock.h>
 
-#include "async.hpp"
-#include "errcheck.hpp"
+#include "os/async.hpp"
+#include "os/errcheck.hpp"
 #include "socket.hpp"
 
-template <>
-void SocketBase<SOCKET>::close() {
+template <auto Tag>
+void Socket<Tag>::close() {
     shutdown(_handle, SD_BOTH);
     closesocket(_handle);
     _release();
 }
 
-template <>
-Task<> SocketBase<SOCKET>::send(std::string data) const {
+template <auto Tag>
+Task<> WritableSocket<Tag>::send(std::string data) const {
     co_await Async::run([this, &data](Async::CompletionResult& result) {
         WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-        EXPECT_NONERROR(WSASend, _handle, &buf, 1, nullptr, 0, &result, nullptr);
+        EXPECT_NONERROR(WSASend, this->_handle, &buf, 1, nullptr, 0, &result, nullptr);
     });
 }
 
-template <>
-Task<std::string> SocketBase<SOCKET>::recv() const {
+template <auto Tag>
+Task<std::string> WritableSocket<Tag>::recv() const {
     std::string data(_recvLen, 0);
 
     auto result = co_await Async::run([this, &data](Async::CompletionResult& result) {
         DWORD flags = 0;
         WSABUF buf{ static_cast<ULONG>(_recvLen), data.data() };
-        EXPECT_NONERROR(WSARecv, _handle, &buf, 1, nullptr, &flags, &result, nullptr);
+        EXPECT_NONERROR(WSARecv, this->_handle, &buf, 1, nullptr, &flags, &result, nullptr);
     });
 
     data.resize(result.res);
     co_return data;
 }
+
+template void Socket<SocketTag::IP>::close();
+template void Socket<SocketTag::BT>::close();
+template Task<> WritableSocket<SocketTag::IP>::send(std::string) const;
+template Task<> WritableSocket<SocketTag::BT>::send(std::string) const;
+template Task<std::string> WritableSocket<SocketTag::IP>::recv() const;
+template Task<std::string> WritableSocket<SocketTag::BT>::recv() const;
 #endif

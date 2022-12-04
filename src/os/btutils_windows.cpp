@@ -10,11 +10,10 @@
 
 #include <WinSock2.h>
 #include <bluetoothapis.h>
-#include <ws2bth.h>
 
 #include "btutils.hpp"
 #include "errcheck.hpp"
-#include "net.hpp"
+#include "sockets/device.hpp"
 #include "utils/handleptr.hpp"
 #include "utils/out_ptr_compat.hpp"
 #include "utils/strings.hpp"
@@ -72,7 +71,7 @@ static std::vector<SDP_ELEMENT_DATA> getSDPListData(SDP_ELEMENT_DATA& element) {
 }
 
 // Gets the SDP container data associated with an SDP attribute.
-static std::vector<SDP_ELEMENT_DATA> getSDPListData(const LPBLOB blob, USHORT attrib) {
+static std::vector<SDP_ELEMENT_DATA> getSDPListData(LPBLOB blob, USHORT attrib) {
     std::vector<SDP_ELEMENT_DATA> ret;
 
     // Get the list data by reading from the blob (the SDP stream)
@@ -85,8 +84,8 @@ void BTUtils::init() {}
 
 void BTUtils::cleanup() {}
 
-Net::DeviceList BTUtils::getPaired() {
-    Net::DeviceList deviceList;
+DeviceList BTUtils::getPaired() {
+    DeviceList deviceList;
 
     // Bluetooth search criteria - only return remembered (paired) devices, and don't start a new inquiry search
     BLUETOOTH_DEVICE_SEARCH_PARAMS searchCriteria{
@@ -122,7 +121,7 @@ Net::DeviceList BTUtils::getPaired() {
         std::string name = Strings::fromSys(deviceInfo.szName);
 
         // Add to results
-        deviceList.emplace_back(ConnectionType::None, name, mac, uint16_t{ 0 });
+        deviceList.push_back({ ConnectionType::None, name, mac, uint16_t{ 0 } });
     } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
 
     return deviceList;

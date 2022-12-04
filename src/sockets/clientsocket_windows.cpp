@@ -9,12 +9,29 @@
 #include <ws2bth.h>
 
 #include "clientsocket.hpp"
-#include "errcheck.hpp"
-#include "error.hpp"
+#include "os/async.hpp"
+#include "os/errcheck.hpp"
+#include "os/error.hpp"
 #include "socket.hpp"
 #include "utils/strings.hpp"
 
-static void startConnect(SOCKET s, sockaddr* addr, size_t len) {
+static void startConnect(SOCKET s, sockaddr* addr, size_t len, Async::CompletionResult& result) {
+    // Add the socket to the async queue
+    Async::add(s);
+
+    // ConnectEx() requires the socket to be initially bound.
+    // A sockaddr_storage can be used with all connection types, Internet and Bluetooth.
+    sockaddr_storage addrBind{ .ss_family = static_cast<ADDRESS_FAMILY>(addr->sa_family) };
+
+    // The bind() function will work with sockaddr_storage for any address family. However, with Bluetooth, it expects
+    // the size parameter to be the size of a Bluetooth address structure. Unlike Internet-based sockets, it will not
+    // accept a sockaddr_storage size.
+    // This means the size must be spoofed with Bluetooth sockets.
+    int addrSize = (addr->sa_family == AF_BTH) ? sizeof(SOCKADDR_BTH) : sizeof(sockaddr_storage);
+
+    // Bind the socket
+    EXPECT_ZERO(bind, s, reinterpret_cast<sockaddr*>(&addrBind), addrSize);
+
     static LPFN_CONNECTEX connectExPtr = nullptr;
 
     if (!connectExPtr) {
@@ -34,31 +51,16 @@ static void finalizeConnect(SOCKET s) {
 }
 
 template <>
-Task<> ClientSocket<SocketTag::IP>::connect() {
-    // Add the socket to the async queue
-    Async::add(_handle);
-
+Task<> ClientSocket<SocketTag::IP>::connect() const {
     // Datagram sockets can be directly connected (ConnectEx() doesn't support them)
     if (_device.type == ConnectionType::UDP) {
-        EXPECT_ZERO(connect, _handle, addr, len);
-        return;
+        Async::add(_handle);
+        EXPECT_ZERO(::connect, _handle, _addr->ai_addr, _addr->ai_addrlen);
+        co_return;
     }
 
-    // ConnectEx() requires the socket to be initially bound.
-    // A sockaddr_storage can be used with all connection types, Internet and Bluetooth.
-    sockaddr_storage addrBind{ .ss_family = _addr->sa_family };
-
-    // The bind() function will work with sockaddr_storage for any address family. However, with Bluetooth, it expects
-    // the size parameter to be the size of a Bluetooth address structure. Unlike Internet-based sockets, it will not
-    // accept a sockaddr_storage size.
-    // This means the size must be spoofed with Bluetooth sockets.
-    int addrSize = (_addr->sa_family == AF_BTH) ? sizeof(SOCKADDR_BTH) : sizeof(sockaddr_storage);
-
-    // Bind the socket
-    EXPECT_ZERO(bind, _handle, reinterpret_cast<sockaddr*>(&addrBind), addrSize);
-
     co_await Async::run(std::bind_front(startConnect, _handle, _addr->ai_addr, _addr->ai_addrlen));
-    finalizeConnect();
+    finalizeConnect(_handle);
 }
 
 template <>
@@ -80,6 +82,6 @@ Task<> ClientSocket<SocketTag::BT>::connect() const {
     SOCKADDR_BTH sAddrBT{ .addressFamily = AF_BTH, .btAddr = btAddr, .port = _device.port };
 
     co_await Async::run(std::bind_front(startConnect, _handle, std::bit_cast<sockaddr*>(&sAddrBT), sizeof(sAddrBT)));
-    finalizeConnect(fd);
+    finalizeConnect(_handle);
 }
 #endif

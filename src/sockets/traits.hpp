@@ -23,7 +23,7 @@ enum class ConnectionType { TCP, UDP, L2CAPSeqPacket, L2CAPStream, L2CAPDgram, R
 #if OS_WINDOWS
 template <auto Tag>
 struct SocketTraits {
-    using Handle = SOCKET;
+    using HandleType = SOCKET;
     static constexpr auto invalidHandle = INVALID_SOCKET;
 };
 #elif OS_APPLE

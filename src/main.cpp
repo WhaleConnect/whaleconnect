@@ -4,6 +4,8 @@
 #include <cstdlib> // EXIT_FAILURE, EXIT_SUCCESS
 #include <system_error>
 
+#include <SDL_main.h>
+
 #include "gui/app.hpp"
 #include "gui/newconnbt.hpp"
 #include "gui/newconnip.hpp"
