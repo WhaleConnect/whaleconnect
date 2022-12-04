@@ -22,7 +22,6 @@
 
 // Throws if a function fails.
 #define CALL_FN_TYPE(f, type, check, ...) CALL_FN_BASE(f, type, check, System::getLastError(), __VA_ARGS__)
-#define CALL_FN(f, check, ...) CALL_WITH_DEFAULT_TYPE(CALL_FN_TYPE, f, check, __VA_ARGS__)
 
 // Throws if the return code is not true.
 #define EXPECT_TRUE_TYPE(f, type, ...) CALL_FN_TYPE(f, type, rc, __VA_ARGS__)
