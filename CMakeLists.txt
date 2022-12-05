@@ -131,6 +131,9 @@ if (WIN32)
 elseif (APPLE)
     # Objective-C frameworks
     target_link_libraries(terminal PRIVATE "-framework Foundation" "-framework IOBluetooth")
+
+    # Objective-C ARC
+    target_compile_options(terminal PRIVATE "-fobjc-arc")
 elseif (LINUX)
     # DBus
     find_package(PkgConfig REQUIRED)
