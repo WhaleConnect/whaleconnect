@@ -24,7 +24,8 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Fixed a crash when the app is closed without successful initialization of the thread pool.
 - Fixed the reception buffer to correctly handle the ends of strings.
 - Fixed the textbox autofocus in connection windows when the Enter key is pressed.
-- Fixed a delayed crash on Windows that occurred if a connection window was closed while it was still connecting.
+- Fixed an issue that would prevent sockets from closing if a connection window was closed while still connecting.
+  - This also fixes a delayed crash on Windows occurring under the same scenario.
 
 ### Removals
 
