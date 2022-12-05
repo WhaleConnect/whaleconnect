@@ -12,7 +12,6 @@
 #include <SDL_filesystem.h>
 #include <SDL_opengl.h>
 
-#include "imguiext.hpp"
 #include "notifications.hpp"
 #include "utils/handleptr.hpp"
 #include "utils/settings.hpp"
@@ -109,15 +108,9 @@ bool App::newFrame() {
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    // Dockspace
-    ImGuiID dockspaceID
-        = ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-
-    ImGui::DrawNotificationArea(dockspaceID);
-
-    // FPS counter
-    if (Settings::showFPScounter)
-        ImGui::Overlay({ 10, 10 }, ImGuiOverlayCorner::TopRight, "%.0f FPS", ImGui::GetIO().Framerate);
+    // Dock space and notifications
+    auto dockSpaceID = ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGui::DrawNotificationArea(dockSpaceID);
 
 #ifndef NDEBUG
     // The demo and metrics window are enabled in debug builds, provide a window to show them

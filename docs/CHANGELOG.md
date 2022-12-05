@@ -30,6 +30,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Removals
 
 - Removed the "send textbox height" setting.
+- Removed the "show FPS counter" setting.
 
 ### Development
 

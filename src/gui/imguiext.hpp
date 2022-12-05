@@ -12,9 +12,6 @@
 
 #include <imgui.h>
 
-// The corners of the application window where an overlay can be drawn.
-enum class ImGuiOverlayCorner { TopLeft, TopRight, BottomLeft, BottomRight };
-
 namespace ImGui {
     constexpr float FILL = -FLT_MIN; // Makes a widget fill a dimension. Use with ImVec2.
 
@@ -61,10 +58,6 @@ namespace ImGui {
     // This can be placed next to a widget to provide more details about it.
     void HelpMarker(const char* desc);
 
-    // Creates a semi-transparent, fixed overlay on the application window.
-    template <class... Args>
-    void Overlay(const ImVec2& padding, ImGuiOverlayCorner corner, const char* text, Args&&... args);
-
     // Displays a basic spinner which rotates every few frames.
     void Spinner();
 }
@@ -72,52 +65,14 @@ namespace ImGui {
 template <class T>
 constexpr ImGuiDataType ImGui::GetDataType(T) {
     if constexpr (std::is_same_v<T, int8_t>) return ImGuiDataType_S8;
-    else if constexpr (std::is_same_v<T, uint8_t>) return ImGuiDataType_U8;
-    else if constexpr (std::is_same_v<T, int16_t>) return ImGuiDataType_S16;
-    else if constexpr (std::is_same_v<T, uint16_t>) return ImGuiDataType_U16;
-    else if constexpr (std::is_same_v<T, int32_t>) return ImGuiDataType_S32;
-    else if constexpr (std::is_same_v<T, uint32_t>) return ImGuiDataType_U32;
-    else if constexpr (std::is_same_v<T, int64_t>) return ImGuiDataType_S64;
-    else if constexpr (std::is_same_v<T, uint64_t>) return ImGuiDataType_U64;
-    else if constexpr (std::is_same_v<T, float>) return ImGuiDataType_Float;
-    else if constexpr (std::is_same_v<T, double>) return ImGuiDataType_Double;
-    else return ImGuiDataType_COUNT;
-}
-
-template <class... Args>
-void ImGui::Overlay(const ImVec2& padding, ImGuiOverlayCorner corner, const char* text, Args&&... args) {
-    // Adapted from imgui_demo.cpp.
-
-    // Window flags to make the overlay be fixed, immobile, and have no decoration
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNav
-                           | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize;
-
-    // Get main viewport
-    ImGuiViewport& viewport = *GetMainViewport();
-
-    // Use work area to avoid any menubars or taskbars
-    ImVec2 workPos = viewport.WorkPos;
-    ImVec2 workSize = viewport.WorkSize;
-
-    using enum ImGuiOverlayCorner;
-    bool isRight = (corner == TopRight) || (corner == BottomRight);
-    bool isBottom = (corner == BottomLeft) || (corner == BottomRight);
-
-    // Window position calculations
-    ImVec2 windowPos{
-        isRight ? (workPos.x + workSize.x - padding.x) : (workPos.x + padding.x), // Offset X
-        isBottom ? (workPos.y + workSize.y - padding.y) : (workPos.y + padding.y) // Offset Y
-    };
-
-    ImVec2 windowPosPivot{ static_cast<float>(isRight), static_cast<float>(isBottom) };
-
-    // Window configuration
-    SetNextWindowBgAlpha(0.5f);
-    SetNextWindowPos(windowPos, ImGuiCond_Always, windowPosPivot);
-    SetNextWindowViewport(viewport.ID);
-
-    // Draw the window - we're passing the text as the window name (which doesn't show). This function will work as
-    // long as every call has a different text value.
-    if (Begin(text, nullptr, flags)) Text(text, std::forward<Args>(args)...);
-    End();
+    if constexpr (std::is_same_v<T, uint8_t>) return ImGuiDataType_U8;
+    if constexpr (std::is_same_v<T, int16_t>) return ImGuiDataType_S16;
+    if constexpr (std::is_same_v<T, uint16_t>) return ImGuiDataType_U16;
+    if constexpr (std::is_same_v<T, int32_t>) return ImGuiDataType_S32;
+    if constexpr (std::is_same_v<T, uint32_t>) return ImGuiDataType_U32;
+    if constexpr (std::is_same_v<T, int64_t>) return ImGuiDataType_S64;
+    if constexpr (std::is_same_v<T, uint64_t>) return ImGuiDataType_U64;
+    if constexpr (std::is_same_v<T, float>) return ImGuiDataType_Float;
+    if constexpr (std::is_same_v<T, double>) return ImGuiDataType_Double;
+    return ImGuiDataType_COUNT;
 }
