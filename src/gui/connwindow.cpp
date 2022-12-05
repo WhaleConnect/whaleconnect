@@ -64,6 +64,7 @@ Task<> ConnWindow::_connect() try {
 
     // Assume the socket is connected at this point
     _output.addInfo("Connected.");
+    _connected = true;
 } catch (const System::SystemError& error) { _errorHandler(error); }
 
 Task<> ConnWindow::_sendHandler(std::string_view s) try {
@@ -71,7 +72,7 @@ Task<> ConnWindow::_sendHandler(std::string_view s) try {
 } catch (const System::SystemError& error) { _errorHandler(error); }
 
 Task<> ConnWindow::_readHandler() try {
-    if (!_socket) co_return;
+    if (!_connected) co_return;
     if (_pendingRecv) co_return;
 
     _pendingRecv = true;
@@ -81,21 +82,28 @@ Task<> ConnWindow::_readHandler() try {
         // Peer closed connection (here, 0 does not necessarily mean success, i.e. NO_ERROR)
         _output.addInfo("Remote host closed connection.");
         _socket->close();
+        _connected = false;
     } else {
         _output.addText(recvRet);
     }
 
     _pendingRecv = false;
-} catch (const System::SystemError& error) {
+} catch (const System::SystemError& error) { _errorHandler(error); }
+
+void ConnWindow::_errorHandler(const System::SystemError& error) {
     // Don't handle errors caused by socket closure (this means this object has been destructed)
+    // There is no check for macOS (using kqueue) because sockets are automatically removed when closed.
 #if OS_WINDOWS
-    if (error.code == WSA_OPERATION_ABORTED) co_return;
+    if (error.code == WSA_OPERATION_ABORTED) return;
 #elif OS_LINUX
-    if (error.code == ECANCELED) co_return;
+    if (error.code == ECANCELED) return;
 #endif
 
-    std::scoped_lock outputLock{ _outputMutex };
-    _errorHandler(error);
+    // Check for non-fatal errors, then add error line to console
+    if (error) {
+        std::scoped_lock outputLock{ _outputMutex };
+        _output.addError(error.formatted());
+    }
 }
 
 void ConnWindow::_beforeUpdate() {

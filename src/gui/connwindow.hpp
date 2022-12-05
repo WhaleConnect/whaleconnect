@@ -18,8 +18,10 @@
 // A class to handle a socket connection in a GUI window.
 class ConnWindow : public Window {
     std::unique_ptr<Writable> _socket; // Internal socket
-    bool _pendingRecv = false;         // If a receive operation has not yet completed
-    std::mutex _outputMutex;           // Mutex for access to the console output
+
+    bool _connected = false;   // If the socket is connected
+    bool _pendingRecv = false; // If a receive operation has not yet completed
+    std::mutex _outputMutex;   // Mutex for access to the console output
 
     Console _output{ std::bind_front(&ConnWindow::_sendHandler, this) }; // The console output
 
@@ -33,10 +35,7 @@ class ConnWindow : public Window {
     Task<> _readHandler();
 
     // Prints the details of a thrown exception.
-    void _errorHandler(const System::SystemError& error) {
-        // Check for non-fatal errors, then add error line to console
-        if (error) _output.addError(error.formatted());
-    }
+    void _errorHandler(const System::SystemError& error);
 
     // Connects to the target server.
     void _init() override { _connect(); }
