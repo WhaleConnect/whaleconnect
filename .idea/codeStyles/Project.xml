@@ -6,6 +6,7 @@
     <files>
       <extensions>
         <pair source="cpp" header="hpp" fileNamingConvention="LOWERCASE" />
+        <pair source="mm" header="hpp" fileNamingConvention="LOWERCASE" />
       </extensions>
     </files>
   </code_scheme>
