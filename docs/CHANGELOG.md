@@ -9,7 +9,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Added support for macOS. [IN PROGRESS]
 - Added a "Copy line" right-click option in connection windows.
 - The "Show timestamps" feature is now available in connection windows on all platforms.
-  - Timestamps are now displayed with three digits of subsecond precision instead of seven as in the previous release.
+  - Timestamps are displayed in millisecond precision, with three digits instead of seven as in the previous release.
 - Added a notification system to display application messages.
   - The notification area is shown on the right side of the app by default, but it can be moved and docked.
   - A notification can close automatically after a few seconds; this can be canceled by hovering over its close button.
@@ -22,8 +22,9 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Bug Fixes
 
 - Fixed a crash when the app is closed without successful initialization of the thread pool.
-- Fixed the receive buffer to correctly handle the ends of strings.
-- Fixed the textbox auto-focus in connection windows when the Enter key is pressed.
+- Fixed the reception buffer to correctly handle the ends of strings.
+- Fixed the textbox autofocus in connection windows when the Enter key is pressed.
+- Fixed a delayed crash on Windows that occurred if a connection window was closed while it was still connecting.
 
 ### Removals
 
