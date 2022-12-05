@@ -10,6 +10,7 @@
 
 template <auto Tag>
 void Socket<Tag>::close() {
+    CancelIoEx(std::bit_cast<HANDLE>(_handle), nullptr); // Cancel I/O operations
     shutdown(_handle, SD_BOTH);
     closesocket(_handle);
     _release();
