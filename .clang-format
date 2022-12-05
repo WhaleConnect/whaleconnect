@@ -67,6 +67,9 @@ SpacesInAngles: Never
 SpacesInConditionalStatement: false
 SpacesInSquareBrackets: false
 
+ObjCSpaceAfterProperty: true
+ObjCSpaceBeforeProtocolList: true
+
 #################### Alignment ####################
 AlignAfterOpenBracket: Align
 AlignEscapedNewlines: Left
