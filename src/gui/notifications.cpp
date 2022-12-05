@@ -78,7 +78,7 @@ static void drawNotification(Notification& n, float areaWidth) {
 
     // Calculate the percent of time still remaining before the notification is closed automatically (0 to 1)
     // If this percent reaches 0, deactivate the notification
-    float timePercent = std::max(1 - ((ImGui::GetTime() - n.timeAdded) / n.timeout), 0.0);
+    auto timePercent = static_cast<float>(std::max(1 - ((ImGui::GetTime() - n.timeAdded) / n.timeout), 0.0));
     if (timePercent == 0.0) n.active = false;
 
     // Get left and bottom coordinates of the entry rect to draw the countdown line
@@ -122,7 +122,7 @@ void ImGui::DrawNotificationArea(ImGuiID dockspaceID) {
     }
 
     // The last number of notifications the user saw
-    static int lastNumberSeen = 0;
+    static size_t lastNumberSeen = 0;
 
     areNotificationsVisible = Begin(windowID.c_str());
     if (areNotificationsVisible) {
@@ -147,7 +147,7 @@ void ImGui::DrawNotificationArea(ImGuiID dockspaceID) {
 
         // Draw each notification
         // TODO: Use views::enumerate and views::reverse in C++23
-        for (int i = notifications.size() - 1; i >= 0; i--) {
+        for (auto i = static_cast<int>(notifications.size()) - 1; i >= 0; i--) {
             ImGui::PushID(i);
             drawNotification(notifications[i], width);
             ImGui::PopID();
@@ -155,7 +155,7 @@ void ImGui::DrawNotificationArea(ImGuiID dockspaceID) {
     } else {
         // The notifications are not visible
         // If there are any new ones, the number of them is appended into the title.
-        int newNotifications = notifications.size() - lastNumberSeen;
+        size_t newNotifications = notifications.size() - lastNumberSeen;
         if (newNotifications > 0) windowID = makeWindowID(std::format(" ({})", newNotifications));
     }
     End();

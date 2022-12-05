@@ -7,6 +7,7 @@
 #include <bit>
 #include <cstring> // std::memcpy()
 #include <format>
+#include <memory>
 
 #include <WinSock2.h>
 #include <bluetoothapis.h>
@@ -15,7 +16,6 @@
 #include "errcheck.hpp"
 #include "sockets/device.hpp"
 #include "utils/handleptr.hpp"
-#include "utils/out_ptr_compat.hpp"
 #include "utils/strings.hpp"
 
 // Converts a Windows GUID struct into a UUID128.
@@ -150,7 +150,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     HandlePtr<void, WSALookupServiceEnd> lookup;
 
     try {
-        EXPECT_NONERROR(WSALookupServiceBegin, &wsaQuery, flags, std2::out_ptr(lookup));
+        EXPECT_NONERROR(WSALookupServiceBegin, &wsaQuery, flags, std::out_ptr(lookup));
     } catch (const System::SystemError& error) {
         if (error.code == WSASERVICE_NOT_FOUND) return {}; // No services found
 
@@ -193,6 +193,10 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
                 case SDP_ST_UINT16:
                     // L2CAP PSM is stored in a 16-bit integer
                     if (proto == L2CAP_PROTOCOL_UUID16) result.port = data.uint16;
+                    break;
+                default:
+                    // Other types not handled
+                    break;
                 }
             }
         }
@@ -202,7 +206,8 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
             switch (specificType) {
             case SDP_ST_UUID16: result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid16)); break;
             case SDP_ST_UUID32: result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid32)); break;
-            case SDP_ST_UUID128: result.serviceUUIDs.push_back(toUUID(data.uuid128));
+            case SDP_ST_UUID128: result.serviceUUIDs.push_back(toUUID(data.uuid128)); break;
+            default: break; // Other types not handled
             }
         }
 

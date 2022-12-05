@@ -30,6 +30,12 @@ namespace Async {
         System::ErrorCode error = NO_ERROR; // The return code of the asynchronous function (returned to caller)
         int res = 0; // The result the operation (returned to caller, exact meaning depends on operation)
 
+#if OS_WINDOWS
+        CompletionResult() : OVERLAPPED() {}
+#else
+        CompletionResult() = default;
+#endif
+
         // Throws an exception if a fatal error occurred asynchronously.
         void checkError() const {
             if (System::isFatal(error))
@@ -52,7 +58,7 @@ namespace Async {
     // Awaits an asynchronous operation and returns the result of the operation's end function (if given).
     template <class Fn>
     Task<CompletionResult> run(Fn fn) {
-        CompletionResult result{};
+        CompletionResult result;
         co_await result;
 
         fn(result);

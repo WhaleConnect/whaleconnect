@@ -4,7 +4,9 @@
 #include <cstdlib> // EXIT_FAILURE, EXIT_SUCCESS
 #include <system_error>
 
-#include <SDL_main.h>
+#if OS_WINDOWS
+#include <SDL_main.h> // For definition of main function
+#endif
 
 #include "gui/app.hpp"
 #include "gui/newconnbt.hpp"
