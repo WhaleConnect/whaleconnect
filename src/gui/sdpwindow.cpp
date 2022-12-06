@@ -165,12 +165,12 @@ void SDPWindow::_drawManualTab() {
     ImGui::EndTabItem();
 }
 
-void SDPWindow::_beforeUpdate() {
+void SDPWindow::_onBeforeUpdate() {
     ImGui::SetNextWindowSize({ 450, 250 }, ImGuiCond_FirstUseEver);
     _setClosable(!std::holds_alternative<AsyncSDPInquiry>(_sdpInquiry));
 }
 
-void SDPWindow::_updateContents() {
+void SDPWindow::_onUpdate() {
     if (ImGui::BeginTabBar("ConnectionOptions")) {
         _drawSDPTab();
         _drawManualTab();

@@ -41,10 +41,13 @@ class ConnWindow : public Window {
     void _init() override { _connect(); }
 
     // Handles incoming I/O.
-    void _beforeUpdate() override;
+    void _onBeforeUpdate() override;
 
     // Draws the window contents.
-    void _updateContents() override;
+    void _onUpdate() override;
+
+    // Cancels pending I/O when closed.
+    void _onAfterUpdate(bool isOpen) override;
 
 public:
     // Sets the window information (title and remote host).

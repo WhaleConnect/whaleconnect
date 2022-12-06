@@ -92,10 +92,9 @@ Task<> ConnWindow::_readHandler() try {
 
 void ConnWindow::_errorHandler(const System::SystemError& error) {
     // Don't handle errors caused by socket closure (this means this object has been destructed)
-    // There is no check for macOS (using kqueue) because sockets are automatically removed when closed.
 #if OS_WINDOWS
     if (error.code == WSA_OPERATION_ABORTED) return;
-#elif OS_LINUX
+#else
     if (error.code == ECANCELED) return;
 #endif
 
@@ -106,12 +105,16 @@ void ConnWindow::_errorHandler(const System::SystemError& error) {
     }
 }
 
-void ConnWindow::_beforeUpdate() {
+void ConnWindow::_onBeforeUpdate() {
     ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
     _readHandler();
 }
 
-void ConnWindow::_updateContents() {
+void ConnWindow::_onUpdate() {
     std::scoped_lock outputLock{ _outputMutex };
     _output.update();
+}
+
+void ConnWindow::_onAfterUpdate(bool isOpen) {
+    if (!isOpen) _socket->cancelIO();
 }

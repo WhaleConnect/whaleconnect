@@ -19,11 +19,14 @@ class Window {
     // Performs initialization required by a window object, may be overridden optionally.
     virtual void _init() {}
 
-    // Always runs on every frame, before _updateContents is called, may be overridden optionally.
-    virtual void _beforeUpdate() {}
+    // Always runs on every frame, before _onUpdate is called, may be overridden optionally.
+    virtual void _onBeforeUpdate() {}
 
     // Redraws the contents of the window. Must be overridden in derived classes.
-    virtual void _updateContents() = 0;
+    virtual void _onUpdate() = 0;
+
+    // Always runs on every frame, after _onUpdate is called, may be overridden optionally.
+    virtual void _onAfterUpdate(bool isOpen) {}
 
 protected:
     // Enables or disables the window's close button.
@@ -52,10 +55,12 @@ public:
 
     // Updates the window and its contents.
     void update() {
-        _beforeUpdate();
+        _onBeforeUpdate();
 
         // Render window
-        if (ImGui::Begin(_title.c_str(), _openPtr)) _updateContents();
+        if (ImGui::Begin(_title.c_str(), _openPtr)) _onUpdate();
         ImGui::End();
+
+        _onAfterUpdate(_open);
     }
 };

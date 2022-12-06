@@ -65,10 +65,10 @@ class SDPWindow : public Window {
     void _drawManualTab();
 
     // Checks the status of the inquiry and prevents closing the window if it is running.
-    void _beforeUpdate() override;
+    void _onBeforeUpdate() override;
 
     // Draws the window contents.
-    void _updateContents() override;
+    void _onUpdate() override;
 
 public:
     // Sets the information needed to create connections.
