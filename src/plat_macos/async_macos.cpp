@@ -4,12 +4,19 @@
 #if OS_APPLE
 #include "os/async_internal.hpp"
 
+#include <mutex>
+#include <unordered_map>
+
 #include <sys/event.h>
 
 #include "os/async.hpp"
 #include "os/errcheck.hpp"
 
+static constexpr auto ASYNC_CANCEL = 2;
+
 static int kq = -1;
+static std::unordered_map<int, Async::CompletionResult*> pendingSockets;
+static std::mutex mapMutex;
 
 bool Async::Internal::invalid() { return kq == -1; }
 
@@ -39,10 +46,28 @@ Async::Internal::WorkerResult Async::Internal::worker() {
     if (nev < 0) return resultError();
 
     // Check for interrupt
-    if ((event.filter == EVFILT_USER) && (event.ident == ASYNC_INTERRUPT)) return resultInterrupted();
+    if (event.filter == EVFILT_USER) {
+        if (event.ident == ASYNC_INTERRUPT) {
+            return resultInterrupted();
+        } else if (event.ident == ASYNC_CANCEL) {
+            auto fd = static_cast<int>(event.data);
+
+            std::scoped_lock lock{ mapMutex };
+            if (!pendingSockets.contains(fd)) return { false, std::noop_coroutine() };
+
+            auto& result = *pendingSockets[fd];
+            pendingSockets.erase(fd);
+
+            result.error = ECANCELED;
+            return resultSuccess(result);
+        }
+    }
 
     if (!event.udata) return resultError();
     auto& result = toResult(event.udata);
+
+    if (result.coroHandle.done()) return { false, std::noop_coroutine() };
+
     if (event.flags & EV_EOF) result.error = static_cast<System::ErrorCode>(event.fflags);
     else result.res = static_cast<int>(event.data);
 
@@ -55,6 +80,16 @@ void Async::submitKqueue(int ident, int filter, CompletionResult& result) {
     struct kevent event {};
 
     EV_SET(&event, ident, filter, EV_ADD | EV_ONESHOT, 0, 0, &result);
+    EXPECT_NONERROR(kevent, kq, &event, 1, nullptr, 0, nullptr);
+
+    std::scoped_lock lock{ mapMutex };
+    pendingSockets[ident] = &result;
+}
+
+void Async::cancelPending(int fd) {
+    struct kevent event {};
+
+    EV_SET(&event, ASYNC_CANCEL, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER, fd, nullptr);
     EXPECT_NONERROR(kevent, kq, &event, 1, nullptr, 0, nullptr);
 }
 #endif

@@ -81,6 +81,8 @@ namespace Async {
 #elif OS_APPLE
     // Submits an event to the kernel queue.
     void submitKqueue(int ident, int filter, CompletionResult& result);
+
+    void cancelPending(int fd);
 #elif OS_LINUX
     // Gets a submission queue entry from io_uring.
     io_uring_sqe* getUringSQE();
