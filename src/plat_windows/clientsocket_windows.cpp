@@ -8,11 +8,11 @@
 #include <MSWSock.h>
 #include <ws2bth.h>
 
-#include "clientsocket.hpp"
 #include "os/async.hpp"
 #include "os/errcheck.hpp"
 #include "os/error.hpp"
-#include "socket.hpp"
+#include "sockets/clientsocket.hpp"
+#include "sockets/socket.hpp"
 #include "utils/strings.hpp"
 
 static void startConnect(SOCKET s, sockaddr* addr, size_t len, Async::CompletionResult& result) {

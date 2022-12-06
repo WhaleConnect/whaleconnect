@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_WINDOWS
-#include "async_internal.hpp"
+#include "os/async_internal.hpp"
 
 #include <WinSock2.h>
 
-#include "async.hpp"
-#include "errcheck.hpp"
+#include "os/async.hpp"
+#include "os/errcheck.hpp"
 
 // The IOCP handle
 static HANDLE completionPort = nullptr;

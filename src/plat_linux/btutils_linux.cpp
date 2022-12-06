@@ -11,10 +11,10 @@
 #include <bluetooth/sdp_lib.h>
 #include <dbus/dbus.h>
 
-#include "btutils.hpp"
-#include "errcheck.hpp"
-#include "handleptr.hpp"
-#include "net.hpp"
+#include "os/btutils.hpp"
+#include "os/errcheck.hpp"
+#include "sockets/device.hpp"
+#include "utils/handleptr.hpp"
 #include "utils/out_ptr_compat.hpp"
 
 static DBusConnection* conn = nullptr;
@@ -47,8 +47,8 @@ void BTUtils::cleanup() {
     conn = nullptr;
 }
 
-Net::DeviceList BTUtils::getPaired() {
-    Net::DeviceList deviceList;
+DeviceList BTUtils::getPaired() {
+    DeviceList deviceList;
 
     if (!conn) return deviceList;
 
@@ -107,7 +107,7 @@ Net::DeviceList BTUtils::getPaired() {
 
             // The following iterators will collect information about each device.
             // Set up variables to represent each:
-            Net::Device device;
+            Device device;
             dbus_bool_t paired = false;
 
             // Iterate through the a{s part of the signature - array of properties

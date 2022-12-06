@@ -7,8 +7,8 @@
 #include <bluetooth/rfcomm.h>
 #include <liburing.h>
 
-#include "async.hpp"
-#include "clientsocket.hpp"
+#include "os/async.hpp"
+#include "sockets/clientsocket.hpp"
 
 static void startConnect(SOCKET s, sockaddr* addr, socklen_t len) {
     io_uring_sqe* sqe = Async::getUringSQE();

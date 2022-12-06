@@ -12,8 +12,8 @@
 #include <WinSock2.h>
 #include <bluetoothapis.h>
 
-#include "btutils.hpp"
-#include "errcheck.hpp"
+#include "os/btutils.hpp"
+#include "os/errcheck.hpp"
 #include "sockets/device.hpp"
 #include "utils/handleptr.hpp"
 #include "utils/strings.hpp"

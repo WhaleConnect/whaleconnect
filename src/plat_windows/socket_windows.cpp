@@ -6,7 +6,7 @@
 
 #include "os/async.hpp"
 #include "os/errcheck.hpp"
-#include "socket.hpp"
+#include "sockets/socket.hpp"
 
 template <auto Tag>
 void Socket<Tag>::close() {

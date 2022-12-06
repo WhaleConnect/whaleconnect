@@ -4,9 +4,9 @@
 #if OS_LINUX
 #include <liburing.h>
 
-#include "async.hpp"
-#include "errcheck.hpp"
-#include "socket.hpp"
+#include "os/async.hpp"
+#include "os/errcheck.hpp"
+#include "sockets/socket.hpp"
 
 template <>
 void SocketBase<SOCKET>::close() {
