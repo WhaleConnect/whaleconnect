@@ -20,17 +20,21 @@ protected:
 public:
     ~Writable() override = default;
 
-    // Sends a string through the socket.
+    // Sends a string.
     // The data is passed as a string (not a string_view) to make a copy and prevent dangling pointers in the coroutine.
     [[nodiscard]] virtual Task<> send(std::string data) const = 0;
 
-    // Receives a string from the socket.
+    // Receives a string.
     [[nodiscard]] virtual Task<std::string> recv() const = 0;
+
+    // Cancels all pending I/O.
+    virtual void cancelIO() const = 0;
 };
 
 // Abstract class to represent something that can be connected.
 struct Connectable : virtual Writable {
     ~Connectable() override = default;
 
+    // Connects to a target.
     [[nodiscard]] virtual Task<> connect() const = 0;
 };

@@ -10,7 +10,6 @@
 
 template <auto Tag>
 void Socket<Tag>::close() {
-    CancelIoEx(std::bit_cast<HANDLE>(_handle), nullptr); // Cancel I/O operations
     shutdown(_handle, SD_BOTH);
     closesocket(_handle);
     _release();
@@ -38,10 +37,18 @@ Task<std::string> WritableSocket<Tag>::recv() const {
     co_return data;
 }
 
+template <auto Tag>
+void WritableSocket<Tag>::cancelIO() const {
+    CancelIoEx(std::bit_cast<HANDLE>(this->_handle), nullptr);
+}
+
 template void Socket<SocketTag::IP>::close();
-template void Socket<SocketTag::BT>::close();
 template Task<> WritableSocket<SocketTag::IP>::send(std::string) const;
-template Task<> WritableSocket<SocketTag::BT>::send(std::string) const;
 template Task<std::string> WritableSocket<SocketTag::IP>::recv() const;
+template void WritableSocket<SocketTag::IP>::cancelIO() const;
+
+template void Socket<SocketTag::BT>::close();
+template Task<> WritableSocket<SocketTag::BT>::send(std::string) const;
 template Task<std::string> WritableSocket<SocketTag::BT>::recv() const;
+template void WritableSocket<SocketTag::IP>::cancelIO() const;
 #endif

@@ -38,6 +38,11 @@ Task<std::string> WritableSocket<SocketTag::IP>::recv() const {
 }
 
 template <>
+void WritableSocket<SocketTag::IP>::cancelIO() const {
+    Async::cancelPending(_handle);
+}
+
+template <>
 void Socket<SocketTag::BT>::close() {
     if (_handle.type == ConnectionType::RFCOMM) ObjC::closeRFCOMMChannel(*_handle);
     else ObjC::closeL2CAPChannel(*_handle);
@@ -54,4 +59,7 @@ template <>
 Task<std::string> WritableSocket<SocketTag::BT>::recv() const {
     co_return "";
 }
+
+template <>
+void WritableSocket<SocketTag::BT>::cancelIO() const {}
 #endif
