@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_APPLE
-#include "async_internal.hpp"
+#include "os/async_internal.hpp"
 
 #include <sys/event.h>
 
-#include "async.hpp"
-#include "errcheck.hpp"
+#include "os/async.hpp"
+#include "os/errcheck.hpp"
 
 static int kq = -1;
 

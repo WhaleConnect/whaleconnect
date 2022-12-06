@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_APPLE
-#include "btutils_internal.hpp"
+#include "sdp.hpp"
 
 #include <IOBluetooth/objc/IOBluetoothDevice.h>
 #include <IOBluetooth/objc/IOBluetoothSDPServiceRecord.h>
@@ -10,6 +10,7 @@
 
 @interface InquiryHandler : NSObject <IOBluetoothDeviceAsyncCallbacks>
 @property (readonly) IOReturn result;
+@property (readonly, strong) NSCondition* cond;
 - (void)remoteNameRequestComplete:(IOBluetoothDevice*)device status:(IOReturn)status;
 - (void)connectionComplete:(IOBluetoothDevice*)device status:(IOReturn)status;
 - (void)sdpQueryComplete:(IOBluetoothDevice*)device status:(IOReturn)status;
@@ -17,6 +18,7 @@
 
 @implementation InquiryHandler
 @synthesize result;
+@synthesize cond;
 
 - (void)remoteNameRequestComplete:(IOBluetoothDevice*)device status:(IOReturn)status {
 }
@@ -26,43 +28,31 @@
 
 - (void)sdpQueryComplete:(IOBluetoothDevice*)device status:(IOReturn)status {
     result = status;
+    [cond signal];
+    [cond unlock];
 }
 
 @end
 
-void BTUtils::init() {}
-
-void BTUtils::cleanup() {}
-
-DeviceList BTUtils::getPaired() {
-    NSArray* devices = [IOBluetoothDevice pairedDevices];
-
-    DeviceList ret;
-    for (IOBluetoothDevice* i in devices) {
-        // Get name and address (dashes in address string are replaced with colons)
-        NSString* name = [i name];
-        NSString* addr = [[i addressString] stringByReplacingOccurrencesOfString:@"-" withString:@":"];
-        ret.push_back({ ConnectionType::None, [name UTF8String], [addr UTF8String], 0 });
-    }
-
-    return ret;
-}
-
-BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, bool flushCache) {
-    auto device = [IOBluetoothDevice deviceWithAddressString:@(addr.data())];
+IOReturn ObjC::sdpLookup(const char* addr, const uint8_t* uuid, bool flushCache) {
+    auto device = [IOBluetoothDevice deviceWithAddressString:@(addr)];
 
     if (flushCache) {
         auto handler = [InquiryHandler new];
-        NSArray* uuids = @[ [IOBluetoothSDPUUID uuidWithBytes:uuid.data() length:16] ];
-        auto res = [device performSDPQuery:handler uuids:uuids];
+        NSArray* uuids = @[ [IOBluetoothSDPUUID uuidWithBytes:uuid length:16] ];
+        IOReturn res = [device performSDPQuery:handler uuids:uuids];
+        if (res != kIOReturnSuccess) return res;
+
+        [[handler cond] lock];
+        [[handler cond] wait];
+        if ([handler result] != kIOReturnSuccess) return [handler result];
     }
 
-    SDPResultList ret;
     NSArray* services = [device services];
     for (IOBluetoothSDPServiceRecord* i in services) {
 
     }
 
-    return ret;
+    return kIOReturnSuccess;
 }
 #endif

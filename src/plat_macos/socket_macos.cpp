@@ -4,13 +4,13 @@
 #if OS_APPLE
 #include <functional>
 
-#include <IOBluetooth/IOBluetooth.h>
 #include <sys/event.h>
 #include <sys/socket.h>
 
 #include "os/async.hpp"
 #include "os/errcheck.hpp"
-#include "socket.hpp"
+#include "plat_macos_objc/channel.hpp"
+#include "sockets/socket.hpp"
 
 template <>
 void Socket<SocketTag::IP>::close() {
@@ -28,10 +28,9 @@ Task<> WritableSocket<SocketTag::IP>::send(std::string data) const {
 
 template <>
 Task<std::string> WritableSocket<SocketTag::IP>::recv() const {
-    std::string data(_recvLen, 0);
-
     auto result = co_await Async::run(std::bind_front(Async::submitKqueue, _handle, EVFILT_READ));
 
+    std::string data(_recvLen, 0);
     EXPECT_NONERROR(::recv, _handle, data.data(), data.size(), 0);
 
     data.resize(result.res);
@@ -40,15 +39,8 @@ Task<std::string> WritableSocket<SocketTag::IP>::recv() const {
 
 template <>
 void Socket<SocketTag::BT>::close() {
-    if (_handle.type == ConnectionType::RFCOMM) {
-        auto channel = [IOBluetoothRFCOMMChannel withObjectID:*_handle];
-        [channel closeChannel];
-        [[channel getDevice] closeConnection];
-    } else {
-        auto channel = [IOBluetoothL2CAPChannel withObjectID:*_handle];
-        [channel closeChannel];
-        [[channel device] closeConnection];
-    }
+    if (_handle.type == ConnectionType::RFCOMM) ObjC::closeRFCOMMChannel(*_handle);
+    else ObjC::closeL2CAPChannel(*_handle);
 
     _release();
 }
