@@ -26,7 +26,8 @@ class Window {
     virtual void _onUpdate() = 0;
 
     // Always runs on every frame, after _onUpdate is called, may be overridden optionally.
-    virtual void _onAfterUpdate(bool isOpen) {}
+    // The window open/closed state is passed as a bool.
+    virtual void _onAfterUpdate(bool) {}
 
 protected:
     // Enables or disables the window's close button.

@@ -74,5 +74,4 @@ constexpr ImGuiDataType ImGui::GetDataType(T) {
     if constexpr (std::is_same_v<T, uint64_t>) return ImGuiDataType_U64;
     if constexpr (std::is_same_v<T, float>) return ImGuiDataType_Float;
     if constexpr (std::is_same_v<T, double>) return ImGuiDataType_Double;
-    return ImGuiDataType_COUNT;
 }
