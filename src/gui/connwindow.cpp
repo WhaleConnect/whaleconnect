@@ -91,7 +91,7 @@ Task<> ConnWindow::_readHandler() try {
 } catch (const System::SystemError& error) { _errorHandler(error); }
 
 void ConnWindow::_errorHandler(const System::SystemError& error) {
-    // Don't handle errors caused by socket closure (this means this object has been destructed)
+    // Don't handle errors caused by I/O cancellation
 #if OS_WINDOWS
     if (error.code == WSA_OPERATION_ABORTED) return;
 #else
