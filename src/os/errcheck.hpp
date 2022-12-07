@@ -3,7 +3,24 @@
 
 #pragma once
 
+#include <concepts>
+#include <functional>
+#include <string>
+#include <string_view>
+
 #include "error.hpp"
+
+#define FN(f, ...) SysFn{ #f, f __VA_OPT__(,) __VA_ARGS__ }
+
+template <class Fn, class... Args> requires std::invocable<Fn, Args...>
+struct SysFn {
+    std::string name;
+    std::function<Fn> fn;
+
+    explicit SysFn(std::string_view s, Fn p, Args&&... args) : name(s), fn(std::bind(p, std::forward<Args>(args)...)) {}
+
+    auto operator()() { return fn(); }
+};
 
 // Calls a system function, and throws an exception if its return code does not match a success value.
 //
