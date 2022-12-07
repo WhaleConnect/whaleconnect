@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_WINDOWS
-#include "btutils_internal.hpp"
+#include "os/btutils_internal.hpp"
 
 #include <bit>
 #include <cstring> // std::memcpy()
