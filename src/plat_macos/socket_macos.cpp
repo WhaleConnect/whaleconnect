@@ -28,12 +28,12 @@ Task<> WritableSocket<SocketTag::IP>::send(std::string data) const {
 
 template <>
 Task<std::string> WritableSocket<SocketTag::IP>::recv() const {
-    auto result = co_await Async::run(std::bind_front(Async::submitKqueue, _handle, EVFILT_READ));
+    co_await Async::run(std::bind_front(Async::submitKqueue, _handle, EVFILT_READ));
 
     std::string data(_recvLen, 0);
-    call(FN(::recv, _handle, data.data(), data.size(), 0));
+    ssize_t recvLen = call(FN(::recv, _handle, data.data(), data.size(), 0));
 
-    data.resize(result.res);
+    data.resize(recvLen);
     co_return data;
 }
 
