@@ -24,11 +24,6 @@ namespace ImGui {
         if (RadioButton(label, var == value)) var = value;
     }
 
-    // Begins a child window with space at the bottom.
-    inline void BeginChildSpacing(const char* id, float space, bool border = false, ImGuiWindowFlags flags = 0) {
-        BeginChild(id, { 0, space * -ImGui::GetFrameHeightWithSpacing() }, border, flags);
-    }
-
     // Gets the width of a rendered string added with the item inner spacing specified in the Dear ImGui style.
     inline float CalcTextWidthWithSpacing(const char* text) {
         return GetStyle().ItemInnerSpacing.x + CalcTextSize(text).x;

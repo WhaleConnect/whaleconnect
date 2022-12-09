@@ -62,7 +62,7 @@ void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
 
 void Console::_updateOutput() {
     // Reserve space at bottom for more elements
-    ImGui::BeginChildSpacing("output", 1, true, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::BeginChild("output", { 0, -ImGui::GetFrameHeightWithSpacing() }, true, ImGuiWindowFlags_HorizontalScrollbar);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 4, 1 }); // Tighten line spacing
 
     // Add each item
