@@ -26,10 +26,10 @@ std::unique_ptr<ClientSocket<SocketTag::IP>> createClientSocket(const Device& de
 
     // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
     ClientSocketTraits<SocketTag::IP> traits;
-    EXPECT_ZERO_RC_TYPE(GetAddrInfo, System::ErrorType::AddrInfo, addrWide.c_str(), portWide.c_str(), &hints,
-                        std2::out_ptr(traits._addr));
+    call(FN(GetAddrInfo, addrWide.c_str(), portWide.c_str(), &hints, std2::out_ptr(traits._addr)), checkZero,
+         useReturnCode, System::ErrorType::AddrInfo);
 
     // Initialize socket
-    auto fd = EXPECT_NONERROR(socket, traits._addr->ai_family, traits._addr->ai_socktype, traits._addr->ai_protocol);
+    auto fd = call(FN(socket, traits._addr->ai_family, traits._addr->ai_socktype, traits._addr->ai_protocol));
     return std::make_unique<ClientSocket<SocketTag::IP>>(fd, device, std::move(traits));
 }

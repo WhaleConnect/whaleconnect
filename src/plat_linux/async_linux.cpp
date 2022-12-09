@@ -35,7 +35,7 @@ static int waitCQE(io_uring_cqe*& cqe, void*& userData) {
 
 bool Async::Internal::invalid() { return false; }
 
-void Async::Internal::init() { EXPECT_POSITIVE_RC(io_uring_queue_init, 128, &ring, 0); }
+void Async::Internal::init() { call(FN(io_uring_queue_init, 128, &ring, 0), checkZero, useReturnCodeNeg); }
 
 void Async::Internal::stopThreads() {
     for (int i = 0; i < numThreads; i++) {

@@ -23,7 +23,7 @@ template <>
 Task<> WritableSocket<SocketTag::IP>::send(std::string data) const {
     co_await Async::run(std::bind_front(Async::submitKqueue, _handle, EVFILT_WRITE));
 
-    EXPECT_NONERROR(::send, _handle, data.data(), data.size(), 0);
+    call(FN(::send, _handle, data.data(), data.size(), 0));
 }
 
 template <>
@@ -31,7 +31,7 @@ Task<std::string> WritableSocket<SocketTag::IP>::recv() const {
     auto result = co_await Async::run(std::bind_front(Async::submitKqueue, _handle, EVFILT_READ));
 
     std::string data(_recvLen, 0);
-    EXPECT_NONERROR(::recv, _handle, data.data(), data.size(), 0);
+    call(FN(::recv, _handle, data.data(), data.size(), 0));
 
     data.resize(result.res);
     co_return data;

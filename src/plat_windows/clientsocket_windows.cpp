@@ -30,7 +30,7 @@ static void startConnect(SOCKET s, sockaddr* addr, size_t len, Async::Completion
     int addrSize = (addr->sa_family == AF_BTH) ? sizeof(SOCKADDR_BTH) : sizeof(sockaddr_storage);
 
     // Bind the socket
-    EXPECT_ZERO(bind, s, reinterpret_cast<sockaddr*>(&addrBind), addrSize);
+    call(FN(bind, s, reinterpret_cast<sockaddr*>(&addrBind), addrSize));
 
     static LPFN_CONNECTEX connectExPtr = nullptr;
 
@@ -38,16 +38,16 @@ static void startConnect(SOCKET s, sockaddr* addr, size_t len, Async::Completion
         // Load the ConnectEx() function
         GUID guid = WSAID_CONNECTEX;
         DWORD numBytes = 0;
-        EXPECT_ZERO(WSAIoctl, s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &connectExPtr,
-                    sizeof(connectExPtr), &numBytes, nullptr, nullptr);
+        call(FN(WSAIoctl, s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &connectExPtr,
+                sizeof(connectExPtr), &numBytes, nullptr, nullptr));
     }
 
-    EXPECT_TRUE(connectExPtr, s, addr, len, nullptr, 0, nullptr, &result);
+    call(FN(connectExPtr, s, addr, len, nullptr, 0, nullptr, &result), checkTrue);
 }
 
 static void finalizeConnect(SOCKET s) {
     // Make the socket behave more like a regular socket connected with connect()
-    EXPECT_ZERO(setsockopt, s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0);
+    call(FN(setsockopt, s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0));
 }
 
 template <>
@@ -55,7 +55,7 @@ Task<> ClientSocket<SocketTag::IP>::connect() const {
     // Datagram sockets can be directly connected (ConnectEx() doesn't support them)
     if (_device.type == ConnectionType::UDP) {
         Async::add(_handle);
-        EXPECT_ZERO(::connect, _handle, _addr->ai_addr, _addr->ai_addrlen);
+        call(FN(::connect, _handle, _addr->ai_addr, _addr->ai_addrlen));
         co_return;
     }
 
@@ -69,7 +69,7 @@ std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& de
     if (device.type != ConnectionType::RFCOMM)
         throw System::SystemError{ WSAEPFNOSUPPORT, System::ErrorType::System, "socket" };
 
-    auto fd = EXPECT_NONERROR(socket, AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
+    auto fd = call(FN(socket, AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM));
     return std::make_unique<ClientSocket<SocketTag::BT>>(fd, device);
 }
 

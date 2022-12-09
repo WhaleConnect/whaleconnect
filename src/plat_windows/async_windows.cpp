@@ -17,10 +17,10 @@ bool Async::Internal::invalid() { return completionPort == nullptr; }
 void Async::Internal::init() {
     // Start Winsock
     WSADATA wsaData{};
-    EXPECT_ZERO_RC(WSAStartup, MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
+    call(FN(WSAStartup, MAKEWORD(2, 2), &wsaData), checkTrue, useReturnCode); // MAKEWORD(2, 2) for Winsock 2.2
 
     // Initialize IOCP
-    completionPort = EXPECT_TRUE(CreateIoCompletionPort, INVALID_HANDLE_VALUE, nullptr, 0, numThreads);
+    completionPort = call(FN(CreateIoCompletionPort, INVALID_HANDLE_VALUE, nullptr, 0, numThreads), checkTrue);
 }
 
 void Async::Internal::stopThreads() {
@@ -31,7 +31,7 @@ void Async::Internal::cleanup() {
     CloseHandle(completionPort);
 
     // Cleanup Winsock
-    EXPECT_ZERO(WSACleanup);
+    call(FN(WSACleanup));
 }
 
 Async::Internal::WorkerResult Async::Internal::worker() {
@@ -58,6 +58,6 @@ Async::Internal::WorkerResult Async::Internal::worker() {
 
 void Async::add(SOCKET sockfd) {
     // Create a new handle for the socket
-    EXPECT_TRUE(CreateIoCompletionPort, reinterpret_cast<HANDLE>(sockfd), completionPort, 0, 0);
+    call(FN(CreateIoCompletionPort, reinterpret_cast<HANDLE>(sockfd), completionPort, 0, 0), checkTrue);
 }
 #endif

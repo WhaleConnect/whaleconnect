@@ -34,7 +34,7 @@ static void recurseDictIter(DBusMessageIter& dictIter, auto fn) {
 
 void BTUtils::init() {
     // Connect to the system D-Bus
-    conn = EXPECT_TRUE(dbus_bus_get, DBUS_BUS_SYSTEM, nullptr);
+    conn = call(FN(dbus_bus_get, DBUS_BUS_SYSTEM, nullptr), checkTrue);
 
     // The process will exit when a connection with dbus_bus_get closes.
     // The function below will undo this behavior:
@@ -55,11 +55,12 @@ DeviceList BTUtils::getPaired() {
     // Set up the method call
     using MsgPtr = HandlePtr<DBusMessage, dbus_message_unref>;
 
-    MsgPtr msg{ EXPECT_TRUE(dbus_message_new_method_call, "org.bluez", "/", "org.freedesktop.DBus.ObjectManager",
-                            "GetManagedObjects") };
+    MsgPtr msg{ call(
+        FN(dbus_message_new_method_call, "org.bluez", "/", "org.freedesktop.DBus.ObjectManager", "GetManagedObjects"),
+        checkTrue) };
 
-    MsgPtr response{ EXPECT_TRUE(dbus_connection_send_with_reply_and_block, conn, msg.get(), DBUS_TIMEOUT_USE_DEFAULT,
-                                 nullptr) };
+    MsgPtr response{ call(
+        FN(dbus_connection_send_with_reply_and_block, conn, msg.get(), DBUS_TIMEOUT_USE_DEFAULT, nullptr), checkTrue) };
 
     DBusMessageIter responseIter;
     dbus_message_iter_init(response.get(), &responseIter);
@@ -159,7 +160,8 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     // Initialize SDP session
     // We can't directly pass BDADDR_ANY to sdp_connect() because a "taking the address of an rvalue" error is thrown.
     bdaddr_t addrAny{};
-    HandlePtr<sdp_session_t, sdp_close> session{ EXPECT_TRUE(sdp_connect, &addrAny, &bdAddr, SDP_RETRY_IF_BUSY) };
+    HandlePtr<sdp_session_t, sdp_close> session{ call(FN(sdp_connect, &addrAny, &bdAddr, SDP_RETRY_IF_BUSY),
+                                                      checkTrue) };
 
     uuid_t serviceUUID = sdp_uuid128_create(uuid.data());
 
@@ -170,8 +172,8 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     uint32_t range = 0x0000FFFF;
     SDPListPtr attridList{ sdp_list_append(nullptr, &range) };
 
-    EXPECT_NONERROR(sdp_service_search_attr_req, session.get(), searchList.get(), SDP_ATTR_REQ_RANGE, attridList.get(),
-                    std2::out_ptr(responseList));
+    call(FN(sdp_service_search_attr_req, session.get(), searchList.get(), SDP_ATTR_REQ_RANGE, attridList.get(),
+            std2::out_ptr(responseList)));
 
     // Iterate through each of the service records
     for (sdp_list_t* r = responseList.get(); r; r = r->next) {

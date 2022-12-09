@@ -20,7 +20,7 @@ static std::mutex mapMutex;
 
 bool Async::Internal::invalid() { return kq == -1; }
 
-void Async::Internal::init() { kq = EXPECT_NONERROR(kqueue); }
+void Async::Internal::init() { kq = call(FN(kqueue)); }
 
 void Async::Internal::stopThreads() {
     // Submit a single event to wake up all threads
@@ -80,7 +80,7 @@ void Async::submitKqueue(int ident, int filter, CompletionResult& result) {
     struct kevent event {};
 
     EV_SET(&event, ident, filter, EV_ADD | EV_ONESHOT, 0, 0, &result);
-    EXPECT_NONERROR(kevent, kq, &event, 1, nullptr, 0, nullptr);
+    call(FN(kevent, kq, &event, 1, nullptr, 0, nullptr));
 
     std::scoped_lock lock{ mapMutex };
     pendingSockets[ident] = &result;
@@ -90,6 +90,6 @@ void Async::cancelPending(int fd) {
     struct kevent event {};
 
     EV_SET(&event, ASYNC_CANCEL, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER, fd, nullptr);
-    EXPECT_NONERROR(kevent, kq, &event, 1, nullptr, 0, nullptr);
+    call(FN(kevent, kq, &event, 1, nullptr, 0, nullptr));
 }
 #endif

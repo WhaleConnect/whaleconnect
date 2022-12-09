@@ -39,7 +39,7 @@ std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& de
     // Determine the socket protocol
     int sockProto = (device.type == RFCOMM) ? BTPROTO_RFCOMM : BTPROTO_L2CAP;
 
-    auto fd = EXPECT_NONERROR(socket, AF_BLUETOOTH, sockType, sockProto);
+    auto fd = call(FN(socket, AF_BLUETOOTH, sockType, sockProto));
     return std::make_unique<ClientSocket<SocketTag::BT>>(fd, device);
 }
 

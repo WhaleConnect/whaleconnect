@@ -19,7 +19,7 @@ template <auto Tag>
 Task<> WritableSocket<Tag>::send(std::string data) const {
     co_await Async::run([this, &data](Async::CompletionResult& result) {
         WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-        EXPECT_NONERROR(WSASend, this->_handle, &buf, 1, nullptr, 0, &result, nullptr);
+        call(FN(WSASend, this->_handle, &buf, 1, nullptr, 0, &result, nullptr));
     });
 }
 
@@ -30,7 +30,7 @@ Task<std::string> WritableSocket<Tag>::recv() const {
     auto result = co_await Async::run([this, &data](Async::CompletionResult& result) {
         DWORD flags = 0;
         WSABUF buf{ static_cast<ULONG>(_recvLen), data.data() };
-        EXPECT_NONERROR(WSARecv, this->_handle, &buf, 1, nullptr, &flags, &result, nullptr);
+        call(FN(WSARecv, this->_handle, &buf, 1, nullptr, &flags, &result, nullptr));
     });
 
     data.resize(result.res);
