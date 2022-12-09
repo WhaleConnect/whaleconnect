@@ -47,7 +47,8 @@ namespace ImGui {
     bool InputText(std::string_view label, std::string& s, ImGuiInputTextFlags flags = 0);
 
     // Wrapper for InputTextMultiline() to use a std::string buffer.
-    bool InputTextMultiline(std::string_view label, std::string& s, const ImVec2& size = {}, ImGuiInputTextFlags flags = 0);
+    bool InputTextMultiline(std::string_view label, std::string& s, const ImVec2& size = {},
+                            ImGuiInputTextFlags flags = 0);
 
     // Creates a (?) mark which shows a tooltip on hover.
     // This can be placed next to a widget to provide more details about it.
