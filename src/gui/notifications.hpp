@@ -12,5 +12,5 @@ namespace ImGui {
     void AddNotification(std::string_view s, float timeout = 5);
 
     // Draws the notification area.
-    void DrawNotificationArea(ImGuiID dockspaceID);
+    void DrawNotificationArea(ImGuiID dockSpaceID);
 }

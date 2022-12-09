@@ -100,7 +100,7 @@ void ImGui::AddNotification(std::string_view s, float timeout) {
     notifications.push_back({ std::string{ s }, GetTime(), true, areNotificationsVisible ? timeout : 0 });
 }
 
-void ImGui::DrawNotificationArea(ImGuiID dockspaceID) {
+void ImGui::DrawNotificationArea(ImGuiID dockSpaceID) {
     constexpr const char* windowIDBase = "###Notifications";
     static auto makeWindowID
         = [windowIDBase](std::string_view s = "") { return std::format("Notifications{}{}", s, windowIDBase); };
@@ -111,13 +111,13 @@ void ImGui::DrawNotificationArea(ImGuiID dockspaceID) {
     static bool firstFrame = true;
     if (firstFrame) {
         // Remove previous docking configurations
-        DockBuilderRemoveNodeChildNodes(dockspaceID);
+        DockBuilderRemoveNodeChildNodes(dockSpaceID);
 
-        // Dock the notifications area to the right node of the dockspace
+        // Dock the notifications area to the right node of the dock space
         ImGuiID nodeID;
-        DockBuilderSplitNode(dockspaceID, ImGuiDir_Right, 0.25f, &nodeID, nullptr);
+        DockBuilderSplitNode(dockSpaceID, ImGuiDir_Right, 0.25f, &nodeID, nullptr);
         DockBuilderDockWindow(windowIDBase, nodeID);
-        DockBuilderFinish(dockspaceID);
+        DockBuilderFinish(dockSpaceID);
         firstFrame = false;
     }
 
