@@ -18,40 +18,40 @@ namespace ImGui {
     // A wrapper for TextUnformatted() to allow a string_view parameter.
     inline void TextUnformatted(std::string_view s) { TextUnformatted(s.data()); }
 
-    // A wrapper for RadioButton() to control a variable and its value.
+    // Wrapper for RadioButton() to control a variable and its value.
     template <class T>
-    void RadioButton(const char* label, T& var, T value) {
-        if (RadioButton(label, var == value)) var = value;
+    void RadioButton(std::string_view label, T& var, T value) {
+        if (RadioButton(label.data(), var == value)) var = value;
     }
 
     // Gets the width of a rendered string added with the item inner spacing specified in the Dear ImGui style.
-    inline float CalcTextWidthWithSpacing(const char* text) {
-        return GetStyle().ItemInnerSpacing.x + CalcTextSize(text).x;
+    inline float CalcTextWidthWithSpacing(std::string_view text) {
+        return GetStyle().ItemInnerSpacing.x + CalcTextSize(text.data()).x;
     }
 
     // Gets the ImGuiDataType of a given variable.
     template <class T>
     constexpr ImGuiDataType GetDataType(T);
 
-    // A wrapper for InputScalar() with automatic type detection.
-    template <class T, class U = int>
-    inline void InputScalar(const char* label, T& data, U step = 0, U stepFast = 0) {
+    // Wrapper for InputScalar() with automatic type detection.
+    template <class T, class U = T>
+    void InputScalar(std::string_view label, T& data, U step = 0, U stepFast = 0) {
         // Any negative step value is considered invalid and nullptr is passed to disable the step buttons
         U* stepPtr = (step > 0) ? &step : nullptr;
         U* stepFastPtr = ((step > 0) && (stepFast > 0)) ? &stepFast : nullptr;
 
-        InputScalar(label, GetDataType(data), &data, stepPtr, stepFastPtr);
+        InputScalar(label.data(), GetDataType(data), &data, stepPtr, stepFastPtr);
     }
 
-    // A wrapper for InputText() to use a std::string buffer.
-    bool InputText(const char* label, std::string& s, ImGuiInputTextFlags flags = 0);
+    // Wrapper for InputText() to use a std::string buffer.
+    bool InputText(std::string_view label, std::string& s, ImGuiInputTextFlags flags = 0);
 
-    // A wrapper for InputTextMultiline() to use a std::string buffer.
-    bool InputTextMultiline(const char* label, std::string& s, const ImVec2& size = {}, ImGuiInputTextFlags flags = 0);
+    // Wrapper for InputTextMultiline() to use a std::string buffer.
+    bool InputTextMultiline(std::string_view label, std::string& s, const ImVec2& size = {}, ImGuiInputTextFlags flags = 0);
 
     // Creates a (?) mark which shows a tooltip on hover.
     // This can be placed next to a widget to provide more details about it.
-    void HelpMarker(const char* desc);
+    void HelpMarker(std::string_view desc);
 
     // Displays a basic spinner which rotates every few frames.
     void Spinner();

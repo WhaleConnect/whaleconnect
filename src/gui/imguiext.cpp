@@ -18,17 +18,17 @@ static int stringCallback(ImGuiInputTextCallbackData* data) {
     return 0;
 }
 
-bool ImGui::InputText(const char* label, std::string& s, ImGuiInputTextFlags flags) {
+bool ImGui::InputText(std::string_view label, std::string& s, ImGuiInputTextFlags flags) {
     flags |= ImGuiInputTextFlags_CallbackResize;
-    return InputText(label, s.data(), s.capacity() + 1, flags, stringCallback, &s);
+    return InputText(label.data(), s.data(), s.capacity() + 1, flags, stringCallback, &s);
 }
 
-bool ImGui::InputTextMultiline(const char* label, std::string& s, const ImVec2& size, ImGuiInputTextFlags flags) {
+bool ImGui::InputTextMultiline(std::string_view label, std::string& s, const ImVec2& size, ImGuiInputTextFlags flags) {
     flags |= ImGuiInputTextFlags_CallbackResize;
-    return InputTextMultiline(label, s.data(), s.capacity() + 1, size, flags, stringCallback, &s);
+    return InputTextMultiline(label.data(), s.data(), s.capacity() + 1, size, flags, stringCallback, &s);
 }
 
-void ImGui::HelpMarker(const char* desc) {
+void ImGui::HelpMarker(std::string_view desc) {
     // Adapted from imgui_demo.cpp.
     SameLine();
     TextDisabled("(?)");
