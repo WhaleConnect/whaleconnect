@@ -61,7 +61,7 @@ static void drawNotification(Notification& n, float areaWidth) {
 
     // When the button is clicked, deactivate the notification
     // When the button is hovered, deactivate the timeout
-    if (ImGui::Button("\u2715", buttonSize)) n.active = false;
+    if (ImGui::Button(buttonLabel, buttonSize)) n.active = false;
     if (ImGui::IsItemHovered()) n.timeout = 0;
 
     ImGui::PopStyleColor(3);
