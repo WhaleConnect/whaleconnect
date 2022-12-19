@@ -9,12 +9,10 @@
 void ObjC::closeRFCOMMChannel(IOBluetoothObjectID channelID) {
     auto channel = [IOBluetoothRFCOMMChannel withObjectID:channelID];
     [channel closeChannel];
-    [[channel getDevice] closeConnection];
 }
 
 void ObjC::closeL2CAPChannel(IOBluetoothObjectID channelID) {
     auto channel = [IOBluetoothL2CAPChannel withObjectID:channelID];
     [channel closeChannel];
-    [[channel device] closeConnection];
 }
 #endif
