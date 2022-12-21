@@ -112,7 +112,8 @@ if (MSVC)
         /EHsc                   # Exception handling model
         /utf-8                  # UTF-8 charset
         /external:anglebrackets # Specify which headers are installed libraries
-        /external:W0)           # Suppress warnings in libraries
+        /external:W0            # Suppress warnings in libraries
+        /Zc:preprocessor)       # Enable conformant preprocessor
 
     # Use MSVC's Unicode character set and prevent clashing macros
     target_compile_definitions(terminal PRIVATE UNICODE _UNICODE NOMINMAX)
