@@ -1,30 +1,32 @@
 # Building Network Socket Terminal
 
-To build NST from source code, you will need CMake, Conan, Ninja, and an up-to-date compiler.
+To build NST from source code, you will need [XMake](https://xmake.io) and an up-to-date compiler.
 
-## Integration with Conan
+All commands will need to be run in the repository's root directory.
 
-NST uses [Conan](https://conan.io/) to manage dependencies. Follow its installation guide if it's not present on your system.
+## Configuration
 
-To install the required dependencies, run the following commands in the repository's root directory:
+The following commands will configure the build process. They do not have to be rerun on every build.
+
+### Setting Debug Mode (Default)
 
 ```shell
-conan install . --build=missing -s build_type=Debug   # For a Debug build
-conan install . --build=missing -s build_type=Release # For a Release build
+xmake f -m debug
 ```
 
-If needed, specify a build profile in this step (such as `-pr:b=default`).
+### Setting Release Mode
 
-Conan will let you know if you need additional packages installed with your system's package manager.
+```shell
+xmake f -m release
+```
 
-## Required Linux Packages
+### Setting LDFLAGS (With Homebrew LLVM)
 
-You will need to install the following packages (if you're using a Debian-based system):
+The following LDFLAGS will make brew-installed Clang use its own libc++:
 
-- `libbluetooth-dev` (BlueZ API)
-- `libdbus-1-dev` (D-Bus API)
-
-TODO: Add package names for pacman and dnf
+```shell
+xmake f --ldflags="-L$(brew --prefix)/opt/llvm/lib/c++ -Wl,-rpath,$(brew --prefix)/opt/llvm/lib/c++"
+```
 
 ## Compiling
 
@@ -35,20 +37,14 @@ This project uses C++23 features, so be sure to update your compiler(s) if neede
 
 All code is standards-compliant. However, because it uses a recent C++ revision, some compilers may not currently be supported.
 
-### Build Commands with CMake
-
-To build NST from the command line, start in the root of the repository and execute the commands below.
-
-If you are building on Windows, run these commands in the Visual Studio command prompt.
+### Building from the Command Line
 
 ```shell
-cmake --preset (debug|release)
-cd build
-cmake --build .
+xmake
 ```
 
-Alternatively, to build in one step with Conan:
+### Running the Executable
 
 ```shell
-conan build .
+xmake run terminal
 ```

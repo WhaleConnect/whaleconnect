@@ -4,14 +4,13 @@
 
 This software is currently in alpha. Feedback and feature requests are welcome.
 
-![Screenshot](docs/img/shot1.png)
+![Screenshot](img/shot1.png)
 
 ## Documentation Links
 
-- [Building from Source](docs/BUILDING.md)
-- [VSCode Extensions](docs/EXTENSIONS.md)
-- [Screenshots](docs/SCREENSHOTS.md)
-- [Todo List](docs/TODO.txt)
+- [Building from Source](BUILDING.md)
+- [Screenshots](SCREENSHOTS.md)
+- [Todo List](TODO.txt)
 
 ## Development Branch
 
@@ -21,7 +20,7 @@ When a feature is merged into `main` it is ready for release.
 
 ## License
 
-NST and its build scripts are licensed under the [GPL v3+ license](COPYING).
+NST and its build scripts are licensed under the [GPL v3+ license](../COPYING).
 
 ## Libraries and Dependencies
 
