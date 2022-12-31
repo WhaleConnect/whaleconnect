@@ -5,6 +5,7 @@
 #include <system_error>
 
 #if OS_WINDOWS
+#undef SDL_MAIN_HANDLED
 #include <SDL_main.h> // For definition of main function
 #endif
 
