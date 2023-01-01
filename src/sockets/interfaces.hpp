@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "utils/task.hpp"
 
 // Abstract class to represent something that can be closed.
