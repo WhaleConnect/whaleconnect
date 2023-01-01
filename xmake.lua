@@ -3,32 +3,21 @@
 
 add_rules("mode.debug", "mode.release")
 
-set_languages("c++23")
+set_languages("c++20")
 set_policy("check.auto_ignore_flags", false)
 set_defaultmode("debug")
 
 add_requires("imgui v1.89-docking", { configs = { sdl2_opengl3 = true } })
 add_requires("libsdl", { configs = { use_sdlmain = true } })
-add_requires("magic_enum")
+add_requires("magic_enum", "out_ptr")
 
 if is_plat("linux") then
     add_requires("liburing")
     add_requires("dbus")
 end
 
--- XMake doesn't have a way to check compilers globally so it is assumed:
--- Windows: MSVC
--- Other platforms: Other compilers (need out_ptr library)
-if not is_plat("windows") then
-    add_requires("out_ptr")
-end
-
 target("terminal")
-    add_packages("imgui", "libsdl", "magic_enum")
-
-    if not is_plat("windows") then
-        add_packages("out_ptr")
-    end
+    add_packages("imgui", "libsdl", "magic_enum", "out_ptr")
 
     set_kind("binary")
     set_exceptions("cxx")

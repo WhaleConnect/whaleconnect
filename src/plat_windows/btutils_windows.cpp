@@ -16,6 +16,7 @@
 #include "os/errcheck.hpp"
 #include "sockets/device.hpp"
 #include "utils/handleptr.hpp"
+#include "utils/out_ptr_compat.hpp"
 #include "utils/strings.hpp"
 
 // Converts a Windows GUID struct into a UUID128.
@@ -150,7 +151,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     HandlePtr<void, WSALookupServiceEnd> lookup;
 
     try {
-        call(FN(WSALookupServiceBegin, &wsaQuery, flags, std::out_ptr(lookup)));
+        call(FN(WSALookupServiceBegin, &wsaQuery, flags, std2::out_ptr(lookup)));
     } catch (const System::SystemError& error) {
         if (error.code == WSASERVICE_NOT_FOUND) return {}; // No services found
 
