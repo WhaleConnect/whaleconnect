@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Aidan Sun and the Network Socket Terminal contributors
+// Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // The naming conventions used in this file are selected to remain consistent with the official Dear ImGui API.
