@@ -51,10 +51,9 @@ System::ErrorCode System::getLastError() {
 
 bool System::isFatal(ErrorCode code) {
     // Check if the code is actually an error
+    // Platform-specific "pending" codes indicate an async operation has not yet finished and not a fatal error.
     if (code == NO_ERROR) return false;
 
-        // These errors mean an operation hasn't failed, it's still waiting.
-        // Tell the calling function that there's no error, and it should check back later.
 #if OS_WINDOWS
     // Pending I/O for overlapped sockets
     if (code == WSA_IO_PENDING) return false;
