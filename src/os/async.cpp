@@ -4,6 +4,7 @@
 #include "async.hpp"
 #include "async_internal.hpp"
 
+#include <algorithm> // std::max()
 #include <system_error>
 #include <thread>
 #include <vector>

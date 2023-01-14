@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include <algorithm> // std::max()
 #include <coroutine>
 #include <thread>
+#include <vector>
 
 #if OS_WINDOWS
 #include <WinSock2.h>
