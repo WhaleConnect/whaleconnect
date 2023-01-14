@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <cstdlib> // EXIT_FAILURE, EXIT_SUCCESS
+#include <optional>
 #include <system_error>
 
 #if OS_WINDOWS
@@ -16,10 +17,11 @@
 #include "gui/windowlist.hpp"
 #include "os/async.hpp"
 #include "os/btutils.hpp"
+#include "utils/settings.hpp"
 
 // Contains the app's core logic and functions.
 void mainLoop() {
-    // These variables must be in a separate scope from the cleanup function, so they can be destructed before cleanup
+    // These variables must be in a separate scope from the resource instances, so these can be destructed before cleanup
     WindowList connections; // List of open windows
     WindowList sdpWindows;  // List of windows for creating Bluetooth connections
 
@@ -43,10 +45,14 @@ int main(int, char**) {
     // Create a main application window
     if (!App::init()) return EXIT_FAILURE;
 
+    // OS API resource instances
+    std::optional<Async::Instance> asyncInstance;
+    std::optional<BTUtils::Instance> btutilsInstance;
+
     // Initialize APIs for sockets and Bluetooth
     try {
-        Async::init();
-        BTUtils::init();
+        asyncInstance.emplace(Settings::numThreads);
+        btutilsInstance.emplace();
     } catch (const System::SystemError& error) {
         ImGui::AddNotification("Initialization error " + error.formatted(), 0);
     } catch (const std::system_error&) {
@@ -56,8 +62,6 @@ int main(int, char**) {
     // Run app
     mainLoop();
 
-    BTUtils::cleanup();
-    Async::cleanup();
     App::cleanup();
     return EXIT_SUCCESS;
 }

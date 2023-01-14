@@ -8,4 +8,5 @@ namespace Settings {
     inline bool useDefaultFont = false;     // If Dear ImGui's default font is used (instead of GNU Unifont)
     inline bool roundedCorners = false;     // If corners in the UI are rounded
     inline bool windowTransparency = false; // If application windows have a transparent effect
+    inline unsigned char numThreads = 0;    // Number of worker threads (0 to auto-detect)
 }

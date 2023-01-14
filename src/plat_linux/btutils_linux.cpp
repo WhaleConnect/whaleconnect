@@ -32,7 +32,7 @@ static void recurseDictIter(DBusMessageIter& dictIter, auto fn) {
     } while (dbus_message_iter_next(&dictIter));
 }
 
-void BTUtils::init() {
+BTUtils::Instance::Instance() {
     // Connect to the system D-Bus
     conn = call(FN(dbus_bus_get, DBUS_BUS_SYSTEM, nullptr), checkTrue);
 
@@ -41,9 +41,9 @@ void BTUtils::init() {
     dbus_connection_set_exit_on_disconnect(conn, FALSE);
 }
 
-void BTUtils::cleanup() {
+BTUtils::Instance::~Instance() {
     // Shut down the connection
-    if (conn) dbus_connection_unref(conn);
+    dbus_connection_unref(conn);
     conn = nullptr;
 }
 

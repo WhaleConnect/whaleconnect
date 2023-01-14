@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_APPLE
+#include "os/btutils.hpp"
 #include "os/btutils_internal.hpp"
 #include "plat_macos_objc/paired.hpp"
 #include "plat_macos_objc/sdp.hpp"
 
-void BTUtils::init() {}
+BTUtils::Instance::Instance() {}
 
-void BTUtils::cleanup() {}
+BTUtils::Instance::~Instance() {}
 
 DeviceList BTUtils::getPaired() {
     auto info = ObjC::getPaired();

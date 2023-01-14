@@ -10,17 +10,16 @@
 #include "async.hpp"
 
 namespace Async::Internal {
+    // Constant to indentify an interrupt operation to stop the worker threads.
     constexpr auto ASYNC_INTERRUPT = 1;
 
-    // The number of threads to start
-    // If the number of supported threads cannot be determined, 1 is created.
-    inline const auto numThreads = std::max(std::thread::hardware_concurrency(), 1U);
-
+    // Structure to contain the result of calling the worker function once.
     struct WorkerResult {
-        bool interrupted = false;
-        std::coroutine_handle<> coroHandle;
+        bool interrupted = false;           // If the thread was interrupted while waiting
+        std::coroutine_handle<> coroHandle; // The coroutine handle to resume
     };
 
+    // Casts a pointer type to a completion result structure.
     template <class T>
     CompletionResult& toResult(T* ptr) {
         return *static_cast<CompletionResult*>(ptr);

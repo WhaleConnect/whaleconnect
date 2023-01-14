@@ -4,11 +4,9 @@
 #include "async.hpp"
 #include "async_internal.hpp"
 
+#include <system_error>
 #include <thread>
 #include <vector>
-
-// A vector of threads to serve as a thread pool
-static std::vector<std::thread> workerThreadPool(Async::Internal::numThreads);
 
 // Runs in each thread to handle completion results.
 static void worker() {
@@ -20,21 +18,23 @@ static void worker() {
     }
 }
 
-void Async::init() {
+Async::Instance::Instance(unsigned int numThreads) :
+    _workerThreadPool((numThreads == 0) ? std::max(std::thread::hardware_concurrency(), 1U) : numThreads) {
+    // If 0 threads are specified, the number is chosen with hardware_concurrency.
+    // If the number of supported threads cannot be determined, 1 is created.
     Internal::init();
 
     // Populate thread pool
-    for (auto& i : workerThreadPool) i = std::thread{ worker };
+    for (auto& i : _workerThreadPool) i = std::thread{ worker };
 }
 
-void Async::cleanup() {
-    // Signal threads to terminate
+Async::Instance::~Instance() {
     Internal::stopThreads();
 
     // Join threads
     // Manual join calls are used instead of a jthread so the program can wait (briefly) for all threads to exit
     // before cleaning up.
-    for (auto& i : workerThreadPool)
+    for (auto& i : _workerThreadPool)
         if (i.joinable()) i.join();
 
     Internal::cleanup();

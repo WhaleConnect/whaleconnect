@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include <algorithm> // std::max()
 #include <coroutine>
+#include <thread>
 
 #if OS_WINDOWS
 #include <WinSock2.h>
@@ -15,6 +17,18 @@
 #include "utils/task.hpp"
 
 namespace Async {
+    // Class to manage resources automatically.
+    class Instance {
+        std::vector<std::thread> _workerThreadPool; // Vector of threads to serve as a thread pool
+
+    public:
+        // Initializes the OS asynchronous I/O queue and starts the background thread pool.
+        Instance(unsigned int numThreads);
+
+        // Cleans up the I/O queue and stops the thread pool.
+        ~Instance();
+    };
+
     // The information needed to resume a completion operation.
     //
     // This structure contains functions to make it an awaitable type. Calling co_await on an instance stores the
@@ -68,12 +82,6 @@ namespace Async {
 
         co_return result;
     }
-
-    // Initializes the OS asynchronous I/O queue and starts the background thread pool.
-    void init();
-
-    // Cleans up the I/O queue and stops the thread pool.
-    void cleanup();
 
 #if OS_WINDOWS
     // Adds a socket to the I/O queue.

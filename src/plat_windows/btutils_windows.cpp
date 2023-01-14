@@ -81,9 +81,9 @@ static std::vector<SDP_ELEMENT_DATA> getSDPListData(LPBLOB blob, USHORT attrib) 
     return getSDPListData(element);
 }
 
-void BTUtils::init() {}
+BTUtils::Instance::Instance() {}
 
-void BTUtils::cleanup() {}
+BTUtils::Instance::~Instance() {}
 
 DeviceList BTUtils::getPaired() {
     DeviceList deviceList;

@@ -13,6 +13,14 @@ namespace BTUtils {
     // A 128-bit UUID represented in a platform-independent way.
     using UUID128 = std::array<uint8_t, 16>;
 
+    struct Instance {
+        // Initializes the OS APIs to use Bluetooth.
+        Instance();
+
+        // Cleans up the OS APIs.
+        ~Instance();
+    };
+
     // A Bluetooth profile descriptor.
     struct ProfileDesc {
         uint16_t uuid = 0;        // 16-bit UUID
@@ -31,12 +39,6 @@ namespace BTUtils {
     };
 
     using SDPResultList = std::vector<SDPResult>;
-
-    // Initializes the OS APIs to use Bluetooth.
-    void init();
-
-    // Cleans up the OS APIs.
-    void cleanup();
 
     // Constructs a 128-bit Bluetooth UUID given the short (16- or 32-bit) UUID.
     inline UUID128 createUUIDFromBase(uint32_t uuidShort) {
