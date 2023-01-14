@@ -12,7 +12,7 @@
 // The IOCP handle
 static HANDLE completionPort = nullptr;
 
-void Async::Internal::init() {
+void Async::Internal::init(unsigned int numThreads) {
     // Start Winsock
     WSADATA wsaData{};
     call(FN(WSAStartup, MAKEWORD(2, 2), &wsaData), checkTrue, useReturnCode); // MAKEWORD(2, 2) for Winsock 2.2
@@ -21,7 +21,7 @@ void Async::Internal::init() {
     completionPort = call(FN(CreateIoCompletionPort, INVALID_HANDLE_VALUE, nullptr, 0, numThreads), checkTrue);
 }
 
-void Async::Internal::stopThreads() {
+void Async::Internal::stopThreads(unsigned int numThreads) {
     for (size_t i = 0; i < numThreads; i++) PostQueuedCompletionStatus(completionPort, 0, ASYNC_INTERRUPT, nullptr);
 }
 

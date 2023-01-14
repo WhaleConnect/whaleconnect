@@ -18,9 +18,9 @@ static int kq = -1;
 static std::unordered_map<int, Async::CompletionResult*> pendingSockets;
 static std::mutex mapMutex;
 
-void Async::Internal::init() { kq = call(FN(kqueue)); }
+void Async::Internal::init(unsigned int) { kq = call(FN(kqueue)); }
 
-void Async::Internal::stopThreads() {
+void Async::Internal::stopThreads(unsigned int) {
     // Submit a single event to wake up all threads
     struct kevent event {};
 

@@ -23,14 +23,14 @@ Async::Instance::Instance(unsigned int numThreads) :
     _workerThreadPool((numThreads == 0) ? std::max(std::thread::hardware_concurrency(), 1U) : numThreads) {
     // If 0 threads are specified, the number is chosen with hardware_concurrency.
     // If the number of supported threads cannot be determined, 1 is created.
-    Internal::init();
+    Internal::init(_workerThreadPool.size());
 
     // Populate thread pool
     for (auto& i : _workerThreadPool) i = std::thread{ worker };
 }
 
 Async::Instance::~Instance() {
-    Internal::stopThreads();
+    Internal::stopThreads(_workerThreadPool.size());
 
     // Join threads
     // Manual join calls are used instead of a jthread so the program can wait (briefly) for all threads to exit

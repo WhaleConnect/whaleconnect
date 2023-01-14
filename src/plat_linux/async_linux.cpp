@@ -33,9 +33,9 @@ static int waitCQE(io_uring_cqe*& cqe, void*& userData) {
     return ret;
 }
 
-void Async::Internal::init() { call(FN(io_uring_queue_init, 128, &ring, 0), checkZero, useReturnCodeNeg); }
+void Async::Internal::init(unsigned int) { call(FN(io_uring_queue_init, 128, &ring, 0), checkZero, useReturnCodeNeg); }
 
-void Async::Internal::stopThreads() {
+void Async::Internal::stopThreads(unsigned int numThreads) {
     for (int i = 0; i < numThreads; i++) {
         // Submit a no-op to the queue to get the waiting call terminated
         io_uring_sqe* sqe = getUringSQE();
