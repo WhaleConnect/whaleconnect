@@ -4,7 +4,7 @@ This is a list of the tasks to complete before each release.
   [ ] macOS Support
     [X] kqueue
     [ ] IOBluetooth
-  [ ] Add setting to change number of worker threads (unsigned integer, 0 means auto-detect)
+  [X] Add setting to change number of worker threads (unsigned integer, 0 means auto-detect)
 
 0.3.0:
   [ ] Implement the server-side

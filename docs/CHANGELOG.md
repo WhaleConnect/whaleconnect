@@ -13,6 +13,8 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Added a notification system to display application messages.
   - The notification area is shown on the right side of the app by default, but it can be moved and docked.
   - A notification can close automatically after a few seconds; this can be canceled by hovering over its close button.
+- Added a setting to control how many worker threads are spawned.
+  - If `0` is specified, the app creates the maximum number of supported threads.
 
 ### Improvements
 
