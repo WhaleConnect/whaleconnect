@@ -12,8 +12,6 @@
 // The IOCP handle
 static HANDLE completionPort = nullptr;
 
-bool Async::Internal::invalid() { return completionPort == nullptr; }
-
 void Async::Internal::init() {
     // Start Winsock
     WSADATA wsaData{};

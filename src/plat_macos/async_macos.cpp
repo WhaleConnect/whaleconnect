@@ -18,8 +18,6 @@ static int kq = -1;
 static std::unordered_map<int, Async::CompletionResult*> pendingSockets;
 static std::mutex mapMutex;
 
-bool Async::Internal::invalid() { return kq == -1; }
-
 void Async::Internal::init() { kq = call(FN(kqueue)); }
 
 void Async::Internal::stopThreads() {

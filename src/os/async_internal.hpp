@@ -32,8 +32,6 @@ namespace Async::Internal {
 
     inline WorkerResult resultSuccess(CompletionResult& result) { return { false, result.coroHandle }; }
 
-    bool invalid();
-
     void init();
 
     void stopThreads();
