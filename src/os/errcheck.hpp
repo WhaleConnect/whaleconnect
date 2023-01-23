@@ -3,15 +3,11 @@
 
 #pragma once
 
-#include <concepts>
-#include <functional>
 #include <string>
-#include <string_view>
-#include <type_traits>
 
 #include "error.hpp"
 
-#define FN(f, ...) SysFn(#f, f __VA_OPT__(, ) __VA_ARGS__)
+#define FN(f, ...) FnResult{ f(__VA_ARGS__), #f }
 
 // Predicate functions to check success based on return code
 constexpr auto checkTrue = [](auto rc) { return static_cast<bool>(rc); };  // Check if return code evaluates to true
@@ -23,29 +19,25 @@ constexpr auto useLastError = [](auto) { return System::getLastError(); }; // Ig
 constexpr auto useReturnCode = [](auto rc) { return rc; };                 // Use return code as-is
 constexpr auto useReturnCodeNeg = [](auto rc) { return -rc; };             // Use negated return code
 
-// Structure to contain a function with its textual name and arguments.
-template <class Fn, class... Args>
-requires std::invocable<Fn, Args...>
-struct SysFn {
-    using RType = std::invoke_result_t<Fn, Args...>; // Return type
-
-    std::string name;          // Function name
-    std::function<RType()> fn; // Function with arguments to call
-
-    // Sets the function and its arguments.
-    SysFn(std::string_view s, Fn p, const Args&... args) : name(s), fn([p, &args...]() { return p(args...); }) {}
-
-    // Invokes the function.
-    RType operator()() const { return fn(); }
+// Structure to contain a function's textual name and return code.
+template <class T>
+struct FnResult {
+    T rc = 0;         // Return code
+    std::string name; // Function name
 };
+
+#ifdef __clang__
+// Clang does not yet support CTAD for aggregates (P1816R0)
+template <class T>
+FnResult(T, std::string) -> FnResult<T>;
+#endif
 
 // Calls a system function, and throws an exception if its return code does not match a success value.
 // The success condition and thrown error code can be changed with predicate and projection functions.
-// TODO: Remove typename in Clang 16
-template <class Fn, class... Args, class Pred = decltype(checkNonError), class Proj = decltype(useLastError)>
-typename SysFn<Fn, Args...>::RType call(const SysFn<Fn, Args...>& fn, Pred checkFn = {}, Proj transformFn = {},
-                                        System::ErrorType type = System::ErrorType::System) {
-    auto rc = fn();
+template <class T, class Pred = decltype(checkNonError), class Proj = decltype(useLastError)>
+T call(const FnResult<T>& fn, Pred checkFn = {}, Proj transformFn = {},
+       System::ErrorType type = System::ErrorType::System) {
+    T rc = fn.rc;
     System::ErrorCode error = transformFn(rc);
 
     return (checkFn(rc) || !System::isFatal(error)) ? rc : throw System::SystemError{ error, type, fn.name };
