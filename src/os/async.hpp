@@ -90,6 +90,7 @@ namespace Async {
     // Submits an event to the kernel queue.
     void submitKqueue(int ident, int filter, CompletionResult& result);
 
+    // Cancels pending operations for a socket file descriptor.
     void cancelPending(int fd);
 #elif OS_LINUX
     // Gets a submission queue entry from io_uring.
