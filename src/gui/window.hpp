@@ -25,10 +25,6 @@ class Window {
     // Redraws the contents of the window. Must be overridden in derived classes.
     virtual void _onUpdate() = 0;
 
-    // Always runs on every frame, after _onUpdate is called, may be overridden optionally.
-    // The window open/closed state is passed as a bool.
-    virtual void _onAfterUpdate(bool) {}
-
 protected:
     // Enables or disables the window's close button.
     void _setClosable(bool closable) { _openPtr = closable ? &_open : nullptr; }
@@ -61,7 +57,5 @@ public:
         // Render window
         if (ImGui::Begin(_title.c_str(), _openPtr)) _onUpdate();
         ImGui::End();
-
-        _onAfterUpdate(_open);
     }
 };

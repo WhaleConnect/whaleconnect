@@ -114,7 +114,3 @@ void ConnWindow::_onUpdate() {
     std::scoped_lock outputLock{ _outputMutex };
     _output.update();
 }
-
-void ConnWindow::_onAfterUpdate(bool isOpen) {
-    if (!isOpen) _socket->cancelIO();
-}

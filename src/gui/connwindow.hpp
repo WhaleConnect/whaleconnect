@@ -46,10 +46,9 @@ class ConnWindow : public Window {
     // Draws the window contents.
     void _onUpdate() override;
 
-    // Cancels pending I/O when closed.
-    void _onAfterUpdate(bool isOpen) override;
-
 public:
     // Sets the window information (title and remote host).
     ConnWindow(std::unique_ptr<Writable>&& socket, const Device& device, std::string_view extraInfo);
+
+    ~ConnWindow() override { _socket->cancelIO(); }
 };
