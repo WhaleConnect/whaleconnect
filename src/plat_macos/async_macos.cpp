@@ -5,6 +5,7 @@
 #include "os/async_internal.hpp"
 
 #include <mutex>
+#include <stdexcept>
 #include <unordered_map>
 
 #include <sys/event.h>
@@ -15,6 +16,9 @@
 static constexpr auto ASYNC_CANCEL = 2;
 
 static int kq = -1;
+
+// Map to track pending socket operations with their coroutines
+// The kqueue system does not provide a way to cancel pending events, so this must be kept track of manually.
 static std::unordered_map<int, Async::CompletionResult*> pendingSockets;
 static std::mutex mapMutex;
 
@@ -36,23 +40,24 @@ void Async::Internal::cleanup() {
     kevent(kq, &event, 1, nullptr, 0, nullptr);
 }
 
-Async::Internal::WorkerResult Async::Internal::worker() {
+Async::CompletionResult Async::Internal::worker() {
     // Wait for new event
     struct kevent event {};
 
-    int nev = kevent(kq, nullptr, 0, &event, 1, nullptr);
-    if (nev < 0) return resultError();
+    call(FN(kevent, kq, nullptr, 0, &event, 1, nullptr));
 
     // Check for interrupt
     if (event.filter == EVFILT_USER) {
         if (event.ident == ASYNC_INTERRUPT) {
-            return resultInterrupted();
+            throw WorkerInterruptedError{};
         } else if (event.ident == ASYNC_CANCEL) {
+            // Socket file descriptor associated with cancellation
             auto fd = static_cast<int>(event.data);
 
             std::scoped_lock lock{ mapMutex };
-            if (!pendingSockets.contains(fd)) return { false, std::noop_coroutine() };
+            if (!pendingSockets.contains(fd)) throw WorkerNoDataError{};
 
+            // Completion result pointing to suspended coroutine
             auto& result = *pendingSockets[fd];
             pendingSockets.erase(fd);
 
@@ -61,20 +66,23 @@ Async::Internal::WorkerResult Async::Internal::worker() {
             EV_SET(&eventDelete, fd, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
             call(FN(kevent, kq, &eventDelete, 1, nullptr, 0, nullptr));
 
+            // Set error and return coroutine handle
             result.error = ECANCELED;
-            return resultSuccess(result);
+            return result;
         }
     }
 
-    if (!event.udata) return resultError();
     auto& result = toResult(event.udata);
 
-    if (result.coroHandle.done()) return { false, std::noop_coroutine() };
-
+    // Set error and result
     if (event.flags & EV_EOF) result.error = static_cast<System::ErrorCode>(event.fflags);
     else result.res = static_cast<int>(event.data);
 
-    return resultSuccess(result);
+    // Remove the file descriptor from the pending map
+    std::scoped_lock lock{ mapMutex };
+    pendingSockets.erase(static_cast<int>(event.ident));
+
+    return result;
 }
 
 void Async::submitKqueue(int ident, int filter, CompletionResult& result) {

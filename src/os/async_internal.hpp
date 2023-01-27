@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include <algorithm> // std::max()
 #include <coroutine>
-#include <thread>
+#include <exception>
 
 #include "async.hpp"
 
@@ -13,29 +12,28 @@ namespace Async::Internal {
     // Constant to indentify an interrupt operation to stop the worker threads.
     constexpr auto ASYNC_INTERRUPT = 1;
 
-    // Structure to contain the result of calling the worker function once.
-    struct WorkerResult {
-        bool interrupted = false;           // If the thread was interrupted while waiting
-        std::coroutine_handle<> coroHandle; // The coroutine handle to resume
-    };
+    // Exception representing an interrupted worker call.
+    struct WorkerInterruptedError : std::exception {};
+
+    // Exception representing insufficient data to satisfy an operation.
+    struct WorkerNoDataError : std::exception {};
 
     // Casts a pointer type to a completion result structure.
     template <class T>
     CompletionResult& toResult(T* ptr) {
+        if (!ptr) throw WorkerNoDataError{};
         return *static_cast<CompletionResult*>(ptr);
     }
 
-    inline WorkerResult resultInterrupted() { return { true, nullptr }; }
-
-    inline WorkerResult resultError() { return { false, nullptr }; }
-
-    inline WorkerResult resultSuccess(CompletionResult& result) { return { false, result.coroHandle }; }
-
+    // Initializes the background thread pool.
     void init(unsigned int numThreads);
 
+    // Signals all threads to exit.
     void stopThreads(unsigned int numThreads);
 
+    // Cleans up system resources.
     void cleanup();
 
-    WorkerResult worker();
+    // Handles one asynchronous operation.
+    CompletionResult worker();
 }

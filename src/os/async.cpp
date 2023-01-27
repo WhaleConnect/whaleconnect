@@ -5,17 +5,25 @@
 #include "async_internal.hpp"
 
 #include <algorithm> // std::max()
+#include <exception>
 #include <system_error>
 #include <thread>
 #include <vector>
+#include "os/error.hpp"
 
 // Runs in each thread to handle completion results.
 static void worker() {
     while (true) {
-        auto result = Async::Internal::worker();
-
-        if (result.interrupted) break;
-        else if (result.coroHandle) result.coroHandle();
+        try {
+            auto result = Async::Internal::worker();
+            result.coroHandle();
+        } catch (const Async::Internal::WorkerInterruptedError&) {
+            break; // Interrupted, break from loop
+        } catch (const Async::Internal::WorkerNoDataError&) {
+            continue; // No data to complete operation
+        } catch (const System::SystemError&) {
+            continue; // System call failed
+        }
     }
 }
 

@@ -47,24 +47,22 @@ void Async::Internal::stopThreads(unsigned int numThreads) {
 
 void Async::Internal::cleanup() { io_uring_queue_exit(&ring); }
 
-Async::Internal::WorkerResult Async::Internal::worker() {
+Async::CompletionResult Async::Internal::worker() {
     io_uring_cqe* cqe;
     void* userData = nullptr;
 
     // Wait for new completion queue entry (locked by mutex)
-    int ret = waitCQE(cqe, userData);
-    if (ret < 0) return resultError();
-    if (!userData) return resultError();
+    call(FN(waitCQE, cqe, userData), checkZero, useReturnCodeNeg);
 
     // Check for interrupt
-    if (std::bit_cast<unsigned long long>(userData) == ASYNC_INTERRUPT) return resultInterrupt();
+    if (std::bit_cast<unsigned long long>(userData) == ASYNC_INTERRUPT) throw WorkerInterruptedError{};
 
     // Fill in completion result information
     auto& result = toResult(userData);
     if (cqe->res < 0) result.error = -cqe->res;
     else result.res = cqe->res;
 
-    return resultSuccess(result);
+    return result;
 }
 
 io_uring_sqe* Async::getUringSQE() { return io_uring_get_sqe(&ring); }

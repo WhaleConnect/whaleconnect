@@ -9,8 +9,7 @@
 #include "os/async.hpp"
 #include "os/errcheck.hpp"
 
-// The IOCP handle
-static HANDLE completionPort = nullptr;
+static HANDLE completionPort = nullptr; // The IOCP handle
 
 void Async::Internal::init(unsigned int numThreads) {
     // Start Winsock
@@ -32,26 +31,25 @@ void Async::Internal::cleanup() {
     call(FN(WSACleanup));
 }
 
-Async::Internal::WorkerResult Async::Internal::worker() {
+Async::CompletionResult Async::Internal::worker() {
     DWORD numBytes;
     ULONG_PTR completionKey;
     LPOVERLAPPED overlapped = nullptr;
 
     // Dequeue a completion packet from the system and check for the exit condition
     BOOL ret = GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, INFINITE);
-    if (completionKey == ASYNC_INTERRUPT) return resultInterrupted();
+    if (completionKey == ASYNC_INTERRUPT) throw WorkerInterruptedError{};
 
     // Get the structure with completion data, passed through the overlapped pointer
     // No locking is needed to modify the structure's fields - the calling coroutine will be suspended at this
     // point so mutually-exclusive access is guaranteed.
-    if (!overlapped) return resultError();
     auto& result = toResult(overlapped);
     result.res = static_cast<int>(numBytes);
 
     // Pass any failure back to the calling coroutine
     if (!ret) result.error = System::getLastError();
 
-    return resultSuccess(result);
+    return result;
 }
 
 void Async::add(SOCKET sockfd) {
