@@ -56,6 +56,11 @@ Async::Internal::WorkerResult Async::Internal::worker() {
             auto& result = *pendingSockets[fd];
             pendingSockets.erase(fd);
 
+            // Delete the socket's event from the kqueue
+            struct kevent eventDelete;
+            EV_SET(&eventDelete, fd, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
+            call(FN(kevent, kq, &eventDelete, 1, nullptr, 0, nullptr));
+
             result.error = ECANCELED;
             return resultSuccess(result);
         }
