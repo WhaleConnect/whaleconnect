@@ -16,11 +16,11 @@ class Window {
 
     bool _initialized = false; // If the initialize function has been called
 
-    // Performs initialization required by a window object, may be overridden optionally.
-    virtual void _init() {}
+    // Performs initialization required by a window object.
+    virtual void _init() { /* May be overridden optionally */ }
 
-    // Always runs on every frame, before _onUpdate is called, may be overridden optionally.
-    virtual void _onBeforeUpdate() {}
+    // Always runs on every frame, before _onUpdate is called.
+    virtual void _onBeforeUpdate() { /* May be overridden optionally */ }
 
     // Redraws the contents of the window. Must be overridden in derived classes.
     virtual void _onUpdate() = 0;
