@@ -66,7 +66,7 @@ target("terminal")
         add_syslinks("Ws2_32", "Bthprops", "opengl32")
         add_ldflags("/SUBSYSTEM:WINDOWS")
     elseif is_plat("macosx") then
-        add_files("src/plat_macos/*.cpp", "src/plat_macos_objc/*.mm")
+        add_files("src/plat_macos/*.cpp", "src/plat_macos/*.mm")
 
         add_frameworks("Foundation", "IOBluetooth", "OpenGL")
         set_values("objc++.build.arc", true)
