@@ -7,6 +7,13 @@
 #include <string>
 #include <vector>
 
+// For htonl()
+#if OS_WINDOWS
+#include <WinSock2.h>
+#else
+#include <arpa/inet.h>
+#endif
+
 #include "sockets/device.hpp"
 
 namespace BTUtils {
