@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_LINUX
-#include "btutils_internal.hpp"
+#include "os/btutils_internal.hpp"
 
 #include <bit>
 #include <string_view>
@@ -163,7 +163,8 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     HandlePtr<sdp_session_t, sdp_close> session{ call(FN(sdp_connect, &addrAny, &bdAddr, SDP_RETRY_IF_BUSY),
                                                       checkTrue) };
 
-    uuid_t serviceUUID = sdp_uuid128_create(uuid.data());
+    uuid_t serviceUUID;
+    sdp_uuid128_create(&serviceUUID, uuid.data());
 
     // Start SDP service search
     SDPListPtr searchList{ sdp_list_append(nullptr, &serviceUUID) };
@@ -244,7 +245,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
                 // Extract information
                 ProfileDesc pd;
                 pd.uuid = desc->uuid.value.uuid16;
-                extractVersionNums(desc->version, pd);
+                Internal::extractVersionNums(desc->version, pd);
 
                 result.profileDescs.push_back(pd);
             }

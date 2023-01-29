@@ -2,15 +2,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_LINUX
+#include <stdexcept>
+
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/l2cap.h>
 #include <bluetooth/rfcomm.h>
 #include <liburing.h>
 
 #include "os/async.hpp"
+#include "os/errcheck.hpp"
 #include "sockets/clientsocket.hpp"
 
-static void startConnect(SOCKET s, sockaddr* addr, socklen_t len) {
+static void startConnect(int s, sockaddr* addr, socklen_t len, Async::CompletionResult& result) {
     io_uring_sqe* sqe = Async::getUringSQE();
     io_uring_prep_connect(sqe, s, addr, len);
     io_uring_sqe_set_data(sqe, &result);
@@ -33,7 +36,7 @@ std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& de
     case RFCOMM: sockType = SOCK_STREAM; break;
     case L2CAPDgram: sockType = SOCK_DGRAM; break;
     case L2CAPSeqPacket: sockType = SOCK_SEQPACKET; break;
-    default: co_return INVALID_SOCKET; // Should never get here since this function is used internally.
+    default: throw std::invalid_argument{ "Invalid socket type" }; // Should never get here since this function is used internally.
     }
 
     // Determine the socket protocol
@@ -44,7 +47,7 @@ std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& de
 }
 
 template <>
-Task<> ClientSocket<SocketTag::IP>::connect() const {
+Task<> ClientSocket<SocketTag::BT>::connect() const {
     // Address of the device to connect to
     bdaddr_t bdaddr;
     str2ba(_device.address.c_str(), &bdaddr);
@@ -59,13 +62,13 @@ Task<> ClientSocket<SocketTag::IP>::connect() const {
 
     // Set the appropriate sockaddr struct based on the protocol
     if (_device.type == ConnectionType::RFCOMM) {
-        sAddrBT.addrRC = { AF_BLUETOOTH, bdaddr, static_cast<uint8_t>(data.port) };
+        sAddrBT.addrRC = { AF_BLUETOOTH, bdaddr, static_cast<uint8_t>(_device.port) };
         addrSize = sizeof(sAddrBT.addrRC);
     } else {
-        sAddrBT.addrL2 = { AF_BLUETOOTH, htobs(data.port), bdaddr, 0, 0 };
+        sAddrBT.addrL2 = { AF_BLUETOOTH, htobs(_device.port), bdaddr, 0, 0 };
         addrSize = sizeof(sAddrBT.addrL2);
     }
 
-    co_await Async::run(std::bind_front(startConnect, fd, &sAddrBT, addrSize));
+    co_await Async::run(std::bind_front(startConnect, _handle, std::bit_cast<sockaddr*>(&sAddrBT), addrSize));
 }
 #endif

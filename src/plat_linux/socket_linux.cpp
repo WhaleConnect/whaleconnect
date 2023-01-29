@@ -55,5 +55,5 @@ template void WritableSocket<SocketTag::IP>::cancelIO() const;
 template void Socket<SocketTag::BT>::close();
 template Task<> WritableSocket<SocketTag::BT>::send(std::string) const;
 template Task<std::string> WritableSocket<SocketTag::BT>::recv() const;
-template void WritableSocket<SocketTag::IP>::cancelIO() const;
+template void WritableSocket<SocketTag::BT>::cancelIO() const;
 #endif
