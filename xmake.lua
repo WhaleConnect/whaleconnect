@@ -14,6 +14,7 @@ add_requires("magic_enum", "out_ptr")
 if is_plat("linux") then
     add_requires("liburing")
     add_requires("dbus")
+    add_requires("bluez")
 end
 
 target("terminal")
@@ -75,5 +76,6 @@ target("terminal")
     elseif is_plat("linux") then
         add_files("src/plat_linux/*.cpp")
 
-        add_packages("liburing", "dbus")
+        add_syslinks("GL")
+        add_packages("liburing", "dbus", "bluez")
     end
