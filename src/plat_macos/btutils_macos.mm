@@ -4,22 +4,23 @@
 #if OS_APPLE
 #include "os/btutils_internal.hpp"
 
-#include <IOBluetooth/objc/IOBluetoothDevice.h>
-#include <IOBluetooth/objc/IOBluetoothSDPServiceRecord.h>
-#include <IOBluetooth/objc/IOBluetoothSDPUUID.h>
+#include <Foundation/Foundation.h>
+#include <IOBluetooth/IOBluetooth.h>
+#include <IOKit/IOReturn.h>
 
 #include "os/btutils.hpp"
 #include "sockets/device.hpp"
 #include "sockets/traits.hpp"
 
 @interface InquiryHandler : NSObject <IOBluetoothDeviceAsyncCallbacks>
+@property bool finished;
 @property (readonly) IOReturn result;
 @property (readonly, strong) NSCondition* cond;
+
+- (IOReturn)wait;
 @end
 
 @implementation InquiryHandler
-@synthesize result;
-@synthesize cond;
 
 - (void)remoteNameRequestComplete:(IOBluetoothDevice*)device status:(IOReturn)status {
 }
@@ -28,9 +29,23 @@
 }
 
 - (void)sdpQueryComplete:(IOBluetoothDevice*)device status:(IOReturn)status {
-    result = status;
-    [cond signal];
-    [cond unlock];
+    [_cond lock];
+    _finished = true;
+    _result = status;
+    [_cond signal];
+    [_cond unlock];
+}
+
+- (IOReturn)wait {
+    [_cond lock];
+    _finished = false;
+
+    while (!_finished) [_cond wait];
+
+    IOReturn res = _result;
+    [_cond unlock];
+
+    return res;
 }
 
 @end
@@ -38,6 +53,10 @@
 BTUtils::Instance::Instance() {}
 
 BTUtils::Instance::~Instance() {}
+
+void BTUtils::processAsyncEvents() {
+    [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+}
 
 DeviceList BTUtils::getPaired() {
     NSArray* devices = [IOBluetoothDevice pairedDevices];
@@ -62,9 +81,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
         IOReturn res = [device performSDPQuery:handler uuids:uuids];
         if (res != kIOReturnSuccess) return {};
 
-        [[handler cond] lock];
-        [[handler cond] wait];
-        if ([handler result] != kIOReturnSuccess) return {};
+        if ([handler wait] != kIOReturnSuccess) return {};
     }
 
     NSArray* services = [device services];

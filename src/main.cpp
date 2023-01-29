@@ -38,6 +38,8 @@ void mainLoop() {
         connections.update();
         sdpWindows.update();
         App::render();
+
+        BTUtils::processAsyncEvents();
     }
 }
 
