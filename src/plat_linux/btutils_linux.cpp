@@ -48,6 +48,8 @@ BTUtils::Instance::~Instance() {
     conn = nullptr;
 }
 
+void BTUtils::processAsyncEvents() {}
+
 DeviceList BTUtils::getPaired() {
     DeviceList deviceList;
 

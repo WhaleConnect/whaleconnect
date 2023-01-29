@@ -85,6 +85,8 @@ BTUtils::Instance::Instance() {}
 
 BTUtils::Instance::~Instance() {}
 
+void BTUtils::processAsyncEvents() {}
+
 DeviceList BTUtils::getPaired() {
     DeviceList deviceList;
 
