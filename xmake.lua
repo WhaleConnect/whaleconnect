@@ -9,7 +9,7 @@ set_defaultmode("debug")
 
 add_requires("imgui v1.89-docking", { configs = { sdl2_opengl3 = true } })
 add_requires("libsdl", { configs = { use_sdlmain = true } })
-add_requires("magic_enum", "out_ptr")
+add_requires("magic_enum", "out_ptr", "opengl")
 
 if is_plat("linux") then
     add_requires("liburing")
@@ -18,7 +18,7 @@ if is_plat("linux") then
 end
 
 target("terminal")
-    add_packages("imgui", "libsdl", "magic_enum", "out_ptr")
+    add_packages("imgui", "libsdl", "magic_enum", "out_ptr", "opengl")
 
     set_kind("binary")
     set_exceptions("cxx")
@@ -66,16 +66,15 @@ target("terminal")
     if is_plat("windows") then
         add_files("src/plat_windows/*.cpp")
 
-        add_syslinks("Ws2_32", "Bthprops", "opengl32")
+        add_syslinks("Ws2_32", "Bthprops")
         add_ldflags("/SUBSYSTEM:WINDOWS")
     elseif is_plat("macosx") then
         add_files("src/plat_macos/*.cpp", "src/plat_macos/*.mm")
 
-        add_frameworks("Foundation", "IOBluetooth", "OpenGL")
+        add_frameworks("Foundation", "IOBluetooth")
         set_values("objc++.build.arc", true)
     elseif is_plat("linux") then
         add_files("src/plat_linux/*.cpp")
 
-        add_syslinks("GL")
         add_packages("liburing", "dbus", "bluez")
     end
