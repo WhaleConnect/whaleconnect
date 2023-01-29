@@ -37,6 +37,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Development
 
 - Switched the platform backend library to SDL.
+- Switched the compiler on Linux to Clang.
 
 ## 0.1.0-alpha (10/05/2022)
 
