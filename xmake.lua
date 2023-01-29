@@ -29,7 +29,9 @@ target("terminal")
             -- Use MSVC Unicode character set and prevent clashing macros
             target:add("defines", "UNICODE", "_UNICODE", "NOMINMAX")
         else
-            -- Enable Clang experimental library
+            -- Use Clang libc++ and enable experimental library
+            target:add("cxxflags", "-stdlib=libc++")
+            target:add("ldflags", "-stdlib=libc++")
             target:add("cxxflags", "-fexperimental-library")
             target:add("ldflags", "-fexperimental-library")
         end
