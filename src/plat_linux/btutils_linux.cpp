@@ -4,6 +4,7 @@
 #if OS_LINUX
 #include "os/btutils_internal.hpp"
 
+#include <array>
 #include <bit>
 #include <string_view>
 
@@ -232,9 +233,16 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
 
         // Get the list of service class IDs
         SDPListPtr svClassList;
-        if (sdp_get_service_classes(rec.get(), std2::out_ptr(svClassList)) == NO_ERROR)
-            for (auto iter = svClassList.get(); iter; iter = iter->next)
-                result.serviceUUIDs.push_back(*static_cast<UUID128*>(iter->data));
+        if (sdp_get_service_classes(rec.get(), std2::out_ptr(svClassList)) == NO_ERROR) {
+            for (auto iter = svClassList.get(); iter; iter = iter->next) {
+                auto uuid = static_cast<uuid_t*>(iter->data);
+                switch (uuid->type) {
+                case SDP_UUID16: result.serviceUUIDs.push_back(createUUIDFromBase(uuid->value.uuid16)); break;
+                case SDP_UUID32: result.serviceUUIDs.push_back(createUUIDFromBase(uuid->value.uuid32)); break;
+                case SDP_UUID128: result.serviceUUIDs.push_back(std::to_array(uuid->value.uuid128.data));
+                }
+            }
+        }
 
         // Get the list of profile descriptors
         SDPListPtr profileDescList;
