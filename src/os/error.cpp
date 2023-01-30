@@ -12,7 +12,7 @@
 #include <netdb.h> // gai_strerror()
 #endif
 
-#if OS_APPLE
+#if OS_MACOS
 #include <mach/mach_error.h>
 #endif
 
@@ -45,7 +45,7 @@ std::string System::SystemError::formatted() const {
     switch (type) {
     case System: msg = std::strerror(code); break;
     case AddrInfo: msg = gai_strerror(code); break;
-#if OS_APPLE
+#if OS_MACOS
     case IOReturn: msg = mach_error_string(code);
 #endif
     }
@@ -70,7 +70,7 @@ bool System::isFatal(ErrorCode code) {
 #if OS_WINDOWS
     // Pending I/O for overlapped sockets
     if (code == WSA_IO_PENDING) return false;
-#elif OS_APPLE
+#elif OS_MACOS
     // Pending I/O for non-blocking sockets
     if (code == EINPROGRESS) return false;
 #endif

@@ -134,7 +134,7 @@ void SDPWindow::_drawSDPTab() {
         ImGui::EndCombo();
     }
 
-#if OS_WINDOWS || OS_APPLE
+#if OS_WINDOWS || OS_MACOS
     // Flush cache option (Windows only)
     ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x * 4);
     ImGui::Checkbox("Flush cache", &_flushCache);

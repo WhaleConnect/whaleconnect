@@ -86,7 +86,7 @@ namespace Async {
 #if OS_WINDOWS
     // Adds a socket to the I/O queue.
     void add(SOCKET sockfd);
-#elif OS_APPLE
+#elif OS_MACOS
     // Submits an event to the kernel queue.
     void submitKqueue(int ident, int filter, CompletionResult& result);
 

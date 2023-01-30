@@ -56,7 +56,7 @@ target("terminal")
 
     -- Platform detection macros ("or false" is needed because is_plat() can return nil)
     add_defines("OS_WINDOWS=" .. tostring(is_plat("windows") or false),
-                "OS_APPLE=" .. tostring(is_plat("macosx") or false),
+                "OS_MACOS=" .. tostring(is_plat("macosx") or false),
                 "OS_LINUX=" .. tostring(is_plat("linux") or false))
 
     -- Project files

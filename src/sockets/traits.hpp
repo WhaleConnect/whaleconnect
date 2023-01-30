@@ -6,7 +6,7 @@
 #if OS_WINDOWS
 // Winsock header
 #include <WinSock2.h>
-#elif OS_APPLE
+#elif OS_MACOS
 #include <string>
 #include <vector>
 
@@ -26,7 +26,7 @@ struct SocketTraits {
     using HandleType = SOCKET;
     static constexpr auto invalidHandle = INVALID_SOCKET;
 };
-#elif OS_APPLE
+#elif OS_MACOS
 template <auto Tag>
 struct SocketTraits {};
 
