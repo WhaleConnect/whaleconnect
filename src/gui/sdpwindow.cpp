@@ -13,7 +13,7 @@
 #include "utils/overload.hpp"
 
 static void printUUID(BTUtils::UUID128 uuid) {
-    uint8_t* u = uuid.data();
+    const uint8_t* u = uuid.data();
     ImGui::BulletText("%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X", u[0], u[1], u[2], u[3],
                       u[4], u[5], u[6], u[7], u[8], u[9], u[10], u[11], u[12], u[13], u[14], u[15]);
 }

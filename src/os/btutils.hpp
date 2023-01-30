@@ -55,11 +55,11 @@ namespace BTUtils {
         // https://stackoverflow.com/a/36212021
         // (The same applies with a 32-bit UUID)
         uint32_t uuid32 = htonl(uuidShort);
-        uint8_t base[] = { 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB };
+        std::array base{ 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB };
 
         UUID128 ret;
         std::memcpy(ret.data(), &uuid32, 4);
-        std::memcpy(ret.data() + 4, base, 12);
+        std::memcpy(ret.data() + 4, base.data(), 12);
         return ret;
     }
 

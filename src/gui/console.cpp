@@ -3,6 +3,7 @@
 
 #include "console.hpp"
 
+#include <array>
 #include <chrono>
 #include <ctime>
 #include <format>
@@ -155,7 +156,7 @@ void Console::update() {
 
     if (ImGui::InputTextMultiline("##input", _textBuf, size, flags)) {
         // Line ending
-        const char* endings[] = { "\n", "\r", "\r\n" };
+        std::array endings{ "\n", "\r", "\r\n" };
         auto selectedEnding = endings[_currentLE];
 
         // InputTextMultiline() always uses \n as a line ending, replace all occurences of \n with the selected ending

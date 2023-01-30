@@ -99,7 +99,7 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
 
     // Check paired devices list
     Overload visitor{
-        [](std::monostate) {},
+        [](std::monostate) { /* Nothing to do */ },
         [needsSort, &connections, &sdpWindows](DeviceList& deviceList) {
             // Check if the device list is empty
             if (deviceList.empty()) {

@@ -23,7 +23,7 @@ namespace Async {
 
     public:
         // Initializes the OS asynchronous I/O queue and starts the background thread pool.
-        Instance(unsigned int numThreads);
+        explicit Instance(unsigned int numThreads);
 
         // Cleans up the I/O queue and stops the thread pool.
         ~Instance();
