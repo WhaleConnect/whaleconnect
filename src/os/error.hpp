@@ -30,8 +30,9 @@ namespace System {
 
     // Where an error came from.
     enum class ErrorType {
-        System,  // From socket functions or other OS APIs
-        AddrInfo // From a call to getaddrinfo
+        System,   // From socket functions or other OS APIs
+        AddrInfo, // From a call to getaddrinfo
+        IOReturn  // From a call to a macOS kernel function
     };
 
     // An exception structure containing details of an error.

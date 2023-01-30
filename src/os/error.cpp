@@ -12,6 +12,10 @@
 #include <netdb.h> // gai_strerror()
 #endif
 
+#if OS_APPLE
+#include <mach/mach_error.h>
+#endif
+
 #include <magic_enum.hpp>
 
 #include "error.hpp"
@@ -35,7 +39,16 @@ std::string System::SystemError::formatted() const {
 
     msg.resize(length);
 #else
-    auto msg = (type == ErrorType::System) ? std::strerror(code) : gai_strerror(code);
+    std::string msg;
+
+    using enum ErrorType;
+    switch (type) {
+    case System: msg = std::strerror(code); break;
+    case AddrInfo: msg = gai_strerror(code); break;
+#if OS_APPLE
+    case IOReturn: msg = mach_error_string(code);
+#endif
+    }
 #endif
 
     return std::format("{} (type {}, in {}): {}", code, magic_enum::enum_name(type), fnName, msg);
