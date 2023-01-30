@@ -13,12 +13,12 @@
 template <>
 Task<> ClientSocket<SocketTag::IP>::connect() const {
     // Make socket non-blocking
-    int flags = call(FN(fcntl, _handle, F_GETFL, 0));
-    call(FN(fcntl, _handle, F_SETFL, flags | O_NONBLOCK));
+    int flags = call(FN(fcntl, _get(), F_GETFL, 0));
+    call(FN(fcntl, _get(), F_SETFL, flags | O_NONBLOCK));
 
     // Start connect
-    call(FN(::connect, _handle, _addr->ai_addr, _addr->ai_addrlen));
-    co_await Async::run(std::bind_front(Async::submitKqueue, _handle, EVFILT_WRITE));
+    call(FN(::connect, _get(), _addr->ai_addr, _addr->ai_addrlen));
+    co_await Async::run(std::bind_front(Async::submitKqueue, _get(), EVFILT_WRITE));
 }
 
 template <>

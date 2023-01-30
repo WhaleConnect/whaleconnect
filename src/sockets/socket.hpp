@@ -5,7 +5,6 @@
 
 #include <string>
 #include <string_view>
-#include <utility> // std::exchange()
 
 #include "interfaces.hpp"
 #include "traits.hpp"
@@ -18,11 +17,14 @@ class Socket : protected SocketTraits<Tag>, virtual public Closeable {
     using typename SocketTraits<Tag>::HandleType;
     using SocketTraits<Tag>::invalidHandle;
 
-protected:
     HandleType _handle = invalidHandle;
 
+protected:
+    // Accesses the handle. Platform-specific implementations should not modify the handle.
+    HandleType _get() const { return _handle; }
+
     // Releases ownership of the managed handle.
-    HandleType _release() { return std::exchange(_handle, invalidHandle); }
+    void _release() { _handle = invalidHandle; }
 
 public:
     // Constructs an object owning nothing.

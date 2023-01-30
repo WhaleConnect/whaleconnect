@@ -54,13 +54,13 @@ template <>
 Task<> ClientSocket<SocketTag::IP>::connect() const {
     // Datagram sockets can be directly connected (ConnectEx() doesn't support them)
     if (_device.type == ConnectionType::UDP) {
-        Async::add(_handle);
-        call(FN(::connect, _handle, _addr->ai_addr, _addr->ai_addrlen));
+        Async::add(_get());
+        call(FN(::connect, _get(), _addr->ai_addr, _addr->ai_addrlen));
         co_return;
     }
 
-    co_await Async::run(std::bind_front(startConnect, _handle, _addr->ai_addr, _addr->ai_addrlen));
-    finalizeConnect(_handle);
+    co_await Async::run(std::bind_front(startConnect, _get(), _addr->ai_addr, _addr->ai_addrlen));
+    finalizeConnect(_get());
 }
 
 template <>
@@ -81,7 +81,7 @@ Task<> ClientSocket<SocketTag::BT>::connect() const {
     BTH_ADDR btAddr = std::stoull(Strings::replaceAll(_device.address, ":", ""), nullptr, 16);
     SOCKADDR_BTH sAddrBT{ .addressFamily = AF_BTH, .btAddr = btAddr, .port = _device.port };
 
-    co_await Async::run(std::bind_front(startConnect, _handle, std::bit_cast<sockaddr*>(&sAddrBT), sizeof(sAddrBT)));
-    finalizeConnect(_handle);
+    co_await Async::run(std::bind_front(startConnect, _get(), std::bit_cast<sockaddr*>(&sAddrBT), sizeof(sAddrBT)));
+    finalizeConnect(_get());
 }
 #endif

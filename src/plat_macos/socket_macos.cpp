@@ -20,17 +20,17 @@ void Socket<SocketTag::IP>::close() {
 
 template <>
 Task<> WritableSocket<SocketTag::IP>::send(std::string data) const {
-    co_await Async::run(std::bind_front(Async::submitKqueue, _handle, EVFILT_WRITE));
+    co_await Async::run(std::bind_front(Async::submitKqueue, _get(), EVFILT_WRITE));
 
-    call(FN(::send, _handle, data.data(), data.size(), 0));
+    call(FN(::send, _get(), data.data(), data.size(), 0));
 }
 
 template <>
 Task<std::string> WritableSocket<SocketTag::IP>::recv() const {
-    co_await Async::run(std::bind_front(Async::submitKqueue, _handle, EVFILT_READ));
+    co_await Async::run(std::bind_front(Async::submitKqueue, _get(), EVFILT_READ));
 
     std::string data(_recvLen, 0);
-    ssize_t recvLen = call(FN(::recv, _handle, data.data(), data.size(), 0));
+    ssize_t recvLen = call(FN(::recv, _get(), data.data(), data.size(), 0));
 
     data.resize(recvLen);
     co_return data;
@@ -38,6 +38,6 @@ Task<std::string> WritableSocket<SocketTag::IP>::recv() const {
 
 template <>
 void WritableSocket<SocketTag::IP>::cancelIO() const {
-    Async::cancelPending(_handle);
+    Async::cancelPending(_get());
 }
 #endif

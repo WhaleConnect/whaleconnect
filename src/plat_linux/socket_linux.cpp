@@ -20,7 +20,7 @@ template <auto Tag>
 Task<> WritableSocket<Tag>::send(std::string data) const {
     co_await Async::run([this, &data](Async::CompletionResult& result) {
         io_uring_sqe* sqe = Async::getUringSQE();
-        io_uring_prep_send(sqe, this->_handle, data.data(), data.size(), MSG_NOSIGNAL);
+        io_uring_prep_send(sqe, this->_get(), data.data(), data.size(), MSG_NOSIGNAL);
         io_uring_sqe_set_data(sqe, &result);
         Async::submitRing();
     });
@@ -32,7 +32,7 @@ Task<std::string> WritableSocket<Tag>::recv() const {
 
     auto result = co_await Async::run([this, &data](Async::CompletionResult& result) {
         io_uring_sqe* sqe = Async::getUringSQE();
-        io_uring_prep_recv(sqe, this->_handle, data.data(), _recvLen, MSG_NOSIGNAL);
+        io_uring_prep_recv(sqe, this->_get(), data.data(), _recvLen, MSG_NOSIGNAL);
         io_uring_sqe_set_data(sqe, &result);
         Async::submitRing();
     });
@@ -43,7 +43,7 @@ Task<std::string> WritableSocket<Tag>::recv() const {
 
 template <auto Tag>
 void WritableSocket<Tag>::cancelIO() const {
-    io_uring_prep_cancel_fd(Async::getUringSQE(), this->_handle, IORING_ASYNC_CANCEL_ALL);
+    io_uring_prep_cancel_fd(Async::getUringSQE(), this->_get(), IORING_ASYNC_CANCEL_ALL);
     Async::submitRing();
 }
 

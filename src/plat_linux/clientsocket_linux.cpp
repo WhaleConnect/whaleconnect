@@ -22,7 +22,7 @@ static void startConnect(int s, sockaddr* addr, socklen_t len, Async::Completion
 
 template <>
 Task<> ClientSocket<SocketTag::IP>::connect() const {
-    co_await Async::run(std::bind_front(startConnect, _handle, _addr->ai_addr, _addr->ai_addrlen));
+    co_await Async::run(std::bind_front(startConnect, _get(), _addr->ai_addr, _addr->ai_addrlen));
 }
 
 template <>
@@ -69,6 +69,6 @@ Task<> ClientSocket<SocketTag::BT>::connect() const {
         addrSize = sizeof(sAddrBT.addrL2);
     }
 
-    co_await Async::run(std::bind_front(startConnect, _handle, std::bit_cast<sockaddr*>(&sAddrBT), addrSize));
+    co_await Async::run(std::bind_front(startConnect, _get(), std::bit_cast<sockaddr*>(&sAddrBT), addrSize));
 }
 #endif
