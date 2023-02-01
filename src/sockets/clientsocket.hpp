@@ -12,17 +12,19 @@
 #include <WS2tcpip.h>
 #else
 #include <netdb.h> // addrinfo/getaddrinfo() related identifiers
-
-// Winsock-specific definitions and their Berkeley equivalents
-constexpr auto GetAddrInfo = getaddrinfo;
-constexpr auto FreeAddrInfo = freeaddrinfo;
-using ADDRINFOW = addrinfo;
 #endif
 
 #include "device.hpp"
 #include "socket.hpp"
 #include "utils/handleptr.hpp"
 #include "utils/task.hpp"
+
+// Winsock-specific definitions and their Berkeley equivalents
+#if !OS_WINDOWS
+constexpr auto GetAddrInfo = getaddrinfo;
+constexpr auto FreeAddrInfo = freeaddrinfo;
+using ADDRINFOW = addrinfo;
+#endif
 
 template <auto Tag>
 struct ClientSocketTraits {};
