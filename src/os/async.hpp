@@ -9,6 +9,9 @@
 
 #if OS_WINDOWS
 #include <WinSock2.h>
+#elif OS_MACOS
+#include <IOBluetooth/IOBluetoothUserLib.h>
+#include <IOKit/IOReturn.h>
 #elif OS_LINUX
 #include <liburing.h>
 #endif
@@ -51,9 +54,9 @@ namespace Async {
 #endif
 
         // Throws an exception if a fatal error occurred asynchronously.
-        void checkError() const {
+        void checkError(System::ErrorType type) const {
             if (System::isFatal(error))
-                throw System::SystemError{ error, System::ErrorType::System, "<asynchronous function>" };
+                throw System::SystemError{ error, type, "<asynchronous function>" };
         }
 
         // Checks if coroutine suspension is necessary.
@@ -71,14 +74,14 @@ namespace Async {
 
     // Awaits an asynchronous operation and returns the result of the operation's end function (if given).
     template <class Fn>
-    Task<CompletionResult> run(Fn fn) {
+    Task<CompletionResult> run(Fn fn, System::ErrorType type = System::ErrorType::System) {
         CompletionResult result;
         co_await result;
 
         fn(result);
 
         co_await std::suspend_always{};
-        result.checkError();
+        result.checkError(type);
 
         co_return result;
     }
@@ -92,6 +95,14 @@ namespace Async {
 
     // Cancels pending operations for a socket file descriptor.
     void cancelPending(int fd);
+
+    void submitIOBluetooth(IOBluetoothObjectID id, CompletionResult& result);
+
+    void bluetoothComplete(IOBluetoothObjectID id, IOReturn status);
+
+    void bluetoothReadComplete(IOBluetoothObjectID id, const char* data, size_t dataLen);
+
+    std::string getBluetoothReadResult(IOBluetoothObjectID id);
 #elif OS_LINUX
     // Gets a submission queue entry from io_uring.
     io_uring_sqe* getUringSQE();

@@ -20,14 +20,4 @@ Task<> ClientSocket<SocketTag::IP>::connect() const {
     call(FN(::connect, _get(), _addr->ai_addr, _addr->ai_addrlen));
     co_await Async::run(std::bind_front(Async::submitKqueue, _get(), EVFILT_WRITE));
 }
-
-template <>
-std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& device) {
-    return std::make_unique<ClientSocket<SocketTag::BT>>(SocketTraits<SocketTag::BT>::invalidHandle, device);
-}
-
-template <>
-Task<> ClientSocket<SocketTag::BT>::connect() const {
-    co_return;
-}
 #endif

@@ -41,8 +41,6 @@ struct SocketTraits<SocketTag::BT> {
     struct HandleType {
         IOBluetoothObjectID handle;
         ConnectionType type;
-
-        IOBluetoothObjectID operator*() const { return handle; }
     };
 
     static constexpr auto invalidHandle = HandleType{ 0, ConnectionType::None };
