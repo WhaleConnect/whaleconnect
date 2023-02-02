@@ -38,13 +38,15 @@ struct SocketTraits<SocketTag::IP> {
 
 template <>
 struct SocketTraits<SocketTag::BT> {
-    struct HandleType {
-        IOBluetoothObjectID handle;
-        ConnectionType type;
-    };
+#if __OBJC__
+    using HandleType = id;
+#else
+    using HandleType = void*;
+#endif
 
-    static constexpr auto invalidHandle = HandleType{ 0, ConnectionType::None };
-};
+    static constexpr auto invalidHandle = nullptr;
+}
+;
 #else
 template <auto Tag>
 struct SocketTraits {

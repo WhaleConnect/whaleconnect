@@ -1,6 +1,7 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <IOKit/IOReturn.h>
 #if OS_MACOS
 #include <IOBluetooth/IOBluetooth.h>
 
@@ -36,19 +37,21 @@ void outgoingComplete(id channel, IOReturn status) { Async::bluetoothComplete([c
     outgoingComplete(l2capChannel, error);
 }
 
-- (void)rfcommChannelClosed:(IOBluetoothL2CAPChannel*)rfcommChannel {
+- (void)rfcommChannelClosed:(IOBluetoothRFCOMMChannel*)rfcommChannel {
     newData(rfcommChannel, "", 0);
 }
 
-- (void)rfcommChannelData:(IOBluetoothL2CAPChannel*)rfcommChannel data:(void*)dataPointer length:(size_t)dataLength {
+- (void)rfcommChannelData:(IOBluetoothRFCOMMChannel*)rfcommChannel data:(void*)dataPointer length:(size_t)dataLength {
     newData(rfcommChannel, static_cast<const char*>(dataPointer), dataLength);
 }
 
-- (void)rfcommChannelOpenComplete:(IOBluetoothL2CAPChannel*)rfcommChannel status:(IOReturn)error {
+- (void)rfcommChannelOpenComplete:(IOBluetoothRFCOMMChannel*)rfcommChannel status:(IOReturn)error {
     outgoingComplete(rfcommChannel, error);
 }
 
-- (void)rfcommChannelWriteComplete:(IOBluetoothL2CAPChannel*)rfcommChannel refcon:(void*)refcon status:(IOReturn)error {
+- (void)rfcommChannelWriteComplete:(IOBluetoothRFCOMMChannel*)rfcommChannel
+                            refcon:(void*)refcon
+                            status:(IOReturn)error {
     outgoingComplete(rfcommChannel, error);
 }
 
@@ -71,19 +74,21 @@ std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& de
 
     if (result != kIOReturnSuccess) throw System::SystemError{ result, System::ErrorType::IOReturn, fnName };
 
-    SocketTraits<SocketTag::BT>::HandleType handle{ [channel getObjectID], device.type };
-    return std::make_unique<ClientSocket<SocketTag::BT>>(handle, device);
+    return std::make_unique<ClientSocket<SocketTag::BT>>(channel, device);
 }
 
 template <>
 Task<> ClientSocket<SocketTag::BT>::connect() const {
     auto delegate = [ChannelDelegate new];
 
-    const IOBluetoothObjectID handle = _get().handle;
+    IOReturn res;
 
-    if (_device.type == ConnectionType::RFCOMM) [[IOBluetoothRFCOMMChannel withObjectID:handle] setDelegate:delegate];
-    else [[IOBluetoothL2CAPChannel withObjectID:handle] setDelegate:delegate];
+    if (_device.type == ConnectionType::RFCOMM)
+        res = [static_cast<IOBluetoothRFCOMMChannel*>(_get()) setDelegate:delegate];
+    else res = [static_cast<IOBluetoothL2CAPChannel*>(_get()) setDelegate:delegate];
 
-    co_await Async::run([handle](Async::CompletionResult& result) { Async::submitIOBluetooth(handle, result); });
+    if (res != kIOReturnSuccess) throw System::SystemError{ res, System::ErrorType::IOReturn, "setDelegate" };
+
+    co_await Async::run([this](Async::CompletionResult& result) { Async::submitIOBluetooth(_get(), result); });
 }
 #endif
