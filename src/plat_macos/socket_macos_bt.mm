@@ -10,18 +10,9 @@
 #include "sockets/socket.hpp"
 #include "sockets/traits.hpp"
 
-static id toChannel(SocketTraits<SocketTag::BT>::HandleType handle) {
-    id channel = nil;
-
-    if (handle.type == ConnectionType::RFCOMM) channel = [IOBluetoothRFCOMMChannel withObjectID:handle.handle];
-    else [IOBluetoothL2CAPChannel withObjectID:handle.handle];
-
-    return channel;
-}
-
 template <>
 void Socket<SocketTag::BT>::close() {
-    [toChannel(_handle) closeChannel];
+    [_handle closeChannel];
 
     _release();
 }
@@ -30,22 +21,22 @@ template <>
 Task<> WritableSocket<SocketTag::BT>::send(std::string data) const {
     co_await Async::run(
         [this, &data](Async::CompletionResult& result) {
-            Async::submitIOBluetooth(_get().handle, result);
-            [toChannel(_get()) writeAsync:data.data() length:data.size() refcon:nullptr];
+            Async::submitIOBluetooth([_get() hash], result);
+            [_get() writeAsync:data.data() length:data.size() refcon:nullptr];
         },
         System::ErrorType::IOReturn);
 }
 
 template <>
 Task<std::string> WritableSocket<SocketTag::BT>::recv() const {
-    co_await Async::run([this](Async::CompletionResult& result) { Async::submitIOBluetooth(_get().handle, result); },
+    co_await Async::run([this](Async::CompletionResult& result) { Async::submitIOBluetooth([_get() hash], result); },
                         System::ErrorType::IOReturn);
 
-    co_return Async::getBluetoothReadResult(_get().handle);
+    co_return Async::getBluetoothReadResult([_get() hash]);
 }
 
 template <>
 void WritableSocket<SocketTag::BT>::cancelIO() const {
-    Async::bluetoothComplete(_get().handle, kIOReturnAborted);
+    Async::bluetoothComplete([_get() hash], kIOReturnAborted);
 }
 #endif

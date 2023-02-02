@@ -10,7 +10,6 @@
 #if OS_WINDOWS
 #include <WinSock2.h>
 #elif OS_MACOS
-#include <IOBluetooth/IOBluetoothUserLib.h>
 #include <IOKit/IOReturn.h>
 #elif OS_LINUX
 #include <liburing.h>
@@ -96,13 +95,13 @@ namespace Async {
     // Cancels pending operations for a socket file descriptor.
     void cancelPending(int fd);
 
-    void submitIOBluetooth(IOBluetoothObjectID id, CompletionResult& result);
+    void submitIOBluetooth(uint64_t id, CompletionResult& result);
 
-    void bluetoothComplete(IOBluetoothObjectID id, IOReturn status);
+    void bluetoothComplete(uint64_t id, IOReturn status);
 
-    void bluetoothReadComplete(IOBluetoothObjectID id, const char* data, size_t dataLen);
+    void bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen);
 
-    std::string getBluetoothReadResult(IOBluetoothObjectID id);
+    std::string getBluetoothReadResult(uint64_t id);
 #elif OS_LINUX
     // Gets a submission queue entry from io_uring.
     io_uring_sqe* getUringSQE();

@@ -22,8 +22,8 @@ static int kq = -1;
 static std::unordered_map<int, Async::CompletionResult*> pendingSockets;
 static std::mutex mapMutex;
 
-static std::unordered_map<IOBluetoothObjectID, Async::CompletionResult*> pendingBluetoothChannels;
-static std::unordered_map<IOBluetoothObjectID, std::string> completedBluetoothChannels;
+static std::unordered_map<uint64_t, Async::CompletionResult*> pendingBluetoothChannels;
+static std::unordered_map<uint64_t, std::string> completedBluetoothChannels;
 
 void Async::Internal::init(unsigned int) { kq = call(FN(kqueue)); }
 
@@ -107,11 +107,11 @@ void Async::cancelPending(int fd) {
     call(FN(kevent, kq, &event, 1, nullptr, 0, nullptr));
 }
 
-void Async::submitIOBluetooth(IOBluetoothObjectID id, CompletionResult& result) {
+void Async::submitIOBluetooth(uint64_t id, CompletionResult& result) {
     pendingBluetoothChannels[id] = &result;
 }
 
-void Async::bluetoothComplete(IOBluetoothObjectID id, IOReturn status) {
+void Async::bluetoothComplete(uint64_t id, IOReturn status) {
     auto& result = *pendingBluetoothChannels[id];
     pendingBluetoothChannels.erase(id);
 
@@ -119,7 +119,7 @@ void Async::bluetoothComplete(IOBluetoothObjectID id, IOReturn status) {
     result.coroHandle();
 }
 
-void Async::bluetoothReadComplete(IOBluetoothObjectID id, const char* data, size_t dataLen) {
+void Async::bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen) {
     const auto& result = *pendingBluetoothChannels[id];
     pendingBluetoothChannels.erase(id);
 
@@ -127,7 +127,7 @@ void Async::bluetoothReadComplete(IOBluetoothObjectID id, const char* data, size
     result.coroHandle();
 }
 
-std::string Async::getBluetoothReadResult(IOBluetoothObjectID id) {
+std::string Async::getBluetoothReadResult(uint64_t id) {
     auto data = completedBluetoothChannels[id];
     completedBluetoothChannels.erase(id);
     return data;

@@ -1,9 +1,9 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <IOKit/IOReturn.h>
 #if OS_MACOS
 #include <IOBluetooth/IOBluetooth.h>
+#include <IOKit/IOReturn.h>
 
 #include "os/async.hpp"
 #include "os/error.hpp"
@@ -89,6 +89,6 @@ Task<> ClientSocket<SocketTag::BT>::connect() const {
 
     if (res != kIOReturnSuccess) throw System::SystemError{ res, System::ErrorType::IOReturn, "setDelegate" };
 
-    co_await Async::run([this](Async::CompletionResult& result) { Async::submitIOBluetooth(_get(), result); });
+    co_await Async::run([this](Async::CompletionResult& result) { Async::submitIOBluetooth([_get() hash], result); });
 }
 #endif
