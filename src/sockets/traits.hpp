@@ -41,7 +41,7 @@ struct SocketTraits<SocketTag::BT> {
 #if __OBJC__
     using HandleType = id;
 #else
-    using HandleType = void*;
+    using HandleType = IOBluetoothObjectRef;
 #endif
 
     static constexpr auto invalidHandle = nullptr;
