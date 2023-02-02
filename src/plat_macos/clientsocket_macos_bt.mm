@@ -11,10 +11,10 @@
 #include "sockets/traits.hpp"
 
 void newData(id channel, const char* data, size_t dataLen) {
-    Async::bluetoothReadComplete([channel objectID], data, dataLen);
+    Async::bluetoothReadComplete([channel hash], data, dataLen);
 }
 
-void outgoingComplete(id channel, IOReturn status) { Async::bluetoothComplete([channel objectID], status); }
+void outgoingComplete(id channel, IOReturn status) { Async::bluetoothComplete([channel hash], status); }
 
 @interface ChannelDelegate : NSObject <IOBluetoothL2CAPChannelDelegate, IOBluetoothRFCOMMChannelDelegate>
 @end
