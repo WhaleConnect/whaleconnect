@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_MACOS
+#include "async_macos.hpp"
+
 #include "os/async_internal.hpp"
 
 #include <mutex>
@@ -10,7 +12,6 @@
 
 #include <sys/event.h>
 
-#include "os/async.hpp"
 #include "os/errcheck.hpp"
 
 static constexpr auto ASYNC_CANCEL = 2;
@@ -107,9 +108,7 @@ void Async::cancelPending(int fd) {
     call(FN(kevent, kq, &event, 1, nullptr, 0, nullptr));
 }
 
-void Async::submitIOBluetooth(uint64_t id, CompletionResult& result) {
-    pendingBluetoothChannels[id] = &result;
-}
+void Async::submitIOBluetooth(uint64_t id, CompletionResult& result) { pendingBluetoothChannels[id] = &result; }
 
 void Async::bluetoothComplete(uint64_t id, IOReturn status) {
     auto& result = *pendingBluetoothChannels[id];

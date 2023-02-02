@@ -9,7 +9,7 @@
 #include <bluetooth/rfcomm.h>
 #include <liburing.h>
 
-#include "os/async.hpp"
+#include "async_linux.hpp"
 #include "os/errcheck.hpp"
 #include "sockets/clientsocket.hpp"
 

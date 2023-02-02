@@ -6,7 +6,7 @@
 #include <sys/fcntl.h>
 #include <sys/socket.h>
 
-#include "os/async.hpp"
+#include "async_macos.hpp"
 #include "os/errcheck.hpp"
 #include "sockets/clientsocket.hpp"
 

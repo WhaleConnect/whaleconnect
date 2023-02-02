@@ -5,7 +5,7 @@
 #include <IOBluetooth/IOBluetooth.h>
 #include <IOKit/IOReturn.h>
 
-#include "os/async.hpp"
+#include "async_macos.hpp"
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
 #include "sockets/traits.hpp"

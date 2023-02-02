@@ -4,7 +4,7 @@
 #if OS_MACOS
 #include <IOBluetooth/IOBluetooth.h>
 
-#include "os/async.hpp"
+#include "async_macos.hpp"
 #include "os/error.hpp"
 #include "sockets/device.hpp"
 #include "sockets/socket.hpp"

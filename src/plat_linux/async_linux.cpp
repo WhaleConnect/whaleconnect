@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_LINUX
+#include "async_linux.hpp"
+
 #include "os/async_internal.hpp"
 
 #include <bit>
@@ -9,7 +11,6 @@
 
 #include <liburing.h>
 
-#include "os/async.hpp"
 #include "os/errcheck.hpp"
 
 static std::mutex ringMutex;

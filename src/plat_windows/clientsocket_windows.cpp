@@ -8,7 +8,7 @@
 #include <MSWSock.h>
 #include <ws2bth.h>
 
-#include "os/async.hpp"
+#include "async_windows.hpp"
 #include "os/errcheck.hpp"
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"

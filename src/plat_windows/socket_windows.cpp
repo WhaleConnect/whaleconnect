@@ -4,7 +4,7 @@
 #if OS_WINDOWS
 #include <WinSock2.h>
 
-#include "os/async.hpp"
+#include "async_windows.hpp"
 #include "os/errcheck.hpp"
 #include "sockets/socket.hpp"
 
