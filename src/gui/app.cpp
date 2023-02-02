@@ -3,6 +3,7 @@
 
 #include "app.hpp"
 
+#include <array>
 #include <string>
 
 #include <imgui.h>
@@ -55,11 +56,11 @@ static void configImGui() {
     // Select glyphs for loading
     // Include all in Unicode plane 0 except for control characters (U+0000 - U+0019), surrogates (U+D800 - U+DFFF),
     // private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
-    static ImWchar ranges[]{ 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
+    static std::array<ImWchar, 5> ranges{ 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
     static HandlePtr<char, SDL_free> basePath{ SDL_GetBasePath() };
     static auto fontFile = std::string{ basePath.get() } + "unifont.otf";
 
-    io.Fonts->AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges);
+    io.Fonts->AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges.data());
 }
 
 bool App::init() {
