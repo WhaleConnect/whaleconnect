@@ -32,11 +32,11 @@ std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& de
     // Determine the socket type
     int sockType;
     switch (device.type) {
-    case L2CAPStream:
-    case RFCOMM: sockType = SOCK_STREAM; break;
-    case L2CAPDgram: sockType = SOCK_DGRAM; break;
-    case L2CAPSeqPacket: sockType = SOCK_SEQPACKET; break;
-    default: throw std::invalid_argument{ "Invalid socket type" }; // Should never get here since this function is used internally.
+        case L2CAPStream:
+        case RFCOMM: sockType = SOCK_STREAM; break;
+        case L2CAPDgram: sockType = SOCK_DGRAM; break;
+        case L2CAPSeqPacket: sockType = SOCK_SEQPACKET; break;
+        default: throw std::invalid_argument{ "Invalid socket type" }; // Should never get here
     }
 
     // Determine the socket protocol

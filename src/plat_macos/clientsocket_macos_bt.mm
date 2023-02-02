@@ -67,9 +67,9 @@ std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& de
 
     using enum ConnectionType;
     switch (device.type) {
-    case L2CAPStream: result = [target openL2CAPChannelAsync:&channel withPSM:device.port delegate:nil]; break;
-    case RFCOMM: result = [target openRFCOMMChannelAsync:&channel withChannelID:device.port delegate:nil]; break;
-    default: throw System::SystemError{ kIOReturnUnsupported, System::ErrorType::IOReturn, fnName };
+        case L2CAPStream: result = [target openL2CAPChannelAsync:&channel withPSM:device.port delegate:nil]; break;
+        case RFCOMM: result = [target openRFCOMMChannelAsync:&channel withChannelID:device.port delegate:nil]; break;
+        default: throw System::SystemError{ kIOReturnUnsupported, System::ErrorType::IOReturn, fnName };
     }
 
     if (result != kIOReturnSuccess) throw System::SystemError{ result, System::ErrorType::IOReturn, fnName };

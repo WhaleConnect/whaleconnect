@@ -184,22 +184,22 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
             uint16_t proto = 0;
             for (const auto& [_, specificType, data] : getSDPListData(element)) {
                 switch (specificType) {
-                case SDP_ST_UUID16:
-                    // Keep track of protocol UUIDs
-                    proto = data.uuid16;
-                    result.protoUUIDs.push_back(proto);
-                    break;
-                case SDP_ST_UINT8:
-                    // RFCOMM channel is stored in an 8-bit integer
-                    if (proto == RFCOMM_PROTOCOL_UUID16) result.port = data.uint8;
-                    break;
-                case SDP_ST_UINT16:
-                    // L2CAP PSM is stored in a 16-bit integer
-                    if (proto == L2CAP_PROTOCOL_UUID16) result.port = data.uint16;
-                    break;
-                default:
-                    // Other types not handled
-                    break;
+                    case SDP_ST_UUID16:
+                        // Keep track of protocol UUIDs
+                        proto = data.uuid16;
+                        result.protoUUIDs.push_back(proto);
+                        break;
+                    case SDP_ST_UINT8:
+                        // RFCOMM channel is stored in an 8-bit integer
+                        if (proto == RFCOMM_PROTOCOL_UUID16) result.port = data.uint8;
+                        break;
+                    case SDP_ST_UINT16:
+                        // L2CAP PSM is stored in a 16-bit integer
+                        if (proto == L2CAP_PROTOCOL_UUID16) result.port = data.uint16;
+                        break;
+                    default:
+                        // Other types not handled
+                        break;
                 }
             }
         }
@@ -207,10 +207,10 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
         // Service class UUIDs
         for (const auto& [_, specificType, data] : getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_CLASS_ID_LIST)) {
             switch (specificType) {
-            case SDP_ST_UUID16: result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid16)); break;
-            case SDP_ST_UUID32: result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid32)); break;
-            case SDP_ST_UUID128: result.serviceUUIDs.push_back(toUUID(data.uuid128)); break;
-            default: break; // Other types not handled
+                case SDP_ST_UUID16: result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid16)); break;
+                case SDP_ST_UUID32: result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid32)); break;
+                case SDP_ST_UUID128: result.serviceUUIDs.push_back(toUUID(data.uuid128)); break;
+                default: break; // Other types not handled
             }
         }
 

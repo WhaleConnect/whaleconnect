@@ -120,21 +120,21 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
             uint16_t proto = 0;
             for (IOBluetoothSDPDataElement* data in [p getArrayValue]) {
                 switch ([data getTypeDescriptor]) {
-                case kBluetoothSDPDataElementTypeUUID:
-                    // Keep track of protocol UUIDs
-                    proto = getUUIDInt(data);
-                    result.protoUUIDs.push_back(proto);
-                    break;
-                case kBluetoothSDPDataElementTypeUnsignedInt:
-                    uint32_t size = [data getSize];
-                    bool isRFCOMM = proto == kBluetoothSDPUUID16RFCOMM;
-                    bool isL2CAP = proto == kBluetoothSDPUUID16L2CAP;
+                    case kBluetoothSDPDataElementTypeUUID:
+                        // Keep track of protocol UUIDs
+                        proto = getUUIDInt(data);
+                        result.protoUUIDs.push_back(proto);
+                        break;
+                    case kBluetoothSDPDataElementTypeUnsignedInt:
+                        uint32_t size = [data getSize];
+                        bool isRFCOMM = proto == kBluetoothSDPUUID16RFCOMM;
+                        bool isL2CAP = proto == kBluetoothSDPUUID16L2CAP;
 
-                    // Get port - make sure size matches the protocol
-                    // RFCOMM channel is stored in an 8-bit integer (1 byte)
-                    // L2CAP channel is stored in a 16-bit integer (2 bytes)
-                    if (((size == 1) && isRFCOMM) || ((size == 2) && isL2CAP))
-                        result.port = [[data getNumberValue] integerValue];
+                        // Get port - make sure size matches the protocol
+                        // RFCOMM channel is stored in an 8-bit integer (1 byte)
+                        // L2CAP channel is stored in a 16-bit integer (2 bytes)
+                        if (((size == 1) && isRFCOMM) || ((size == 2) && isL2CAP))
+                            result.port = [[data getNumberValue] integerValue];
                 }
             }
         }

@@ -18,10 +18,10 @@ magic_enum::customize::enum_name(ConnectionType value) noexcept {
     using enum ConnectionType;
 
     switch (value) {
-    case L2CAPSeqPacket: return "L2CAP SeqPacket";
-    case L2CAPStream: return "L2CAP Stream";
-    case L2CAPDgram: return "L2CAP Datagram";
-    default: return default_tag;
+        case L2CAPSeqPacket: return "L2CAP SeqPacket";
+        case L2CAPStream: return "L2CAP Stream";
+        case L2CAPDgram: return "L2CAP Datagram";
+        default: return default_tag;
     }
 }
 

@@ -214,20 +214,20 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
                 uint16_t proto = 0;
                 for (auto d = static_cast<sdp_data_t*>(pds->data); d; d = d->next) {
                     switch (d->dtd) {
-                    case SDP_UUID16:
-                    case SDP_UUID32:
-                    case SDP_UUID128:
-                        // Keep track of protocol UUIDs
-                        proto = sdp_uuid_to_proto(&d->val.uuid);
-                        result.protoUUIDs.push_back(proto);
-                        break;
-                    case SDP_UINT8:
-                        // RFCOMM channel is stored in an 8-bit integer
-                        if (proto == RFCOMM_UUID) result.port = d->val.int8;
-                        break;
-                    case SDP_UINT16:
-                        // L2CAP PSM is stored in a 16-bit integer
-                        if (proto == L2CAP_UUID) result.port = d->val.int16;
+                        case SDP_UUID16:
+                        case SDP_UUID32:
+                        case SDP_UUID128:
+                            // Keep track of protocol UUIDs
+                            proto = sdp_uuid_to_proto(&d->val.uuid);
+                            result.protoUUIDs.push_back(proto);
+                            break;
+                        case SDP_UINT8:
+                            // RFCOMM channel is stored in an 8-bit integer
+                            if (proto == RFCOMM_UUID) result.port = d->val.int8;
+                            break;
+                        case SDP_UINT16:
+                            // L2CAP PSM is stored in a 16-bit integer
+                            if (proto == L2CAP_UUID) result.port = d->val.int16;
                     }
                 }
             }
@@ -239,9 +239,9 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
             for (auto iter = svClassList.get(); iter; iter = iter->next) {
                 auto uuid = static_cast<uuid_t*>(iter->data);
                 switch (uuid->type) {
-                case SDP_UUID16: result.serviceUUIDs.push_back(createUUIDFromBase(uuid->value.uuid16)); break;
-                case SDP_UUID32: result.serviceUUIDs.push_back(createUUIDFromBase(uuid->value.uuid32)); break;
-                case SDP_UUID128: result.serviceUUIDs.push_back(std::to_array(uuid->value.uuid128.data));
+                    case SDP_UUID16: result.serviceUUIDs.push_back(createUUIDFromBase(uuid->value.uuid16)); break;
+                    case SDP_UUID32: result.serviceUUIDs.push_back(createUUIDFromBase(uuid->value.uuid32)); break;
+                    case SDP_UUID128: result.serviceUUIDs.push_back(std::to_array(uuid->value.uuid128.data));
                 }
             }
         }

@@ -17,7 +17,7 @@ NamespaceIndentation: All
 
 IndentAccessModifiers: false
 IndentCaseBlocks: false
-IndentCaseLabels: false
+IndentCaseLabels: true
 IndentPPDirectives: None
 IndentRequiresClause: false
 IndentWrappedFunctionNames: false
