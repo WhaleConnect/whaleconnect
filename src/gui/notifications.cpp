@@ -74,12 +74,12 @@ static void drawNotification(Notification& n, float areaWidth) {
     ImGui::EndChild();
 
     // If the timeout is 0, skip the countdown
-    if (n.timeout == 0) return;
+    if (!(n.timeout > 0.0f)) return;
 
     // Calculate the percent of time still remaining before the notification is closed automatically (0 to 1)
     // If this percent reaches 0, deactivate the notification
     auto timePercent = static_cast<float>(std::max(1 - ((ImGui::GetTime() - n.timeAdded) / n.timeout), 0.0));
-    if (timePercent == 0.0) n.active = false;
+    n.active = timePercent > 0.0f;
 
     // Get left and bottom coordinates of the entry rect to draw the countdown line
     float entryLeft = ImGui::GetItemRectMin().x;

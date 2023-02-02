@@ -73,8 +73,8 @@ void Console::_updateOutput() {
         for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
             const auto& item = _items[i];
 
-            // Only color tuples with the last value set to 1 are considered
-            bool hasColor = (item.color.w == 1.0f);
+            // Only color tuples with the alpha value set are considered
+            bool hasColor = item.color.w > 0.0f;
 
             // Timestamps
             if (_showTimestamps) {
