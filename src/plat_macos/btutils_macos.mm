@@ -11,7 +11,6 @@
 #include "os/btutils.hpp"
 #include "os/error.hpp"
 #include "sockets/device.hpp"
-#include "sockets/traits.hpp"
 
 @interface InquiryHandler : NSObject <IOBluetoothDeviceAsyncCallbacks>
 @property bool finished;
