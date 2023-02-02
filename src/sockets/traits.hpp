@@ -45,8 +45,7 @@ struct SocketTraits<SocketTag::BT> {
 #endif
 
     static constexpr auto invalidHandle = nullptr;
-}
-;
+};
 #else
 template <auto Tag>
 struct SocketTraits {
