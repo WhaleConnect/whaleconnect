@@ -7,7 +7,6 @@
 // Winsock header
 #include <WinSock2.h>
 #elif OS_MACOS
-#include <optional>
 #include <string>
 #include <vector>
 
