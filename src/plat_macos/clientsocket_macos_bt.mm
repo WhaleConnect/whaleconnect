@@ -6,56 +6,10 @@
 #include <IOKit/IOReturn.h>
 
 #include "async_macos.hpp"
+#include "bthandle.h"
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
 #include "sockets/traits.hpp"
-
-void newData(id channel, const char* data, size_t dataLen) {
-    Async::bluetoothReadComplete([channel hash], data, dataLen);
-}
-
-void outgoingComplete(id channel, IOReturn status) { Async::bluetoothComplete([channel hash], status); }
-
-@interface ChannelDelegate : NSObject <IOBluetoothL2CAPChannelDelegate, IOBluetoothRFCOMMChannelDelegate>
-@end
-
-@implementation ChannelDelegate
-
-- (void)l2capChannelClosed:(IOBluetoothL2CAPChannel*)l2capChannel {
-    newData(l2capChannel, "", 0);
-}
-
-- (void)l2capChannelData:(IOBluetoothL2CAPChannel*)l2capChannel data:(void*)dataPointer length:(size_t)dataLength {
-    newData(l2capChannel, static_cast<const char*>(dataPointer), dataLength);
-}
-
-- (void)l2capChannelOpenComplete:(IOBluetoothL2CAPChannel*)l2capChannel status:(IOReturn)error {
-    outgoingComplete(l2capChannel, error);
-}
-
-- (void)l2capChannelWriteComplete:(IOBluetoothL2CAPChannel*)l2capChannel refcon:(void*)refcon status:(IOReturn)error {
-    outgoingComplete(l2capChannel, error);
-}
-
-- (void)rfcommChannelClosed:(IOBluetoothRFCOMMChannel*)rfcommChannel {
-    newData(rfcommChannel, "", 0);
-}
-
-- (void)rfcommChannelData:(IOBluetoothRFCOMMChannel*)rfcommChannel data:(void*)dataPointer length:(size_t)dataLength {
-    newData(rfcommChannel, static_cast<const char*>(dataPointer), dataLength);
-}
-
-- (void)rfcommChannelOpenComplete:(IOBluetoothRFCOMMChannel*)rfcommChannel status:(IOReturn)error {
-    outgoingComplete(rfcommChannel, error);
-}
-
-- (void)rfcommChannelWriteComplete:(IOBluetoothRFCOMMChannel*)rfcommChannel
-                            refcon:(void*)refcon
-                            status:(IOReturn)error {
-    outgoingComplete(rfcommChannel, error);
-}
-
-@end
 
 template <>
 std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& device) {
@@ -74,21 +28,15 @@ std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& de
 
     if (result != kIOReturnSuccess) throw System::SystemError{ result, System::ErrorType::IOReturn, fnName };
 
-    return std::make_unique<ClientSocket<SocketTag::BT>>(channel, device);
+    auto handle = [[BTHandle alloc] initWithChannel:channel];
+    return std::make_unique<ClientSocket<SocketTag::BT>>(handle, device);
 }
 
 template <>
 Task<> ClientSocket<SocketTag::BT>::connect() const {
-    auto delegate = [ChannelDelegate new];
+    [_get() registerAsDelegate];
 
-    IOReturn res;
-
-    if (_device.type == ConnectionType::RFCOMM)
-        res = [static_cast<IOBluetoothRFCOMMChannel*>(_get()) setDelegate:delegate];
-    else res = [static_cast<IOBluetoothL2CAPChannel*>(_get()) setDelegate:delegate];
-
-    if (res != kIOReturnSuccess) throw System::SystemError{ res, System::ErrorType::IOReturn, "setDelegate" };
-
-    co_await Async::run([this](Async::CompletionResult& result) { Async::submitIOBluetooth([_get() hash], result); });
+    NSUInteger hash = [_get() channelHash];
+    co_await Async::run([hash](Async::CompletionResult& result) { Async::submitIOBluetooth(hash, result); });
 }
 #endif

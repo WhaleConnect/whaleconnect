@@ -7,10 +7,11 @@
 // Winsock header
 #include <WinSock2.h>
 #elif OS_MACOS
+#include <optional>
 #include <string>
 #include <vector>
 
-#include <IOBluetooth/IOBluetoothUserLib.h>
+#include "plat_macos/bthandle.h"
 #endif
 
 // Enumeration to determine socket types at compile time.
@@ -39,9 +40,9 @@ struct SocketTraits<SocketTag::IP> {
 template <>
 struct SocketTraits<SocketTag::BT> {
 #if __OBJC__
-    using HandleType = id;
+    using HandleType = BTHandle*;
 #else
-    using HandleType = IOBluetoothObjectRef;
+    using HandleType = void*;
 #endif
 
     static constexpr auto invalidHandle = nullptr;

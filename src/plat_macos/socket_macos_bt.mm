@@ -12,7 +12,7 @@
 
 template <>
 void Socket<SocketTag::BT>::close() {
-    [_handle closeChannel];
+    [_handle close];
 
     _release();
 }
@@ -21,22 +21,23 @@ template <>
 Task<> WritableSocket<SocketTag::BT>::send(std::string data) const {
     co_await Async::run(
         [this, &data](Async::CompletionResult& result) {
-            Async::submitIOBluetooth([_get() hash], result);
-            [_get() writeAsync:data.data() length:data.size() refcon:nullptr];
+            Async::submitIOBluetooth([_get() channelHash], result);
+            [_get() write:data];
         },
         System::ErrorType::IOReturn);
 }
 
 template <>
 Task<std::string> WritableSocket<SocketTag::BT>::recv() const {
-    co_await Async::run([this](Async::CompletionResult& result) { Async::submitIOBluetooth([_get() hash], result); },
-                        System::ErrorType::IOReturn);
+    co_await Async::run(
+        [this](Async::CompletionResult& result) { Async::submitIOBluetooth([_get() channelHash], result); },
+        System::ErrorType::IOReturn);
 
-    co_return Async::getBluetoothReadResult([_get() hash]);
+    co_return Async::getBluetoothReadResult([_get() channelHash]);
 }
 
 template <>
 void WritableSocket<SocketTag::BT>::cancelIO() const {
-    Async::bluetoothComplete([_get() hash], kIOReturnAborted);
+    Async::bluetoothComplete([_get() channelHash], kIOReturnAborted);
 }
 #endif

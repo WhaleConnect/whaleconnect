@@ -7,6 +7,7 @@
 #include "os/async_internal.hpp"
 
 #include <mutex>
+#include <queue>
 #include <stdexcept>
 #include <unordered_map>
 
@@ -23,8 +24,12 @@ static int kq = -1;
 static std::unordered_map<int, Async::CompletionResult*> pendingSockets;
 static std::mutex mapMutex;
 
-static std::unordered_map<uint64_t, Async::CompletionResult*> pendingBluetoothChannels;
-static std::unordered_map<uint64_t, std::string> completedBluetoothChannels;
+struct E {
+    Async::CompletionResult* pending;
+    std::queue<std::string> completed;
+};
+
+static std::unordered_map<uint64_t, E> bluetoothChannels;
 
 void Async::Internal::init(unsigned int) { kq = call(FN(kqueue)); }
 
@@ -108,27 +113,33 @@ void Async::cancelPending(int fd) {
     call(FN(kevent, kq, &event, 1, nullptr, 0, nullptr));
 }
 
-void Async::submitIOBluetooth(uint64_t id, CompletionResult& result) { pendingBluetoothChannels[id] = &result; }
+void Async::submitIOBluetooth(uint64_t id, CompletionResult& result) {
+    if (!bluetoothChannels[id].pending) bluetoothChannels[id].pending = &result;
+}
 
 void Async::bluetoothComplete(uint64_t id, IOReturn status) {
-    auto& result = *pendingBluetoothChannels[id];
-    pendingBluetoothChannels.erase(id);
+    if (!bluetoothChannels[id].pending) return;
+
+    auto result = *bluetoothChannels[id].pending;
+    bluetoothChannels[id].pending = nullptr;
 
     result.error = status;
     result.coroHandle();
 }
 
 void Async::bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen) {
-    const auto& result = *pendingBluetoothChannels[id];
-    pendingBluetoothChannels.erase(id);
+    bluetoothChannels[id].completed.emplace(data, dataLen);
 
-    completedBluetoothChannels[id] = { data, dataLen };
-    result.coroHandle();
+    if (bluetoothChannels[id].pending) {
+        auto result = *bluetoothChannels[id].pending;
+        bluetoothChannels[id].pending = nullptr;
+        result.coroHandle();
+    }
 }
 
 std::string Async::getBluetoothReadResult(uint64_t id) {
-    auto data = completedBluetoothChannels[id];
-    completedBluetoothChannels.erase(id);
+    std::string data = bluetoothChannels[id].completed.front();
+    bluetoothChannels[id].completed.pop();
     return data;
 }
 #endif
