@@ -45,7 +45,7 @@ static void check(IOReturn code, const char* fnName) {
     check(res, "writeAsync");
 }
 
--(NSUInteger)channelHash {
+- (NSUInteger)channelHash {
     return [_channel hash];
 }
 
