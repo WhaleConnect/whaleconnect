@@ -1,6 +1,7 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <IOKit/IOReturn.h>
 #if OS_MACOS
 #include "async_macos.hpp"
 
@@ -130,11 +131,7 @@ void Async::bluetoothComplete(uint64_t id, IOReturn status) {
 void Async::bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen) {
     bluetoothChannels[id].completed.emplace(data, dataLen);
 
-    if (bluetoothChannels[id].pending) {
-        auto result = *bluetoothChannels[id].pending;
-        bluetoothChannels[id].pending = nullptr;
-        result.coroHandle();
-    }
+    bluetoothComplete(id, kIOReturnSuccess);
 }
 
 std::string Async::getBluetoothReadResult(uint64_t id) {
