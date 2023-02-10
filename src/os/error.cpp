@@ -13,6 +13,7 @@
 #endif
 
 #if OS_MACOS
+#include <IOKit/IOReturn.h>
 #include <mach/mach_error.h>
 #endif
 
@@ -76,4 +77,19 @@ bool System::isFatal(ErrorCode code) {
 #endif
 
     return true;
+}
+
+bool System::isCanceled(ErrorCode code, ErrorType type) {
+#if OS_WINDOWS
+    if ((type == System::ErrorType::System) && (code == WSA_OPERATION_ABORTED)) return true;
+#else
+    if ((type == System::ErrorType::System) && (code == ECANCELED)) return true;
+#endif
+
+#if OS_MACOS
+    // IOBluetooth-specific error
+    if ((type == System::ErrorType::IOReturn) && (code == kIOReturnAborted)) return true;
+#endif
+
+    return false;
 }

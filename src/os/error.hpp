@@ -22,18 +22,21 @@ namespace System {
     using ErrorCode = int;
 #endif
 
-    // Gets the last error code. This is platform-specific.
-    ErrorCode getLastError();
-
-    // Checks if an error code should be handled as a fatal error.
-    bool isFatal(ErrorCode code);
-
     // Where an error came from.
     enum class ErrorType {
         System,   // From socket functions or other OS APIs
         AddrInfo, // From a call to getaddrinfo
         IOReturn  // From a call to a macOS kernel function
     };
+
+    // Gets the last error code. This is platform-specific.
+    ErrorCode getLastError();
+
+    // Checks if an error code should be handled as a fatal error.
+    bool isFatal(ErrorCode code);
+
+    // Checks if an error code signals a canceled operation.
+    bool isCanceled(ErrorCode code, ErrorType type);
 
     // An exception structure containing details of an error.
     struct SystemError : std::exception {

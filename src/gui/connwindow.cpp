@@ -91,15 +91,9 @@ Task<> ConnWindow::_readHandler() try {
 } catch (const System::SystemError& error) { _errorHandler(error); }
 
 void ConnWindow::_errorHandler(const System::SystemError& error) {
-    // Don't handle errors caused by I/O cancellation
-#if OS_WINDOWS
-    if (error.code == WSA_OPERATION_ABORTED) return;
-#else
-    if (error.code == ECANCELED) return;
-#endif
-
     // Check for non-fatal errors, then add error line to console
-    if (error) {
+    // Don't handle errors caused by I/O cancellation
+    if (error && !System::isCanceled(error.code, error.type)) {
         std::scoped_lock outputLock{ _outputMutex };
         _output.addError(error.formatted());
     }
