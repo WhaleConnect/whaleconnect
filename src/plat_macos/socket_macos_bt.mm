@@ -29,9 +29,7 @@ Task<> WritableSocket<SocketTag::BT>::send(std::string data) const {
 
 template <>
 Task<std::string> WritableSocket<SocketTag::BT>::recv() const {
-    co_await Async::run(
-        [this](Async::CompletionResult& result) { Async::submitIOBluetooth([_get() channelHash], result); },
-        System::ErrorType::IOReturn);
+    co_await Async::run(std::bind_front(Async::submitIOBluetooth, [_get() channelHash]), System::ErrorType::IOReturn);
 
     co_return Async::getBluetoothReadResult([_get() channelHash]);
 }
