@@ -7,7 +7,7 @@ set_languages("c++20")
 set_policy("check.auto_ignore_flags", false)
 set_defaultmode("debug")
 
-add_requires("imgui v1.89-docking", { configs = { sdl2_opengl3 = true } })
+add_requires("imgui v1.89.3-docking", { configs = { sdl2 = true, opengl3 = true } })
 add_requires("libsdl", { configs = { use_sdlmain = true } })
 add_requires("magic_enum", "out_ptr", "opengl")
 
