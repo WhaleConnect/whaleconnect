@@ -14,6 +14,7 @@
 #include <SDL_opengl.h>
 
 #include "notifications.hpp"
+
 #include "utils/handleptr.hpp"
 #include "utils/settings.hpp"
 

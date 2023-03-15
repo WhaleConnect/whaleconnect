@@ -12,6 +12,7 @@
 #endif
 
 #include "error.hpp"
+
 #include "utils/task.hpp"
 
 namespace Async {
@@ -50,8 +51,7 @@ namespace Async {
 
         // Throws an exception if a fatal error occurred asynchronously.
         void checkError(System::ErrorType type) const {
-            if (System::isFatal(error))
-                throw System::SystemError{ error, type, "<asynchronous function>" };
+            if (System::isFatal(error)) throw System::SystemError{ error, type, "<asynchronous function>" };
         }
 
         // Checks if coroutine suspension is necessary.

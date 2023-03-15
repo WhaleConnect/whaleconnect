@@ -108,8 +108,10 @@ IncludeCategories:
   - Regex: '<.+\..+>' # Library headers
     Priority: 3
     SortPriority: 3
-  - Regex: '".+"' # Project headers
+  - Regex: '"[^/]+"' # Project headers (current directory)
     Priority: 4
+  - Regex: '".+"' # Project headers
+    Priority: 5
 
 #################### Other ####################
 Standard: Latest

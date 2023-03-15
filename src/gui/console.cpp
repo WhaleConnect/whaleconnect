@@ -14,6 +14,7 @@
 #include <imgui.h>
 
 #include "imguiext.hpp"
+
 #include "utils/strings.hpp"
 
 static std::string getTimestamp() {

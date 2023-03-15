@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "async.hpp"
+
 #include "async_internal.hpp"
 
 #include <algorithm> // std::max()
@@ -9,6 +10,7 @@
 #include <system_error>
 #include <thread>
 #include <vector>
+
 #include "os/error.hpp"
 
 // Runs in each thread to handle completion results.

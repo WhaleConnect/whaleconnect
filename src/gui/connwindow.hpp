@@ -10,10 +10,11 @@
 #include <string_view>
 
 #include "console.hpp"
+#include "window.hpp"
+
 #include "os/error.hpp"
 #include "sockets/device.hpp"
 #include "sockets/interfaces.hpp"
-#include "window.hpp"
 
 // A class to handle a socket connection in a GUI window.
 class ConnWindow : public Window {

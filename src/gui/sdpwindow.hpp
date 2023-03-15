@@ -11,12 +11,13 @@
 #include <system_error>
 #include <variant>
 
+#include "window.hpp"
+#include "windowlist.hpp"
+
 #include "os/btutils.hpp"
 #include "os/error.hpp"
 #include "sockets/device.hpp"
 #include "sockets/traits.hpp"
-#include "window.hpp"
-#include "windowlist.hpp"
 
 // A class to handle an SDP inquiry in a GUI window.
 class SDPWindow : public Window {

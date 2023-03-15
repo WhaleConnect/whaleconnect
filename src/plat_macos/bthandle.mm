@@ -5,6 +5,7 @@
 #include "bthandle.h"
 
 #include "async_macos.hpp"
+
 #include "os/error.hpp"
 
 static void newData(id channel, const char* data, size_t dataLen) {

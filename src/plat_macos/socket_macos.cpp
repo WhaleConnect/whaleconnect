@@ -4,11 +4,12 @@
 #if OS_MACOS
 #include <functional>
 
-#include <unistd.h>
 #include <sys/event.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 #include "async_macos.hpp"
+
 #include "os/errcheck.hpp"
 #include "sockets/socket.hpp"
 

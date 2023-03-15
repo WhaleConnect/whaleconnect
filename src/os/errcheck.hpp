@@ -7,7 +7,8 @@
 
 #include "error.hpp"
 
-#define FN(f, ...) FnResult{ f(__VA_ARGS__), #f }
+#define FN(f, ...) \
+    FnResult { f(__VA_ARGS__), #f }
 
 // Predicate functions to check success based on return code
 constexpr auto checkTrue = [](auto rc) { return static_cast<bool>(rc); };  // Check if return code evaluates to true

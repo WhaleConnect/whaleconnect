@@ -7,10 +7,11 @@
 
 #include "connwindow.hpp"
 #include "notifications.hpp"
+#include "windowlist.hpp"
+
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
 #include "sockets/device.hpp"
-#include "windowlist.hpp"
 
 // Adds a ConnWindow to a window list and handles errors during socket creation.
 template <auto Tag>

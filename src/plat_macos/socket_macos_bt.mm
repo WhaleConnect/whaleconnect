@@ -5,6 +5,7 @@
 #include <IOBluetooth/IOBluetooth.h>
 
 #include "async_macos.hpp"
+
 #include "os/error.hpp"
 #include "sockets/device.hpp"
 #include "sockets/socket.hpp"

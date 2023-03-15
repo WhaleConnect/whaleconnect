@@ -21,7 +21,8 @@
 
 // Contains the app's core logic and functions.
 void mainLoop() {
-    // These variables must be in a separate scope from the resource instances, so these can be destructed before cleanup
+    // These variables must be in a separate scope from the resource instances, so these can be destructed before
+    // cleanup
     WindowList connections; // List of open windows
     WindowList sdpWindows;  // List of windows for creating Bluetooth connections
 

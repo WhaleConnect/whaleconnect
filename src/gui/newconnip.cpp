@@ -9,8 +9,9 @@
 
 #include "imguiext.hpp"
 #include "newconn.hpp"
-#include "sockets/traits.hpp"
 #include "windowlist.hpp"
+
+#include "sockets/traits.hpp"
 
 void drawIPConnectionTab(WindowList& connections) {
     if (!ImGui::BeginTabItem("Internet Protocol")) return;

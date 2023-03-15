@@ -4,8 +4,9 @@
 #include "clientsocket.hpp"
 
 #include "device.hpp"
-#include "os/errcheck.hpp"
 #include "traits.hpp"
+
+#include "os/errcheck.hpp"
 #include "utils/out_ptr_compat.hpp"
 #include "utils/strings.hpp"
 
