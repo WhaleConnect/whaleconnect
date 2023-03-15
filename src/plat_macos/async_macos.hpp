@@ -9,15 +9,18 @@
 #include "os/async.hpp"
 
 namespace Async {
+    // The type of a Bluetooth I/O operation.
+    enum class BluetoothIOType { Send, Receive };
+
     // Submits an event to the kernel queue.
     void submitKqueue(int ident, int filter, CompletionResult& result);
 
     // Cancels pending operations for a socket file descriptor.
     void cancelPending(int fd);
 
-    void submitIOBluetooth(uint64_t id, CompletionResult& result);
+    void submitIOBluetooth(uint64_t id, BluetoothIOType type, CompletionResult& result);
 
-    void bluetoothComplete(uint64_t id, IOReturn status);
+    void bluetoothComplete(uint64_t id, BluetoothIOType type, IOReturn status);
 
     void bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen);
 

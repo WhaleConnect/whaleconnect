@@ -6,14 +6,17 @@
 
 #include "os/async_internal.hpp"
 
+#include <array>
 #include <mutex>
 #include <queue>
 #include <stdexcept>
 #include <unordered_map>
 
 #include <IOKit/IOReturn.h>
+#include <magic_enum.hpp>
 #include <sys/event.h>
 
+#include "os/async.hpp"
 #include "os/errcheck.hpp"
 
 static constexpr auto ASYNC_CANCEL = 2;
@@ -25,12 +28,12 @@ static int kq = -1;
 static std::unordered_map<int, Async::CompletionResult*> pendingSockets;
 static std::mutex mapMutex;
 
-struct E {
-    Async::CompletionResult* pending;
+struct BluetoothQueue {
+    std::array<Async::CompletionResult*, 2> pending;
     std::queue<std::string> completed;
 };
 
-static std::unordered_map<uint64_t, E> bluetoothChannels;
+static std::unordered_map<uint64_t, BluetoothQueue> bluetoothChannels;
 
 void Async::Internal::init(unsigned int) { kq = call(FN(kqueue)); }
 
@@ -114,24 +117,27 @@ void Async::cancelPending(int fd) {
     call(FN(kevent, kq, &event, 1, nullptr, 0, nullptr));
 }
 
-void Async::submitIOBluetooth(uint64_t id, CompletionResult& result) {
-    if (!bluetoothChannels[id].pending) bluetoothChannels[id].pending = &result;
+void Async::submitIOBluetooth(uint64_t id, BluetoothIOType type, CompletionResult& result) {
+    // TODO: Use std::to_underlying() in C++23
+    int idx = magic_enum::enum_integer(type);
+
+    bluetoothChannels[id].pending[idx] = &result;
 }
 
-void Async::bluetoothComplete(uint64_t id, IOReturn status) {
-    if (!bluetoothChannels[id].pending) return;
+void Async::bluetoothComplete(uint64_t id, BluetoothIOType type, IOReturn status) {
+    int idx = magic_enum::enum_integer(type);
+    auto completionResult = bluetoothChannels[id].pending[idx];
 
-    auto result = *bluetoothChannels[id].pending;
-    bluetoothChannels[id].pending = nullptr;
+    if (!completionResult) return;
 
-    result.error = status;
-    result.coroHandle();
+    completionResult->error = status;
+    completionResult->coroHandle();
 }
 
 void Async::bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen) {
     bluetoothChannels[id].completed.emplace(data, dataLen);
 
-    bluetoothComplete(id, kIOReturnSuccess);
+    bluetoothComplete(id, BluetoothIOType::Receive, kIOReturnSuccess);
 }
 
 std::string Async::getBluetoothReadResult(uint64_t id) {

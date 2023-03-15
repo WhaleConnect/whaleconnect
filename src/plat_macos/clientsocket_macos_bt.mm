@@ -37,6 +37,6 @@ Task<> ClientSocket<SocketTag::BT>::connect() const {
     [_get() registerAsDelegate];
 
     NSUInteger hash = [_get() channelHash];
-    co_await Async::run([hash](Async::CompletionResult& result) { Async::submitIOBluetooth(hash, result); });
+    co_await Async::run(std::bind_front(Async::submitIOBluetooth, hash, Async::BluetoothIOType::Send));
 }
 #endif
