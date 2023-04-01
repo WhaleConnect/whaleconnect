@@ -14,7 +14,6 @@
 // Class to manage a socket file descriptor with RAII.
 template <auto Tag>
 class Socket : protected SocketTraits<Tag>, virtual public Closeable {
-    // TODO: Remove typename in Clang 16 (P0634R3)
     using typename SocketTraits<Tag>::HandleType;
     using SocketTraits<Tag>::invalidHandle;
 

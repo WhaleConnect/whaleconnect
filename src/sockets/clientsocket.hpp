@@ -32,7 +32,6 @@ struct ClientSocketTraits {};
 
 template <auto Tag>
 class ClientSocket : ClientSocketTraits<Tag>, public WritableSocket<Tag>, public Connectable {
-    // TODO: Remove typename in Clang 16
     using typename SocketTraits<Tag>::HandleType;
 
     Device _device;
