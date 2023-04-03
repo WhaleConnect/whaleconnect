@@ -9,6 +9,8 @@
 
 // clang-format off
 
+#define FN(f, ...) FnResult{ f(__VA_ARGS__), #f }
+
 // Predicate functions to check success based on return code
 constexpr auto checkTrue = [](auto rc) { return static_cast<bool>(rc); };  // Check if return code evaluates to true
 constexpr auto checkZero = [](auto rc) { return rc == NO_ERROR; };         // Check if return code equals zero
@@ -27,8 +29,6 @@ struct FnResult {
     T rc = 0;         // Return code
     std::string name; // Function name
 };
-
-#define FN(f, ...) FnResult(f(__VA_ARGS__), #f)
 
 #ifdef __clang__
 // Clang does not yet support CTAD for aggregates (P1816R0)
