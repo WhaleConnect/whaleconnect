@@ -41,7 +41,8 @@ struct SocketTraits<SocketTag::BT> {
 #if __OBJC__
     using HandleType = BTHandle*;
 #else
-    using HandleType = void*;
+    // Objective-C types are not visible to C++ code, use a small type as a filler
+    using HandleType = uint8_t;
 #endif
 
     static constexpr auto invalidHandle = nullptr;
