@@ -124,7 +124,7 @@ DeviceList BTUtils::getPaired() {
         std::string name = Strings::fromSys(deviceInfo.szName);
 
         // Add to results
-        deviceList.push_back({ ConnectionType::None, name, mac, uint16_t{ 0 } });
+        deviceList.emplace_back(ConnectionType::None, name, mac, uint16_t{ 0 });
     } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
 
     return deviceList;

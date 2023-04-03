@@ -8,6 +8,7 @@
 #include <ctime>
 #include <format>
 #include <iomanip> // std::hex, std::uppercase, std::setw(), std::setfill()
+#include <sstream>
 #include <string>
 #include <string_view>
 
@@ -39,7 +40,7 @@ void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
 
     // Text goes on its own line if there are no items or the last line ends with a newline
     if (_items.empty() || (_items.back().text.back() == '\n'))
-        _items.push_back({ canUseHex, std::string{ s }, {}, color, getTimestamp() });
+        _items.emplace_back(canUseHex, std::string{ s }, std::ostringstream{}, color, getTimestamp());
     else _items.back().text += s;
 
     // Computing the string's hex representation here removes the need to recompute it every application frame.

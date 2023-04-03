@@ -97,7 +97,7 @@ void ImGui::AddNotification(std::string_view s, float timeout) {
     // Add a notification struct to the vector
     // If the notifications are not visible (such as the notifications area being collapsed), the timeout is set to 0
     // (disabled) to prevent the user from missing a potentially important notification.
-    notifications.push_back({ std::string{ s }, GetTime(), true, areNotificationsVisible ? timeout : 0 });
+    notifications.emplace_back(std::string{ s }, GetTime(), true, areNotificationsVisible ? timeout : 0);
 }
 
 void ImGui::DrawNotificationArea(ImGuiID dockSpaceID) {

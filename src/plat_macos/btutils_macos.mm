@@ -73,7 +73,7 @@ DeviceList BTUtils::getPaired() {
         // Get name and address (dashes in address string are replaced with colons)
         NSString* name = [i name];
         NSString* addr = [[i addressString] stringByReplacingOccurrencesOfString:@"-" withString:@":"];
-        ret.push_back({ ConnectionType::None, [name UTF8String], [addr UTF8String], 0 });
+        ret.emplace_back(ConnectionType::None, [name UTF8String], [addr UTF8String], 0);
     }
 
     return ret;
