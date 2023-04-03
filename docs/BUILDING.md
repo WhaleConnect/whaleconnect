@@ -30,9 +30,9 @@ xmake f --ldflags="-L$(brew --prefix)/opt/llvm/lib/c++ -Wl,-rpath,$(brew --prefi
 
 ## Compiling
 
-This project uses C++23 features, so be sure to update your compiler(s) if needed. Compilation is officially supported on the following compilers:
+This project uses C++20 features, so be sure to update your compiler(s) if needed. Compilation is officially supported on the following compilers:
 
-- Clang 15+ (with experimental library)
+- Clang 16+ (with experimental library)
 - Visual Studio 2022 17.1+
 
 All code is standards-compliant. However, because it uses a recent C++ revision, some compilers may not currently be supported.
