@@ -102,8 +102,9 @@ void ImGui::AddNotification(std::string_view s, float timeout) {
 
 void ImGui::DrawNotificationArea(ImGuiID dockSpaceID) {
     constexpr const char* windowIDBase = "###Notifications";
-    static auto makeWindowID
-        = [windowIDBase](std::string_view s = "") { return std::format("Notifications{}{}", s, windowIDBase); };
+    static auto makeWindowID = [windowIDBase](std::string_view s = "") {
+        return std::format("Notifications{}{}", s, windowIDBase);
+    };
 
     static std::string windowID = makeWindowID();
 
@@ -161,5 +162,7 @@ void ImGui::DrawNotificationArea(ImGuiID dockSpaceID) {
     End();
 
     // Erase inactive notifications
-    std::erase_if(notifications, [](const Notification& n) { return !n.active; });
+    std::erase_if(notifications, [](const Notification& n) {
+        return !n.active;
+    });
 }

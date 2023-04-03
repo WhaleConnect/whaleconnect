@@ -35,7 +35,9 @@ struct BluetoothQueue {
 
 static std::unordered_map<uint64_t, BluetoothQueue> bluetoothChannels;
 
-void Async::Internal::init(unsigned int) { kq = call(FN(kqueue)); }
+void Async::Internal::init(unsigned int) {
+    kq = call(FN(kqueue));
+}
 
 void Async::Internal::stopThreads(unsigned int) {
     // Submit a single event to wake up all threads

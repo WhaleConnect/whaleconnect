@@ -39,7 +39,9 @@ class ConnWindow : public Window {
     void _errorHandler(const System::SystemError& error);
 
     // Connects to the target server.
-    void _init() override { _connect(); }
+    void _init() override {
+        _connect();
+    }
 
     // Handles incoming I/O.
     void _onBeforeUpdate() override;
@@ -51,5 +53,7 @@ public:
     // Sets the window information (title and remote host).
     ConnWindow(std::unique_ptr<Writable>&& socket, const Device& device, std::string_view extraInfo);
 
-    ~ConnWindow() override { _socket->cancelIO(); }
+    ~ConnWindow() override {
+        _socket->cancelIO();
+    }
 };

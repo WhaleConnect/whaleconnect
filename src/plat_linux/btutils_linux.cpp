@@ -154,7 +154,9 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     SDPResultList ret;
 
     // TODO: Use std::bind_back() instead of lambda in C++23
-    using SDPListPtr = HandlePtr<sdp_list_t, [](sdp_list_t* p) { sdp_list_free(p, nullptr); }>;
+    using SDPListPtr = HandlePtr<sdp_list_t, [](sdp_list_t* p) {
+        sdp_list_free(p, nullptr);
+    }>;
 
     // Parse the MAC address into a Bluetooth address structure
     bdaddr_t bdAddr;
@@ -239,9 +241,14 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
             for (auto iter = svClassList.get(); iter; iter = iter->next) {
                 auto uuid = static_cast<uuid_t*>(iter->data);
                 switch (uuid->type) {
-                    case SDP_UUID16: result.serviceUUIDs.push_back(createUUIDFromBase(uuid->value.uuid16)); break;
-                    case SDP_UUID32: result.serviceUUIDs.push_back(createUUIDFromBase(uuid->value.uuid32)); break;
-                    case SDP_UUID128: result.serviceUUIDs.push_back(std::to_array(uuid->value.uuid128.data));
+                    case SDP_UUID16:
+                        result.serviceUUIDs.push_back(createUUIDFromBase(uuid->value.uuid16));
+                        break;
+                    case SDP_UUID32:
+                        result.serviceUUIDs.push_back(createUUIDFromBase(uuid->value.uuid32));
+                        break;
+                    case SDP_UUID128:
+                        result.serviceUUIDs.push_back(std::to_array(uuid->value.uuid128.data));
                 }
             }
         }

@@ -207,10 +207,17 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
         // Service class UUIDs
         for (const auto& [_, specificType, data] : getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_CLASS_ID_LIST)) {
             switch (specificType) {
-                case SDP_ST_UUID16: result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid16)); break;
-                case SDP_ST_UUID32: result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid32)); break;
-                case SDP_ST_UUID128: result.serviceUUIDs.push_back(toUUID(data.uuid128)); break;
-                default: break; // Other types not handled
+                case SDP_ST_UUID16:
+                    result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid16));
+                    break;
+                case SDP_ST_UUID32:
+                    result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid32));
+                    break;
+                case SDP_ST_UUID128:
+                    result.serviceUUIDs.push_back(toUUID(data.uuid128));
+                    break;
+                default:
+                    break; // Other types not handled
             }
         }
 

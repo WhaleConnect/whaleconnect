@@ -48,7 +48,9 @@ namespace System {
         SystemError(ErrorCode code, ErrorType type, std::string_view fnName) : code(code), type(type), fnName(fnName) {}
 
         // Checks if this object represents a fatal error.
-        explicit operator bool() const { return isFatal(code); }
+        explicit operator bool() const {
+            return isFatal(code);
+        }
 
         // Represents this object as a readable string.
         [[nodiscard]] std::string formatted() const;

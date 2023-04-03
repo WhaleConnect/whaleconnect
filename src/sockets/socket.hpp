@@ -21,10 +21,14 @@ class Socket : protected SocketTraits<Tag>, virtual public Closeable {
 
 protected:
     // Accesses the handle. Platform-specific implementations should not modify the handle.
-    HandleType _get() const { return _handle; }
+    HandleType _get() const {
+        return _handle;
+    }
 
     // Releases ownership of the managed handle.
-    void _release() { _handle = invalidHandle; }
+    void _release() {
+        _handle = invalidHandle;
+    }
 
 public:
     // Constructs an object owning nothing.
@@ -39,7 +43,9 @@ public:
     Socket(Socket&& other) noexcept : _handle(other._release()) {}
 
     // Destructs this object and closes the managed handle.
-    ~Socket() override { close(); }
+    ~Socket() override {
+        close();
+    }
 
     Socket& operator=(const Socket&) = delete;
 
@@ -52,7 +58,9 @@ public:
     }
 
     // Checks the validity of the managed socket.
-    explicit operator bool() const { return _handle != invalidHandle; }
+    explicit operator bool() const {
+        return _handle != invalidHandle;
+    }
 
     // Closes the managed socket.
     void close() final;

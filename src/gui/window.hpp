@@ -29,7 +29,9 @@ class Window {
 
 protected:
     // Enables or disables the window's close button.
-    void _setClosable(bool closable) { _openPtr = closable ? &_open : nullptr; }
+    void _setClosable(bool closable) {
+        _openPtr = closable ? &_open : nullptr;
+    }
 
 public:
     // Sets the window title.
@@ -39,10 +41,14 @@ public:
     virtual ~Window() = default;
 
     // Gets the window title.
-    [[nodiscard]] std::string_view getTitle() const { return _title; }
+    [[nodiscard]] std::string_view getTitle() const {
+        return _title;
+    }
 
     // Gets the window's open/closed state.
-    [[nodiscard]] bool isOpen() const { return _open; }
+    [[nodiscard]] bool isOpen() const {
+        return _open;
+    }
 
     // Performs any extra required initialization. This may be called once; subsequent calls will do nothing.
     void init() {

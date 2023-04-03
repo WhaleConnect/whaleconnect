@@ -41,19 +41,27 @@ class Task {
         std::exception_ptr exception; // Any exception that was thrown in the coroutine
 
         // Called first when a coroutine is entered. This specifies the Task object returned from a coroutine function.
-        Task get_return_object() noexcept { return Task{ *this }; }
+        Task get_return_object() noexcept {
+            return Task{ *this };
+        }
 
         // Called second when a coroutine is entered. This dictates how the coroutine starts.
         // Returning suspend_never starts the coroutine immediately.
-        [[nodiscard]] std::suspend_never initial_suspend() const noexcept { return {}; }
+        [[nodiscard]] std::suspend_never initial_suspend() const noexcept {
+            return {};
+        }
 
         // Handles any exceptions thrown in a coroutine.
-        void unhandled_exception() noexcept { exception = std::current_exception(); }
+        void unhandled_exception() noexcept {
+            exception = std::current_exception();
+        }
 
         // Called when a coroutine is about to complete.
         auto final_suspend() const noexcept {
             struct Awaiter {
-                [[nodiscard]] bool await_ready() const noexcept { return false; }
+                [[nodiscard]] bool await_ready() const noexcept {
+                    return false;
+                }
 
                 std::coroutine_handle<> await_suspend(std::coroutine_handle<promise_type> current) const noexcept {
                     // Get the caller coroutine's handle

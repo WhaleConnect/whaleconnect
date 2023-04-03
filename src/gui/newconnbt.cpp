@@ -95,7 +95,9 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
         try {
             pairedDevices = BTUtils::getPaired();
             needsSort = true;
-        } catch (const System::SystemError& error) { pairedDevices = error; }
+        } catch (const System::SystemError& error) {
+            pairedDevices = error;
+        }
     }
 
     // Check paired devices list

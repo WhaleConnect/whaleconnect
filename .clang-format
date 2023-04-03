@@ -1,5 +1,5 @@
 # This file defines the formatting style for Network Socket Terminal.
-# Minimum clang-format version required: 15
+# Minimum clang-format version required: 16
 
 #################### Line length ####################
 ColumnLimit: 120
@@ -30,12 +30,12 @@ EmptyLineBeforeAccessModifier: Always
 KeepEmptyLinesAtTheStartOfBlocks: false
 
 #################### Short blocks ####################
-AllowShortBlocksOnASingleLine: Always
-AllowShortCaseLabelsOnASingleLine: true
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: false
 AllowShortEnumsOnASingleLine: true
-AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
-AllowShortLambdasOnASingleLine: All
+AllowShortLambdasOnASingleLine: Empty
 AllowShortLoopsOnASingleLine: true
 InsertBraces: false
 
@@ -74,7 +74,9 @@ ObjCSpaceBeforeProtocolList: true
 AlignAfterOpenBracket: Align
 AlignEscapedNewlines: Left
 AlignOperands: AlignAfterOperator
-AlignTrailingComments: true
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0
 
 PointerAlignment: Left
 ReferenceAlignment: Left

@@ -42,7 +42,9 @@ public:
 
     ~ClientSocket() override = default;
 
-    [[nodiscard]] const Device& getDevice() const { return _device; }
+    [[nodiscard]] const Device& getDevice() const {
+        return _device;
+    }
 
     [[nodiscard]] Task<> connect() const override;
 };

@@ -16,7 +16,9 @@ namespace ImGui {
     constexpr float FILL = -FLT_MIN; // Makes a widget fill a dimension. Use with ImVec2.
 
     // A wrapper for TextUnformatted() to allow a string_view parameter.
-    inline void TextUnformatted(std::string_view s) { TextUnformatted(s.data()); }
+    inline void TextUnformatted(std::string_view s) {
+        TextUnformatted(s.data());
+    }
 
     // Wrapper for RadioButton() to control a variable and its value.
     template <class T>

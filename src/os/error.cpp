@@ -44,10 +44,15 @@ std::string System::SystemError::formatted() const {
 
     using enum ErrorType;
     switch (type) {
-        case System: msg = std::strerror(code); break;
-        case AddrInfo: msg = gai_strerror(code); break;
+        case System:
+            msg = std::strerror(code);
+            break;
+        case AddrInfo:
+            msg = gai_strerror(code);
+            break;
 #if OS_MACOS
-        case IOReturn: msg = mach_error_string(code);
+        case IOReturn:
+            msg = mach_error_string(code);
 #endif
     }
 #endif

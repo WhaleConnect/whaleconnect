@@ -7,8 +7,7 @@
 
 #include "error.hpp"
 
-#define FN(f, ...) \
-    FnResult { f(__VA_ARGS__), #f }
+// clang-format off
 
 // Predicate functions to check success based on return code
 constexpr auto checkTrue = [](auto rc) { return static_cast<bool>(rc); };  // Check if return code evaluates to true
@@ -20,12 +19,16 @@ constexpr auto useLastError = [](auto) { return System::getLastError(); }; // Ig
 constexpr auto useReturnCode = [](auto rc) { return rc; };                 // Use return code as-is
 constexpr auto useReturnCodeNeg = [](auto rc) { return -rc; };             // Use negated return code
 
+// clang-format on
+
 // Structure to contain a function's textual name and return code.
 template <class T>
 struct FnResult {
     T rc = 0;         // Return code
     std::string name; // Function name
 };
+
+#define FN(f, ...) FnResult(f(__VA_ARGS__), #f)
 
 #ifdef __clang__
 // Clang does not yet support CTAD for aggregates (P1816R0)

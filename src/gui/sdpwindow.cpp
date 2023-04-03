@@ -84,7 +84,9 @@ void SDPWindow::_drawConnOptions(std::string_view info) {
 
 void SDPWindow::_checkInquiryStatus() {
     Overload visitor{
-        [](std::monostate) { ImGui::TextUnformatted("No inquiry run"); },
+        [](std::monostate) {
+            ImGui::TextUnformatted("No inquiry run");
+        },
         [this](AsyncSDPInquiry& asyncInq) {
             using namespace std::literals;
             if (asyncInq.wait_for(0s) != std::future_status::ready) {
@@ -98,10 +100,16 @@ void SDPWindow::_checkInquiryStatus() {
             // The async operation has completed, attempt to get its results
             try {
                 _sdpInquiry = asyncInq.get();
-            } catch (const System::SystemError& error) { _sdpInquiry = error; }
+            } catch (const System::SystemError& error) {
+                _sdpInquiry = error;
+            }
         },
-        [](const std::system_error&) { ImGui::TextWrapped("System error: Failed to launch thread."); },
-        [](const System::SystemError& error) { ImGui::TextWrapped("Error %s", error.formatted().c_str()); },
+        [](const std::system_error&) {
+            ImGui::TextWrapped("System error: Failed to launch thread.");
+        },
+        [](const System::SystemError& error) {
+            ImGui::TextWrapped("Error %s", error.formatted().c_str());
+        },
         [this](const BTUtils::SDPResultList& list) {
             // Done, print results
             if (list.empty()) {
@@ -148,7 +156,9 @@ void SDPWindow::_drawSDPTab() {
             // Start the inquiry
             _sdpInquiry = std::async(std::launch::async, BTUtils::sdpLookup, _target.address, _uuids.at(_selectedUUID),
                                      _flushCache);
-        } catch (const std::system_error& error) { _sdpInquiry = error; }
+        } catch (const std::system_error& error) {
+            _sdpInquiry = error;
+        }
     }
 
     ImGui::EndDisabled();

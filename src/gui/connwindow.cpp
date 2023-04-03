@@ -18,10 +18,14 @@ magic_enum::customize::enum_name(ConnectionType value) noexcept {
     using enum ConnectionType;
 
     switch (value) {
-        case L2CAPSeqPacket: return "L2CAP SeqPacket";
-        case L2CAPStream: return "L2CAP Stream";
-        case L2CAPDgram: return "L2CAP Datagram";
-        default: return default_tag;
+        case L2CAPSeqPacket:
+            return "L2CAP SeqPacket";
+        case L2CAPStream:
+            return "L2CAP Stream";
+        case L2CAPDgram:
+            return "L2CAP Datagram";
+        default:
+            return default_tag;
     }
 }
 
@@ -65,11 +69,15 @@ Task<> ConnWindow::_connect() try {
     // Assume the socket is connected at this point
     _output.addInfo("Connected.");
     _connected = true;
-} catch (const System::SystemError& error) { _errorHandler(error); }
+} catch (const System::SystemError& error) {
+    _errorHandler(error);
+}
 
 Task<> ConnWindow::_sendHandler(std::string_view s) try {
     co_await _socket->send(std::string{ s });
-} catch (const System::SystemError& error) { _errorHandler(error); }
+} catch (const System::SystemError& error) {
+    _errorHandler(error);
+}
 
 Task<> ConnWindow::_readHandler() try {
     if (!_connected) co_return;
@@ -88,7 +96,9 @@ Task<> ConnWindow::_readHandler() try {
     }
 
     _pendingRecv = false;
-} catch (const System::SystemError& error) { _errorHandler(error); }
+} catch (const System::SystemError& error) {
+    _errorHandler(error);
+}
 
 void ConnWindow::_errorHandler(const System::SystemError& error) {
     // Check for non-fatal errors, then add error line to console

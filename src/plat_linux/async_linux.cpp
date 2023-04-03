@@ -34,7 +34,9 @@ static int waitCQE(io_uring_cqe*& cqe, void*& userData) {
     return ret;
 }
 
-void Async::Internal::init(unsigned int) { call(FN(io_uring_queue_init, 128, &ring, 0), checkZero, useReturnCodeNeg); }
+void Async::Internal::init(unsigned int) {
+    call(FN(io_uring_queue_init, 128, &ring, 0), checkZero, useReturnCodeNeg);
+}
 
 void Async::Internal::stopThreads(unsigned int numThreads) {
     for (int i = 0; i < numThreads; i++) {
@@ -46,7 +48,9 @@ void Async::Internal::stopThreads(unsigned int numThreads) {
     submitRing();
 }
 
-void Async::Internal::cleanup() { io_uring_queue_exit(&ring); }
+void Async::Internal::cleanup() {
+    io_uring_queue_exit(&ring);
+}
 
 Async::CompletionResult Async::Internal::worker() {
     io_uring_cqe* cqe;
@@ -66,7 +70,11 @@ Async::CompletionResult Async::Internal::worker() {
     return result;
 }
 
-io_uring_sqe* Async::getUringSQE() { return io_uring_get_sqe(&ring); }
+io_uring_sqe* Async::getUringSQE() {
+    return io_uring_get_sqe(&ring);
+}
 
-void Async::submitRing() { io_uring_submit(&ring); }
+void Async::submitRing() {
+    io_uring_submit(&ring);
+}
 #endif
