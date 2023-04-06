@@ -131,6 +131,7 @@ void Async::bluetoothComplete(uint64_t id, BluetoothIOType type, IOReturn status
     auto completionResult = bluetoothChannels[id].pending[idx];
 
     if (!completionResult) return;
+    bluetoothChannels[id].pending[idx] = nullptr;
 
     completionResult->error = status;
     completionResult->coroHandle();
