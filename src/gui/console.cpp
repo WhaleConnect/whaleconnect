@@ -34,6 +34,14 @@ static std::string getTimestamp() {
     return std::format("{:02}:{:02}:{:02}.{:03} >", local.tm_hour, local.tm_min, local.tm_sec, ms);
 }
 
+// Activation function for the context menu for each line.
+static void lineContextMenu(int id, std::string_view s) {
+    if (ImGui::BeginPopupContextItem(std::to_string(id).c_str())) {
+        if (ImGui::MenuItem("Copy line")) ImGui::SetClipboardText(s.data());
+        ImGui::EndPopup();
+    }
+}
+
 void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
     // Avoid empty strings
     if (s.empty()) return;
@@ -90,10 +98,7 @@ void Console::_updateOutput() {
             if (hasColor) ImGui::PopStyleColor();
 
             // Right-click context menu for each line
-            if (ImGui::BeginPopupContextItem(std::to_string(i).c_str())) {
-                if (ImGui::MenuItem("Copy line")) ImGui::SetClipboardText(item.text.c_str());
-                ImGui::EndPopup();
-            }
+            lineContextMenu(i, item.text);
         }
     }
     clipper.End();
