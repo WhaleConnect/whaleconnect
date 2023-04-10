@@ -71,6 +71,7 @@ public:
     // If canUseHex is set to false, the text will never be displayed as hexadecimal.
     void addText(std::string_view s, std::string_view pre = "", const ImVec4& color = {}, bool canUseHex = true);
 
+    // Adds a message with a given color and description.
     void addMessage(std::string_view s, std::string_view desc, const ImVec4& color) {
         _forceNextLine();
         addText(s, std::format("[{}] ", desc), color, false);
