@@ -22,7 +22,7 @@ static void startConnect(SOCKET s, sockaddr* addr, size_t len, Async::Completion
 
     // ConnectEx() requires the socket to be initially bound.
     // A sockaddr_storage can be used with all connection types, Internet and Bluetooth.
-    sockaddr_storage addrBind{ .ss_family = static_cast<ADDRESS_FAMILY>(addr->sa_family) };
+    sockaddr_storage addrBind{ .ss_family = addr->sa_family };
 
     // The bind() function will work with sockaddr_storage for any address family. However, with Bluetooth, it expects
     // the size parameter to be the size of a Bluetooth address structure. Unlike Internet-based sockets, it will not

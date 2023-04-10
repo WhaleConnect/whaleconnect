@@ -81,11 +81,13 @@ static std::vector<SDP_ELEMENT_DATA> getSDPListData(LPBLOB blob, USHORT attrib) 
     return getSDPListData(element);
 }
 
-BTUtils::Instance::Instance() {}
+BTUtils::Instance::Instance() = default;
 
-BTUtils::Instance::~Instance() {}
+BTUtils::Instance::~Instance() = default;
 
-void BTUtils::processAsyncEvents() {}
+void BTUtils::processAsyncEvents() {
+    // Does not exist on Windows
+}
 
 DeviceList BTUtils::getPaired() {
     DeviceList deviceList;
