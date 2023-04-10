@@ -15,6 +15,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
   - A notification can close automatically after a few seconds; this can be canceled by hovering over its close button.
 - Added a setting to control how many worker threads are spawned.
   - If `0` is specified, the app creates the maximum number of supported threads.
+- Added a "send echoing" option to connection windows to show sent strings in the console.
 
 ### Improvements
 
@@ -28,6 +29,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Fixed the textbox autofocus in connection windows when the Enter key is pressed.
 - Fixed an issue that would prevent sockets from closing if a connection window was closed while still connecting.
   - This also fixes a delayed crash on Windows occurring under the same scenario.
+- Fixed possible hangs that would occur on socket errors.
 
 ### Removals
 
