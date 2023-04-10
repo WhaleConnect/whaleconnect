@@ -5,7 +5,6 @@
 
 #include <format>
 #include <functional> // std::function
-#include <sstream>    // std::ostringstream
 #include <string_view>
 #include <vector>
 
@@ -15,11 +14,11 @@
 class Console {
     // A structure representing an item in a console output.
     struct ConsoleItem {
-        bool canUseHex;             // If the item gets displayed as hexadecimal when the option is set
-        std::string text;           // Text string
-        std::ostringstream textHex; // Text in hexadecimal format
-        ImVec4 color;               // Color
-        std::string timestamp;      // Time added
+        bool canUseHex;        // If the item gets displayed as hexadecimal when the option is set
+        std::string text;      // Text string
+        std::string textHex;   // Text in hexadecimal format
+        ImVec4 color;          // Color
+        std::string timestamp; // Time added
     };
 
     // State variables

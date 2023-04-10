@@ -48,7 +48,7 @@ void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
 
     // Text goes on its own line if there are no items or the last line ends with a newline
     if (_items.empty() || (_items.back().text.back() == '\n'))
-        _items.emplace_back(canUseHex, std::string{ s }, std::ostringstream{}, color, getTimestamp());
+        _items.emplace_back(canUseHex, std::string{ s }, "", color, getTimestamp());
     else _items.back().text += s;
 
     // Computing the string's hex representation here removes the need to recompute it every application frame.
@@ -56,16 +56,7 @@ void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
         // Build the hex representation of the string
         // We're appending to the last item's ostringstream (_items.back() is guaranteed to exist at this point).
         // We won't need to check for newlines using this approach.
-        std::ostringstream& oss = _items.back().textHex;
-        for (unsigned char c : s) {
-            // Add each character:
-            oss << std::hex            // Express integers in hexadecimal (i.e. base-16)
-                << std::uppercase      // Make hex digits A-F uppercase
-                << std::setw(2)        // Format in octets (8 bits => 2 hex digits)
-                << std::setfill('0')   // If something is less than 2 digits it's padded with 0s (i.e. "A" => "0A")
-                << static_cast<int>(c) // Use the above formatting rules to append the character's codepoint
-                << " ";                // Separate octets with a single space
-        }
+        for (unsigned char c : s) _items.back().textHex += std::format("{:02X} ", static_cast<int>(c));
     }
 
     _scrollToEnd = _autoscroll; // Scroll to the end if autoscroll is enabled
@@ -94,7 +85,7 @@ void Console::_updateOutput() {
 
             // Apply color if needed
             if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, item.color);
-            ImGui::TextUnformatted((_showHex && item.canUseHex) ? item.textHex.str() : item.text);
+            ImGui::TextUnformatted((_showHex && item.canUseHex) ? item.textHex : item.text);
             if (hasColor) ImGui::PopStyleColor();
 
             // Right-click context menu for each line
