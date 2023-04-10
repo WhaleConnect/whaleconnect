@@ -29,6 +29,7 @@ class Console {
     bool _autoscroll = true;           // If console autoscrolls when new data is put
     bool _showTimestamps = false;      // If timestamps are shown in the output
     bool _showHex = false;             // If items are shown in hexadecimal
+    bool _sendEchoing = true;          // If submitted strings are displayed in the output
     bool _clearTextboxOnSubmit = true; // If the textbox is cleared when the submit callback is called
     bool _addFinalLineEnding = false;  // If a final line ending is added to the callback input string
 
@@ -70,11 +71,17 @@ public:
     // If canUseHex is set to false, the text will never be displayed as hexadecimal.
     void addText(std::string_view s, std::string_view pre = "", const ImVec4& color = {}, bool canUseHex = true);
 
+    void addMessage(std::string_view s, std::string_view desc, const ImVec4& color) {
+        _forceNextLine();
+        addText(s, std::format("[{}] ", desc), color, false);
+        _forceNextLine();
+    }
+
     // Adds a red error message.
     void addError(std::string_view s) {
         // Error messages in red
         _forceNextLine();
-        addText(s, "[ERROR] ", { 1.0f, 0.4f, 0.4f, 1.0f }, false);
+        addMessage(s, "ERROR", { 1.0f, 0.4f, 0.4f, 1.0f });
         _forceNextLine();
     }
 
@@ -82,7 +89,7 @@ public:
     void addInfo(std::string_view s) {
         // Information in yellow
         _forceNextLine();
-        addText(s, "[INFO ] ", { 1.0f, 0.8f, 0.6f, 1.0f }, false);
+        addMessage(s, "INFO ", { 1.0f, 0.8f, 0.6f, 1.0f });
         _forceNextLine();
     }
 };

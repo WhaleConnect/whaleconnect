@@ -116,6 +116,7 @@ void Console::_updateOutput() {
         ImGui::MenuItem("Autoscroll", nullptr, &_autoscroll);
         ImGui::MenuItem("Show timestamps", nullptr, &_showTimestamps);
         ImGui::MenuItem("Show hexadecimal", nullptr, &_showHex);
+        ImGui::MenuItem("Send echoing", nullptr, &_sendEchoing);
 
         // Options for the input textbox
         ImGui::Separator();
@@ -164,7 +165,11 @@ void Console::update() {
         if (_addFinalLineEnding) sendString += selectedEnding;
 
         // Invoke the callback function if the string is not empty
-        if (!sendString.empty()) _inputCallback(sendString);
+        if (!sendString.empty()) {
+            if (_sendEchoing) addMessage(sendString, "SENT ", { 0.28f, 0.67f, 0.68f, 1 });
+
+            _inputCallback(sendString);
+        }
 
         // Blank out input textbox
         if (_clearTextboxOnSubmit) _textBuf.clear();
