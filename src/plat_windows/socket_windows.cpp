@@ -28,13 +28,13 @@ template <auto Tag>
 Task<std::string> WritableSocket<Tag>::recv() const {
     std::string data(_recvLen, 0);
 
-    auto result = co_await Async::run([this, &data](Async::CompletionResult& result) {
+    auto recvResult = co_await Async::run([this, &data](Async::CompletionResult& result) {
         DWORD flags = 0;
         WSABUF buf{ static_cast<ULONG>(_recvLen), data.data() };
         call(FN(WSARecv, this->_get(), &buf, 1, nullptr, &flags, &result, nullptr));
     });
 
-    data.resize(result.res);
+    data.resize(recvResult.res);
     co_return data;
 }
 
