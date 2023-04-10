@@ -103,10 +103,7 @@ Task<> ConnWindow::_readHandler() try {
 void ConnWindow::_errorHandler(const System::SystemError& error) {
     // Check for non-fatal errors, then add error line to console
     // Don't handle errors caused by I/O cancellation
-    if (error && !System::isCanceled(error.code, error.type)) {
-        std::scoped_lock outputLock{ _outputMutex };
-        _output.addError(error.formatted());
-    }
+    if (error && !System::isCanceled(error.code, error.type)) _output.addError(error.formatted());
 }
 
 void ConnWindow::_onBeforeUpdate() {
@@ -115,6 +112,5 @@ void ConnWindow::_onBeforeUpdate() {
 }
 
 void ConnWindow::_onUpdate() {
-    std::scoped_lock outputLock{ _outputMutex };
     _output.update();
 }

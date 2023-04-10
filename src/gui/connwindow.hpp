@@ -5,7 +5,6 @@
 
 #include <functional> // std::bind_front()
 #include <memory>
-#include <mutex>
 #include <string>
 #include <string_view>
 
@@ -22,7 +21,6 @@ class ConnWindow : public Window {
 
     bool _connected = false;   // If the socket is connected
     bool _pendingRecv = false; // If a receive operation has not yet completed
-    std::mutex _outputMutex;   // Mutex for access to the console output
 
     Console _output{ std::bind_front(&ConnWindow::_sendHandler, this) }; // The console output
 
