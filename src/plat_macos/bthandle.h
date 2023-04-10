@@ -11,6 +11,7 @@
 
 @interface BTHandle : NSObject <IOBluetoothL2CAPChannelDelegate, IOBluetoothRFCOMMChannelDelegate>
 @property (nonatomic, strong) id channel;
+@property (nonatomic) bool isL2CAP;
 
 - (instancetype)initWithChannel:(id)bluetoothChannel;
 

@@ -24,7 +24,10 @@ static void check(IOReturn code, const char* fnName) {
 
 - (instancetype)initWithChannel:(id)bluetoothChannel {
     self = [super init];
-    if (self) _channel = bluetoothChannel;
+    if (self) {
+        _channel = bluetoothChannel;
+        _isL2CAP = [_channel isKindOfClass:[IOBluetoothL2CAPChannel class]];
+    }
 
     return self;
 }
@@ -32,15 +35,17 @@ static void check(IOReturn code, const char* fnName) {
 - (void)registerAsDelegate {
     IOReturn res;
 
-    if ([_channel isKindOfClass:[IOBluetoothRFCOMMChannel class]])
-        res = [static_cast<IOBluetoothRFCOMMChannel*>(_channel) setDelegate:self];
-    else res = [static_cast<IOBluetoothL2CAPChannel*>(_channel) setDelegate:self];
+    if (_isL2CAP) res = [static_cast<IOBluetoothL2CAPChannel*>(_channel) setDelegate:self];
+    else res = [static_cast<IOBluetoothRFCOMMChannel*>(_channel) setDelegate:self];
 
     check(res, "setDelegate");
 }
 
 - (void)close {
     [_channel closeChannel];
+
+    if (_isL2CAP) [[_channel device] closeConnection];
+    else [[_channel getDevice] closeConnection];
 }
 
 - (void)write:(std::string)data {
