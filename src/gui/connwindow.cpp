@@ -13,8 +13,7 @@
 #include "utils/strings.hpp"
 
 template <>
-constexpr magic_enum::customize::customize_t
-magic_enum::customize::enum_name(ConnectionType value) noexcept {
+constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(ConnectionType value) noexcept {
     using enum ConnectionType;
 
     switch (value) {

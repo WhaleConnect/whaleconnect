@@ -20,7 +20,7 @@ static void worker() {
             auto result = Async::Internal::worker();
             result.coroHandle();
         } catch (const Async::Internal::WorkerInterruptedError&) {
-            break;    // Interrupted, break from loop
+            break; // Interrupted, break from loop
         } catch (const Async::Internal::WorkerNoDataError&) {
             continue; // No data to complete operation
         } catch (const System::SystemError&) {
