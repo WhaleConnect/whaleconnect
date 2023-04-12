@@ -22,7 +22,7 @@
 #include "error.hpp"
 
 template <>
-[[maybe_unused]] constexpr magic_enum::customize::customize_t
+constexpr magic_enum::customize::customize_t
 magic_enum::customize::enum_name(System::ErrorType value) noexcept {
     if (value == System::ErrorType::AddrInfo) return "getaddrinfo";
     return default_tag;
