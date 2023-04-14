@@ -63,9 +63,6 @@ namespace BTUtils {
         return ret;
     }
 
-    // Handles the Objective-C event loop. (macOS only)
-    void processAsyncEvents();
-
     // Gets the Bluetooth devices that are paired to this computer.
     //
     // The Device instances returned have no type set because the communication protocol to use with them is

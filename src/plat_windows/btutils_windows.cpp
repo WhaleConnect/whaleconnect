@@ -85,10 +85,6 @@ BTUtils::Instance::Instance() = default;
 
 BTUtils::Instance::~Instance() = default;
 
-void BTUtils::processAsyncEvents() {
-    // Does not exist on Windows
-}
-
 DeviceList BTUtils::getPaired() {
     DeviceList deviceList;
 

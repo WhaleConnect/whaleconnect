@@ -57,13 +57,9 @@ static uint16_t getUUIDInt(IOBluetoothSDPDataElement* data) {
     return ret;
 }
 
-BTUtils::Instance::Instance() {}
+BTUtils::Instance::Instance() = default;
 
-BTUtils::Instance::~Instance() {}
-
-void BTUtils::processAsyncEvents() {
-    [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
-}
+BTUtils::Instance::~Instance() = default;
 
 DeviceList BTUtils::getPaired() {
     NSArray* devices = [IOBluetoothDevice pairedDevices];
