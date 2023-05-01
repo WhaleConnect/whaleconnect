@@ -7,6 +7,9 @@
 
 #include <magic_enum.hpp>
 
+#include "imgui.h"
+
+#include "gui/imguiext.hpp"
 #include "os/error.hpp"
 #include "sockets/device.hpp"
 #include "sockets/traits.hpp"
@@ -29,7 +32,7 @@ constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(Co
 }
 
 // Formats a Device instance into a string for use in a ConnWindow title.
-std::string formatDevice(const Device& device, std::string_view extraInfo) {
+static std::string formatDevice(const Device& device, std::string_view extraInfo) {
     // Type of the connection
     bool isIP = (device.type == ConnectionType::TCP || device.type == ConnectionType::UDP);
     auto typeString = magic_enum::enum_name(device.type);
@@ -111,5 +114,74 @@ void ConnWindow::_onBeforeUpdate() {
 }
 
 void ConnWindow::_onUpdate() {
-    _output.update();
+    // Apply foxus to textbox
+    // An InputTextMultiline is an InputText contained within a child window so focus must be set before rendering it to
+    // apply focus to the InputText.
+    if (_focusOnTextbox) {
+        ImGui::SetKeyboardFocusHere();
+        _focusOnTextbox = false;
+    }
+
+    // Textbox
+    float textboxHeight = 4.0f; // Number of lines that can be displayed
+    ImVec2 size{ ImGui::FILL, ImGui::GetTextLineHeight() * textboxHeight };
+    ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
+                              | ImGuiInputTextFlags_AllowTabInput;
+
+    if (ImGui::InputTextMultiline("##input", _textBuf, size, flags)) {
+        // Line ending
+        std::array endings{ "\n", "\r", "\r\n" };
+        auto selectedEnding = endings[_currentLE];
+
+        // InputTextMultiline() always uses \n as a line ending, replace all occurences of \n with the selected ending
+        std::string sendString = Strings::replaceAll(_textBuf, "\n", selectedEnding);
+
+        // Add a final line ending if set
+        if (_addFinalLineEnding) sendString += selectedEnding;
+
+        // Invoke the callback function if the string is not empty
+        if (!sendString.empty()) {
+            if (_sendEchoing) _output.addMessage(sendString, "SENT ", { 0.28f, 0.67f, 0.68f, 1 });
+
+            _sendHandler(sendString);
+        }
+
+        // Blank out input textbox
+        if (_clearTextboxOnSubmit) _textBuf.clear();
+
+        _focusOnTextbox = true;
+    }
+
+    _output.update("console", ImVec2{ ImGui::FILL, -ImGui::GetFrameHeightWithSpacing() });
+    _drawControls();
+}
+
+void ConnWindow::_drawControls() {
+    // "Clear output" button
+    if (ImGui::Button("Clear output")) _output.clear();
+
+    // "Options" button
+    ImGui::SameLine();
+    if (ImGui::Button("Options...")) ImGui::OpenPopup("options");
+
+    // Popup for more options
+    if (ImGui::BeginPopup("options")) {
+        _output.drawOptions();
+
+        // Options for the input textbox
+        ImGui::Separator();
+        ImGui::MenuItem("Send echoing", nullptr, &_sendEchoing);
+        ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSubmit);
+        ImGui::MenuItem("Add final line ending", nullptr, &_addFinalLineEnding);
+        ImGui::EndPopup();
+    }
+
+    // Line ending combobox
+    // The code used to calculate where to put the combobox is derived from
+    // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
+    float comboWidth = 150.0f;
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
+    ImGui::SetNextItemWidth(comboWidth);
+    ImGui::Combo("##lineEnding", &_currentLE, "Newline\0Carriage return\0Both\0");
 }

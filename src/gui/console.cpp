@@ -7,8 +7,6 @@
 #include <chrono>
 #include <ctime>
 #include <format>
-#include <iomanip> // std::hex, std::uppercase, std::setw(), std::setfill()
-#include <sstream>
 #include <string>
 #include <string_view>
 
@@ -62,9 +60,14 @@ void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
     _scrollToEnd = _autoscroll; // Scroll to the end if autoscroll is enabled
 }
 
-void Console::_updateOutput() {
-    // Reserve space at bottom for more elements
-    ImGui::BeginChild("output", { 0, -ImGui::GetFrameHeightWithSpacing() }, true, ImGuiWindowFlags_HorizontalScrollbar);
+void Console::drawOptions() {
+    ImGui::MenuItem("Autoscroll", nullptr, &_autoscroll);
+    ImGui::MenuItem("Show timestamps", nullptr, &_showTimestamps);
+    ImGui::MenuItem("Show hexadecimal", nullptr, &_showHex);
+}
+
+void Console::update(std::string_view id, const ImVec2& size) {
+    ImGui::BeginChild(id.data(), size, true, ImGuiWindowFlags_HorizontalScrollbar);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 4, 1 }); // Tighten line spacing
 
     // Add each item
@@ -103,84 +106,6 @@ void Console::_updateOutput() {
 
     ImGui::PopStyleVar();
     ImGui::EndChild();
-
-    // "Clear output" button
-    if (ImGui::Button("Clear output")) _items.clear();
-
-    // "Options" button
-    ImGui::SameLine();
-    if (ImGui::Button("Options...")) ImGui::OpenPopup("options");
-
-    // Popup for more options
-    if (ImGui::BeginPopup("options")) {
-        ImGui::MenuItem("Autoscroll", nullptr, &_autoscroll);
-        ImGui::MenuItem("Show timestamps", nullptr, &_showTimestamps);
-        ImGui::MenuItem("Show hexadecimal", nullptr, &_showHex);
-        ImGui::MenuItem("Send echoing", nullptr, &_sendEchoing);
-
-        // Options for the input textbox
-        ImGui::Separator();
-        ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSubmit);
-        ImGui::MenuItem("Add final line ending", nullptr, &_addFinalLineEnding);
-        ImGui::EndPopup();
-    }
-
-    // Line ending combobox
-    // The code used to calculate where to put the combobox is derived from
-    // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
-    float comboWidth = 150.0f;
-    ImGui::SameLine();
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
-    ImGui::SetNextItemWidth(comboWidth);
-    ImGui::Combo("##lineEnding", &_currentLE, "Newline\0Carriage return\0Both\0");
-}
-
-void Console::update() {
-    ImGui::PushID("console");
-    ImGui::BeginGroup();
-
-    // Textbox
-    float textboxHeight = 4.0f; // Number of lines that can be displayed
-    ImVec2 size{ ImGui::FILL, ImGui::GetTextLineHeight() * textboxHeight };
-    ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
-                              | ImGuiInputTextFlags_AllowTabInput;
-
-    // Apply foxus to textbox
-    // An InputTextMultiline is an InputText contained within a child window so focus must be set before rendering it to
-    // apply focus to the InputText.
-    if (_focusOnTextbox) {
-        ImGui::SetKeyboardFocusHere();
-        _focusOnTextbox = false;
-    }
-
-    if (ImGui::InputTextMultiline("##input", _textBuf, size, flags)) {
-        // Line ending
-        std::array endings{ "\n", "\r", "\r\n" };
-        auto selectedEnding = endings[_currentLE];
-
-        // InputTextMultiline() always uses \n as a line ending, replace all occurences of \n with the selected ending
-        std::string sendString = Strings::replaceAll(_textBuf, "\n", selectedEnding);
-
-        // Add a final line ending if set
-        if (_addFinalLineEnding) sendString += selectedEnding;
-
-        // Invoke the callback function if the string is not empty
-        if (!sendString.empty()) {
-            if (_sendEchoing) addMessage(sendString, "SENT ", { 0.28f, 0.67f, 0.68f, 1 });
-
-            _inputCallback(sendString);
-        }
-
-        // Blank out input textbox
-        if (_clearTextboxOnSubmit) _textBuf.clear();
-
-        _focusOnTextbox = true;
-    }
-
-    _updateOutput();
-
-    ImGui::EndGroup();
-    ImGui::PopID();
 }
 
 void Console::addText(std::string_view s, std::string_view pre, const ImVec4& color, bool canUseHex) {

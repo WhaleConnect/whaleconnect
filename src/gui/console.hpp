@@ -4,13 +4,12 @@
 #pragma once
 
 #include <format>
-#include <functional> // std::function
 #include <string_view>
 #include <vector>
 
 #include <imgui.h>
 
-// A class to represent a text panel with an input textbox.
+// A class to represent a text panel output.
 class Console {
     // A structure representing an item in a console output.
     struct ConsoleItem {
@@ -21,23 +20,15 @@ class Console {
         std::string timestamp; // Time added
     };
 
-    // State variables
-    bool _scrollToEnd = false;    // If the console is force-scrolled to the end
-    bool _focusOnTextbox = false; // If keyboard focus is applied to the textbox
+    // State
+    bool _scrollToEnd = false; // If the console is force-scrolled to the end
 
-    // Option variables
-    bool _autoscroll = true;           // If console autoscrolls when new data is put
-    bool _showTimestamps = false;      // If timestamps are shown in the output
-    bool _showHex = false;             // If items are shown in hexadecimal
-    bool _sendEchoing = true;          // If submitted strings are displayed in the output
-    bool _clearTextboxOnSubmit = true; // If the textbox is cleared when the submit callback is called
-    bool _addFinalLineEnding = false;  // If a final line ending is added to the callback input string
-
-    std::function<void(std::string_view)> _inputCallback; // The textbox callback function, called on Enter key
+    // Options
+    bool _autoscroll = true;      // If console autoscrolls when new data is put
+    bool _showTimestamps = false; // If timestamps are shown in the output
+    bool _showHex = false;        // If items are shown in hexadecimal
 
     std::vector<ConsoleItem> _items; // Items in console output
-    std::string _textBuf;            // Textbox buffer
-    int _currentLE = 0;              // Index of the line ending selected
 
     // Forces subsequent text to go on a new line.
     void _forceNextLine() {
@@ -51,20 +42,12 @@ class Console {
     // Adds text to the console. Does not make it go on its own line.
     void _add(std::string_view s, const ImVec4& color, bool canUseHex);
 
-    // Draws the output pane only.
-    void _updateOutput();
-
 public:
-    // Sets the text input callback function.
-    // The function should take a string_view argument.
-    //
-    // The supplied function is called when the Enter key is pressed in the input textbox. The string passed to the
-    // function is the contents of the textbox at the time of the callback.
-    template <class Fn>
-    explicit Console(const Fn& fn) : _inputCallback(fn) {}
+    // Draws widgets for each option for use in a menu.
+    void drawOptions();
 
-    // Draws the input textbox, output pane, and option selectors.
-    void update();
+    // Draws the output pane.
+    void update(std::string_view id, const ImVec2& size);
 
     // Adds text to the console. Accepts multiline strings.
     // The color of the text can be set, as well as an optional string to show before each line.
@@ -92,5 +75,10 @@ public:
         _forceNextLine();
         addMessage(s, "INFO ", { 1.0f, 0.8f, 0.6f, 1.0f });
         _forceNextLine();
+    }
+
+    // Clears the output.
+    void clear() {
+        _items.clear();
     }
 };
