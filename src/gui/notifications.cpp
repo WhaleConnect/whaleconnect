@@ -101,16 +101,15 @@ void ImGui::AddNotification(std::string_view s, float timeout) {
 }
 
 void ImGui::DrawNotificationArea(ImGuiID dockSpaceID) {
-    constexpr const char* windowIDBase = "###Notifications";
-    static auto makeWindowID = [windowIDBase](std::string_view s = "") {
+    static constexpr const char* windowIDBase = "###Notifications";
+    static auto makeWindowID = [](std::string_view s = "") {
         return std::format("Notifications{}{}", s, windowIDBase);
     };
 
     static std::string windowID = makeWindowID();
 
     // Set up docking configuration on the first frame of the application
-    static bool firstFrame = true;
-    if (firstFrame) {
+    if (static bool firstFrame = true; firstFrame) {
         // Remove previous docking configurations
         DockBuilderRemoveNodeChildNodes(dockSpaceID);
 
