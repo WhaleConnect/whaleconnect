@@ -11,33 +11,37 @@
 #include <string_view>
 
 #include <imgui.h>
+#include <unicode/smpdtfmt.h>
+#include <unicode/unistr.h>
+#include <unicode/utypes.h>
 
 #include "imguiext.hpp"
 
+#include "unicode/unistr.h"
 #include "utils/strings.hpp"
 
+#if OS_MACOS
+constexpr const char* selectAllShortcut = "Cmd+A";
+constexpr const char* copyShortcut = "Cmd+C";
+#else
+constexpr const char* selectAllShortcut = "Ctrl+A";
+constexpr const char* copyShortcut = "Ctrl+C";
+#endif
+
+// Formatter used for creating timestamp strings
+static const auto formatter = [] {
+    UErrorCode status = U_ZERO_ERROR; // Isolated from global scope
+    return icu::SimpleDateFormat{ icu::UnicodeString{ "hh:mm:ss.SSS > " }, status };
+}();
+
 static std::string getTimestamp() {
-    using namespace std::chrono;
+    UDate current = icu::Calendar::getNow();
+    icu::UnicodeString dateReturned;
+    formatter.format(current, dateReturned);
 
-    auto now = system_clock::now();
-
-    // Get milliseconds (remainder from division into seconds)
-    auto ms = (duration_cast<milliseconds>(now.time_since_epoch()) % 1s).count();
-
-    // Get local time from current time point
-    auto timer = system_clock::to_time_t(now);
-    auto local = *std::localtime(&timer);
-
-    // Return formatted string
-    return std::format("{:02}:{:02}:{:02}.{:03} >", local.tm_hour, local.tm_min, local.tm_sec, ms);
-}
-
-// Activation function for the context menu for each line.
-static void lineContextMenu(int id, std::string_view s) {
-    if (ImGui::BeginPopupContextItem(std::to_string(id).c_str())) {
-        if (ImGui::MenuItem("Copy line")) ImGui::SetClipboardText(s.data());
-        ImGui::EndPopup();
-    }
+    std::string ret;
+    dateReturned.toUTF8String(ret);
+    return ret;
 }
 
 void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
@@ -60,6 +64,20 @@ void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
     _scrollToEnd = _autoscroll; // Scroll to the end if autoscroll is enabled
 }
 
+void Console::_drawContextMenu() {
+    ImGui::BeginDisabled(!_textSelect.hasSelection());
+    if (ImGui::MenuItem("Copy", copyShortcut)) _textSelect.copy();
+    ImGui::EndDisabled();
+
+    if (ImGui::MenuItem("Select all", selectAllShortcut)) _textSelect.selectAll();
+}
+
+std::string Console::_getLineAtIdx(size_t i) const {
+    ConsoleItem item = _items[i];
+    const std::string& lineBase = (_showHex && item.canUseHex) ? item.textHex : item.text;
+    return _showTimestamps ? item.timestamp + lineBase : lineBase;
+}
+
 void Console::drawOptions() {
     ImGui::MenuItem("Autoscroll", nullptr, &_autoscroll);
     ImGui::MenuItem("Show timestamps", nullptr, &_showTimestamps);
@@ -67,7 +85,7 @@ void Console::drawOptions() {
 }
 
 void Console::update(std::string_view id, const ImVec2& size) {
-    ImGui::BeginChild(id.data(), size, true, ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::BeginChild(id.data(), size, true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoMove);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 4, 1 }); // Tighten line spacing
 
     // Add each item
@@ -80,19 +98,10 @@ void Console::update(std::string_view id, const ImVec2& size) {
             // Only color tuples with the alpha value set are considered
             bool hasColor = item.color.w > 0.0f;
 
-            // Timestamps
-            if (_showTimestamps) {
-                ImGui::TextUnformatted(item.timestamp);
-                ImGui::SameLine();
-            }
-
             // Apply color if needed
             if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, item.color);
-            ImGui::TextUnformatted((_showHex && item.canUseHex) ? item.textHex : item.text);
+            ImGui::TextUnformatted(_getLineAtIdx(i));
             if (hasColor) ImGui::PopStyleColor();
-
-            // Right-click context menu for each line
-            lineContextMenu(i, item.text);
         }
     }
     clipper.End();
@@ -102,6 +111,13 @@ void Console::update(std::string_view id, const ImVec2& size) {
         ImGui::SetScrollHereX(1.0f);
         ImGui::SetScrollHereY(1.0f);
         _scrollToEnd = false;
+    }
+
+    _textSelect.update();
+
+    if (ImGui::BeginPopupContextWindow()) {
+        _drawContextMenu();
+        ImGui::EndPopup();
     }
 
     ImGui::PopStyleVar();

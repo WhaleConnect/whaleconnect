@@ -9,7 +9,7 @@ set_defaultmode("debug")
 
 add_requires("imgui v1.89.5-docking", { configs = { sdl2_no_renderer = true, opengl3 = true } })
 add_requires("libsdl", { configs = { use_sdlmain = true } })
-add_requires("magic_enum", "out_ptr", "opengl")
+add_requires("icu4c", "magic_enum", "out_ptr", "opengl")
 
 if is_plat("linux") then
     add_requires("liburing")
@@ -18,7 +18,7 @@ if is_plat("linux") then
 end
 
 target("terminal")
-    add_packages("imgui", "libsdl", "magic_enum", "out_ptr", "opengl")
+    add_packages("icu4c", "imgui", "libsdl", "magic_enum", "out_ptr", "opengl")
 
     set_kind("binary")
     set_exceptions("cxx")

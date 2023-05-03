@@ -27,6 +27,7 @@ NST and its build scripts are licensed under the [GPL v3+ license](../COPYING).
 - [BlueZ](https://github.com/bluez/bluez/tree/master/lib) (GNU GPL v2+)
 - [Dear ImGui](https://www.github.com/ocornut/imgui) (MIT License)
 - [GNU Unifont](https://www.unifoundry.com/unifont) (Dual-Licensed) | [GitHub Mirror](https://github.com/NSTerminal/unifont)
+- [ICU](https://unicode-org.github.io/icu/) (Unicode License)
 - [libdbus](https://www.freedesktop.org/wiki/Software/dbus) (GNU GPL v2+)
 - [liburing](https://github.com/axboe/liburing) (GNU LGPL v2.1 and MIT Licenses)
 - [Magic Enum](https://github.com/Neargye/magic_enum) (MIT License)

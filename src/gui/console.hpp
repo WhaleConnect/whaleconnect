@@ -4,10 +4,14 @@
 #pragma once
 
 #include <format>
+#include <functional>
 #include <string_view>
 #include <vector>
 
 #include <imgui.h>
+#include <unicode/unistr.h>
+
+#include "gui/textselect.hpp"
 
 // A class to represent a text panel output.
 class Console {
@@ -30,6 +34,10 @@ class Console {
 
     std::vector<ConsoleItem> _items; // Items in console output
 
+    // Text selection manager
+    TextSelect _textSelect{ std::bind_front(&Console::_getLineAtIdx, this),
+                            std::bind_front(&Console::_getNumLines, this) };
+
     // Forces subsequent text to go on a new line.
     void _forceNextLine() {
         // If there are no items, new text will have to be on its own line.
@@ -41,6 +49,17 @@ class Console {
 
     // Adds text to the console. Does not make it go on its own line.
     void _add(std::string_view s, const ImVec4& color, bool canUseHex);
+
+    // Draws the contents of the right-click context menu.
+    void _drawContextMenu();
+
+    // Gets the line at an index.
+    std::string _getLineAtIdx(size_t i) const;
+
+    // Gets the number of lines in the output.
+    size_t _getNumLines() const {
+        return _items.size();
+    }
 
 public:
     // Draws widgets for each option for use in a menu.
