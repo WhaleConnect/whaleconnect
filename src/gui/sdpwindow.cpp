@@ -19,6 +19,28 @@ static void printUUID(BTUtils::UUID128 uuid) {
                       u[4], u[5], u[6], u[7], u[8], u[9], u[10], u[11], u[12], u[13], u[14], u[15]);
 }
 
+// Prints the details of a SDP result.
+static void drawServiceDetails(const BTUtils::SDPResult& result) {
+    // Print the description (if there is one)
+    ImGui::Text("Description: %s", result.desc.empty() ? "(none)" : result.desc.c_str());
+
+    // Print UUIDs
+    if (!result.protoUUIDs.empty()) ImGui::Text("Protocol UUIDs:");
+    for (auto i : result.protoUUIDs) ImGui::BulletText("0x%04X", i);
+
+    // Print service class UUIDs
+    if (!result.serviceUUIDs.empty()) ImGui::Text("Service class UUIDs:");
+    for (const auto& i : result.serviceUUIDs) printUUID(i);
+
+    // Print profile descriptors
+    if (!result.profileDescs.empty()) ImGui::Text("Profile descriptors:");
+    for (const auto& [uuid, verMajor, verMinor] : result.profileDescs)
+        ImGui::BulletText("0x%04X (version %d.%d)", uuid, verMajor, verMinor);
+
+    // Print the port
+    ImGui::Text("Port: %d", result.port);
+}
+
 bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
     // Begin a scrollable child window to contain the list
     ImGui::BeginChild("sdpList", { 0, 0 }, true);
@@ -26,36 +48,17 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
 
     // ID to use in case multiple services have the same name
     int id = 0;
-    for (const auto& [protos, services, profiles, port, name, desc] : list) {
-        const char* serviceName = name.empty() ? "Unnamed service" : name.c_str();
-
+    for (const auto& result : list) {
         ImGui::PushID(id); // Push the ID, then increment it
         id++;              // TODO: Use views::enumerate() in C++23
 
-        if (ImGui::TreeNode(serviceName)) {
-            // Print the description (if there is one)
-            ImGui::Text("Description: %s", desc.empty() ? "(none)" : desc.c_str());
-
-            // Print UUIDs
-            if (!protos.empty()) ImGui::Text("Protocol UUIDs:");
-            for (auto i : protos) ImGui::BulletText("0x%04X", i);
-
-            // Print service class UUIDs
-            if (!services.empty()) ImGui::Text("Service class UUIDs:");
-            for (const auto& i : services) printUUID(i);
-
-            // Print profile descriptors
-            if (!profiles.empty()) ImGui::Text("Profile descriptors:");
-            for (const auto& [uuid, verMajor, verMinor] : profiles)
-                ImGui::BulletText("0x%04X (version %d.%d)", uuid, verMajor, verMinor);
-
-            // Print the port
-            ImGui::Text("Port: %d", port);
+        if (const char* name = result.name.empty() ? "Unnamed service" : result.name.c_str(); ImGui::TreeNode(name)) {
+            drawServiceDetails(result);
 
             // Connection options
             if (ImGui::Button("Connect...")) {
-                _serviceName = serviceName;
-                _port = port;
+                _serviceName = name;
+                _port = result.port;
                 ret = true;
             }
             ImGui::TreePop();
