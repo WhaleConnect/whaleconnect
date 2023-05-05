@@ -7,7 +7,6 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Additions
 
 - Added support for macOS. [IN PROGRESS]
-- Added a "Copy line" right-click option in connection windows.
 - The "Show timestamps" feature is now available in connection windows on all platforms.
   - Timestamps are displayed in millisecond precision, with three digits instead of seven as in the previous release.
 - Added a notification system to display application messages.
@@ -16,6 +15,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Added a setting to control how many worker threads are spawned.
   - If `0` is specified, the app creates the maximum number of supported threads.
 - Added a "send echoing" option to connection windows to show sent strings in the console.
+- Added text selection to connection windows.
 
 ### Improvements
 
