@@ -16,12 +16,13 @@
 // A class to represent a text panel output.
 class Console {
     // A structure representing an item in a console output.
+    // Text is stored as UnicodeString for easier interfacing with ICU.
     struct ConsoleItem {
-        bool canUseHex;        // If the item gets displayed as hexadecimal when the option is set
-        std::string text;      // Text string
-        std::string textHex;   // Text in hexadecimal format
-        ImVec4 color;          // Color
-        std::string timestamp; // Time added
+        bool canUseHex;               // If the item gets displayed as hexadecimal when the option is set
+        icu::UnicodeString text;      // Text string
+        icu::UnicodeString textHex;   // Text in hexadecimal format
+        ImVec4 color;                 // Color
+        icu::UnicodeString timestamp; // Time added
     };
 
     // State
@@ -43,8 +44,8 @@ class Console {
         // If there are no items, new text will have to be on its own line.
         if (_items.empty()) return;
 
-        std::string& lastItem = _items.back().text;
-        if (lastItem.back() != '\n') lastItem += '\n';
+        icu::UnicodeString& lastItem = _items.back().text;
+        if (!lastItem.endsWith('\n')) lastItem += '\n';
     }
 
     // Adds text to the console. Does not make it go on its own line.
@@ -54,7 +55,7 @@ class Console {
     void _drawContextMenu();
 
     // Gets the line at an index.
-    std::string _getLineAtIdx(size_t i) const;
+    icu::UnicodeString _getLineAtIdx(size_t i) const;
 
     // Gets the number of lines in the output.
     size_t _getNumLines() const {

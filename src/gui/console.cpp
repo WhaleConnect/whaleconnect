@@ -34,32 +34,28 @@ static const auto formatter = [] {
     return icu::SimpleDateFormat{ icu::UnicodeString{ "hh:mm:ss.SSS > " }, status };
 }();
 
-static std::string getTimestamp() {
+static icu::UnicodeString getTimestamp() {
     UDate current = icu::Calendar::getNow();
     icu::UnicodeString dateReturned;
     formatter.format(current, dateReturned);
-
-    std::string ret;
-    dateReturned.toUTF8String(ret);
-    return ret;
+    return dateReturned;
 }
 
 void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
     // Avoid empty strings
     if (s.empty()) return;
 
+    icu::UnicodeString newText = icu::UnicodeString::fromUTF8(s);
+
     // Text goes on its own line if there are no items or the last line ends with a newline
-    if (_items.empty() || (_items.back().text.back() == '\n'))
-        _items.emplace_back(canUseHex, std::string{ s }, "", color, getTimestamp());
-    else _items.back().text += s;
+    if (_items.empty() || _items.back().text.endsWith('\n'))
+        _items.emplace_back(canUseHex, newText, "", color, getTimestamp());
+    else _items.back().text += newText;
 
     // Computing the string's hex representation here removes the need to recompute it every application frame.
-    if (canUseHex) {
-        // Build the hex representation of the string
-        // We're appending to the last item's ostringstream (_items.back() is guaranteed to exist at this point).
-        // We won't need to check for newlines using this approach.
-        for (unsigned char c : s) _items.back().textHex += std::format("{:02X} ", static_cast<int>(c));
-    }
+    if (canUseHex)
+        for (unsigned char c : s)
+            _items.back().textHex += icu::UnicodeString::fromUTF8(std::format("{:02X} ", static_cast<int>(c)));
 
     _scrollToEnd = _autoscroll; // Scroll to the end if autoscroll is enabled
 }
@@ -72,9 +68,9 @@ void Console::_drawContextMenu() {
     if (ImGui::MenuItem("Select all", selectAllShortcut)) _textSelect.selectAll();
 }
 
-std::string Console::_getLineAtIdx(size_t i) const {
+icu::UnicodeString Console::_getLineAtIdx(size_t i) const {
     ConsoleItem item = _items[i];
-    const std::string& lineBase = (_showHex && item.canUseHex) ? item.textHex : item.text;
+    const icu::UnicodeString& lineBase = (_showHex && item.canUseHex) ? item.textHex : item.text;
     return _showTimestamps ? item.timestamp + lineBase : lineBase;
 }
 
@@ -100,7 +96,11 @@ void Console::update(std::string_view id, const ImVec2& size) {
 
             // Apply color if needed
             if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, item.color);
-            ImGui::TextUnformatted(_getLineAtIdx(i));
+
+            std::string line;
+            _getLineAtIdx(i).toUTF8String(line);
+            ImGui::TextUnformatted(line);
+
             if (hasColor) ImGui::PopStyleColor();
         }
     }

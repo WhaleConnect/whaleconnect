@@ -57,21 +57,13 @@ class TextSelect {
     // Draws the text selection rectangle in the window.
     void _drawSelection(const ImVec2& cursorPosStart) const;
 
-    // Creates a lambda that converts the return value of the given function from std::string to UnicodeString.
-    template <class T>
-    static auto _makeStringAdapter(const T& getLineAtIdx) {
-        return [getLineAtIdx](size_t i) {
-            return icu::UnicodeString::fromUTF8(getLineAtIdx(i));
-        };
-    }
-
 public:
     // Sets the text accessor functions.
-    // getLineAtIdx: Function taking a size_t (line number) and returning the string in that line
+    // getLineAtIdx: Function taking a size_t (line number) and returning the string in that line in a UnicodeString
     // getNumLines: Function returning a size_t (total number of lines of text)
     template <class T, class U>
     explicit TextSelect(const T& getLineAtIdx, const U& getNumLines) :
-        _getLineAtIdx(_makeStringAdapter(getLineAtIdx)), _getNumLines(getNumLines) {}
+        _getLineAtIdx(getLineAtIdx), _getNumLines(getNumLines) {}
 
     // Checks if there is an active selection in the text.
     bool hasSelection() const {
