@@ -63,7 +63,7 @@ static int32_t getCharIndex(const icu::UnicodeString& s, float cursorPosX) {
 
 // Gets the scroll delta for the given cursor position and window bounds.
 static float getScrollDelta(float v, float min, float max) {
-    const float scrollDelta = 3.0f;
+    const float scrollDelta = 250.0f * ImGui::GetIO().DeltaTime;
 
     if (v < min) return -scrollDelta;
     else if (v > max) return scrollDelta;

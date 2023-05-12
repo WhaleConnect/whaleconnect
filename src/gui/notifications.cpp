@@ -70,7 +70,7 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
     ImVec2 windowPos = viewport->Pos + viewportSize - pos;
 
     if (showInCorner) {
-        if (_visibility & Fading) _opacity -= 0.05f;
+        if (_visibility & Fading) _opacity -= 5.0f * ImGui::GetIO().DeltaTime;
 
         // Set notification opacity, if it is zero then it should be hidden
         if (_opacity > 0) {
