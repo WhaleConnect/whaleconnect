@@ -5,6 +5,8 @@
 #include <optional>
 #include <system_error>
 
+#include <imgui.h>
+
 #if OS_WINDOWS
 #undef SDL_MAIN_HANDLED
 #include <SDL_main.h> // For definition of main function
@@ -19,6 +21,18 @@
 #include "os/btutils.hpp"
 #include "utils/settings.hpp"
 
+// Draws the new connection window.
+void drawNewConnectionWindow(bool* open, WindowList& connections, WindowList& sdpWindows) {
+    ImGui::SetNextWindowSize({ 600, 170 }, ImGuiCond_FirstUseEver);
+
+    if (ImGui::Begin("New Connection", open) && ImGui::BeginTabBar("ConnectionTypes")) {
+        drawIPConnectionTab(connections);
+        drawBTConnectionTab(connections, sdpWindows);
+        ImGui::EndTabBar();
+    }
+    ImGui::End();
+}
+
 // Contains the app's core logic and functions.
 void mainLoop() {
     // These variables must be in a separate scope from the resource instances, so these can be destructed before
@@ -27,14 +41,22 @@ void mainLoop() {
     WindowList sdpWindows;  // List of windows for creating Bluetooth connections
 
     while (App::newFrame()) {
-        // New connection window
-        ImGui::SetNextWindowSize({ 600, 170 }, ImGuiCond_FirstUseEver);
-        if (ImGui::Begin("New Connection") && ImGui::BeginTabBar("ConnectionTypes")) {
-            drawIPConnectionTab(connections);
-            drawBTConnectionTab(connections, sdpWindows);
-            ImGui::EndTabBar();
+        static bool newConnOpen = true;
+        static bool notificationsOpen = false;
+
+        // Main menu bar
+        if (ImGui::BeginMainMenuBar()) {
+            if (ImGui::BeginMenu("Windows")) {
+                ImGui::MenuItem("New Connection", nullptr, &newConnOpen);
+                ImGui::MenuItem("Notifications", nullptr, &notificationsOpen);
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
         }
-        ImGui::End();
+
+        // Application windows
+        if (newConnOpen) drawNewConnectionWindow(&newConnOpen, connections, sdpWindows);
+        if (notificationsOpen) ImGui::DrawNotificationWindow(&notificationsOpen);
 
         connections.update();
         sdpWindows.update();
@@ -55,9 +77,9 @@ int main(int, char**) {
         asyncInstance.emplace(Settings::numThreads);
         btutilsInstance.emplace();
     } catch (const System::SystemError& error) {
-        ImGui::AddNotification("Initialization error " + error.formatted(), 0);
+        ImGui::AddNotification("Initialization error " + error.formatted(), NotificationType::Error, 0);
     } catch (const std::system_error&) {
-        ImGui::AddNotification("Initialization error: Could not initialize thread pool", 0);
+        ImGui::AddNotification("Initialization error: Could not initialize thread pool", NotificationType::Error, 0);
     }
 
     // Run app

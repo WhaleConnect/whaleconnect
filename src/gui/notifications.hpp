@@ -5,12 +5,16 @@
 
 #include <string_view>
 
-#include <imgui.h>
+// Icons to display in notifications.
+enum class NotificationType { Error, Warning, Info, Success };
 
 namespace ImGui {
-    // Adds a notification with text and an optional automatic close timeout.
-    void AddNotification(std::string_view s, float timeout = 5);
+    // Adds a notification with text, icon, and an optional automatic close timeout.
+    void AddNotification(std::string_view s, NotificationType type, float timeout = 10);
 
-    // Draws the notification area.
-    void DrawNotificationArea(ImGuiID dockSpaceID);
+    // Draws the notifications in the bottom-right corner of the window.
+    void DrawNotifications();
+
+    // Draws a window containing all notifications that have not been explicitly closed.
+    void DrawNotificationWindow(bool* open);
 }
