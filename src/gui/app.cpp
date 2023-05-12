@@ -51,17 +51,28 @@ static void configImGui() {
                         = roundedCorners ? 4.0f : 0.0f;
     // clang-format on
 
-    // If the default font is used, the rest of this function can be skipped
-    if (useDefaultFont) return;
-
-    // Select glyphs for loading
-    // Include all in Unicode plane 0 except for control characters (U+0000 - U+0019), surrogates (U+D800 - U+DFFF),
-    // private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
-    static std::array<ImWchar, 5> ranges{ 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
     static HandlePtr<char, SDL_free> basePath{ SDL_GetBasePath() };
-    static auto fontFile = std::string{ basePath.get() } + "unifont.otf";
+    static std::string basePathStr{ basePath.get() };
 
-    io.Fonts->AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges.data());
+    if (useDefaultFont) {
+        io.Fonts->AddFontDefault();
+    } else {
+        // Select glyphs for loading
+        // Include all in Unicode plane 0 except for control characters (U+0000 - U+0019), surrogates (U+D800 - U+DFFF),
+        // private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
+        static std::array<ImWchar, 5> ranges{ 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
+        static auto fontFile = basePathStr + "unifont.otf";
+
+        io.Fonts->AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges.data());
+    }
+
+    // Load icons from Font Awesome
+    static std::array<ImWchar, 3> iconRanges{ 0xe000, 0xf8ff, 0 };
+    static auto faFontFile = basePathStr + "font-awesome.otf";
+
+    ImFontConfig config;
+    config.MergeMode = true;
+    io.Fonts->AddFontFromFileTTF(faFontFile.c_str(), fontSize, &config, iconRanges.data());
 }
 
 bool App::init() {
@@ -110,9 +121,7 @@ bool App::newFrame() {
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    // Dock space and notifications
-    auto dockSpaceID = ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-    ImGui::DrawNotificationArea(dockSpaceID);
+    ImGui::DrawNotifications();
 
 #ifndef NDEBUG
     // The demo and metrics window are enabled in debug builds, provide a window to show them
@@ -130,9 +139,12 @@ bool App::newFrame() {
     if (showMetricsWindow) ImGui::ShowMetricsWindow(&showMetricsWindow);
     if (showStackToolWindow) ImGui::ShowStackToolWindow(&showStackToolWindow);
 
-    // Buttons to add notifications
-    if (ImGui::Button("Test Notification (3s)")) ImGui::AddNotification("Test Notification (3s)", 3);
-    if (ImGui::Button("Test Notification (5s)")) ImGui::AddNotification("Test Notification (5s)");
+    // Buttons to add notifications with different timeouts and icons
+    if (ImGui::Button("Test Notification (3s)"))
+        ImGui::AddNotification("Test Notification (3s)", NotificationType::Info, 3);
+
+    if (ImGui::Button("Test Notification (5s)"))
+        ImGui::AddNotification("Test Notification (5s)", NotificationType::Success, 5);
 
     ImGui::End();
 #endif

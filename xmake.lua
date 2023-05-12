@@ -38,13 +38,21 @@ target("terminal")
         end
     end)
 
-    -- Download GNU Unifont file next to executable on post-build
+    -- Download font files next to executable on post-build
     after_build(function (target)
         local unifont_path = path.join(target:targetdir(), "unifont.otf")
+        local font_awesome_path = path.join(target:targetdir(), "font-awesome.otf")
+
+        local http = import("net.http")
 
         if not os.isfile(unifont_path) then
             print("Downloading GNU Unifont...")
-            import("net.http").download("https://github.com/NSTerminal/unifont/raw/main/font/precompiled/unifont-15.0.01.otf", unifont_path)
+            http.download("https://github.com/NSTerminal/unifont/raw/main/font/precompiled/unifont-15.0.01.otf", unifont_path)
+        end
+
+        if not os.isfile(font_awesome_path) then
+            print("Downloading Font Awesome...")
+            http.download("https://github.com/FortAwesome/Font-Awesome/raw/6.x/otfs/Font%20Awesome%206%20Free-Solid-900.otf", font_awesome_path)
         end
     end)
 
