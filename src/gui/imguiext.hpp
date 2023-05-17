@@ -58,6 +58,11 @@ namespace ImGui {
 
     // Displays a basic spinner which rotates every few frames.
     void Spinner();
+
+    // Displays a menu item that focuses on a window when clicked.
+    inline void WindowMenuItem(std::string_view name) {
+        if (MenuItem(name.data())) SetWindowFocus(name.data());
+    }
 }
 
 template <class T>

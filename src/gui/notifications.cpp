@@ -12,6 +12,8 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+static constexpr const char* notificationsWindowTitle = "Notifications";
+
 // Class to contain information about a notification.
 class Notification {
     // Visibility of the notification.
@@ -110,7 +112,7 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
 
     // Text wrapping position in window coordinates
     // If the notifications are shown in a parent window, the text is wrapped within the window.
-    float wrapPos = showInCorner ? ImGui::GetCursorPosX() + textWidth : ImGui::GetWindowWidth() - 60;
+    float wrapPos = showInCorner ? ImGui::GetCursorPosX() + textWidth : ImGui::GetWindowWidth() - 40;
 
     // Draw text
     ImGui::SameLine();
@@ -162,6 +164,35 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
     return 0;
 }
 
+// Draws all notifications that have not been explicitly closed as part of an enclosing window.
+static void drawNotificationContents(bool* open) {
+    bool clearAll = false;
+
+    if (notifications.empty()) ImGui::Text("No Notifications");
+    else if (ImGui::Button("\uf2ed")) clearAll = true;
+
+    // Display "pop out" button if applicable
+    if (open) {
+        ImGui::SameLine();
+        if (ImGui::Button("\uf35d")) {
+            *open = true;
+            ImGui::SetWindowFocus(notificationsWindowTitle);
+        }
+    }
+
+    // Child window to contain entries
+    ImGui::BeginChild("##content", {});
+
+    // Clear (if needed) and render in one loop
+    for (auto& i : notifications) {
+        if (clearAll) i.setFadeOut(true);
+
+        i.update({}, false);
+    }
+
+    ImGui::EndChild();
+}
+
 void ImGui::AddNotification(std::string_view s, NotificationType type, float timeout) {
     notifications.emplace_back(s, type, timeout);
 }
@@ -197,19 +228,31 @@ void ImGui::DrawNotifications() {
         for (auto i = notifications.begin(); i < overflowIter; i++) i->setFadeOut(false);
 }
 
-void ImGui::DrawNotificationWindow(bool* open) {
+void ImGui::DrawNotificationsWindow(bool& open) {
+    if (!open) return;
+
     ImGui::SetNextWindowSize({ 350, 500 }, ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("Notifications", open)) {
-        bool clearAll = false;
 
-        if (!notifications.empty() && ImGui::Button("Clear all")) clearAll = true;
+    if (ImGui::Begin(notificationsWindowTitle, &open)) drawNotificationContents(nullptr);
+    ImGui::End();
+}
 
-        for (auto& i : notifications) {
-            if (clearAll) i.setFadeOut(true);
+void ImGui::DrawNotificationsMenu(bool& notificationsOpen) {
+    std::string content;
 
-            i.update({}, false);
-        }
+    // Get the display number for the menu
+    if (!notifications.empty()) {
+        if (notifications.size() < 10) content = std::to_string(notifications.size());
+        else content = "9+";
     }
 
-    ImGui::End();
+    // Draw menu
+    ImGui::SetNextWindowSize({ 300, 300 });
+    if (BeginMenu(std::format("\uf0f3 {}###Notifications", content).c_str())) {
+        drawNotificationContents(&notificationsOpen);
+        EndMenu();
+    }
+
+    // Position cursor to draw next menu
+    SetCursorPosX(GetCursorStartPos().x + 50);
 }

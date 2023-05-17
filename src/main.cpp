@@ -7,6 +7,8 @@
 
 #include <imgui.h>
 
+#include "gui/imguiext.hpp"
+
 #if OS_WINDOWS
 #undef SDL_MAIN_HANDLED
 #include <SDL_main.h> // For definition of main function
@@ -22,15 +24,41 @@
 #include "utils/settings.hpp"
 
 // Draws the new connection window.
-void drawNewConnectionWindow(bool* open, WindowList& connections, WindowList& sdpWindows) {
+void drawNewConnectionWindow(bool& open, WindowList& connections, WindowList& sdpWindows) {
+    if (!open) return;
+
     ImGui::SetNextWindowSize({ 600, 170 }, ImGuiCond_FirstUseEver);
 
-    if (ImGui::Begin("New Connection", open) && ImGui::BeginTabBar("ConnectionTypes")) {
+    if (ImGui::Begin("New Connection", &open) && ImGui::BeginTabBar("ConnectionTypes")) {
         drawIPConnectionTab(connections);
         drawBTConnectionTab(connections, sdpWindows);
         ImGui::EndTabBar();
     }
     ImGui::End();
+}
+
+// Draws the main menu bar.
+void drawMenuBar(bool& newConnOpen, bool& notificationsOpen, WindowList& connections) {
+    if (!ImGui::BeginMainMenuBar()) return;
+
+    ImGui::DrawNotificationsMenu(notificationsOpen);
+
+    if (ImGui::BeginMenu("View")) {
+        ImGui::MenuItem("New Connection", nullptr, &newConnOpen);
+        ImGui::MenuItem("Notifications", nullptr, &notificationsOpen);
+        ImGui::EndMenu();
+    }
+
+    // List all open connection windows
+    if (ImGui::BeginMenu("Connections")) {
+        if (connections.empty()) ImGui::TextDisabled("No Open Connections");
+        else
+            for (const auto& i : connections) ImGui::WindowMenuItem(i->getTitle());
+
+        ImGui::EndMenu();
+    }
+
+    ImGui::EndMainMenuBar();
 }
 
 // Contains the app's core logic and functions.
@@ -45,18 +73,11 @@ void mainLoop() {
         static bool notificationsOpen = false;
 
         // Main menu bar
-        if (ImGui::BeginMainMenuBar()) {
-            if (ImGui::BeginMenu("Windows")) {
-                ImGui::MenuItem("New Connection", nullptr, &newConnOpen);
-                ImGui::MenuItem("Notifications", nullptr, &notificationsOpen);
-                ImGui::EndMenu();
-            }
-            ImGui::EndMainMenuBar();
-        }
+        drawMenuBar(newConnOpen, notificationsOpen, connections);
 
         // Application windows
-        if (newConnOpen) drawNewConnectionWindow(&newConnOpen, connections, sdpWindows);
-        if (notificationsOpen) ImGui::DrawNotificationWindow(&notificationsOpen);
+        drawNewConnectionWindow(newConnOpen, connections, sdpWindows);
+        ImGui::DrawNotificationsWindow(notificationsOpen);
 
         connections.update();
         sdpWindows.update();

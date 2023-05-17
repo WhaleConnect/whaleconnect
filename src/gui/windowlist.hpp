@@ -49,4 +49,18 @@ public:
         // Update all open windows
         for (const auto& i : _windows) i->update();
     }
+
+    // Expose functions from internal vector
+
+    auto begin() {
+        return _windows.begin();
+    }
+
+    auto end() {
+        return _windows.end();
+    }
+
+    bool empty() const {
+        return _windows.empty();
+    }
 };

@@ -15,6 +15,9 @@ namespace ImGui {
     // Draws the notifications in the bottom-right corner of the window.
     void DrawNotifications();
 
-    // Draws a window containing all notifications that have not been explicitly closed.
-    void DrawNotificationWindow(bool* open);
+    // Draws a window containing the notifications.
+    void DrawNotificationsWindow(bool& open);
+
+    // Draws a menu containing the notifications.
+    void DrawNotificationsMenu(bool& notificationsOpen);
 }

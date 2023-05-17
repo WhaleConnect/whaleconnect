@@ -50,6 +50,10 @@ public:
         return _open;
     }
 
+    bool* getOpenPtr() {
+        return &_open;
+    }
+
     // Performs any extra required initialization. This may be called once; subsequent calls will do nothing.
     void init() {
         if (_initialized) return;
