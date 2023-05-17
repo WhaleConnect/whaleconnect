@@ -10,12 +10,12 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - The "Show timestamps" feature is now available in connection windows on all platforms.
   - Timestamps are displayed in millisecond precision, with three digits instead of seven as in the previous release.
 - Added a notification system to display application messages.
-  - The notification area is shown on the right side of the app by default, but it can be moved and docked.
-  - A notification can close automatically after a few seconds; this can be canceled by hovering over its close button.
 - Added a setting to control how many worker threads are spawned.
   - If `0` is specified, the app creates the maximum number of supported threads.
 - Added a "send echoing" option to connection windows to show sent strings in the console.
 - Added text selection to connection windows.
+- Added a "View" menu to show/hide application windows.
+- Added a "Connections" menu to list and focus on connection windows.
 
 ### Improvements
 
