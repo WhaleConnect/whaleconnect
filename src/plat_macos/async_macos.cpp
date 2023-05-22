@@ -29,8 +29,8 @@ static std::unordered_map<int, Async::CompletionResult*> pendingSockets;
 static std::mutex mapMutex;
 
 struct BluetoothQueue {
-    std::array<Async::CompletionResult*, 2> pending;
-    std::queue<std::string> completed;
+    std::array<Async::CompletionResult*, 2> pending; // Pending I/O operations (read/write stored separately)
+    std::queue<std::string> completed;               // Completed read operations
 };
 
 static std::unordered_map<uint64_t, BluetoothQueue> bluetoothChannels;
