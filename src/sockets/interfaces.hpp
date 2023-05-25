@@ -7,11 +7,14 @@
 
 #include "utils/task.hpp"
 
-// Abstract class to represent something that can be closed.
+// Abstract class to represent a resource that can be closed.
 struct Closeable {
     virtual ~Closeable() = default;
 
     virtual void close() = 0;
+
+    // Checks if this resource is still open.
+    explicit virtual operator bool() const = 0;
 };
 
 // Abstract class to represent something that can perform async I/O.
