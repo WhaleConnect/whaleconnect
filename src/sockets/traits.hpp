@@ -41,8 +41,10 @@ struct SocketTraits<SocketTag::BT> {
 #if __OBJC__
     using HandleType = BTHandle*;
 #else
-    // Objective-C types are not visible to C++ code, use a small type as a filler
-    using HandleType = uint8_t;
+    // Objective-C types are not visible to C++ code, use a type of the same size as a filler
+    // Class pointers take up 8 bytes: https://en.wikipedia.org/wiki/Tagged_pointer#Examples
+    // On 64-bit systems, C++ pointers also take up 8 bytes
+    using HandleType = int*;
 #endif
 
     static constexpr auto invalidHandle = nullptr;
