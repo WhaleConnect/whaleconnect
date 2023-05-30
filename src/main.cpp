@@ -93,12 +93,14 @@ int main(int, char**) {
     std::optional<Async::Instance> asyncInstance;
     std::optional<BTUtils::Instance> btutilsInstance;
 
+    using namespace std::literals;
+
     // Initialize APIs for sockets and Bluetooth
     try {
         asyncInstance.emplace(Settings::numThreads);
         btutilsInstance.emplace();
     } catch (const System::SystemError& error) {
-        ImGui::AddNotification("Initialization error " + error.formatted(), NotificationType::Error, 0);
+        ImGui::AddNotification("Initialization error "s + error.what(), NotificationType::Error, 0);
     } catch (const std::system_error&) {
         ImGui::AddNotification("Initialization error: Could not initialize thread pool", NotificationType::Error, 0);
     }

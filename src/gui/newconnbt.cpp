@@ -118,7 +118,7 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
         },
         [](const System::SystemError& error) {
             // Error occurred
-            ImGui::TextWrapped("Error %s", error.formatted().c_str());
+            ImGui::TextWrapped("Error %s", error.what());
         },
     };
 

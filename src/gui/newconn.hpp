@@ -22,5 +22,6 @@ void addConnWindow(WindowList& list, const Device& device, std::string_view extr
     // If the connection exists, show a message
     if (!isNew) ImGui::AddNotification("This connection is already open.", NotificationType::Warning);
 } catch (const System::SystemError& e) {
-    ImGui::AddNotification("Socket creation error " + e.formatted(), NotificationType::Error);
+    using namespace std::literals;
+    ImGui::AddNotification("Socket creation error "s + e.what(), NotificationType::Error);
 }

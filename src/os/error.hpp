@@ -38,21 +38,21 @@ namespace System {
     // Checks if an error code signals a canceled operation.
     bool isCanceled(ErrorCode code, ErrorType type);
 
+    std::string formatSystemError(ErrorCode code, ErrorType type, std::string_view fnName);
+
     // An exception structure containing details of an error.
-    struct SystemError : std::exception {
+    struct SystemError : std::runtime_error {
         ErrorCode code = NO_ERROR;          // The platform-specific error code
         ErrorType type = ErrorType::System; // The type of the error
         std::string fnName;                 // The name of the function that caused the error
 
         // Constructs an object representing a specific error.
-        SystemError(ErrorCode code, ErrorType type, std::string_view fnName) : code(code), type(type), fnName(fnName) {}
+        SystemError(ErrorCode code, ErrorType type, std::string_view fnName) :
+            std::runtime_error(formatSystemError(code, type, fnName)), code(code), type(type), fnName(fnName) {}
 
         // Checks if this object represents a fatal error.
         explicit operator bool() const {
             return isFatal(code);
         }
-
-        // Represents this object as a readable string.
-        [[nodiscard]] std::string formatted() const;
     };
 }

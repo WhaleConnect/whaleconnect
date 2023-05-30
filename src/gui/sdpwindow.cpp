@@ -111,7 +111,7 @@ void SDPWindow::_checkInquiryStatus() {
             ImGui::TextWrapped("System error: Failed to launch thread.");
         },
         [](const System::SystemError& error) {
-            ImGui::TextWrapped("Error %s", error.formatted().c_str());
+            ImGui::TextWrapped("Error %s", error.what());
         },
         [this](const BTUtils::SDPResultList& list) {
             // Done, print results
