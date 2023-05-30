@@ -8,9 +8,9 @@ This software is currently in alpha. Feedback and feature requests are welcome.
 
 ## Documentation Links
 
-- [Building from Source](BUILDING.md)
-- [Screenshots](SCREENSHOTS.md)
-- [Todo List](TODO.txt)
+- [Building from Source](building.md)
+- [Screenshots](screenshots.md)
+- [Todo List](todo.txt)
 
 ## Development Branch
 
