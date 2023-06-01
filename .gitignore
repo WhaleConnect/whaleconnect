@@ -10,3 +10,6 @@ build/
 # IDE directories
 .vs/
 .vscode/
+
+# Test settings
+tests/settings/settings.json

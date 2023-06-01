@@ -10,6 +10,7 @@ This software is currently in alpha. Feedback and feature requests are welcome.
 
 - [Building from Source](building.md)
 - [Screenshots](screenshots.md)
+- [Testing](testing.md)
 - [Todo List](todo.txt)
 
 ## Development Branch
