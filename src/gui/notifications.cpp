@@ -96,7 +96,7 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
     using enum NotificationType;
     switch (_type) {
         case Warning:
-            ImGui::TextColored({ 0.98f, 0.74f, 0.02f, 1 }, "\uf071");
+            ImGui::TextColored({ 0.98f, 0.74f, 0.02f, 1 }, "\uea21");
             break;
         case Error:
             ImGui::TextColored({ 0.82f, 0, 0, 1 }, "\uf057");
@@ -181,7 +181,7 @@ static void drawNotificationContents(bool* open) {
     }
 
     // Child window to contain entries
-    ImGui::BeginChild("##content", {});
+    ImGui::BeginChild("##content");
 
     // Clear (if needed) and render in one loop
     for (auto& i : notifications) {
