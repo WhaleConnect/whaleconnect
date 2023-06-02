@@ -57,7 +57,7 @@ target("terminal-core")
 
     add_files("src/gui/*.cpp", "src/os/*.cpp", "src/sockets/*.cpp", "src/utils/*.cpp")
 
-    -- Phatform-specific files
+    -- Platform-specific files
     if is_plat("windows") then
         add_files("src/plat_windows/*.cpp")
     elseif is_plat("macosx") then
@@ -104,5 +104,5 @@ target("socket-tests")
     add_deps("terminal-core")
     add_files("tests/src/*.cpp", "tests/src/helpers/*.cpp")
 
-     -- Path to settings file
+    -- Path to settings file
     add_defines(format("SETTINGS_FILE=\"%s\"", path.absolute("tests/settings/settings.json")))
