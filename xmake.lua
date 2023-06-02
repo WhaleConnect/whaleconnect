@@ -16,7 +16,7 @@ set_exceptions("cxx")
 set_warnings("allextra")
 set_defaultmode("debug")
 
-add_packages("icu4c", "imgui", "libsdl", "magic_enum", "out_ptr", "opengl")
+add_packages("icu4c", "magic_enum", "out_ptr")
 
 add_cxxflags("clang::-Wno-missing-field-initializers")
 
@@ -55,7 +55,7 @@ target("terminal-core")
     -- Project files
     set_kind("object")
 
-    add_files("src/gui/*.cpp", "src/os/*.cpp", "src/sockets/*.cpp", "src/utils/*.cpp")
+    add_files("src/os/*.cpp", "src/sockets/*.cpp", "src/utils/*.cpp")
 
     -- Platform-specific files
     if is_plat("windows") then
@@ -67,10 +67,11 @@ target("terminal-core")
     end
 
 target("terminal")
+    add_packages("imgui", "libsdl", "opengl")
     add_deps("terminal-core")
 
-    -- Main entry point
-    add_files("src/main.cpp")
+    -- GUI code and main entry point
+    add_files("src/gui/*.cpp", "src/main.cpp")
 
     -- DPI awareness manifest (for Windows)
     if is_plat("windows") then
@@ -104,5 +105,5 @@ target("socket-tests")
     add_deps("terminal-core")
     add_files("tests/src/*.cpp", "tests/src/helpers/*.cpp")
 
-    -- Path to settings file
-    add_defines(format("SETTINGS_FILE=\"%s\"", path.absolute("tests/settings/settings.json")))
+     -- Path to settings file
+    add_defines(format("SETTINGS_FILE=R\"(%s)\"", path.absolute("tests/settings/settings.json")))
