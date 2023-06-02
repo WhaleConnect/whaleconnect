@@ -13,8 +13,8 @@ struct Closeable {
 
     virtual void close() = 0;
 
-    // Checks if this resource is still open.
-    explicit virtual operator bool() const = 0;
+    // Checks if this resource is still open/valid.
+    virtual bool isValid() const = 0;
 };
 
 // Abstract class to represent something that can perform async I/O.

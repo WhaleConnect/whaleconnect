@@ -29,7 +29,7 @@ void runTests(const Device& device) {
     });
 
     // Check the socket is valid
-    REQUIRE(*sock);
+    REQUIRE(sock->isValid());
 
     // Send/receive
     runSync([&sock]() -> Task<> {
@@ -41,7 +41,7 @@ void runTests(const Device& device) {
 
     // Close (socket should be invalidated as a postcondition)
     sock->close();
-    CHECK(!*sock);
+    CHECK(!sock->isValid());
 }
 
 TEST_CASE("I/O (Internet Protocol)") {

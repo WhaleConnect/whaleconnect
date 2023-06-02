@@ -58,7 +58,7 @@ public:
     }
 
     // Checks the validity of the managed socket.
-    explicit operator bool() const final {
+    bool isValid() const final {
         return _handle != invalidHandle;
     }
 
