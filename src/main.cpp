@@ -9,11 +9,6 @@
 
 #include "gui/imguiext.hpp"
 
-#if OS_WINDOWS
-#undef SDL_MAIN_HANDLED
-#include <SDL_main.h> // For definition of main function
-#endif
-
 #include "gui/app.hpp"
 #include "gui/newconnbt.hpp"
 #include "gui/newconnip.hpp"
