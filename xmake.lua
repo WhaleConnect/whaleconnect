@@ -69,7 +69,13 @@ target("terminal-core")
 target("terminal")
     add_deps("terminal-core")
 
+    -- Main entry point
     add_files("src/main.cpp")
+
+    -- DPI awareness manifest (for Windows)
+    if is_plat("windows") then
+        add_files("res/dpi-aware.manifest")
+    end
 
     add_ldflags("cl::/SUBSYSTEM:WINDOWS")
 
