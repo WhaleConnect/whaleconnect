@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <condition_variable>
 #include <coroutine>
 #include <exception>
@@ -25,7 +26,7 @@ void runSync(const Fn& fn) {
     // Completion tracking
     std::mutex m;
     std::condition_variable cond;
-    bool completed = false;
+    std::atomic_bool completed = false;
 
     // Keep track of exceptions thrown in the coroutine
     // Exceptions won't propagate out of the coroutine so they must be rethrown manually for the tests to catch them.
@@ -34,7 +35,6 @@ void runSync(const Fn& fn) {
     // Run an outer coroutine, but don't await it
     // TODO: Remove empty parentheses in C++23
     [&]() -> Task<> {
-        std::unique_lock lock{ m };
         try {
             // Await the given coroutine
             co_await fn();
@@ -44,6 +44,7 @@ void runSync(const Fn& fn) {
         }
 
         // Either the coroutine finished, or it threw an exception
+        std::unique_lock lock{ m };
         completed = true;
         lock.unlock();
         cond.notify_one();
@@ -51,8 +52,8 @@ void runSync(const Fn& fn) {
 
     // Wait for the completion condition
     std::unique_lock lock{ m };
-    cond.wait(lock, [completed] {
-        return completed;
+    cond.wait(lock, [&completed] {
+        return completed.load();
     });
 
     // Rethrow any exceptions
