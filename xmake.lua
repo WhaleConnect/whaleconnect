@@ -89,7 +89,7 @@ target("terminal")
 
         if not os.isfile(unifont_path) then
             print("Downloading GNU Unifont...")
-            http.download("https://github.com/NSTerminal/unifont/raw/main/font/precompiled/unifont-15.0.01.otf", unifont_path)
+            http.download("https://github.com/NSTerminal/unifont/raw/main/font/precompiled/unifont-15.0.03.otf", unifont_path)
         end
 
         if not os.isfile(font_awesome_path) then
