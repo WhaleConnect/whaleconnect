@@ -29,8 +29,8 @@ static std::unordered_map<int, Async::CompletionResult*> pendingSockets;
 static std::mutex mapMutex;
 
 struct BluetoothQueue {
-    std::array<Async::CompletionResult*, 2> pending; // Pending I/O operations (read/write stored separately)
-    std::queue<std::string> completed;               // Completed read operations
+    std::array<Async::CompletionResult*, 2> pending;  // Pending I/O operations (read/write stored separately)
+    std::queue<std::optional<std::string>> completed; // Completed read operations
 };
 
 static std::unordered_map<uint64_t, BluetoothQueue> bluetoothChannels;
@@ -138,13 +138,20 @@ void Async::bluetoothComplete(uint64_t id, BluetoothIOType type, IOReturn status
 }
 
 void Async::bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen) {
-    bluetoothChannels[id].completed.emplace(data, dataLen);
+    bluetoothChannels[id].completed.emplace(std::string{ data, dataLen });
 
     bluetoothComplete(id, BluetoothIOType::Receive, kIOReturnSuccess);
 }
 
-std::string Async::getBluetoothReadResult(uint64_t id) {
-    std::string data = bluetoothChannels[id].completed.front();
+void Async::bluetoothClosed(uint64_t id) {
+    auto& completedQueue = bluetoothChannels[id].completed;
+    completedQueue = {};
+
+    completedQueue.emplace();
+}
+
+std::optional<std::string> Async::getBluetoothReadResult(uint64_t id) {
+    auto data = bluetoothChannels[id].completed.front();
     bluetoothChannels[id].completed.pop();
     return data;
 }

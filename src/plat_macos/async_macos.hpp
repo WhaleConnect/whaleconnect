@@ -4,6 +4,9 @@
 #pragma once
 
 #if OS_MACOS
+#include <optional>
+#include <string>
+
 #include <IOKit/IOReturn.h>
 
 #include "os/async.hpp"
@@ -24,6 +27,8 @@ namespace Async {
 
     void bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen);
 
-    std::string getBluetoothReadResult(uint64_t id);
+    void bluetoothClosed(uint64_t id);
+
+    std::optional<std::string> getBluetoothReadResult(uint64_t id);
 }
 #endif
