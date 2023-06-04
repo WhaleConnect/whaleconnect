@@ -28,7 +28,7 @@ Task<> WritableSocket<Tag>::send(std::string data) const {
 }
 
 template <auto Tag>
-Task<std::string> WritableSocket<Tag>::recv() const {
+Task<std::optional<std::string>> WritableSocket<Tag>::recv() const {
     std::string data(_recvLen, 0);
 
     auto result = co_await Async::run([this, &data](Async::CompletionResult& result) {
@@ -37,6 +37,8 @@ Task<std::string> WritableSocket<Tag>::recv() const {
         io_uring_sqe_set_data(sqe, &result);
         Async::submitRing();
     });
+
+    if (result.res == 0) co_return std::nullopt;
 
     data.resize(result.res);
     co_return data;
@@ -50,11 +52,11 @@ void WritableSocket<Tag>::cancelIO() const {
 
 template void Socket<SocketTag::IP>::close();
 template Task<> WritableSocket<SocketTag::IP>::send(std::string) const;
-template Task<std::string> WritableSocket<SocketTag::IP>::recv() const;
+template Task<std::optional<std::string>> WritableSocket<SocketTag::IP>::recv() const;
 template void WritableSocket<SocketTag::IP>::cancelIO() const;
 
 template void Socket<SocketTag::BT>::close();
 template Task<> WritableSocket<SocketTag::BT>::send(std::string) const;
-template Task<std::string> WritableSocket<SocketTag::BT>::recv() const;
+template Task<std::optional<std::string>> WritableSocket<SocketTag::BT>::recv() const;
 template void WritableSocket<SocketTag::BT>::cancelIO() const;
 #endif
