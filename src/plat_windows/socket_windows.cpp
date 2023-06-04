@@ -25,7 +25,7 @@ Task<> WritableSocket<Tag>::send(std::string data) const {
 }
 
 template <auto Tag>
-Task<std::string> WritableSocket<Tag>::recv() const {
+Task<std::optional<std::string>> WritableSocket<Tag>::recv() const {
     std::string data(_recvLen, 0);
 
     auto recvResult = co_await Async::run([this, &data](Async::CompletionResult& result) {
@@ -33,6 +33,8 @@ Task<std::string> WritableSocket<Tag>::recv() const {
         WSABUF buf{ static_cast<ULONG>(_recvLen), data.data() };
         call(FN(WSARecv, this->_get(), &buf, 1, nullptr, &flags, &result, nullptr));
     });
+
+    if (recvResult.res == 0) co_return std::nullopt;
 
     data.resize(recvResult.res);
     co_return data;
@@ -45,11 +47,11 @@ void WritableSocket<Tag>::cancelIO() const {
 
 template void Socket<SocketTag::IP>::close();
 template Task<> WritableSocket<SocketTag::IP>::send(std::string) const;
-template Task<std::string> WritableSocket<SocketTag::IP>::recv() const;
+template Task<std::optional<std::string>> WritableSocket<SocketTag::IP>::recv() const;
 template void WritableSocket<SocketTag::IP>::cancelIO() const;
 
 template void Socket<SocketTag::BT>::close();
 template Task<> WritableSocket<SocketTag::BT>::send(std::string) const;
-template Task<std::string> WritableSocket<SocketTag::BT>::recv() const;
+template Task<std::optional<std::string>> WritableSocket<SocketTag::BT>::recv() const;
 template void WritableSocket<SocketTag::BT>::cancelIO() const;
 #endif

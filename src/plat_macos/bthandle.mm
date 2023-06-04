@@ -16,6 +16,10 @@ static void outgoingComplete(id channel, IOReturn status) {
     Async::bluetoothComplete([channel hash], Async::BluetoothIOType::Send, status);
 }
 
+static void closed(id channel) {
+    Async::bluetoothClosed([channel hash]);
+}
+
 static void check(IOReturn code, const char* fnName) {
     if (code != kIOReturnSuccess) throw System::SystemError{ code, System::ErrorType::IOReturn, fnName };
 }
@@ -58,7 +62,7 @@ static void check(IOReturn code, const char* fnName) {
 }
 
 - (void)l2capChannelClosed:(IOBluetoothL2CAPChannel*)l2capChannel {
-    newData(l2capChannel, "", 0);
+    closed(l2capChannel);
 }
 
 - (void)l2capChannelData:(IOBluetoothL2CAPChannel*)l2capChannel data:(void*)dataPointer length:(size_t)dataLength {
@@ -74,7 +78,7 @@ static void check(IOReturn code, const char* fnName) {
 }
 
 - (void)rfcommChannelClosed:(IOBluetoothRFCOMMChannel*)rfcommChannel {
-    newData(rfcommChannel, "", 0);
+    closed(rfcommChannel);
 }
 
 - (void)rfcommChannelData:(IOBluetoothRFCOMMChannel*)rfcommChannel data:(void*)dataPointer length:(size_t)dataLength {

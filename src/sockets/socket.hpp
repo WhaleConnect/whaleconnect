@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -73,7 +74,7 @@ struct WritableSocket : virtual Socket<Tag>, virtual Writable {
 
     [[nodiscard]] Task<> send(std::string data) const override;
 
-    [[nodiscard]] Task<std::string> recv() const override;
+    [[nodiscard]] Task<std::optional<std::string>> recv() const override;
 
     void cancelIO() const override;
 };

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 
 #include "utils/task.hpp"
@@ -30,7 +31,7 @@ public:
     [[nodiscard]] virtual Task<> send(std::string data) const = 0;
 
     // Receives a string.
-    [[nodiscard]] virtual Task<std::string> recv() const = 0;
+    [[nodiscard]] virtual Task<std::optional<std::string>> recv() const = 0;
 
     // Cancels all pending I/O.
     virtual void cancelIO() const = 0;
