@@ -1,10 +1,12 @@
 -- Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
+add_repositories("xrepo-patches C:\\Users\\Aidan\\Code\\xrepo-patches")
+
 add_rules("mode.debug", "mode.release")
 
-add_requires("imgui v1.89.5-docking", { configs = { sdl2_no_renderer = true, opengl3 = true } })
-add_requires("libsdl", { configs = { use_sdlmain = true } })
+add_requires("imgui-with-sdl3 v20230605-docking", { configs = { sdl3_no_renderer = true, opengl3 = true } })
+add_requires("libsdl3", { configs = { use_sdlmain = true } })
 add_requires("catch2", "icu4c", "magic_enum", "nlohmann_json", "out_ptr", "opengl")
 
 if is_plat("linux") then
@@ -67,7 +69,7 @@ target("terminal-core")
     end
 
 target("terminal")
-    add_packages("imgui", "libsdl", "opengl")
+    add_packages("imgui-with-sdl3", "libsdl3", "opengl")
     add_deps("terminal-core")
 
     -- GUI code and main entry point

@@ -8,10 +8,10 @@
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
-#include <imgui_impl_sdl2.h>
-#include <SDL.h>
-#include <SDL_filesystem.h>
-#include <SDL_opengl.h>
+#include <imgui_impl_sdl3.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_filesystem.h>
+#include <SDL3/SDL_opengl.h>
 
 #include "notifications.hpp"
 
@@ -91,8 +91,8 @@ bool App::init() {
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     // Create window
-    window = SDL_CreateWindow("Network Socket Terminal", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720,
-                              SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    window = SDL_CreateWindow("Network Socket Terminal", 1280, 720,
+                              SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
     // Create context
     glContext = SDL_GL_CreateContext(window);
@@ -103,7 +103,7 @@ bool App::init() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     configImGui();
-    ImGui_ImplSDL2_InitForOpenGL(window, glContext);
+    ImGui_ImplSDL3_InitForOpenGL(window, glContext);
     ImGui_ImplOpenGL3_Init();
 
     return true;
@@ -113,12 +113,12 @@ bool App::newFrame() {
     // Poll for events
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
-        ImGui_ImplSDL2_ProcessEvent(&event);
-        if (event.type == SDL_QUIT) return false;
+        ImGui_ImplSDL3_ProcessEvent(&event);
+        if (event.type == SDL_EVENT_QUIT) return false;
     }
 
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
 
     ImGui::DrawNotifications();
@@ -171,7 +171,7 @@ void App::render() {
 
 void App::cleanup() {
     ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
 
     SDL_GL_DeleteContext(glContext);
