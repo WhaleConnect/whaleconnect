@@ -74,9 +74,10 @@ target("terminal")
     add_files("src/gui/*.cpp", "src/main.cpp")
 
     -- DPI awareness manifest (for Windows)
-    if is_plat("windows") then
-        add_files("res/dpi-aware.manifest")
-    end
+    -- TODO: Enable when DPI features are available in SDL 3/Dear ImGui 1.90
+    -- if is_plat("windows") then
+    --     add_files("res/app.manifest")
+    -- end
 
     add_ldflags("cl::/SUBSYSTEM:WINDOWS")
 
