@@ -40,6 +40,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 - Switched the platform backend library to SDL.
 - Switched the compiler on Linux to Clang.
+- Added unit tests for socket functions.
 
 ## 0.1.0-alpha (10/05/2022)
 
