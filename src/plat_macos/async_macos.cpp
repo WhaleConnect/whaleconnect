@@ -138,7 +138,7 @@ void Async::bluetoothComplete(uint64_t id, BluetoothIOType type, IOReturn status
 }
 
 void Async::bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen) {
-    bluetoothChannels[id].completed.emplace(std::string{ data, dataLen });
+    bluetoothChannels[id].completed.emplace(std::in_place, data, dataLen);
 
     bluetoothComplete(id, BluetoothIOType::Receive, kIOReturnSuccess);
 }
