@@ -1,7 +1,7 @@
 -- Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
-add_repositories("xrepo-patches C:\\Users\\Aidan\\Code\\xrepo-patches")
+add_repositories("xrepo-patches https://github.com/NSTerminal/xrepo-patches.git")
 
 add_rules("mode.debug", "mode.release")
 
