@@ -5,7 +5,7 @@ add_repositories("xrepo-patches C:\\Users\\Aidan\\Code\\xrepo-patches")
 
 add_rules("mode.debug", "mode.release")
 
-add_requires("imgui-with-sdl3 v20230605-docking", { configs = { sdl3_no_renderer = true, opengl3 = true } })
+add_requires("imgui-with-sdl3 v20230605-docking", { configs = { sdl3_no_renderer = true, opengl3 = true, freetype = true } })
 add_requires("libsdl3", { configs = { use_sdlmain = true } })
 add_requires("catch2", "icu4c", "magic_enum", "nlohmann_json", "out_ptr", "opengl")
 
@@ -77,9 +77,9 @@ target("terminal")
 
     -- DPI awareness manifest (for Windows)
     -- TODO: Enable when DPI features are available in SDL 3/Dear ImGui 1.90
-    -- if is_plat("windows") then
-    --     add_files("res/app.manifest")
-    -- end
+    if is_plat("windows") then
+        add_files("res/app.manifest")
+    end
 
     add_ldflags("cl::/SUBSYSTEM:WINDOWS")
 

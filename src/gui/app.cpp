@@ -4,14 +4,17 @@
 #include "app.hpp"
 
 #include <array>
+#include <cmath>
 #include <string>
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl3.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_events.h>
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_opengl.h>
+#include <SDL3/SDL_video.h>
 
 #include "notifications.hpp"
 
@@ -20,6 +23,46 @@
 
 static SDL_Window* window;      // The main application window
 static SDL_GLContext glContext; // The OpenGL context
+
+static float getScale() {
+    return 1;
+}
+
+static void scaleToDPI() {
+    ImGuiIO& io = ImGui::GetIO();
+    float dpiScale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(window));
+
+    ImFontConfig config;
+    float scale = getScale();
+
+    config.SizePixels = Settings::fontSize * scale;
+    float fontSize = std::floor(Settings::fontSize * dpiScale);
+
+    if (io.Fonts->IsBuilt()) io.Fonts->Clear();
+
+    static const HandlePtr<char, SDL_free> basePath{ SDL_GetBasePath() };
+    static const std::string basePathStr{ basePath.get() };
+
+    // Select glyphs for loading
+    // Include all in Unicode plane 0 except for control characters (U+0000 - U+0019), surrogates (U+D800 - U+DFFF),
+    // private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
+    static const std::array<ImWchar, 5> ranges{ 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
+    static const auto fontFile = basePathStr + "unifont.otf";
+
+    io.Fonts->AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges.data());
+
+    // Load icons from Font Awesome
+    static const std::array<ImWchar, 3> iconRanges{ 0xe000, 0xf8ff, 0 };
+    static const auto faFontFile = basePathStr + "font-awesome.otf";
+
+    config.MergeMode = true;
+    io.Fonts->AddFontFromFileTTF(faFontFile.c_str(), fontSize, &config, iconRanges.data());
+
+    io.FontGlobalScale = 1.0f / scale;
+    io.Fonts->Build();
+
+    ImGui::GetStyle().ScaleAllSizes(dpiScale);
+}
 
 // Sets Dear ImGui's configuration for use by the application.
 static void configImGui() {
@@ -51,28 +94,7 @@ static void configImGui() {
                         = roundedCorners ? 4.0f : 0.0f;
     // clang-format on
 
-    static HandlePtr<char, SDL_free> basePath{ SDL_GetBasePath() };
-    static std::string basePathStr{ basePath.get() };
-
-    if (useDefaultFont) {
-        io.Fonts->AddFontDefault();
-    } else {
-        // Select glyphs for loading
-        // Include all in Unicode plane 0 except for control characters (U+0000 - U+0019), surrogates (U+D800 - U+DFFF),
-        // private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
-        static std::array<ImWchar, 5> ranges{ 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
-        static auto fontFile = basePathStr + "unifont.otf";
-
-        io.Fonts->AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges.data());
-    }
-
-    // Load icons from Font Awesome
-    static std::array<ImWchar, 3> iconRanges{ 0xe000, 0xf8ff, 0 };
-    static auto faFontFile = basePathStr + "font-awesome.otf";
-
-    ImFontConfig config;
-    config.MergeMode = true;
-    io.Fonts->AddFontFromFileTTF(faFontFile.c_str(), fontSize, &config, iconRanges.data());
+    scaleToDPI();
 }
 
 bool App::init() {
@@ -114,7 +136,14 @@ bool App::newFrame() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         ImGui_ImplSDL3_ProcessEvent(&event);
-        if (event.type == SDL_EVENT_QUIT) return false;
+        switch (event.type) {
+            case SDL_EVENT_QUIT:
+                return false;
+            case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
+                ImGui_ImplOpenGL3_DestroyFontsTexture();
+                scaleToDPI();
+                ImGui_ImplOpenGL3_CreateFontsTexture();
+        }
     }
 
     ImGui_ImplOpenGL3_NewFrame();
