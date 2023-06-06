@@ -1,0 +1,12 @@
+// Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#if OS_MACOS
+#include <AppKit/NSScreen.h>
+
+#include "app.hpp"
+
+float App::getScale() {
+    return [[NSScreen mainScreen] backingScaleFactor];
+}
+#endif

@@ -24,22 +24,33 @@
 static SDL_Window* window;      // The main application window
 static SDL_GLContext glContext; // The OpenGL context
 
-static float getScale() {
+#if !OS_MACOS
+float App::getScale() {
     return 1;
 }
+#endif
 
+// Scales the app and fonts to the screen's DPI.
 static void scaleToDPI() {
+    // https://github.com/ocornut/imgui/issues/5301
+    // https://github.com/ocornut/imgui/issues/6485
+    // https://github.com/ocornut/imgui/blob/master/docs/FAQ.md#q-how-should-i-handle-dpi-in-my-application
+    // https://github.com/libsdl-org/SDL/blob/main/docs/README-highdpi.md
+
     ImGuiIO& io = ImGui::GetIO();
     float dpiScale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(window));
 
+    float scale = App::getScale();
+
+    // Font size
     ImFontConfig config;
-    float scale = getScale();
-
     config.SizePixels = Settings::fontSize * scale;
-    float fontSize = std::floor(Settings::fontSize * dpiScale);
+    float fontSize = std::floor(Settings::fontSize * dpiScale * scale);
 
+    // Clear built fonts to save memory
     if (io.Fonts->IsBuilt()) io.Fonts->Clear();
 
+    // Path to font files
     static const HandlePtr<char, SDL_free> basePath{ SDL_GetBasePath() };
     static const std::string basePathStr{ basePath.get() };
 
@@ -55,12 +66,15 @@ static void scaleToDPI() {
     static const std::array<ImWchar, 3> iconRanges{ 0xe000, 0xf8ff, 0 };
     static const auto faFontFile = basePathStr + "font-awesome.otf";
 
+    // Merge icons into main font
     config.MergeMode = true;
     io.Fonts->AddFontFromFileTTF(faFontFile.c_str(), fontSize, &config, iconRanges.data());
 
+    // Scale fonts and rebuild
     io.FontGlobalScale = 1.0f / scale;
     io.Fonts->Build();
 
+    // Scale sizes to DPI scale
     ImGui::GetStyle().ScaleAllSizes(dpiScale);
 }
 
@@ -140,6 +154,7 @@ bool App::newFrame() {
             case SDL_EVENT_QUIT:
                 return false;
             case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
+                // Rescale app on DPI change
                 ImGui_ImplOpenGL3_DestroyFontsTexture();
                 scaleToDPI();
                 ImGui_ImplOpenGL3_CreateFontsTexture();
