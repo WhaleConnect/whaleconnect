@@ -75,11 +75,14 @@ target("terminal")
     -- GUI code and main entry point
     add_files("src/gui/*.cpp", "src/main.cpp")
 
+    -- Add application manifests
     if is_plat("windows") then
-        -- DPI awareness manifest (for Windows)
         add_files("res/app.manifest")
     elseif is_plat("macosx") then
-        add_files("src/gui/app.mm")
+        -- Generate application bundle
+        add_rules("xcode.application")
+
+        add_files("src/Info.plist")
     end
 
     add_ldflags("cl::/SUBSYSTEM:WINDOWS")
@@ -103,6 +106,8 @@ target("terminal")
             print("Downloading Remix Icon...")
             http.download(icon_font_url, icon_font_path)
         end
+
+        target:add("installfiles", format("%s/*.ttf", download_path))
     end)
 
 target("socket-tests")
