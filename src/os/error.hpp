@@ -35,9 +35,7 @@ namespace System {
     // Checks if an error code should be handled as a fatal error.
     bool isFatal(ErrorCode code);
 
-    // Checks if an error code signals a canceled operation.
-    bool isCanceled(ErrorCode code, ErrorType type);
-
+    // Formats a system error into a readable string.
     std::string formatSystemError(ErrorCode code, ErrorType type, std::string_view fnName);
 
     // An exception structure containing details of an error.
@@ -54,5 +52,8 @@ namespace System {
         explicit operator bool() const {
             return isFatal(code);
         }
+
+        // Checks if this exception represents a canceled operation.
+        bool isCanceled() const;
     };
 }

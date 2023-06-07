@@ -51,21 +51,6 @@ bool System::isFatal(ErrorCode code) {
     return true;
 }
 
-bool System::isCanceled(ErrorCode code, ErrorType type) {
-#if OS_WINDOWS
-    if ((type == System::ErrorType::System) && (code == WSA_OPERATION_ABORTED)) return true;
-#else
-    if ((type == System::ErrorType::System) && (code == ECANCELED)) return true;
-#endif
-
-#if OS_MACOS
-    // IOBluetooth-specific error
-    if ((type == System::ErrorType::IOReturn) && (code == kIOReturnAborted)) return true;
-#endif
-
-    return false;
-}
-
 std::string System::formatSystemError(ErrorCode code, ErrorType type, std::string_view fnName) {
 #if OS_WINDOWS
     // Message buffer
@@ -96,4 +81,19 @@ std::string System::formatSystemError(ErrorCode code, ErrorType type, std::strin
 #endif
 
     return std::format("{} (type {}, in {}): {}", code, magic_enum::enum_name(type), fnName, msg);
+}
+
+bool System::SystemError::isCanceled() const {
+#if OS_WINDOWS
+    if ((type == System::ErrorType::System) && (code == WSA_OPERATION_ABORTED)) return true;
+#else
+    if ((type == System::ErrorType::System) && (code == ECANCELED)) return true;
+#endif
+
+#if OS_MACOS
+    // IOBluetooth-specific error
+    if ((type == System::ErrorType::IOReturn) && (code == kIOReturnAborted)) return true;
+#endif
+
+    return false;
 }

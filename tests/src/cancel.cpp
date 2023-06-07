@@ -21,7 +21,7 @@ const auto tcpPort = ipSettings["tcpPort"].get<uint16_t>();
 // Matcher to check if a SystemError corresponds to a cancellation error.
 struct CancellationMatcher : Catch::Matchers::MatcherGenericBase {
     bool match(const System::SystemError& f) const {
-        return System::isCanceled(f.code, f.type);
+        return f.isCanceled();
     }
 
     std::string describe() const override {

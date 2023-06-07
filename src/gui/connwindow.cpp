@@ -105,7 +105,7 @@ Task<> ConnWindow::_readHandler() try {
 void ConnWindow::_errorHandler(const System::SystemError& error) {
     // Check for non-fatal errors, then add error line to console
     // Don't handle errors caused by I/O cancellation
-    if (error && !System::isCanceled(error.code, error.type)) _output.addError(error.what());
+    if (error && !error.isCanceled()) _output.addError(error.what());
 }
 
 void ConnWindow::_onBeforeUpdate() {
