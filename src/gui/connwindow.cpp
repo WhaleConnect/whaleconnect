@@ -109,7 +109,7 @@ void ConnWindow::_errorHandler(const System::SystemError& error) {
 }
 
 void ConnWindow::_onBeforeUpdate() {
-    ImGui::SetNextWindowSize(tVec(35, 20), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(tVec(35, 20), ImGuiCond_Appearing);
     _readHandler();
 }
 

@@ -233,7 +233,7 @@ void ImGui::DrawNotifications() {
 void ImGui::DrawNotificationsWindow(bool& open) {
     if (!open) return;
 
-    ImGui::SetNextWindowSize(tVec(22, 30), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(tVec(22, 30), ImGuiCond_Appearing);
 
     if (ImGui::Begin(notificationsWindowTitle, &open)) drawNotificationContents(nullptr);
     ImGui::End();

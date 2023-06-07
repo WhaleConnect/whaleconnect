@@ -180,7 +180,7 @@ void SDPWindow::_drawManualTab() {
 }
 
 void SDPWindow::_onBeforeUpdate() {
-    ImGui::SetNextWindowSize(tVec(30, 18), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(tVec(30, 18), ImGuiCond_Appearing);
     _setClosable(!std::holds_alternative<AsyncSDPInquiry>(_sdpInquiry));
 }
 
