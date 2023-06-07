@@ -34,12 +34,17 @@ std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& de
 
     if (result != kIOReturnSuccess) throw System::SystemError{ result, System::ErrorType::IOReturn, fnName };
 
+    // Init channel without delegate
     auto handle = [[BTHandle alloc] initWithChannel:channel];
     return std::make_unique<ClientSocket<SocketTag::BT>>(handle, device);
 }
 
 template <>
 Task<> ClientSocket<SocketTag::BT>::connect() const {
+    // The channel will not be fully opened until a delegate is registered
+    // https://developer.apple.com/documentation/iobluetooth/iobluetoothdevice/1430889-openl2capchannelasync
+    // https://developer.apple.com/documentation/iobluetooth/iobluetoothdevice/1435022-openrfcommchannelasync
+    // This makes delegate registration similar to a connect() socket call.
     [_get() registerAsDelegate];
 
     NSUInteger hash = [_get() channelHash];
