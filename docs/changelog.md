@@ -21,6 +21,9 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 - Redesigned the loading spinner shown during an SDP inquiry.
 - Initialization errors are now displayed in the notification area instead of as a corner overlay.
+- The app now scales according to display DPI.
+  - This improves rendering quality on Mac Retina screens.
+- The app now bundles the Noto Sans Mono font, and support for loading additional fonts will be added in the future.
 
 ### Bug Fixes
 
@@ -35,6 +38,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 - Removed the "send textbox height" setting.
 - Removed the "show FPS counter" setting.
+- Removed the "use default font" setting.
 
 ### Development
 
