@@ -82,7 +82,7 @@ target("terminal")
         -- Generate application bundle
         add_rules("xcode.application")
 
-        add_files("src/Info.plist")
+        add_files("res/Info.plist")
     end
 
     add_ldflags("cl::/SUBSYSTEM:WINDOWS")
