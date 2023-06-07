@@ -15,7 +15,4 @@ namespace App {
 
     // Cleans up all backends and destroys the main window.
     void cleanup();
-
-    // Gets the screen's scale factor.
-    float getScale();
 }

@@ -24,12 +24,6 @@
 static SDL_Window* window;      // The main application window
 static SDL_GLContext glContext; // The OpenGL context
 
-#if !OS_MACOS
-float App::getScale() {
-    return 1;
-}
-#endif
-
 // Scales the app and fonts to the screen's DPI.
 static void scaleToDPI() {
     // https://github.com/ocornut/imgui/issues/5301
@@ -40,7 +34,7 @@ static void scaleToDPI() {
     ImGuiIO& io = ImGui::GetIO();
     float dpiScale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(window));
 
-    float scale = App::getScale();
+    float scale = SDL_GetWindowPixelDensity(window);
 
     // Font size
     ImFontConfig config;
