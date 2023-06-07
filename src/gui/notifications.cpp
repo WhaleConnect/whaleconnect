@@ -12,6 +12,8 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include "imguiext.hpp"
+
 static constexpr const char* notificationsWindowTitle = "Notifications";
 
 // Class to contain information about a notification.
@@ -108,11 +110,11 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
             ImGui::TextColored({ 0.08f, 0.54f, 0.06f, 1 }, "\ueb81");
     }
 
-    const float textWidth = 300; // Width of text before it is wrapped
+    const float textWidth = tSize(20); // Width of text before it is wrapped
 
     // Text wrapping position in window coordinates
     // If the notifications are shown in a parent window, the text is wrapped within the window.
-    float wrapPos = showInCorner ? ImGui::GetCursorPosX() + textWidth : ImGui::GetWindowWidth() - 40;
+    float wrapPos = showInCorner ? ImGui::GetCursorPosX() + textWidth : ImGui::GetWindowWidth() - tSize(2);
 
     // Draw text
     ImGui::SameLine();
@@ -231,7 +233,7 @@ void ImGui::DrawNotifications() {
 void ImGui::DrawNotificationsWindow(bool& open) {
     if (!open) return;
 
-    ImGui::SetNextWindowSize({ 350, 500 }, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(tVec(22, 30), ImGuiCond_FirstUseEver);
 
     if (ImGui::Begin(notificationsWindowTitle, &open)) drawNotificationContents(nullptr);
     ImGui::End();
@@ -247,12 +249,12 @@ void ImGui::DrawNotificationsMenu(bool& notificationsOpen) {
     }
 
     // Draw menu
-    ImGui::SetNextWindowSize({ 300, 300 });
+    ImGui::SetNextWindowSize(tVec(20, 20));
     if (BeginMenu(std::format("\uef93 {}###Notifications", content).c_str())) {
         drawNotificationContents(&notificationsOpen);
         EndMenu();
     }
 
     // Position cursor to draw next menu
-    SetCursorPosX(GetCursorStartPos().x + 50);
+    SetCursorPosX(GetCursorStartPos().x + tSize(3));
 }

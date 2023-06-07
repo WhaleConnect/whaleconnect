@@ -82,7 +82,7 @@ void Console::drawOptions() {
 
 void Console::update(std::string_view id, const ImVec2& size) {
     ImGui::BeginChild(id.data(), size, true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoMove);
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 4, 1 }); // Tighten line spacing
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 1, tSize(0.05f) }); // Tighten line spacing
 
     // Add each item
     ImGuiListClipper clipper;

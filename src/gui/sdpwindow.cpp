@@ -43,7 +43,7 @@ static void drawServiceDetails(const BTUtils::SDPResult& result) {
 
 bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
     // Begin a scrollable child window to contain the list
-    ImGui::BeginChild("sdpList", { 0, 0 }, true);
+    ImGui::BeginChild("sdpList", {}, true);
     bool ret = false;
 
     // ID to use in case multiple services have the same name
@@ -139,7 +139,7 @@ void SDPWindow::_drawSDPTab() {
     ImGui::BeginDisabled(std::holds_alternative<AsyncSDPInquiry>(_sdpInquiry));
 
     // UUID selection combobox
-    ImGui::SetNextItemWidth(150);
+    ImGui::SetNextItemWidth(tSize(10));
     if (ImGui::BeginCombo("Protocol/Service UUID", _selectedUUID.c_str())) {
         for (const auto& [name, _] : _uuids)
             if (ImGui::Selectable(name.c_str())) _selectedUUID = name;
@@ -172,7 +172,7 @@ void SDPWindow::_drawSDPTab() {
 void SDPWindow::_drawManualTab() {
     if (!ImGui::BeginTabItem("Connect Manually")) return;
 
-    ImGui::SetNextItemWidth(100);
+    ImGui::SetNextItemWidth(tSize(7));
     ImGui::InputScalar("Port", _port, 1, 10);
 
     _drawConnOptions(std::format("Port {}", _port));
@@ -180,7 +180,7 @@ void SDPWindow::_drawManualTab() {
 }
 
 void SDPWindow::_onBeforeUpdate() {
-    ImGui::SetNextWindowSize({ 450, 250 }, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(tVec(30, 18), ImGuiCond_FirstUseEver);
     _setClosable(!std::holds_alternative<AsyncSDPInquiry>(_sdpInquiry));
 }
 

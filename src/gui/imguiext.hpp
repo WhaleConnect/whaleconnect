@@ -12,6 +12,12 @@
 
 #include <imgui.h>
 
+// Multiplies the given value by the font size. For use with calculating item sizes.
+float tSize(float s);
+
+// Convenience function to multiply an x and y value by the font size to create an ImVec2.
+ImVec2 tVec(float x, float y);
+
 namespace ImGui {
     constexpr float FILL = -FLT_MIN; // Makes a widget fill a dimension. Use with ImVec2.
 
