@@ -85,20 +85,23 @@ target("terminal")
     add_ldflags("cl::/SUBSYSTEM:WINDOWS")
 
     -- Download font files next to executable on post-build
-    after_build(function (target)
-        local unifont_path = path.join(target:targetdir(), "unifont.otf")
-        local font_awesome_path = path.join(target:targetdir(), "font-awesome.otf")
-
+    before_build(function (target)
+        local download_path = path.join(target:targetdir(), "fonts")
+        local font_path = path.join(download_path, "NotoSansMono-Regular.ttf")
+        local icon_font_path = path.join(download_path, "RemixIcon.ttf")
         local http = import("net.http")
 
-        if not os.isfile(unifont_path) then
-            print("Downloading GNU Unifont...")
-            http.download("https://github.com/NSTerminal/unifont/raw/main/font/precompiled/unifont-15.0.03.otf", unifont_path)
+        local font_url = "https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSansMono/unhinted/ttf/NotoSansMono-Regular.ttf"
+        local icon_font_url = "https://github.com/Remix-Design/RemixIcon/raw/f88a51b6402562c6c2465f61a3e845115992e4c6/fonts/remixicon.ttf"
+
+        if not os.isfile(font_path) then
+            print("Downloading Noto Sans Mono...")
+            http.download(font_url, font_path)
         end
 
-        if not os.isfile(font_awesome_path) then
-            print("Downloading Font Awesome...")
-            http.download("https://github.com/FortAwesome/Font-Awesome/raw/6.x/otfs/Font%20Awesome%206%20Free-Solid-900.otf", font_awesome_path)
+        if not os.isfile(icon_font_path) then
+            print("Downloading Remix Icon...")
+            http.download(icon_font_url, icon_font_path)
         end
     end)
 

@@ -42,9 +42,9 @@ static std::string formatDevice(const Device& device, std::string_view extraInfo
     std::string deviceString = isIP ? device.address : device.name;
 
     // Newlines may be present in a Bluetooth device name, and if they get into a window's title, anything after the
-    // first one will get cut off (the title bar can only hold one line). Replace them with enter characters (U+23CE)
+    // first one will get cut off (the title bar can only hold one line). Replace them with left/down arrow icons
     // to keep everything on one line.
-    deviceString = Strings::replaceAll(deviceString, "\n", "\u23CE");
+    deviceString = Strings::replaceAll(deviceString, "\n", "\uf306");
 
     // Format the values into a string as the title
     // The address is always part of the id hash.

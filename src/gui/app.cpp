@@ -45,7 +45,10 @@ static void scaleToDPI() {
     // Font size
     ImFontConfig config;
     config.SizePixels = Settings::fontSize * scale;
+
+    // The icons are slightly larger than the main font so they are scaled down from the font size
     float fontSize = std::floor(Settings::fontSize * dpiScale * scale);
+    float iconFontSize = std::floor(fontSize * 0.9f);
 
     // Clear built fonts to save memory
     if (io.Fonts->IsBuilt()) io.Fonts->Clear();
@@ -55,20 +58,19 @@ static void scaleToDPI() {
     static const std::string basePathStr{ basePath.get() };
 
     // Select glyphs for loading
-    // Include all in Unicode plane 0 except for control characters (U+0000 - U+0019), surrogates (U+D800 - U+DFFF),
-    // private use area (U+E000 - U+F8FF), and noncharacters (U+FFFE and U+FFFF).
-    static const std::array<ImWchar, 5> ranges{ 0x0020, 0xD7FF, 0xF900, 0xFFFD, 0 };
-    static const auto fontFile = basePathStr + "unifont.otf";
+    // Include all in the first 2 Unicode blocks, and the substitution character (U+FFFD).
+    static const std::array<ImWchar, 5> ranges{ 0x0020, 0x00FF, 0xFFFD, 0xFFFD, 0 };
+    static const auto fontFile = basePathStr + "NotoSansMono-Regular.ttf";
 
     io.Fonts->AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges.data());
 
-    // Load icons from Font Awesome
+    // Load icons
     static const std::array<ImWchar, 3> iconRanges{ 0xe000, 0xf8ff, 0 };
-    static const auto faFontFile = basePathStr + "font-awesome.otf";
+    static const auto iconFontFile = basePathStr + "RemixIcon.ttf";
 
     // Merge icons into main font
     config.MergeMode = true;
-    io.Fonts->AddFontFromFileTTF(faFontFile.c_str(), fontSize, &config, iconRanges.data());
+    io.Fonts->AddFontFromFileTTF(iconFontFile.c_str(), iconFontSize, &config, iconRanges.data());
 
     // Scale fonts and rebuild
     io.FontGlobalScale = 1.0f / scale;

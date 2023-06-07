@@ -99,13 +99,13 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
             ImGui::TextColored({ 0.98f, 0.74f, 0.02f, 1 }, "\uea21");
             break;
         case Error:
-            ImGui::TextColored({ 0.82f, 0, 0, 1 }, "\uf057");
+            ImGui::TextColored({ 0.82f, 0, 0, 1 }, "\ueb97");
             break;
         case Info:
-            ImGui::TextColored({ 0.0f, 0.45f, 0.81f, 1 }, "\uf05a");
+            ImGui::TextColored({ 0.0f, 0.45f, 0.81f, 1 }, "\uee59");
             break;
         case Success:
-            ImGui::TextColored({ 0.08f, 0.54f, 0.06f, 1 }, "\uf058");
+            ImGui::TextColored({ 0.08f, 0.54f, 0.06f, 1 }, "\ueb81");
     }
 
     const float textWidth = 300; // Width of text before it is wrapped
@@ -132,7 +132,7 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
     ImGui::SetCursorPosX(wrapPos + ImGui::GetStyle().ItemSpacing.x);
     ImGui::PushID(_id.c_str());
 
-    if (ImGui::Button("\uf00d")) _visibility = Erased | Fading;
+    if (ImGui::Button("\ueb99")) _visibility = Erased | Fading;
 
     ImGui::PopID();
     ImGui::PopStyleColor(3);
@@ -169,12 +169,12 @@ static void drawNotificationContents(bool* open) {
     bool clearAll = false;
 
     if (notifications.empty()) ImGui::Text("No Notifications");
-    else if (ImGui::Button("\uf2ed")) clearAll = true;
+    else if (ImGui::Button("\uec2a")) clearAll = true;
 
     // Display "pop out" button if applicable
     if (open) {
         ImGui::SameLine();
-        if (ImGui::Button("\uf35d")) {
+        if (ImGui::Button("\uf0f4")) {
             *open = true;
             ImGui::SetWindowFocus(notificationsWindowTitle);
         }
@@ -248,7 +248,7 @@ void ImGui::DrawNotificationsMenu(bool& notificationsOpen) {
 
     // Draw menu
     ImGui::SetNextWindowSize({ 300, 300 });
-    if (BeginMenu(std::format("\uf0f3 {}###Notifications", content).c_str())) {
+    if (BeginMenu(std::format("\uef93 {}###Notifications", content).c_str())) {
         drawNotificationContents(&notificationsOpen);
         EndMenu();
     }
