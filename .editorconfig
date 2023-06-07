@@ -9,5 +9,9 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 
 ## Source files
-[**.{c,h}pp]
+[{src,tests}/**]
 indent_size = 4
+
+## Config and manifest files
+[*.{manifest,plist,clang-format,clangd}]
+indent_size = 2
