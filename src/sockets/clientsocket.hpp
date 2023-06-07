@@ -42,6 +42,7 @@ public:
 
     ~ClientSocket() override = default;
 
+    // Accesses the connected device information.
     [[nodiscard]] const Device& getDevice() const {
         return _device;
     }
@@ -53,7 +54,8 @@ public:
 template <auto Tag>
 std::unique_ptr<ClientSocket<Tag>> createClientSocket(const Device& device);
 
+// Extra traits for IP sockets.
 template <>
 struct ClientSocketTraits<SocketTag::IP> {
-    HandlePtr<ADDRINFOW, FreeAddrInfo> _addr;
+    HandlePtr<ADDRINFOW, FreeAddrInfo> _addr; // Address from getaddrinfo
 };

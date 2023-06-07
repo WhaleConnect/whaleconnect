@@ -6,6 +6,7 @@
 #include "btutils.hpp"
 
 namespace BTUtils::Internal {
+    // Gets the major and minor version numbers from a profile descriptor.
     inline void extractVersionNums(uint16_t version, BTUtils::ProfileDesc& desc) {
         // Bit operations to extract the two octets
         // The major and minor version numbers are stored in the high-order 8 bits and low-order 8 bits of the 16-bit

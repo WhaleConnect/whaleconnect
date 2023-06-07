@@ -12,11 +12,13 @@
 #include "os/error.hpp"
 #include "sockets/device.hpp"
 
+// Interface to handle events from SDP queries.
 @interface InquiryHandler : NSObject <IOBluetoothDeviceAsyncCallbacks>
 @property bool finished;
 @property IOReturn result;
 @property (strong) NSCondition* cond;
 
+// Waits synchronously for the query to complete.
 - (IOReturn)wait;
 @end
 
@@ -29,6 +31,7 @@
 }
 
 - (void)sdpQueryComplete:(IOBluetoothDevice*)device status:(IOReturn)status {
+    // Use a condition variable to control waiting and resuming on the main thread
     [_cond lock];
     _finished = true;
     _result = status;

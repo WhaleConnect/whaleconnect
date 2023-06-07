@@ -8,6 +8,9 @@
 
 #include "os/error.hpp"
 
+// Objective-C++ wrappers for C++ async functions.
+// The hash of the channel is passed to C++ code for identification of each channel.
+
 static void newData(id channel, const char* data, size_t dataLen) {
     Async::bluetoothReadComplete([channel hash], data, dataLen);
 }
@@ -60,6 +63,8 @@ static void check(IOReturn code, const char* fnName) {
 - (NSUInteger)channelHash {
     return [_channel hash];
 }
+
+// Implementation methods for this interface to conform to IOBluetooth delegate protocols.
 
 - (void)l2capChannelClosed:(IOBluetoothL2CAPChannel*)l2capChannel {
     closed(l2capChannel);
