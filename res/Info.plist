@@ -3,6 +3,6 @@
 <plist version="1.0">
   <dict>
     <key>NSHighResolutionCapable</key>
-    <value>true</value>
+    <true />
   </dict>
 </plist>
