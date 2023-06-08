@@ -68,13 +68,15 @@ static std::vector<Notification> notifications; // Currently active notification
 
 // Draws a single notification in the notification area.
 float Notification::update(const ImVec2& pos, bool showInCorner) {
+    using namespace ImGui::Literals;
+
     // Get position of the notification's bottom-right corner relative to the viewport
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImVec2 viewportSize = viewport->Size;
     ImVec2 windowPos = viewport->Pos + viewportSize - pos;
 
     if (showInCorner) {
-        if (_visibility & Fading) _opacity -= 5.0f * ImGui::GetIO().DeltaTime;
+        if (_visibility & Fading) _opacity -= 5_dt;
 
         // Set notification opacity, if it is zero then it should be hidden
         if (_opacity > 0) {
@@ -110,11 +112,11 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
             ImGui::TextColored({ 0.08f, 0.54f, 0.06f, 1 }, "\ueb81");
     }
 
-    const float textWidth = tSize(20); // Width of text before it is wrapped
+    const float textWidth = 20_fh; // Width of text before it is wrapped
 
     // Text wrapping position in window coordinates
     // If the notifications are shown in a parent window, the text is wrapped within the window.
-    float wrapPos = showInCorner ? ImGui::GetCursorPosX() + textWidth : ImGui::GetWindowWidth() - tSize(2);
+    float wrapPos = showInCorner ? ImGui::GetCursorPosX() + textWidth : ImGui::GetWindowWidth() - 2_fh;
 
     // Draw text
     ImGui::SameLine();
@@ -233,7 +235,8 @@ void ImGui::DrawNotifications() {
 void ImGui::DrawNotificationsWindow(bool& open) {
     if (!open) return;
 
-    ImGui::SetNextWindowSize(tVec(22, 30), ImGuiCond_Appearing);
+    using namespace ImGui::Literals;
+    ImGui::SetNextWindowSize(22_fh * 30_fh, ImGuiCond_Appearing);
 
     if (ImGui::Begin(notificationsWindowTitle, &open)) drawNotificationContents(nullptr);
     ImGui::End();
@@ -249,12 +252,14 @@ void ImGui::DrawNotificationsMenu(bool& notificationsOpen) {
     }
 
     // Draw menu
-    ImGui::SetNextWindowSize(tVec(20, 20));
+    using namespace ImGui::Literals;
+    ImGui::SetNextWindowSize(20_fh * 20_fh);
     if (BeginMenu(std::format("\uef93 {}###Notifications", content).c_str())) {
         drawNotificationContents(&notificationsOpen);
         EndMenu();
     }
 
     // Position cursor to draw next menu
-    SetCursorPosX(GetCursorStartPos().x + tSize(3));
+    using namespace ImGui::Literals;
+    SetCursorPosX(GetCursorStartPos().x + 3_fh);
 }

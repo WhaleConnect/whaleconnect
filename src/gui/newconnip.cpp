@@ -24,10 +24,12 @@ void drawIPConnectionTab(WindowList& connections) {
     static ConnectionType type = TCP; // Type of connection to create
 
     // Widgets
+    using namespace ImGui::Literals;
+
     static const char* portLabel = "Port";
     static const char* addressLabel = "Address";
-    static const float portWidth = tSize(7);       // Port input width (hardcoded)
-    static const float minAddressWidth = tSize(10); // Address input min width
+    static const float portWidth = 7_fh;       // Port input width (hardcoded)
+    static const float minAddressWidth = 10_fh; // Address input min width
 
     // The horizontal space available in the window
     float spaceAvailable = ImGui::GetContentRegionAvail().x              // Child window width without scrollbars

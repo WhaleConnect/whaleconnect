@@ -18,14 +18,6 @@ static int stringCallback(ImGuiInputTextCallbackData* data) {
     return 0;
 }
 
-float tSize(float s) {
-    return ImGui::GetFontSize() * s;
-}
-
-ImVec2 tVec(float x, float y) {
-    return { tSize(x), tSize(y) };
-}
-
 bool ImGui::InputText(std::string_view label, std::string& s, ImGuiInputTextFlags flags) {
     flags |= ImGuiInputTextFlags_CallbackResize;
     return InputText(label.data(), s.data(), s.capacity() + 1, flags, stringCallback, &s);

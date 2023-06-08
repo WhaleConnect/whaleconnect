@@ -10,6 +10,7 @@
 #include <string_view>
 #include <type_traits> // std::is_same_v
 
+#include <__concepts/arithmetic.h>
 #include <imgui.h>
 
 // Multiplies the given value by the font size. For use with calculating item sizes.
@@ -19,6 +20,46 @@ float tSize(float s);
 ImVec2 tVec(float x, float y);
 
 namespace ImGui {
+    // A dimension expressed in terms of font size, for DPI-aware size calculations.
+    struct Dimension {
+        float s; // Size
+
+        // Sets the size of this dimension.
+        template <class T>
+        requires std::integral<T> || std::floating_point<T>
+        constexpr explicit Dimension(T s) : s(static_cast<float>(s) * ImGui::GetFontSize()) {}
+
+        // Gets the size of this dimension. This is not explicit so dimensions can be treated exactly like floats.
+        constexpr explicit(false) operator float() const {
+            return s;
+        }
+
+        // Combines this dimension with another to create an ImVec2. For use with 2D sizes.
+        constexpr ImVec2 operator*(Dimension other) const {
+            return { *this, other };
+        }
+    };
+
+    namespace Literals {
+        // Multiplies the given value by the font height. For use with calculating item sizes.
+        inline Dimension operator""_fh(long double s) {
+            return Dimension{ s };
+        }
+
+        inline Dimension operator""_fh(unsigned long long int s) {
+            return Dimension{ s };
+        }
+
+        // Multiplies the given value by DeltaTime. For use with consistent transitions and movement.
+        inline float operator""_dt(long double s) {
+            return static_cast<float>(s) * ImGui::GetIO().DeltaTime;
+        }
+
+        inline float operator""_dt(unsigned long long s) {
+            return static_cast<float>(s) * ImGui::GetIO().DeltaTime;
+        }
+    }
+
     constexpr float FILL = -FLT_MIN; // Makes a widget fill a dimension. Use with ImVec2.
 
     // A wrapper for TextUnformatted() to allow a string_view parameter.

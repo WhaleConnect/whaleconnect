@@ -109,7 +109,9 @@ void ConnWindow::_errorHandler(const System::SystemError& error) {
 }
 
 void ConnWindow::_onBeforeUpdate() {
-    ImGui::SetNextWindowSize(tVec(35, 20), ImGuiCond_Appearing);
+    using namespace ImGui::Literals;
+
+    ImGui::SetNextWindowSize(35_fh * 20_fh, ImGuiCond_Appearing);
     _readHandler();
 }
 
@@ -123,7 +125,9 @@ void ConnWindow::_onUpdate() {
     }
 
     // Textbox
-    float textboxHeight = tSize(4); // Number of lines that can be displayed
+    using namespace ImGui::Literals;
+
+    float textboxHeight = 4_fh; // Number of lines that can be displayed
     ImVec2 size{ ImGui::FILL, textboxHeight };
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
                               | ImGuiInputTextFlags_AllowTabInput;
@@ -179,7 +183,9 @@ void ConnWindow::_drawControls() {
     // Line ending combobox
     // The code used to calculate where to put the combobox is derived from
     // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
-    float comboWidth = tSize(10);
+    using namespace ImGui::Literals;
+
+    float comboWidth = 10_fh;
     ImGui::SameLine();
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
     ImGui::SetNextItemWidth(comboWidth);

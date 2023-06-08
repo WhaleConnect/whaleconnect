@@ -15,6 +15,8 @@
 #include <unicode/unistr.h>
 #include <unicode/utypes.h>
 
+#include "imguiext.hpp"
+
 // Word break iterator for double-click selection, created inside an IIFE to avoid leaking symbols to the global scope
 static const auto bi = [] {
     using icu::BreakIterator;
@@ -63,7 +65,9 @@ static int32_t getCharIndex(const icu::UnicodeString& s, float cursorPosX) {
 
 // Gets the scroll delta for the given cursor position and window bounds.
 static float getScrollDelta(float v, float min, float max) {
-    const float scrollDelta = 250.0f * ImGui::GetIO().DeltaTime;
+    using namespace ImGui::Literals;
+
+    const float scrollDelta = 250_dt;
 
     if (v < min) return -scrollDelta;
     else if (v > max) return scrollDelta;

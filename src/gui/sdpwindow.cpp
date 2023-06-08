@@ -139,7 +139,9 @@ void SDPWindow::_drawSDPTab() {
     ImGui::BeginDisabled(std::holds_alternative<AsyncSDPInquiry>(_sdpInquiry));
 
     // UUID selection combobox
-    ImGui::SetNextItemWidth(tSize(10));
+    using namespace ImGui::Literals;
+
+    ImGui::SetNextItemWidth(10_fh);
     if (ImGui::BeginCombo("Protocol/Service UUID", _selectedUUID.c_str())) {
         for (const auto& [name, _] : _uuids)
             if (ImGui::Selectable(name.c_str())) _selectedUUID = name;
@@ -172,7 +174,8 @@ void SDPWindow::_drawSDPTab() {
 void SDPWindow::_drawManualTab() {
     if (!ImGui::BeginTabItem("Connect Manually")) return;
 
-    ImGui::SetNextItemWidth(tSize(7));
+    using namespace ImGui::Literals;
+    ImGui::SetNextItemWidth(7_fh);
     ImGui::InputScalar("Port", _port, 1, 10);
 
     _drawConnOptions(std::format("Port {}", _port));
@@ -180,7 +183,9 @@ void SDPWindow::_drawManualTab() {
 }
 
 void SDPWindow::_onBeforeUpdate() {
-    ImGui::SetNextWindowSize(tVec(30, 18), ImGuiCond_Appearing);
+    using namespace ImGui::Literals;
+
+    ImGui::SetNextWindowSize(30_fh * 18_fh, ImGuiCond_Appearing);
     _setClosable(!std::holds_alternative<AsyncSDPInquiry>(_sdpInquiry));
 }
 
