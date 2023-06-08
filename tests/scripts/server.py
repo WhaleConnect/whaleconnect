@@ -16,11 +16,15 @@ ECHO_STRING = b'echo test'
 # Command-line arguments to set server configuration
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--transport', type=str, required=True)
-parser.add_argument('-i', '--interactive', action='store_true')
+
+mode = parser.add_mutually_exclusive_group(required=True)
+mode.add_argument('-i', '--interactive', action='store_true')
+mode.add_argument('-e', '--echo', action='store_true')
 
 args = parser.parse_args()
 is_tcp = args.transport == 'TCP'
 is_interactive = args.interactive
+is_echo = args.echo
 
 socket_type = socket.SOCK_STREAM if is_tcp else socket.SOCK_DGRAM
 
@@ -52,7 +56,7 @@ def server_loop_tcp(s: socket.socket):
                 if is_interactive:
                     input_str = input('> ')
                     conn.sendall(input_str.encode())
-                elif data == ECHO_STRING:
+                elif is_echo or data == ECHO_STRING:
                     # Send back data if requested
                     conn.sendall(data)
             else:
@@ -71,12 +75,14 @@ def server_loop_udp(s: socket.socket):
         if is_interactive:
             input_str = input('> ')
             s.sendto(input_str.encode(), addr)
-        elif data == ECHO_STRING:
+        elif is_echo or data == ECHO_STRING:
             s.sendto(data, addr)
 
 
 if is_interactive:
     print('Running in interactive mode.')
+elif is_echo:
+    print('Running in echo mode.')
 
 with socket.socket(socket.AF_INET6, socket_type) as s:
     # Enable dual-stack server so IPv4 and IPv6 clients can connect
