@@ -6,9 +6,11 @@ NST's tests are located in the [tests directory](/tests). Certain tests are desi
 
 A Python server script is located in /tests/scripts. It should be invoked with either `-t TCP` or `-t UDP` on the command line, which tell the script to run a TCP server or UDP server, respectively.
 
-Two instances of the script may be run simultaneously so both a TCP server and UDP server can be available during testing.
+Multiple instances of the script may be run simultaneously so e.g., both a TCP server and UDP server can be available during testing.
 
-The server may also be called with the `-i` switch to make it interactive (it will accept data from the standard input to send to clients).
+The server may also be called with the following switches (mutually exclusive):
+- `-i` for interactive mode (it will accept data from the standard input to send to clients)
+- `-e` for echo mode (it will send back all data that it receives from the client)
 
 ## Server Device
 
