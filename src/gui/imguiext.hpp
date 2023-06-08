@@ -6,11 +6,11 @@
 #pragma once
 
 #include <cfloat>
+#include <concepts>
 #include <string>
 #include <string_view>
 #include <type_traits> // std::is_same_v
 
-#include <__concepts/arithmetic.h>
 #include <imgui.h>
 
 // Multiplies the given value by the font size. For use with calculating item sizes.
