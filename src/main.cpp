@@ -7,9 +7,8 @@
 
 #include <imgui.h>
 
-#include "gui/imguiext.hpp"
-
 #include "gui/app.hpp"
+#include "gui/imguiext.hpp"
 #include "gui/newconnbt.hpp"
 #include "gui/newconnip.hpp"
 #include "gui/notifications.hpp"

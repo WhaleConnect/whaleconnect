@@ -28,7 +28,7 @@ void drawIPConnectionTab(WindowList& connections) {
 
     static const char* portLabel = "Port";
     static const char* addressLabel = "Address";
-    static const float portWidth = 7_fh;       // Port input width (hardcoded)
+    static const float portWidth = 7_fh;        // Port input width (hardcoded)
     static const float minAddressWidth = 10_fh; // Address input min width
 
     // The horizontal space available in the window
