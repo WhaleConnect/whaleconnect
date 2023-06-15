@@ -13,7 +13,7 @@ class InitListener : public Catch::EventListenerBase {
 public:
     using Catch::EventListenerBase::EventListenerBase;
 
-    void testRunStarting(Catch::TestRunInfo const&) override {
+    void testRunStarting(const Catch::TestRunInfo&) override {
         // Putting the instance inside a static optional will give it a lifetime until the program ends, but
         // construction only when this function is called
         static std::optional<Async::Instance> asyncInstance;
