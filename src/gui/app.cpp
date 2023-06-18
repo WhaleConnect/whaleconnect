@@ -44,19 +44,29 @@ static void scaleToDPI() {
     float fontSize = std::floor(Settings::fontSize * dpiScale * scale);
     float iconFontSize = std::floor(fontSize * 0.9f);
 
+    ImFontAtlas& fonts = *io.Fonts;
+
     // Clear built fonts to save memory
-    if (io.Fonts->IsBuilt()) io.Fonts->Clear();
+    if (fonts.IsBuilt()) fonts.Clear();
 
     // Path to font files
     static const HandlePtr<char, SDL_free> basePath{ SDL_GetBasePath() };
     static const std::string basePathStr{ basePath.get() };
 
     // Select glyphs for loading
-    // Include all in the first 2 Unicode blocks, and the substitution character (U+FFFD).
-    static const std::array<ImWchar, 5> ranges{ 0x0020, 0x00FF, 0xFFFD, 0xFFFD, 0 };
-    static const auto fontFile = basePathStr + "NotoSansMono-Regular.ttf";
+    static const ImVector<ImWchar> ranges = [&] {
+        ImVector<ImWchar> rangesOut;
+        ImFontGlyphRangesBuilder builder;
 
-    io.Fonts->AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges.data());
+        builder.AddRanges(fonts.GetGlyphRangesDefault()); // First 2 Unicode blocks
+        builder.AddChar(0xFFFD);                          // Substitution character
+
+        builder.BuildRanges(&rangesOut);
+        return rangesOut;
+    }();
+
+    static const auto fontFile = basePathStr + "NotoSansMono-Regular.ttf";
+    fonts.AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges.Data);
 
     // Load icons
     static const std::array<ImWchar, 3> iconRanges{ 0xe000, 0xf8ff, 0 };
@@ -64,11 +74,11 @@ static void scaleToDPI() {
 
     // Merge icons into main font
     config.MergeMode = true;
-    io.Fonts->AddFontFromFileTTF(iconFontFile.c_str(), iconFontSize, &config, iconRanges.data());
+    fonts.AddFontFromFileTTF(iconFontFile.c_str(), iconFontSize, &config, iconRanges.data());
 
     // Scale fonts and rebuild
     io.FontGlobalScale = 1.0f / scale;
-    io.Fonts->Build();
+    fonts.Build();
 
     // Scale sizes to DPI scale
     ImGui::GetStyle().ScaleAllSizes(dpiScale);
