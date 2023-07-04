@@ -155,4 +155,8 @@ std::optional<std::string> Async::getBluetoothReadResult(uint64_t id) {
     bluetoothChannels[id].completed.pop();
     return data;
 }
+
+void Async::clearBluetoothEvents(uint64_t id) {
+    bluetoothChannels.erase(id);
+}
 #endif

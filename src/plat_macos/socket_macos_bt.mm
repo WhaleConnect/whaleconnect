@@ -13,6 +13,7 @@
 
 template <>
 void Socket<SocketTag::BT>::close() {
+    Async::clearBluetoothEvents([_get() channelHash]);
     [_handle close];
 
     _release();

@@ -35,5 +35,8 @@ namespace Async {
 
     // Gets the first queued result of a Bluetooth read operation.
     std::optional<std::string> getBluetoothReadResult(uint64_t id);
+
+    // Discards all completed and pending Bluetooth operations.
+    void clearBluetoothEvents(uint64_t id);
 }
 #endif
