@@ -50,9 +50,6 @@ static void check(IOReturn code, const char* fnName) {
 
 - (void)close {
     [_channel closeChannel];
-
-    if (_isL2CAP) [[_channel device] closeConnection];
-    else [[_channel getDevice] closeConnection];
 }
 
 - (void)write:(std::string)data {
