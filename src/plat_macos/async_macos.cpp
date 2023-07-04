@@ -134,7 +134,9 @@ void Async::bluetoothComplete(uint64_t id, BluetoothIOType type, IOReturn status
     bluetoothChannels[id].pending[idx] = nullptr;
 
     completionResult->error = status;
-    completionResult->coroHandle();
+
+    auto& coroHandle = completionResult->coroHandle;
+    if (coroHandle && !coroHandle.done()) coroHandle();
 }
 
 void Async::bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen) {
