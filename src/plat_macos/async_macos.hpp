@@ -24,6 +24,9 @@ namespace Async {
     // Creates a pending operation for a Bluetooth channel.
     void submitIOBluetooth(uint64_t id, BluetoothIOType type, CompletionResult& result);
 
+    // Removes a pending operation for a Bluetooth channel.
+    void removeIOBluetooth(uint64_t id, BluetoothIOType type);
+
     // Signals completion of a Bluetooth operation.
     void bluetoothComplete(uint64_t id, BluetoothIOType type, IOReturn status);
 

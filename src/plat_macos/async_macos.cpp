@@ -35,6 +35,12 @@ struct BluetoothQueue {
 
 static std::unordered_map<uint64_t, BluetoothQueue> bluetoothChannels;
 
+static Async::CompletionResult*& getBluetoothCompletionResult(uint64_t id, Async::BluetoothIOType type) {
+    // TODO: Use std::to_underlying() in C++23
+    int idx = magic_enum::enum_integer(type);
+    return bluetoothChannels[id].pending[idx];
+}
+
 void Async::Internal::init(unsigned int) {
     kq = call(FN(kqueue));
 }
@@ -120,23 +126,21 @@ void Async::cancelPending(int fd) {
 }
 
 void Async::submitIOBluetooth(uint64_t id, BluetoothIOType type, CompletionResult& result) {
-    // TODO: Use std::to_underlying() in C++23
-    int idx = magic_enum::enum_integer(type);
+    getBluetoothCompletionResult(id, type) = &result;
+}
 
-    bluetoothChannels[id].pending[idx] = &result;
+void Async::removeIOBluetooth(uint64_t id, BluetoothIOType type) {
+    getBluetoothCompletionResult(id, type) = nullptr;
 }
 
 void Async::bluetoothComplete(uint64_t id, BluetoothIOType type, IOReturn status) {
-    int idx = magic_enum::enum_integer(type);
-    auto completionResult = bluetoothChannels[id].pending[idx];
-
+    auto completionResult = getBluetoothCompletionResult(id, type);
     if (!completionResult) return;
-    bluetoothChannels[id].pending[idx] = nullptr;
 
+    // Remove event and resume caller
+    removeIOBluetooth(id, type);
     completionResult->error = status;
-
-    auto& coroHandle = completionResult->coroHandle;
-    if (coroHandle && !coroHandle.done()) coroHandle();
+    completionResult->coroHandle();
 }
 
 void Async::bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen) {

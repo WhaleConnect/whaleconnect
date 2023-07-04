@@ -23,10 +23,6 @@ static void closed(id channel) {
     Async::bluetoothClosed([channel hash]);
 }
 
-static void check(IOReturn code, const char* fnName) {
-    if (code != kIOReturnSuccess) throw System::SystemError{ code, System::ErrorType::IOReturn, fnName };
-}
-
 @implementation BTHandle
 
 - (instancetype)initWithChannel:(id)bluetoothChannel {
@@ -45,7 +41,7 @@ static void check(IOReturn code, const char* fnName) {
     if (_isL2CAP) res = [static_cast<IOBluetoothL2CAPChannel*>(_channel) setDelegate:self];
     else res = [static_cast<IOBluetoothRFCOMMChannel*>(_channel) setDelegate:self];
 
-    check(res, "setDelegate");
+    if (res != kIOReturnSuccess) throw System::SystemError{ res, System::ErrorType::IOReturn, "setDelegate" };
 }
 
 - (void)close {
@@ -54,7 +50,10 @@ static void check(IOReturn code, const char* fnName) {
 
 - (void)write:(std::string)data {
     IOReturn res = [_channel writeAsync:data.data() length:data.size() refcon:nil];
-    check(res, "writeAsync");
+    if (res != kIOReturnSuccess) {
+        Async::removeIOBluetooth([self channelHash], Async::BluetoothIOType::Send);
+        throw System::SystemError{ res, System::ErrorType::IOReturn, "writeAsync" };
+    }
 }
 
 - (NSUInteger)channelHash {
