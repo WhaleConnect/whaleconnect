@@ -27,7 +27,7 @@ add_defines("UNICODE", "_UNICODE", "NOMINMAX")
 
 -- Use Clang libc++ and enable experimental library
 add_cxxflags("clang::-stdlib=libc++", "clang::-fexperimental-library")
-add_ldflags("clangxx::-stdlib=libc++", "clangxx::-fexperimental-library")
+add_ldflags("clangxx::-stdlib=libc++", "clangxx::-fexperimental-library", { force = true })
 
 -- Enable MSVC conformant preprocessor
 add_cxxflags("cl::/Zc:preprocessor")
