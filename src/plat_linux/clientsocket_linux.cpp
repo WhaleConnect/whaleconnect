@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_LINUX
+#include <functional>
 #include <stdexcept>
 
 #include <bluetooth/bluetooth.h>

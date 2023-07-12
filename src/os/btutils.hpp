@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <cstring>
 #include <string>
 #include <vector>
 

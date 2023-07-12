@@ -7,6 +7,7 @@
 
 #include <cfloat>
 #include <concepts>
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <type_traits> // std::is_same_v
