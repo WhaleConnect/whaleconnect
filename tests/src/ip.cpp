@@ -36,7 +36,11 @@ void runTests(const Device& device) {
         constexpr const char* echoString = "echo test";
 
         co_await sock->send(echoString);
-        CHECK(co_await sock->recv() == echoString);
+
+        // Receive data and check if the string matches
+        // The co_await is outside the CHECK() macro to prevent it from being expanded and evaluated multiple times.
+        auto recvResult = co_await sock->recv();
+        CHECK(recvResult == echoString);
     });
 
     // Close (socket should be invalidated as a postcondition)
