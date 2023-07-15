@@ -171,7 +171,8 @@ bool App::newFrame() {
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::DrawNotifications();
+    // Dockspace
+    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
 #ifndef NDEBUG
     // The demo and metrics window are enabled in debug builds, provide a window to show them
