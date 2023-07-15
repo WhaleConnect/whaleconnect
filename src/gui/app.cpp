@@ -174,6 +174,8 @@ bool App::newFrame() {
     // Dockspace
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
+    ImGui::DrawNotifications();
+
 #ifndef NDEBUG
     // The demo and metrics window are enabled in debug builds, provide a window to show them
     ImGui::Begin("Debug Tools", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
