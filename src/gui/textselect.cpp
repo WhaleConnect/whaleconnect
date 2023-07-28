@@ -134,11 +134,19 @@ void TextSelect::_handleScrolling() const {
     ImVec2 windowMax = windowMin + ImGui::GetWindowSize();
 
     // Get current and active window information from Dear ImGui state
-    const ImGuiWindow* currentWindow = ImGui::GetCurrentWindow();
+    ImGuiWindow* currentWindow = ImGui::GetCurrentWindow();
     const ImGuiWindow* activeWindow = GImGui->ActiveIdWindow;
 
-    // If there is no active window or the current window is not active, do not handle scrolling
-    if ((activeWindow == nullptr) || (activeWindow->ID != currentWindow->ID)) return;
+    ImGuiID scrollXID = ImGui::GetWindowScrollbarID(currentWindow, ImGuiAxis_X);
+    ImGuiID scrollYID = ImGui::GetWindowScrollbarID(currentWindow, ImGuiAxis_Y);
+    ImGuiID activeID = ImGui::GetActiveID();
+    bool scrollbarsActive = (activeID == scrollXID) || (activeID == scrollYID);
+
+    // Do not handle scrolling if:
+    // - There is no active window
+    // - The current window is not active
+    // - The user is scrolling via the scrollbars
+    if ((activeWindow == nullptr) || (activeWindow->ID != currentWindow->ID) || scrollbarsActive) return;
 
     // Get scroll deltas from mouse position
     ImVec2 mousePos = ImGui::GetMousePos();
