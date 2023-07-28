@@ -49,12 +49,12 @@ void WritableSocket<Tag>::cancelIO() const {
     Async::submitRing();
 }
 
-template void Socket<SocketTag::IP>::close();
+template void Socket<SocketTag::IP>::close() const;
 template Task<> WritableSocket<SocketTag::IP>::send(std::string) const;
 template Task<std::optional<std::string>> WritableSocket<SocketTag::IP>::recv() const;
 template void WritableSocket<SocketTag::IP>::cancelIO() const;
 
-template void Socket<SocketTag::BT>::close();
+template void Socket<SocketTag::BT>::close() const;
 template Task<> WritableSocket<SocketTag::BT>::send(std::string) const;
 template Task<std::optional<std::string>> WritableSocket<SocketTag::BT>::recv() const;
 template void WritableSocket<SocketTag::BT>::cancelIO() const;
