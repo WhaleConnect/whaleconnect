@@ -14,10 +14,9 @@
 #include "sockets/socket.hpp"
 
 template <>
-void Socket<SocketTag::IP>::close() {
+void Socket<SocketTag::IP>::close() const {
     shutdown(_handle, SHUT_RDWR);
     ::close(_handle);
-    _release();
 }
 
 template <>

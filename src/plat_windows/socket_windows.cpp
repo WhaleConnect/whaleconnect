@@ -10,10 +10,9 @@
 #include "sockets/socket.hpp"
 
 template <auto Tag>
-void Socket<Tag>::close() {
+void Socket<Tag>::close() const {
     shutdown(_handle, SD_BOTH);
     closesocket(_handle);
-    _release();
 }
 
 template <auto Tag>

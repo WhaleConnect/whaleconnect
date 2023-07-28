@@ -10,11 +10,10 @@
 #include "sockets/socket.hpp"
 
 template <auto Tag>
-void Socket<Tag>::close() {
+void Socket<Tag>::close() const {
     io_uring_prep_shutdown(Async::getUringSQE(), _handle, SHUT_RDWR);
     io_uring_prep_close(Async::getUringSQE(), _handle);
     Async::submitRing();
-    _release();
 }
 
 template <auto Tag>

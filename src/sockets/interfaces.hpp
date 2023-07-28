@@ -12,7 +12,7 @@
 struct Closeable {
     virtual ~Closeable() = default;
 
-    virtual void close() = 0;
+    virtual void close() const = 0;
 
     // Checks if this resource is still open/valid.
     virtual bool isValid() const = 0;

@@ -21,7 +21,7 @@ const auto udpPort = ipSettings["udpPort"].get<uint16_t>();
 
 // Creates a socket connected to the targe device and performs basic I/O checks.
 void runTests(const Device& device) {
-    auto sock = createClientSocket<SocketTag::IP>(device);
+    const auto sock = createClientSocket<SocketTag::IP>(device);
 
     // Connect
     runSync([&sock]() -> Task<> {
@@ -43,9 +43,7 @@ void runTests(const Device& device) {
         CHECK(recvResult == echoString);
     });
 
-    // Close (socket should be invalidated as a postcondition)
-    sock->close();
-    CHECK(!sock->isValid());
+    // Socket is closed on destruction
 }
 
 TEST_CASE("I/O (Internet Protocol)") {

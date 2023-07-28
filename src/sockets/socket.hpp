@@ -64,7 +64,7 @@ public:
     }
 
     // Closes the managed socket.
-    void close() final;
+    void close() const final;
 };
 
 // A socket with the sending and receiving operations defined.

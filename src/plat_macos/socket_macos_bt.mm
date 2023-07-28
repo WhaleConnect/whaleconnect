@@ -12,11 +12,8 @@
 #include "sockets/traits.hpp"
 
 template <>
-void Socket<SocketTag::BT>::close() {
-    Async::clearBluetoothEvents([_get() channelHash]);
+void Socket<SocketTag::BT>::close() const {
     [_handle close];
-
-    _release();
 }
 
 template <>
