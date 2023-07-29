@@ -6,9 +6,9 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 ### Additions
 
-- Added support for macOS. [IN PROGRESS]
+- Added support for macOS.
 - The "Show timestamps" feature is now available in connection windows on all platforms.
-  - Timestamps are displayed in millisecond precision, with three digits instead of seven as in the previous release.
+  - Timestamps are displayed in millisecond precision with three digits.
 - Added a notification system to display application messages.
 - Added a setting to control how many worker threads are spawned.
   - If `0` is specified, the app creates the maximum number of supported threads.
@@ -21,9 +21,8 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 - Redesigned the loading spinner shown during an SDP inquiry.
 - Initialization errors are now displayed in the notification area instead of as a corner overlay.
-- The app now scales according to display DPI.
-  - This improves rendering quality on Mac Retina screens.
-- The app now bundles the Noto Sans Mono font, and support for loading additional fonts will be added in the future.
+- The app now scales according to display DPI. This improves rendering quality on Mac Retina screens.
+- The app now bundles the Noto Sans Mono font, and support for loading additional fonts will be added in a future release.
 
 ### Bug Fixes
 
@@ -43,7 +42,6 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Development
 
 - Switched the platform backend library to SDL.
-- Switched the compiler on Linux to Clang.
 - Added unit tests for socket functions.
 
 ## 0.1.0-alpha (10/05/2022)

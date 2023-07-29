@@ -1,8 +1,8 @@
 # Building Network Socket Terminal
 
-To build NST from source code, you will need [XMake](https://xmake.io) and an up-to-date compiler.
+To build NST from source code, you will need [xmake](https://xmake.io) and an up-to-date compiler.
 
-All commands will need to be run in the repository's root directory.
+All commands are run in the repository root.
 
 ## Configuration
 
@@ -30,21 +30,14 @@ xmake f --ldflags="-L$(brew --prefix)/opt/llvm/lib/c++ -Wl,-rpath,$(brew --prefi
 
 ## Compiling
 
-This project uses C++20 features, so be sure to update your compiler(s) if needed. Compilation is officially supported on the following compilers:
+This project uses C++20 features. Compilation is officially supported with:
 
-- Clang 16+ (with experimental library)
-- Visual Studio 2022 17.1+
+- Clang 16+ (with libc++ experimental library)
+- Visual Studio 2022 17.5+
 
-All code is standards-compliant. However, because it uses a recent C++ revision, some compilers may not currently be supported.
-
-### Building from the Command Line
+All code is standards compliant. However, because it uses recent C++ features, some compilers may not currently be supported.
 
 ```shell
-xmake
-```
-
-### Running the Executable
-
-```shell
-xmake run terminal
+xmake # Build project
+xmake run terminal # Run app
 ```

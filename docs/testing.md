@@ -9,8 +9,9 @@ A Python server script is located in /tests/scripts. It should be invoked with e
 Multiple instances of the script may be run simultaneously so e.g., both a TCP server and UDP server can be available during testing.
 
 The server may also be called with the following switches (mutually exclusive):
-- `-i` for interactive mode (it will accept data from the standard input to send to clients)
-- `-e` for echo mode (it will send back all data that it receives from the client)
+
+- `-i` for interactive mode (accept data from the standard input to send to clients)
+- `-e` for echo mode (send back all data that it receives from the client)
 
 ## Server Device
 
