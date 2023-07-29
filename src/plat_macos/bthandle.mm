@@ -16,7 +16,7 @@ static void newData(id channel, const char* data, size_t dataLen) {
 }
 
 static void outgoingComplete(id channel, IOReturn status) {
-    Async::bluetoothComplete([channel hash], Async::BluetoothIOType::Send, status);
+    Async::bluetoothComplete([channel hash], Async::IOType::Send, status);
 }
 
 static void closed(id channel) {
@@ -30,6 +30,9 @@ static void closed(id channel) {
     if (self) {
         _channel = bluetoothChannel;
         _isL2CAP = [_channel isKindOfClass:[IOBluetoothL2CAPChannel class]];
+
+        // Clear results of previous receive operations (includes notifications from channel closures)
+        Async::clearBluetoothDataQueue([self channelHash]);
     }
 
     return self;
@@ -50,10 +53,7 @@ static void closed(id channel) {
 
 - (void)write:(std::string)data {
     IOReturn res = [_channel writeAsync:data.data() length:data.size() refcon:nil];
-    if (res != kIOReturnSuccess) {
-        Async::removeIOBluetooth([self channelHash], Async::BluetoothIOType::Send);
-        throw System::SystemError{ res, System::ErrorType::IOReturn, "writeAsync" };
-    }
+    if (res != kIOReturnSuccess) throw System::SystemError{ res, System::ErrorType::IOReturn, "writeAsync" };
 }
 
 - (NSUInteger)channelHash {

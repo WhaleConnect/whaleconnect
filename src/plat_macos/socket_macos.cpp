@@ -12,6 +12,7 @@
 
 #include "os/errcheck.hpp"
 #include "sockets/socket.hpp"
+#include "sockets/traits.hpp"
 
 template <>
 void Socket<SocketTag::IP>::close() const {
@@ -21,14 +22,14 @@ void Socket<SocketTag::IP>::close() const {
 
 template <>
 Task<> WritableSocket<SocketTag::IP>::send(std::string data) const {
-    co_await Async::run(std::bind_front(Async::submitKqueue, _get(), EVFILT_WRITE));
+    co_await Async::run(std::bind_front(Async::submitKqueue, _get(), Async::IOType::Send));
 
     call(FN(::send, _get(), data.data(), data.size(), 0));
 }
 
 template <>
 Task<std::optional<std::string>> WritableSocket<SocketTag::IP>::recv() const {
-    co_await Async::run(std::bind_front(Async::submitKqueue, _get(), EVFILT_READ));
+    co_await Async::run(std::bind_front(Async::submitKqueue, _get(), Async::IOType::Receive));
 
     std::string data(_recvLen, 0);
     ssize_t recvLen = call(FN(::recv, _get(), data.data(), data.size(), 0));

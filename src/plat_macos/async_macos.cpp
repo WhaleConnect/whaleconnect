@@ -8,6 +8,7 @@
 
 #include <array>
 #include <mutex>
+#include <optional>
 #include <queue>
 #include <stdexcept>
 #include <unordered_map>
@@ -18,27 +19,111 @@
 
 #include "os/async.hpp"
 #include "os/errcheck.hpp"
+#include "sockets/traits.hpp"
 
-static constexpr auto ASYNC_CANCEL = 2;
+using CompletionQueue = std::queue<Async::CompletionResult*>;
+
+struct SocketQueue {
+    CompletionQueue pendingReads;
+    CompletionQueue pendingWrites;
+};
+
+using SocketQueueMap = std::unordered_map<uint64_t, SocketQueue>;
+
+static constexpr auto ASYNC_CANCEL = 1UL << 33;
 
 static int kq = -1;
 
-// Map to track pending socket operations with their coroutines
-// The kqueue system does not provide a way to cancel pending events, so this must be kept track of manually.
-static std::unordered_map<int, Async::CompletionResult*> pendingSockets;
+// Operation queues for sockets
+// kqueue and IOBluetooth only handle notifications for I/O, so completion queues must be managed manually.
+static std::array<SocketQueueMap, magic_enum::enum_count<SocketTag>()> sockets;
 static std::mutex mapMutex;
 
-struct BluetoothQueue {
-    std::array<Async::CompletionResult*, 2> pending;  // Pending I/O operations (read/write stored separately)
-    std::queue<std::optional<std::string>> completed; // Completed read operations
-};
+// Bluetooth read results
+static std::unordered_map<uint64_t, std::queue<std::optional<std::string>>> bluetoothReads;
 
-static std::unordered_map<uint64_t, BluetoothQueue> bluetoothChannels;
+// Gets the map of IDs to completion queues for a socket tag.
+static SocketQueueMap& getQueueMap(SocketTag tag) {
+    return sockets[magic_enum::enum_integer(tag)];
+}
 
-static Async::CompletionResult*& getBluetoothCompletionResult(uint64_t id, Async::BluetoothIOType type) {
-    // TODO: Use std::to_underlying() in C++23
-    int idx = magic_enum::enum_integer(type);
-    return bluetoothChannels[id].pending[idx];
+// Gets the queue of pending operations for a socket/Bluetooth channel.
+static CompletionQueue& getPendingQueue(uint64_t id, SocketTag tag, Async::IOType ioType) {
+    auto& queue = getQueueMap(tag)[id];
+
+    return (ioType == Async::IOType::Send) ? queue.pendingWrites : queue.pendingReads;
+}
+
+// Adds a pending operation.
+static void addPending(uint64_t id, SocketTag tag, Async::IOType ioType, Async::CompletionResult& result) {
+    std::scoped_lock lock{ mapMutex };
+    getPendingQueue(id, tag, ioType).push(&result);
+}
+
+// Pops and returns a pending operation.
+static std::optional<Async::CompletionResult*> popPending(uint64_t id, SocketTag tag, Async::IOType ioType) {
+    std::scoped_lock lock{ mapMutex };
+
+    auto& queue = getPendingQueue(id, tag, ioType);
+    if (queue.empty()) return std::nullopt;
+
+    auto front = queue.front();
+    queue.pop();
+    return front;
+}
+
+// Pops and cancels a pending operation.
+static std::optional<Async::CompletionResult*> cancelOne(uint64_t id, SocketTag tag, Async::IOType ioType) {
+    // Completion result pointing to suspended coroutine
+    auto pending = popPending(id, tag, ioType);
+    if (!pending) return std::nullopt;
+
+    // Set error and return coroutine handle
+    auto& result = *pending;
+    result->error = ECANCELED;
+    return result;
+}
+
+// Removes kqueue events for a socket.
+static void deleteKqueueEvents(int id) {
+    std::array<struct kevent, 2> events;
+
+    EV_SET(&events[0], id, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
+    EV_SET(&events[1], id, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+
+    kevent(kq, events.data(), events.size(), nullptr, 0, nullptr);
+}
+
+// Processes user events from the kqueue.
+static Async::CompletionResult& handleUserEvent(const struct kevent& event) {
+    if (event.ident == Async::Internal::ASYNC_INTERRUPT) {
+        // Exit thread if requested
+        throw Async::Internal::WorkerInterruptedError{};
+    } else if (event.ident & ASYNC_CANCEL) {
+        using enum SocketTag;
+        using enum Async::IOType;
+
+        // Extract file descriptor from identifier and remove kqueue events
+        int id = event.ident & 0xFFFFFFFFUL;
+        deleteKqueueEvents(id);
+
+        // Cancel receive and send operations in order
+        // The cancel operation can be picked up by multiple threads so each handles one event until they are all
+        // drained.
+        if (const auto recvCancel = cancelOne(id, IP, Receive)) return **recvCancel;
+
+        if (const auto sendCancel = cancelOne(id, IP, Send)) return **sendCancel;
+
+        // At this point, there are no more pending operations and the cancellation request can be deleted
+        struct kevent deleteEvent {};
+
+        EV_SET(&deleteEvent, ASYNC_CANCEL | id, EVFILT_USER, EV_DELETE, 0, 0, nullptr);
+        kevent(kq, &deleteEvent, 1, nullptr, 0, nullptr);
+    }
+
+    static Async::CompletionResult noopResult;
+    noopResult.coroHandle = std::noop_coroutine();
+    return noopResult;
 }
 
 void Async::Internal::init(unsigned int) {
@@ -54,7 +139,7 @@ void Async::Internal::stopThreads(unsigned int) {
 }
 
 void Async::Internal::cleanup() {
-    // Delete the user event
+    // Delete the interruption user event
     struct kevent event {};
 
     EV_SET(&event, ASYNC_INTERRUPT, EVFILT_USER, EV_DELETE, 0, 0, nullptr);
@@ -67,102 +152,89 @@ Async::CompletionResult Async::Internal::worker() {
 
     call(FN(kevent, kq, nullptr, 0, &event, 1, nullptr));
 
-    // Check for interrupt
-    if (event.filter == EVFILT_USER) {
-        if (event.ident == ASYNC_INTERRUPT) {
-            throw WorkerInterruptedError{};
-        } else if (event.ident == ASYNC_CANCEL) {
-            // Socket file descriptor associated with cancellation
-            auto fd = static_cast<int>(event.data);
+    if (event.filter == EVFILT_USER) return handleUserEvent(event);
 
-            std::scoped_lock lock{ mapMutex };
-            if (!pendingSockets.contains(fd)) throw WorkerNoDataError{};
+    // Get I/O type from user data pointer
+    auto ioTypeInt = static_cast<int>(std::bit_cast<uint64_t>(event.udata));
+    auto ioType = magic_enum::enum_cast<IOType>(ioTypeInt);
 
-            // Completion result pointing to suspended coroutine
-            auto& result = *pendingSockets[fd];
-            pendingSockets.erase(fd);
-
-            // Delete the socket's event from the kqueue
-            struct kevent eventDelete;
-            EV_SET(&eventDelete, fd, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
-            call(FN(kevent, kq, &eventDelete, 1, nullptr, 0, nullptr));
-
-            // Set error and return coroutine handle
-            result.error = ECANCELED;
-            return result;
-        }
-    }
-
-    auto& result = toResult(event.udata);
+    // Pop an event from the queue and get its completion result
+    auto& result = **popPending(event.ident, SocketTag::IP, ioType.value());
 
     // Set error and result
     if (event.flags & EV_EOF) result.error = static_cast<System::ErrorCode>(event.fflags);
     else result.res = static_cast<int>(event.data);
 
-    // Remove the file descriptor from the pending map
-    std::scoped_lock lock{ mapMutex };
-    pendingSockets.erase(static_cast<int>(event.ident));
-
     return result;
 }
 
-void Async::submitKqueue(int ident, int filter, CompletionResult& result) {
+void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
     // The EV_ONESHOT flag will delete the event once it is retrieved in one of the threads.
     // This ensures only one thread will wake up to handle the event.
     struct kevent event {};
 
-    EV_SET(&event, ident, filter, EV_ADD | EV_ONESHOT, 0, 0, &result);
+    // Pass I/O type as user data pointer
+    auto typeData = std::bit_cast<void*>(static_cast<uint64_t>(magic_enum::enum_integer(ioType)));
+
+    EV_SET(&event, ident, (ioType == IOType::Send) ? EVFILT_WRITE : EVFILT_READ, EV_ADD | EV_ONESHOT, 0, 0, typeData);
     call(FN(kevent, kq, &event, 1, nullptr, 0, nullptr));
 
-    std::scoped_lock lock{ mapMutex };
-    pendingSockets[ident] = &result;
+    // Add to pending queue if the submit call succeeded
+    addPending(ident, SocketTag::IP, ioType, result);
 }
 
 void Async::cancelPending(int fd) {
-    struct kevent event {};
+    struct kevent event;
 
-    EV_SET(&event, ASYNC_CANCEL, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER, fd, nullptr);
+    // EV_ONESHOT is not set so each thread can handle one pending operation
+    // The file descriptor is used in "ident" so events can remain unique.
+    EV_SET(&event, ASYNC_CANCEL | fd, EVFILT_USER, EV_ADD, NOTE_TRIGGER, 0, nullptr);
     call(FN(kevent, kq, &event, 1, nullptr, 0, nullptr));
 }
 
-void Async::submitIOBluetooth(uint64_t id, BluetoothIOType type, CompletionResult& result) {
-    getBluetoothCompletionResult(id, type) = &result;
+void Async::submitIOBluetooth(uint64_t id, IOType ioType, CompletionResult& result) {
+    addPending(id, SocketTag::BT, ioType, result);
 }
 
-void Async::removeIOBluetooth(uint64_t id, BluetoothIOType type) {
-    getBluetoothCompletionResult(id, type) = nullptr;
-}
+bool Async::bluetoothComplete(uint64_t id, IOType ioType, IOReturn status) {
+    auto pending = popPending(id, SocketTag::BT, ioType);
+    if (!pending) return false;
 
-void Async::bluetoothComplete(uint64_t id, BluetoothIOType type, IOReturn status) {
-    auto completionResult = getBluetoothCompletionResult(id, type);
-    if (!completionResult) return;
+    auto& result = **pending;
 
-    // Remove event and resume caller
-    removeIOBluetooth(id, type);
-    completionResult->error = status;
-    completionResult->coroHandle();
+    // Resume caller
+    result.error = status;
+    result.coroHandle();
+    return true;
 }
 
 void Async::bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen) {
-    bluetoothChannels[id].completed.emplace(std::in_place, data, dataLen);
+    bluetoothReads[id].emplace(std::in_place, data, dataLen);
 
-    bluetoothComplete(id, BluetoothIOType::Receive, kIOReturnSuccess);
+    bluetoothComplete(id, IOType::Receive, kIOReturnSuccess);
 }
 
 void Async::bluetoothClosed(uint64_t id) {
-    auto& completedQueue = bluetoothChannels[id].completed;
-    completedQueue = {};
-
-    completedQueue.emplace();
+    bluetoothReads[id].emplace();
 }
 
 std::optional<std::string> Async::getBluetoothReadResult(uint64_t id) {
-    auto data = bluetoothChannels[id].completed.front();
-    bluetoothChannels[id].completed.pop();
+    auto data = bluetoothReads[id].front();
+    bluetoothReads[id].pop();
     return data;
 }
 
-void Async::clearBluetoothEvents(uint64_t id) {
-    bluetoothChannels.erase(id);
+void Async::clearBluetoothDataQueue(uint64_t id) {
+    bluetoothReads.erase(id);
+}
+
+void Async::bluetoothCancel(uint64_t id) {
+    // Loop through all pending events and send the "aborted" signal
+
+    // clang-format doesn't recognize semicolons after loops
+    // clang-format off
+    while (bluetoothComplete(id, IOType::Send, kIOReturnAborted));
+    while (bluetoothComplete(id, IOType::Receive, kIOReturnAborted));
+    // clang-format on
 }
 #endif

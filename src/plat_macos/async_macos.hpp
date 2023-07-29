@@ -10,25 +10,23 @@
 #include <IOKit/IOReturn.h>
 
 #include "os/async.hpp"
+#include "sockets/traits.hpp"
 
 namespace Async {
     // The type of a Bluetooth I/O operation.
-    enum class BluetoothIOType { Send, Receive };
+    enum class IOType { Send, Receive };
 
     // Submits an event to the kernel queue.
-    void submitKqueue(int ident, int filter, CompletionResult& result);
+    void submitKqueue(int ident, IOType ioType, CompletionResult& result);
 
     // Cancels pending operations for a socket file descriptor.
     void cancelPending(int fd);
 
     // Creates a pending operation for a Bluetooth channel.
-    void submitIOBluetooth(uint64_t id, BluetoothIOType type, CompletionResult& result);
-
-    // Removes a pending operation for a Bluetooth channel.
-    void removeIOBluetooth(uint64_t id, BluetoothIOType type);
+    void submitIOBluetooth(uint64_t id, IOType ioType, CompletionResult& result);
 
     // Signals completion of a Bluetooth operation.
-    void bluetoothComplete(uint64_t id, BluetoothIOType type, IOReturn status);
+    bool bluetoothComplete(uint64_t id, IOType ioType, IOReturn status);
 
     // Signals completion of a Bluetooth read operation.
     void bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen);
@@ -39,7 +37,10 @@ namespace Async {
     // Gets the first queued result of a Bluetooth read operation.
     std::optional<std::string> getBluetoothReadResult(uint64_t id);
 
-    // Discards all completed and pending Bluetooth operations.
-    void clearBluetoothEvents(uint64_t id);
+    // Removes results from previous receive operations on a Bluetooth channel.
+    void clearBluetoothDataQueue(uint64_t id);
+
+    // Cancels all pending operations on a Bluetooth channel.
+    void bluetoothCancel(uint64_t id);
 }
 #endif

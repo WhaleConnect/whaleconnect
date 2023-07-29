@@ -19,6 +19,6 @@ Task<> ClientSocket<SocketTag::IP>::connect() const {
 
     // Start connect
     call(FN(::connect, _get(), _addr->ai_addr, _addr->ai_addrlen));
-    co_await Async::run(std::bind_front(Async::submitKqueue, _get(), EVFILT_WRITE));
+    co_await Async::run(std::bind_front(Async::submitKqueue, _get(), Async::IOType::Send));
 }
 #endif
