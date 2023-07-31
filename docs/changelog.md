@@ -23,6 +23,8 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Initialization errors are now displayed in the notification area instead of as a corner overlay.
 - The app now scales according to display DPI. This improves rendering quality on Mac Retina screens.
 - The app now bundles the Noto Sans Mono font, and support for loading additional fonts will be added in a future release.
+- Allowed hostname entry and DNS lookup in new IP connections.
+- If the app receives multiple IP addresses for a host, it now tries connecting to each to increase the chance of a successful connection.
 
 ### Bug Fixes
 
