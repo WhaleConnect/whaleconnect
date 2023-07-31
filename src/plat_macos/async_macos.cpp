@@ -184,7 +184,7 @@ void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
 }
 
 void Async::cancelPending(int fd) {
-    struct kevent event;
+    struct kevent event {};
 
     // EV_ONESHOT is not set so each thread can handle one pending operation
     // The file descriptor is used in "ident" so events can remain unique.
