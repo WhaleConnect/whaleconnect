@@ -27,6 +27,17 @@ constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(Sy
     return default_tag;
 }
 
+static std::string formatApplicationError(System::ErrorCode code) {
+    switch (code) {
+        case 0:
+            return "No error";
+        case APP_NO_IP:
+            return "No suitable IP address found";
+        default:
+            return "Unknown error code";
+    }
+}
+
 System::ErrorCode System::getLastError() {
 #if OS_WINDOWS
     return GetLastError();
@@ -52,33 +63,45 @@ bool System::isFatal(ErrorCode code) {
 }
 
 std::string System::formatSystemError(ErrorCode code, ErrorType type, std::string_view fnName) {
-#if OS_WINDOWS
+    using enum ErrorType;
+
     // Message buffer
-    std::string msg(512, '\0');
-
-    // Get the message text
-    auto formatFlags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK;
-    DWORD length = FormatMessageA(formatFlags, nullptr, code, LocaleNameToLCID(L"en-US", 0), msg.data(),
-                                  static_cast<DWORD>(msg.size()), nullptr);
-
-    msg.resize(length);
-#else
     std::string msg;
 
-    using enum ErrorType;
     switch (type) {
+        case Application:
+            msg = formatApplicationError(code);
+            break;
+#if OS_WINDOWS
+        case System:
+        case AddrInfo: {
+            // gai_strerror is not recommended on Windows:
+            // https://learn.microsoft.com/en-us/windows/win32/api/ws2tcpip/nf-ws2tcpip-getaddrinfo#return-value
+            msg.resize(512);
+
+            // Get the message text
+            auto flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK;
+            DWORD length = FormatMessageA(flags, nullptr, code, LocaleNameToLCID(L"en-US", 0), msg.data(),
+                                          static_cast<DWORD>(msg.size()), nullptr);
+
+            msg.resize(length);
+            break;
+        }
+#else
         case System:
             msg = std::strerror(code);
             break;
         case AddrInfo:
             msg = gai_strerror(code);
             break;
-#if OS_MACOS
+#endif
         case IOReturn:
+#if OS_MACOS
             msg = mach_error_string(code);
+#else
+            msg = "Unknown error type";
 #endif
     }
-#endif
 
     return std::format("{} (type {}, in {}): {}", code, magic_enum::enum_name(type), fnName, msg);
 }
