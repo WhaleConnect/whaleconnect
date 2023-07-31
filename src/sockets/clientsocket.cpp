@@ -15,7 +15,6 @@ std::unique_ptr<ClientSocket<SocketTag::IP>> createClientSocket(const Device& de
     bool isUDP = (device.type == ConnectionType::UDP);
 
     ADDRINFOW hints{
-        .ai_flags = AI_NUMERICHOST,
         .ai_family = AF_UNSPEC,
         .ai_socktype = isUDP ? SOCK_DGRAM : SOCK_STREAM,
         .ai_protocol = isUDP ? IPPROTO_UDP : IPPROTO_TCP,
@@ -31,6 +30,12 @@ std::unique_ptr<ClientSocket<SocketTag::IP>> createClientSocket(const Device& de
          useReturnCode, System::ErrorType::AddrInfo);
 
     // Initialize socket
-    auto fd = call(FN(socket, traits._addr->ai_family, traits._addr->ai_socktype, traits._addr->ai_protocol));
-    return std::make_unique<ClientSocket<SocketTag::IP>>(fd, device, std::move(traits));
+    for (ADDRINFOW* addr = traits._addr.get(); addr; addr = addr->ai_next) {
+        auto fd = socket(traits._addr->ai_family, traits._addr->ai_socktype, traits._addr->ai_protocol);
+
+        if (fd != SocketTraits<SocketTag::IP>::invalidHandle)
+            return std::make_unique<ClientSocket<SocketTag::IP>>(fd, device, std::move(traits));
+    }
+
+    throw System::SystemError{ APP_NO_IP, System::ErrorType::Application, "createClientSocket" };
 }
