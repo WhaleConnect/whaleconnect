@@ -17,7 +17,7 @@
 #include "os/btutils.hpp"
 #include "os/error.hpp"
 #include "sockets/device.hpp"
-#include "sockets/traits.hpp"
+#include "sockets/enums.hpp"
 
 // A class to handle an SDP inquiry in a GUI window.
 class SDPWindow : public Window {

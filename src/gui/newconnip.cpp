@@ -11,7 +11,7 @@
 #include "newconn.hpp"
 #include "windowlist.hpp"
 
-#include "sockets/traits.hpp"
+#include "sockets/enums.hpp"
 
 void drawIPConnectionTab(WindowList& connections) {
     if (!ImGui::BeginTabItem("Internet Protocol")) return;

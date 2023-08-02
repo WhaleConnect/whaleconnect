@@ -8,8 +8,7 @@
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
 #include "sockets/device.hpp"
-#include "sockets/interfaces.hpp"
-#include "sockets/traits.hpp"
+#include "sockets/enums.hpp"
 
 const auto settings = loadSettings();
 const auto ipSettings = settings["ip"];
@@ -21,25 +20,25 @@ const auto udpPort = ipSettings["udpPort"].get<uint16_t>();
 
 // Creates a socket connected to the targe device and performs basic I/O checks.
 void runTests(const Device& device) {
-    const auto sock = createClientSocket<SocketTag::IP>(device);
+    const ClientSocket<SocketTag::IP> sock{ device };
 
     // Connect
     runSync([&sock]() -> Task<> {
-        co_await sock->connect();
+        co_await sock.connect();
     });
 
     // Check the socket is valid
-    REQUIRE(sock->isValid());
+    REQUIRE(sock.isValid());
 
     // Send/receive
     runSync([&sock]() -> Task<> {
         constexpr const char* echoString = "echo test";
 
-        co_await sock->send(echoString);
+        co_await sock.send(echoString);
 
         // Receive data and check if the string matches
         // The co_await is outside the CHECK() macro to prevent it from being expanded and evaluated multiple times.
-        auto recvResult = co_await sock->recv();
+        auto recvResult = co_await sock.recv();
         CHECK(recvResult == echoString);
     });
 

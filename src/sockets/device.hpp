@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "traits.hpp"
+#include "enums.hpp"
 
 // A remote device's metadata.
 struct Device {

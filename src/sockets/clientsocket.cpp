@@ -3,15 +3,15 @@
 
 #include "clientsocket.hpp"
 
-#include "device.hpp"
-#include "traits.hpp"
-
 #include "os/errcheck.hpp"
+#include "os/error.hpp"
+#include "traits/client.hpp"
 #include "utils/out_ptr_compat.hpp"
 #include "utils/strings.hpp"
 
 template <>
-std::unique_ptr<ClientSocket<SocketTag::IP>> createClientSocket(const Device& device) {
+void ClientSocket<SocketTag::IP>::_init() {
+    const auto& device = _traits.device;
     bool isUDP = (device.type == ConnectionType::UDP);
 
     ADDRINFOW hints{
@@ -25,17 +25,18 @@ std::unique_ptr<ClientSocket<SocketTag::IP>> createClientSocket(const Device& de
     Strings::SysStr portWide = Strings::toSys(device.port);
 
     // Resolve and connect to the IP, getaddrinfo() and GetAddrInfoW() allow both IPv4 and IPv6 addresses
-    ClientSocketTraits<SocketTag::IP> traits;
-    call(FN(GetAddrInfo, addrWide.c_str(), portWide.c_str(), &hints, std2::out_ptr(traits._addr)), checkZero,
+    call(FN(GetAddrInfo, addrWide.c_str(), portWide.c_str(), &hints, std2::out_ptr(_traits.addr)), checkZero,
          useReturnCode, System::ErrorType::AddrInfo);
 
     // Initialize socket
-    for (ADDRINFOW* addr = traits._addr.get(); addr; addr = addr->ai_next) {
-        auto fd = socket(traits._addr->ai_family, traits._addr->ai_socktype, traits._addr->ai_protocol);
+    for (ADDRINFOW* addr = _traits.addr.get(); addr; addr = addr->ai_next) {
+        auto fd = socket(_traits.addr->ai_family, _traits.addr->ai_socktype, _traits.addr->ai_protocol);
 
-        if (fd != SocketTraits<SocketTag::IP>::invalidHandle)
-            return std::make_unique<ClientSocket<SocketTag::IP>>(fd, device, std::move(traits));
+        if (fd != Traits::invalidSocketHandle<SocketTag::IP>()) {
+            _handle = fd;
+            return;
+        }
     }
 
-    throw System::SystemError{ APP_NO_IP, System::ErrorType::Application, "createClientSocket" };
+    throw System::SystemError{ APP_NO_IP, System::ErrorType::Application, "ClientSocket" };
 }

@@ -61,11 +61,11 @@ target("terminal-core")
 
     -- Platform-specific files
     if is_plat("windows") then
-        add_files("src/plat_windows/*.cpp")
+        add_files("src/plat_windows/**.cpp")
     elseif is_plat("macosx") then
-        add_files("src/plat_macos/*.cpp", "src/plat_macos/*.mm")
+        add_files("src/plat_macos/**.cpp", "src/plat_macos/**.mm")
     elseif is_plat("linux") then
-        add_files("src/plat_linux/*.cpp")
+        add_files("src/plat_linux/**.cpp")
     end
 
 target("terminal")

@@ -7,74 +7,49 @@
 #include <string>
 #include <string_view>
 
-#include "interfaces.hpp"
-#include "traits.hpp"
+#include "delegates.hpp"
 
+#include "delegates/closeable.hpp"
 #include "utils/task.hpp"
 
 // Class to manage a socket file descriptor with RAII.
-template <auto Tag>
-class Socket : protected SocketTraits<Tag>, virtual public Closeable {
-    using typename SocketTraits<Tag>::HandleType;
-    using SocketTraits<Tag>::invalidHandle;
-
-    HandleType _handle = invalidHandle;
-
-protected:
-    // Accesses the handle. Platform-specific implementations should not modify the handle.
-    HandleType _get() const {
-        return _handle;
-    }
-
-    // Releases ownership of the managed handle.
-    void _release() {
-        _handle = invalidHandle;
-    }
+class Socket {
+    const Delegates::CloseDelegate* _close;
+    const Delegates::IODelegate* _io;
+    const Delegates::ClientDelegate* _client;
 
 public:
-    // Constructs an object owning nothing.
-    Socket() = default;
+    // Constructs an object with delegates.
+    Socket(const Delegates::CloseDelegate* close, const Delegates::IODelegate* io,
+           const Delegates::ClientDelegate* client) :
+        _close(close),
+        _io(io), _client(client) {}
 
-    // Constructs an object owning a handle.
-    explicit Socket(HandleType handle) : _handle(handle) {}
-
-    Socket(const Socket&) = delete;
-
-    // Constructs an object, and transfers ownership from another object.
-    Socket(Socket&& other) noexcept : _handle(other._release()) {}
-
-    // Destructs this object and closes the managed handle.
-    ~Socket() override {
-        close();
+    bool isValid() const {
+        return _close->isValid();
     }
 
-    Socket& operator=(const Socket&) = delete;
-
-    // Transfers ownership from another object.
-    Socket& operator=(Socket&& other) noexcept {
-        close();
-        _handle = other._release();
-
-        return *this;
+    void close() const {
+        _close->close();
     }
 
-    // Checks the validity of the managed socket.
-    bool isValid() const final {
-        return _handle != invalidHandle;
+    Task<> send(const std::string& s) const {
+        return _io->send(s);
     }
 
-    // Closes the managed socket.
-    void close() const final;
-};
+    Task<std::optional<std::string>> recv() const {
+        return _io->recv();
+    }
 
-// A socket with the sending and receiving operations defined.
-template <auto Tag>
-struct WritableSocket : virtual Socket<Tag>, virtual Writable {
-    ~WritableSocket() override = default;
+    void cancelIO() const {
+        _io->cancelIO();
+    }
 
-    [[nodiscard]] Task<> send(std::string data) const override;
+    Task<> connect() const {
+        return _client->connect();
+    }
 
-    [[nodiscard]] Task<std::optional<std::string>> recv() const override;
-
-    void cancelIO() const override;
+    const Device& getServer() const {
+        return _client->getServer();
+    }
 };

@@ -12,11 +12,11 @@
 
 #include "os/error.hpp"
 #include "sockets/device.hpp"
-#include "sockets/interfaces.hpp"
+#include "sockets/socket.hpp"
 
 // A class to handle a socket connection in a GUI window.
 class ConnWindow : public Window {
-    std::unique_ptr<Writable> _socket; // Internal socket
+    std::unique_ptr<Socket> _socket; // Internal socket
 
     // State
     bool _connected = false;      // If the socket is connected
@@ -60,7 +60,7 @@ class ConnWindow : public Window {
 
 public:
     // Sets the window information (title and remote host).
-    ConnWindow(std::unique_ptr<Writable>&& socket, const Device& device, std::string_view extraInfo);
+    ConnWindow(std::unique_ptr<Socket>&& socket, const Device& device, std::string_view extraInfo);
 
     // Cancels pending socket I/O.
     ~ConnWindow() override {

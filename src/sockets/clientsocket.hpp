@@ -3,59 +3,60 @@
 
 #pragma once
 
-#include <memory>
-#include <utility>
-
-#if OS_WINDOWS
-// Winsock headers
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#else
-#include <netdb.h> // addrinfo/getaddrinfo() related identifiers
-#endif
-
-#include "device.hpp"
 #include "socket.hpp"
 
+#include "delegates/bidirectional.hpp"
+#include "delegates/client.hpp"
+#include "delegates/closeable.hpp"
+#include "traits/client.hpp"
 #include "utils/handleptr.hpp"
 #include "utils/task.hpp"
 
-// Winsock-specific definitions and their Berkeley equivalents
-#if !OS_WINDOWS
-constexpr auto GetAddrInfo = getaddrinfo;
-constexpr auto FreeAddrInfo = freeaddrinfo;
-using ADDRINFOW = addrinfo;
-#endif
-
+// A socket representing an outgoing connection.
 template <auto Tag>
-struct ClientSocketTraits {};
+class ClientSocket : public Socket {
+    using Handle = Traits::SocketHandleType<Tag>;
+    static constexpr auto invalidHandle = Traits::invalidSocketHandle<Tag>();
 
-template <auto Tag>
-class ClientSocket : ClientSocketTraits<Tag>, public WritableSocket<Tag>, public Connectable {
-    using typename SocketTraits<Tag>::HandleType;
+    Handle _handle = invalidHandle; // Socket handle
+    Traits::Client<Tag> _traits;    // Extra data for client sockets
 
-    Device _device;
+    // Clients support closure, bidirectional communication, and client operations
+    Delegates::Closeable<Tag> _close{ _handle };
+    Delegates::Bidirectional<Tag> _io{ _handle };
+    Delegates::Client<Tag> _client{ _handle, _traits };
 
-public:
-    explicit ClientSocket(HandleType handle, Device device, ClientSocketTraits<Tag> traits = {}) :
-        Socket<Tag>(handle), ClientSocketTraits<Tag>(std::move(traits)), _device(std::move(device)) {}
+    // Creates the socket.
+    void _init();
 
-    ~ClientSocket() override = default;
-
-    // Accesses the connected device information.
-    [[nodiscard]] const Device& getDevice() const {
-        return _device;
+    // Releases ownership of the managed handle.
+    void _release() {
+        _handle = invalidHandle;
     }
 
-    [[nodiscard]] Task<> connect() const override;
-};
+public:
+    // Constructs an object with a target device.
+    explicit ClientSocket(const Device& device) : Socket(&_close, &_io, &_client), _traits{ .device = device } {
+        _init();
+    }
 
-// Creates a client socket managed by a unique_ptr.
-template <auto Tag>
-std::unique_ptr<ClientSocket<Tag>> createClientSocket(const Device& device);
+    // Closes the socket.
+    ~ClientSocket() {
+        close();
+    }
 
-// Extra traits for IP sockets.
-template <>
-struct ClientSocketTraits<SocketTag::IP> {
-    HandlePtr<ADDRINFOW, FreeAddrInfo> _addr; // Address from getaddrinfo
+    ClientSocket(const ClientSocket&) = delete;
+
+    // Constructs an object, and transfers ownership from another object.
+    ClientSocket(ClientSocket&& other) noexcept : _handle(other._release()) {}
+
+    ClientSocket& operator=(const Socket&) = delete;
+
+    // Transfers ownership from another object.
+    ClientSocket& operator=(ClientSocket&& other) noexcept {
+        close();
+        _handle = other._release();
+
+        return *this;
+    }
 };

@@ -10,7 +10,7 @@
 #include "os/async.hpp"
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
-#include "sockets/traits.hpp"
+#include "sockets/enums.hpp"
 
 const auto settings = loadSettings();
 const auto ipSettings = settings["ip"];
@@ -31,11 +31,11 @@ struct CancellationMatcher : Catch::Matchers::MatcherGenericBase {
 
 TEST_CASE("Cancellation") {
     // Create IPv4 TCP socket
-    auto sock = createClientSocket<SocketTag::IP>({ ConnectionType::TCP, "", v4Addr, tcpPort });
+    ClientSocket<SocketTag::IP> sock{ { ConnectionType::TCP, "", v4Addr, tcpPort } };
 
     // Connect
     runSync([&sock]() -> Task<> {
-        co_await sock->connect();
+        co_await sock.connect();
     });
 
     // Create a separate thread to briefly wait, then cancel I/O while recv() is pending
@@ -43,13 +43,13 @@ TEST_CASE("Cancellation") {
         using namespace std::literals;
 
         std::this_thread::sleep_for(20ms);
-        sock->cancelIO();
+        sock.cancelIO();
     } };
 
     // Start a receive operation
     // It should be interrupted by the second thread and throw an exception
     auto recvOperation = [&sock]() -> Task<> {
-        co_await sock->recv();
+        co_await sock.recv();
     };
 
     CHECK_THROWS_MATCHES(runSync(recvOperation), System::SystemError, CancellationMatcher{});

@@ -12,7 +12,7 @@
 #include "gui/imguiext.hpp"
 #include "os/error.hpp"
 #include "sockets/device.hpp"
-#include "sockets/traits.hpp"
+#include "sockets/enums.hpp"
 #include "utils/strings.hpp"
 
 template <>
@@ -58,17 +58,14 @@ static std::string formatDevice(const Device& device, std::string_view extraInfo
     return extraInfo.empty() ? title : std::format("({}) {}", extraInfo, title);
 }
 
-ConnWindow::ConnWindow(std::unique_ptr<Writable>&& socket, const Device& device, std::string_view extraInfo) :
+ConnWindow::ConnWindow(std::unique_ptr<Socket>&& socket, const Device& device, std::string_view extraInfo) :
     Window(formatDevice(device, extraInfo)), _socket(std::move(socket)) {}
 
 Task<> ConnWindow::_connect() try {
-    // Connect the socket explicitly if it is an instance of the Connectable interface
-    if (auto clientSocket = dynamic_cast<Connectable*>(_socket.get())) {
-        _output.addInfo("Connecting...");
-        co_await clientSocket->connect();
-    }
+    // Connect the socket
+    _output.addInfo("Connecting...");
+    co_await _socket->connect();
 
-    // Assume the socket is connected at this point
     _output.addInfo("Connected.");
     _connected = true;
 } catch (const System::SystemError& error) {
