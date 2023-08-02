@@ -216,6 +216,9 @@ void Async::bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen)
 
 void Async::bluetoothClosed(uint64_t id) {
     bluetoothReads[id].emplace();
+
+    // Close events are determined by the receive result, resume the first read operation in the queue
+    bluetoothComplete(id, IOType::Receive, kIOReturnSuccess);
 }
 
 std::optional<std::string> Async::getBluetoothReadResult(uint64_t id) {
