@@ -10,6 +10,8 @@
 #include "plat_macos/bthandle.h"
 #endif
 
+#include "sockets/enums.hpp"
+
 namespace Traits {
     // Platform-specific traits for socket handles.
 
