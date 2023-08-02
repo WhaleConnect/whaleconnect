@@ -10,10 +10,12 @@
 
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
-#include "sockets/traits.hpp"
+#include "sockets/enums.hpp"
 
 template <>
-std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& device) {
+void ClientSocket<SocketTag::BT>::_init() {
+    const auto& device = _traits.device;
+
     auto target = [IOBluetoothDevice deviceWithAddressString:@(device.address.c_str())];
     IOReturn result = kIOReturnSuccess;
     id channel = nil;
@@ -35,20 +37,6 @@ std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& de
     if (result != kIOReturnSuccess) throw System::SystemError{ result, System::ErrorType::IOReturn, fnName };
 
     // Init channel without delegate
-    auto handle = [[BTHandle alloc] initWithChannel:channel];
-    return std::make_unique<ClientSocket<SocketTag::BT>>(handle, device);
-}
-
-template <>
-Task<> ClientSocket<SocketTag::BT>::connect() const {
-    // The channel will not be fully opened until a delegate is registered
-    // https://developer.apple.com/documentation/iobluetooth/iobluetoothdevice/1430889-openl2capchannelasync
-    // https://developer.apple.com/documentation/iobluetooth/iobluetoothdevice/1435022-openrfcommchannelasync
-    // This makes delegate registration similar to a connect() socket call.
-    [_get() registerAsDelegate];
-
-    NSUInteger hash = [_get() channelHash];
-    co_await Async::run(std::bind_front(Async::submitIOBluetooth, hash, Async::IOType::Send),
-                        System::ErrorType::IOReturn);
+    _handle = [[BTHandle alloc] initWithChannel:channel];
 }
 #endif

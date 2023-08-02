@@ -10,7 +10,7 @@
 #include <IOKit/IOReturn.h>
 
 #include "os/async.hpp"
-#include "sockets/traits.hpp"
+#include "sockets/enums.hpp"
 
 namespace Async {
     // The type of a Bluetooth I/O operation.

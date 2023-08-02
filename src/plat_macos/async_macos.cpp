@@ -19,7 +19,7 @@
 
 #include "os/async.hpp"
 #include "os/errcheck.hpp"
-#include "sockets/traits.hpp"
+#include "sockets/enums.hpp"
 
 using CompletionQueue = std::queue<Async::CompletionResult*>;
 
