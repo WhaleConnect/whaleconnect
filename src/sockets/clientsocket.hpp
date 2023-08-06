@@ -36,12 +36,12 @@ class ClientSocket : public Socket {
 
 public:
     // Constructs an object with a target device.
-    explicit ClientSocket(const Device& device) : Socket(&_close, &_io, &_client), _traits{ .device = device } {
+    explicit ClientSocket(const Device& device) : Socket(_close, _io, _client), _traits{ .device = device } {
         _init();
     }
 
     // Closes the socket.
-    ~ClientSocket() {
+    ~ClientSocket() override {
         close();
     }
 

@@ -14,42 +14,44 @@
 
 // Class to manage a socket file descriptor with RAII.
 class Socket {
-    const Delegates::CloseDelegate* _close;
-    const Delegates::IODelegate* _io;
-    const Delegates::ClientDelegate* _client;
+    const Delegates::CloseDelegate& _close;
+    const Delegates::IODelegate& _io;
+    const Delegates::ClientDelegate& _client;
 
 public:
     // Constructs an object with delegates.
-    Socket(const Delegates::CloseDelegate* close, const Delegates::IODelegate* io,
-           const Delegates::ClientDelegate* client) :
+    Socket(const Delegates::CloseDelegate& close, const Delegates::IODelegate& io,
+           const Delegates::ClientDelegate& client) :
         _close(close),
         _io(io), _client(client) {}
 
+    virtual ~Socket() = default;
+
     bool isValid() const {
-        return _close->isValid();
+        return _close.isValid();
     }
 
     void close() const {
-        _close->close();
+        _close.close();
     }
 
     Task<> send(const std::string& s) const {
-        return _io->send(s);
+        return _io.send(s);
     }
 
     Task<std::optional<std::string>> recv() const {
-        return _io->recv();
+        return _io.recv();
     }
 
     void cancelIO() const {
-        _io->cancelIO();
+        _io.cancelIO();
     }
 
     Task<> connect() const {
-        return _client->connect();
+        return _client.connect();
     }
 
     const Device& getServer() const {
-        return _client->getServer();
+        return _client.getServer();
     }
 };
