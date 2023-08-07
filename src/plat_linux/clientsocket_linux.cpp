@@ -2,34 +2,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_LINUX
-#include <functional>
 #include <stdexcept>
 
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/l2cap.h>
 #include <bluetooth/rfcomm.h>
-#include <liburing.h>
 
 #include "async_linux.hpp"
 
 #include "os/errcheck.hpp"
 #include "sockets/clientsocket.hpp"
 
-static void startConnect(int s, sockaddr* addr, socklen_t len, Async::CompletionResult& result) {
-    io_uring_sqe* sqe = Async::getUringSQE();
-    io_uring_prep_connect(sqe, s, addr, len);
-    io_uring_sqe_set_data(sqe, &result);
-    Async::submitRing();
-}
-
 template <>
-Task<> ClientSocket<SocketTag::IP>::connect() const {
-    co_await Async::run(std::bind_front(startConnect, _get(), _addr->ai_addr, _addr->ai_addrlen));
-}
-
-template <>
-std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& device) {
+void ClientSocket<SocketTag::BT>::_init() {
     using enum ConnectionType;
+    const auto& device = _traits.device;
 
     // Determine the socket type
     int sockType;
@@ -45,39 +32,11 @@ std::unique_ptr<ClientSocket<SocketTag::BT>> createClientSocket(const Device& de
             sockType = SOCK_SEQPACKET;
             break;
         default:
-            throw std::invalid_argument{ "Invalid socket type" }; // Should never get here
+            throw std::invalid_argument{ "Invalid socket type" };
     }
 
     // Determine the socket protocol
     int sockProto = (device.type == RFCOMM) ? BTPROTO_RFCOMM : BTPROTO_L2CAP;
-
-    auto fd = call(FN(socket, AF_BLUETOOTH, sockType, sockProto));
-    return std::make_unique<ClientSocket<SocketTag::BT>>(fd, device);
-}
-
-template <>
-Task<> ClientSocket<SocketTag::BT>::connect() const {
-    // Address of the device to connect to
-    bdaddr_t bdaddr;
-    str2ba(_device.address.c_str(), &bdaddr);
-
-    // The structure used depends on the protocol
-    union {
-        sockaddr_l2 addrL2;
-        sockaddr_rc addrRC;
-    } sAddrBT;
-
-    socklen_t addrSize;
-
-    // Set the appropriate sockaddr struct based on the protocol
-    if (_device.type == ConnectionType::RFCOMM) {
-        sAddrBT.addrRC = { AF_BLUETOOTH, bdaddr, static_cast<uint8_t>(_device.port) };
-        addrSize = sizeof(sAddrBT.addrRC);
-    } else {
-        sAddrBT.addrL2 = { AF_BLUETOOTH, htobs(_device.port), bdaddr, 0, 0 };
-        addrSize = sizeof(sAddrBT.addrL2);
-    }
-
-    co_await Async::run(std::bind_front(startConnect, _get(), std::bit_cast<sockaddr*>(&sAddrBT), addrSize));
+    _handle = call(FN(socket, AF_BLUETOOTH, sockType, sockProto));
 }
 #endif
