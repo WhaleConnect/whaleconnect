@@ -14,5 +14,8 @@ namespace Async {
 
     // Submits entries into the io_uring submission queue.
     void submitRing();
+
+    // Cancels pending operations on a socket.
+    void cancelPending(int fd);
 }
 #endif

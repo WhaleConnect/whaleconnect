@@ -7,74 +7,92 @@
 #include "os/async_internal.hpp"
 
 #include <bit>
-#include <mutex>
+#include <vector>
 
 #include <liburing.h>
 
+#include "os/async.hpp"
 #include "os/errcheck.hpp"
+#include "os/error.hpp"
 
-static std::mutex ringMutex;
+static std::vector<io_uring> rings;
+static int currentRingIdx = 0;
 
-static io_uring ring;
+void Async::Internal::init(unsigned int numThreads) {
+    rings.reserve(numThreads);
 
-// Waits for an io_uring completion queue entry with a mutex lock.
-static int waitCQE(io_uring_cqe*& cqe, void*& userData) {
-    std::scoped_lock cqeLock{ ringMutex };
-    int ret = io_uring_wait_cqe(&ring, &cqe);
+    for (unsigned int i = 0; i < numThreads; i++) {
+        // Create new io_uring instance
+        io_uring& ring = rings.emplace_back();
 
-    // Make sure the wait succeeded before getting user data pointer
-    // When io_uring_wait_cqe() fails, cqe is null.
-    // One such failure case is EINTR (ret == -4), when a breakpoint is hit in another part of the program while this is
-    // waiting.
-    if (ret == NO_ERROR) {
-        userData = io_uring_cqe_get_data(cqe);
-        io_uring_cqe_seen(&ring, cqe);
+        // Initialize the instance
+        call(FN(io_uring_queue_init, 128, &ring, 0), checkZero, useReturnCodeNeg);
     }
-
-    return ret;
 }
 
-void Async::Internal::init(unsigned int) {
-    call(FN(io_uring_queue_init, 128, &ring, 0), checkZero, useReturnCodeNeg);
-}
-
-void Async::Internal::stopThreads(unsigned int numThreads) {
-    for (int i = 0; i < numThreads; i++) {
+void Async::Internal::stopThreads(unsigned int) {
+    for (auto& ring : rings) {
         // Submit a no-op to the queue to get the waiting call terminated
-        io_uring_sqe* sqe = getUringSQE();
+        io_uring_sqe* sqe = _io_uring_get_sqe(&ring);
         io_uring_prep_nop(sqe);
         io_uring_sqe_set_data64(sqe, ASYNC_INTERRUPT);
+        io_uring_submit(&ring);
     }
-    submitRing();
 }
 
 void Async::Internal::cleanup() {
-    io_uring_queue_exit(&ring);
+    for (auto& ring : rings) io_uring_queue_exit(&ring);
 }
 
-Async::CompletionResult Async::Internal::worker() {
-    io_uring_cqe* cqe;
-    void* userData = nullptr;
+void Async::Internal::worker(unsigned int threadNum) {
+    io_uring* ring = &rings[threadNum];
 
-    // Wait for new completion queue entry (locked by mutex)
-    call(FN(waitCQE, cqe, userData), checkZero, useReturnCodeNeg);
+    while (true) {
+        io_uring_cqe* cqe;
 
-    // Check for interrupt
-    if (std::bit_cast<unsigned long long>(userData) == ASYNC_INTERRUPT) throw WorkerInterruptedError{};
+        // Wait for new completion queue entry
+        try {
+            call(FN(io_uring_wait_cqe, ring, &cqe), checkZero, useReturnCodeNeg);
+        } catch (const System::SystemError&) {
+            continue;
+        }
 
-    // Fill in completion result information
-    auto& result = toResult(userData);
-    if (cqe->res < 0) result.error = -cqe->res;
-    else result.res = cqe->res;
+        // Make sure the wait succeeded before getting user data pointer
+        // When io_uring_wait_cqe() fails, cqe is null.
+        // One such failure case is EINTR, when a breakpoint is hit in another part of the program while this is
+        // waiting.
+        void* userData = io_uring_cqe_get_data(cqe);
+        io_uring_cqe_seen(ring, cqe);
 
-    return result;
+        if (userData == nullptr) continue;
+
+        // Check for interrupt
+        if (std::bit_cast<uint64_t>(userData) == ASYNC_INTERRUPT) break;
+
+        // Fill in completion result information
+        auto& result = *std::bit_cast<CompletionResult*>(userData);
+        if (cqe->res < 0) result.error = -cqe->res;
+        else result.res = cqe->res;
+
+        result.coroHandle();
+    }
 }
 
 io_uring_sqe* Async::getUringSQE() {
-    return io_uring_get_sqe(&ring);
+    return io_uring_get_sqe(&rings[currentRingIdx]);
 }
 
 void Async::submitRing() {
-    io_uring_submit(&ring);
+    io_uring_submit(&rings[currentRingIdx]);
+
+    currentRingIdx = (currentRingIdx + 1) % rings.size();
+}
+
+void Async::cancelPending(int fd) {
+    for (auto& ring : rings) {
+        io_uring_sqe* sqe = io_uring_get_sqe(&ring);
+        io_uring_prep_cancel_fd(sqe, fd, IORING_ASYNC_CANCEL_ALL);
+        io_uring_submit(&ring);
+    }
 }
 #endif
