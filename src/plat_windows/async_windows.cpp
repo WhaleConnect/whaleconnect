@@ -32,25 +32,29 @@ void Async::Internal::cleanup() {
     call(FN(WSACleanup));
 }
 
-Async::CompletionResult Async::Internal::worker() {
-    DWORD numBytes;
-    ULONG_PTR completionKey;
-    LPOVERLAPPED overlapped = nullptr;
+void Async::Internal::worker(int) {
+    while (true) {
+        DWORD numBytes;
+        ULONG_PTR completionKey;
+        LPOVERLAPPED overlapped = nullptr;
 
-    // Dequeue a completion packet from the system and check for the exit condition
-    BOOL ret = GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, INFINITE);
-    if (completionKey == ASYNC_INTERRUPT) throw WorkerInterruptedError{};
+        // Dequeue a completion packet from the system and check for the exit condition
+        BOOL ret = GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, INFINITE);
+        if (completionKey == ASYNC_INTERRUPT) break;
 
-    // Get the structure with completion data, passed through the overlapped pointer
-    // No locking is needed to modify the structure's fields - the calling coroutine will be suspended at this
-    // point so mutually-exclusive access is guaranteed.
-    auto& result = toResult(overlapped);
-    result.res = static_cast<int>(numBytes);
+        // Get the structure with completion data, passed through the overlapped pointer
+        // No locking is needed to modify the structure's fields - the calling coroutine will be suspended at this
+        // point so mutually-exclusive access is guaranteed.
+        if (overlapped == nullptr) continue;
 
-    // Pass any failure back to the calling coroutine
-    if (!ret) result.error = System::getLastError();
+        auto& result = *static_cast<CompletionResult*>(overlapped);
+        result.res = static_cast<int>(numBytes);
 
-    return result;
+        // Pass any failure back to the calling coroutine
+        if (!ret) result.error = System::getLastError();
+
+        result.coroHandle();
+    }
 }
 
 void Async::add(SOCKET sockfd) {
