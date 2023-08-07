@@ -129,7 +129,7 @@ void Async::Internal::cleanup() {
     // No cleanup needed
 }
 
-void Async::Internal::worker(int threadNum) {
+void Async::Internal::worker(unsigned int threadNum) {
     SocketQueueMap sockets;
 
     const int kq = kqs[threadNum];

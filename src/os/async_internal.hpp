@@ -22,5 +22,5 @@ namespace Async::Internal {
     void cleanup();
 
     // Handles asynchronous operations.
-    void worker(int threadNum);
+    void worker(unsigned int threadNum);
 }

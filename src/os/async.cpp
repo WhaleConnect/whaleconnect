@@ -21,7 +21,7 @@ Async::Instance::Instance(unsigned int numThreads) :
 
     // Populate thread pool
     // TODO: Use views::enumerate() in C++23
-    for (size_t i = 0; i < _workerThreadPool.size(); i++)
+    for (unsigned int i = 0; i < _workerThreadPool.size(); i++)
         _workerThreadPool[i] = std::thread{ Async::Internal::worker, i };
 }
 

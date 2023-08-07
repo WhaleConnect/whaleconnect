@@ -32,7 +32,7 @@ void Async::Internal::cleanup() {
     call(FN(WSACleanup));
 }
 
-void Async::Internal::worker(int) {
+void Async::Internal::worker(unsigned int) {
     while (true) {
         DWORD numBytes;
         ULONG_PTR completionKey;
