@@ -13,22 +13,6 @@
 
 #include "os/error.hpp"
 
-// Runs in each thread to handle completion results.
-static void worker() {
-    while (true) {
-        try {
-            auto result = Async::Internal::worker();
-            result.coroHandle();
-        } catch (const Async::Internal::WorkerInterruptedError&) {
-            break; // Interrupted, break from loop
-        } catch (const Async::Internal::WorkerNoDataError&) {
-            continue; // No data to complete operation
-        } catch (const System::SystemError&) {
-            continue; // System call failed
-        }
-    }
-}
-
 Async::Instance::Instance(unsigned int numThreads) :
     _workerThreadPool((numThreads == 0) ? std::max(std::thread::hardware_concurrency(), 1U) : numThreads) {
     // If 0 threads are specified, the number is chosen with hardware_concurrency.
@@ -36,7 +20,9 @@ Async::Instance::Instance(unsigned int numThreads) :
     Internal::init(static_cast<unsigned int>(_workerThreadPool.size()));
 
     // Populate thread pool
-    for (auto& i : _workerThreadPool) i = std::thread{ worker };
+    // TODO: Use views::enumerate() in C++23
+    for (size_t i = 0; i < _workerThreadPool.size(); i++)
+        _workerThreadPool[i] = std::thread{ Async::Internal::worker, i };
 }
 
 Async::Instance::~Instance() {

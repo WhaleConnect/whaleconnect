@@ -34,6 +34,6 @@ namespace Async::Internal {
     // Cleans up system resources.
     void cleanup();
 
-    // Handles one asynchronous operation.
-    CompletionResult worker();
+    // Handles asynchronous operations.
+    void worker(int threadNum);
 }
