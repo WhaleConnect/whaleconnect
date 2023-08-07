@@ -30,9 +30,6 @@ add_defines("UNICODE", "_UNICODE", "NOMINMAX")
 add_cxxflags("clang::-stdlib=libc++", "clang::-fexperimental-library")
 add_ldflags("clangxx::-stdlib=libc++", "clangxx::-fexperimental-library", { force = true })
 
--- Enable MSVC conformant preprocessor
-add_cxxflags("cl::/Zc:preprocessor")
-
 -- UTF-8 charset
 add_cxxflags("cl::/utf-8",
     "clang::-finput-charset=UTF-8", "clang::-fexec-charset=UTF-8",
