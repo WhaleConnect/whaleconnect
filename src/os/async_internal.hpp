@@ -12,19 +12,6 @@ namespace Async::Internal {
     // Constant to indentify an interrupt operation to stop the worker threads.
     constexpr auto ASYNC_INTERRUPT = 1;
 
-    // Exception representing an interrupted worker call.
-    struct WorkerInterruptedError : std::exception {};
-
-    // Exception representing insufficient data to satisfy an operation.
-    struct WorkerNoDataError : std::exception {};
-
-    // Casts a pointer type to a completion result structure.
-    template <class T>
-    CompletionResult& toResult(T* ptr) {
-        if (!ptr) throw WorkerNoDataError{};
-        return *static_cast<CompletionResult*>(ptr);
-    }
-
     // Initializes the background thread pool.
     void init(unsigned int numThreads);
 
