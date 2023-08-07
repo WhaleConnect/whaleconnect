@@ -15,7 +15,6 @@ void ClientSocket<SocketTag::BT>::_init() {
     if (_traits.device.type != ConnectionType::RFCOMM)
         throw System::SystemError{ WSAEPFNOSUPPORT, System::ErrorType::System, "socket" };
 
-    auto fd = call(FN(socket, AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM));
-    _handle = fd;
+    _handle = call(FN(socket, AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM));
 }
 #endif
