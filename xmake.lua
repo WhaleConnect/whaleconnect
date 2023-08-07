@@ -5,7 +5,7 @@ add_repositories("xrepo-patches https://github.com/NSTerminal/xrepo-patches.git"
 
 add_rules("mode.debug", "mode.release")
 
-add_requires("imgui-with-sdl3 v20230605-docking", { configs = { sdl3_no_renderer = true, opengl3 = true, freetype = true } })
+add_requires("imgui-with-sdl3 v20230807-docking", { configs = { sdl3_no_renderer = true, opengl3 = true, freetype = true } })
 add_requires("libsdl3", { configs = { use_sdlmain = true } })
 add_requires("catch2", "icu4c", "magic_enum", "nlohmann_json", "out_ptr", "opengl")
 
