@@ -20,7 +20,8 @@ set_defaultmode("debug")
 
 add_packages("icu4c", "magic_enum", "out_ptr")
 
-add_cxxflags("clang::-Wno-missing-field-initializers")
+-- Ignored warnings
+add_cxxflags("clang::-Wno-missing-field-initializers", "gcc::-Wno-missing-field-initializers", "gcc::-Wno-subobject-linkage")
 
 -- Use MSVC Unicode character set and prevent clashing macros
 add_defines("UNICODE", "_UNICODE", "NOMINMAX")
@@ -33,7 +34,9 @@ add_ldflags("clangxx::-stdlib=libc++", "clangxx::-fexperimental-library", { forc
 add_cxxflags("cl::/Zc:preprocessor")
 
 -- UTF-8 charset
-add_cxxflags("cl::/utf-8", "clang::-finput-charset=UTF-8", "clang::-fexec-charset=UTF-8")
+add_cxxflags("cl::/utf-8",
+    "clang::-finput-charset=UTF-8", "clang::-fexec-charset=UTF-8",
+    "gcc::-finput-charset=UTF-8", "gcc::-fexec-charset=UTF-8")
 
 -- Platform detection macros ("or false" is needed because is_plat() can return nil)
 add_defines("OS_WINDOWS=" .. tostring(is_plat("windows") or false),
