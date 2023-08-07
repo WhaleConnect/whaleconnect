@@ -13,6 +13,7 @@
 #include <queue>
 #include <stdexcept>
 #include <unordered_map>
+#include <vector>
 
 #include <IOKit/IOReturn.h>
 #include <magic_enum.hpp>
