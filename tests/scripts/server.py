@@ -8,8 +8,6 @@ import json
 import pathlib
 import socket
 
-HOST = '::'
-
 # Command-line arguments to set server configuration
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--transport', type=str, required=True)
@@ -19,11 +17,8 @@ mode.add_argument('-i', '--interactive', action='store_true')
 mode.add_argument('-e', '--echo', action='store_true')
 
 args = parser.parse_args()
-is_tcp = args.transport == 'TCP'
 is_interactive = args.interactive
 is_echo = args.echo
-
-socket_type = socket.SOCK_STREAM if is_tcp else socket.SOCK_DGRAM
 
 # Load settings from JSON
 SETTINGS_FILE = pathlib.Path(__file__).parent.parent / \
@@ -32,7 +27,31 @@ SETTINGS_FILE = pathlib.Path(__file__).parent.parent / \
 with open(SETTINGS_FILE) as f:
     data = json.load(f)
 
-    PORT = data['ip']['tcpPort'] if is_tcp else data['ip']['udpPort']
+    match args.transport:
+        case 'TCP':
+            SOCKET_TYPE = socket.SOCK_STREAM
+            SOCKET_FAMILY = socket.AF_INET6
+            SOCKET_PROTO = -1
+            PORT = data['ip']['tcpPort']
+            HOST = '::'
+        case 'UDP':
+            SOCKET_TYPE = socket.SOCK_DGRAM
+            SOCKET_FAMILY = socket.AF_INET6
+            SOCKET_PROTO = -1
+            PORT = data['ip']['udpPort']
+            HOST = '::'
+        case 'RFCOMM':
+            SOCKET_TYPE = socket.SOCK_STREAM
+            SOCKET_FAMILY = socket.AF_BLUETOOTH
+            SOCKET_PROTO = socket.BTPROTO_RFCOMM
+            PORT = data['bluetooth']['rfcommPort']
+            HOST = socket.BDADDR_ANY
+        case 'L2CAP':
+            SOCKET_TYPE = socket.SOCK_STREAM
+            SOCKET_FAMILY = socket.AF_BLUETOOTH
+            SOCKET_PROTO = socket.BTPROTO_L2CAP
+            PORT = data['bluetooth']['l2capPSM']
+            HOST = socket.BDADDR_ANY
 
 
 # Handles I/O for a TCP server.
@@ -81,12 +100,16 @@ if is_interactive:
 elif is_echo:
     print('Running in echo mode.')
 
-with socket.socket(socket.AF_INET6, socket_type) as s:
-    # Enable dual-stack server so IPv4 and IPv6 clients can connect
-    s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+with socket.socket(SOCKET_FAMILY, SOCKET_TYPE, SOCKET_PROTO) as s:
+    if SOCKET_FAMILY == socket.AF_INET6:
+        # Enable dual-stack server so IPv4 and IPv6 clients can connect
+        s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+
     s.bind((HOST, PORT))
 
-    if is_tcp:
+    is_dgram = SOCKET_TYPE == socket.SOCK_DGRAM
+
+    if not is_dgram:
         s.listen()
 
     print(f'Server is active on port {PORT}')
@@ -94,10 +117,10 @@ with socket.socket(socket.AF_INET6, socket_type) as s:
     # Handle clients until termination
     while True:
         try:
-            if is_tcp:
-                server_loop_tcp(s)
-            else:
+            if is_dgram:
                 server_loop_udp(s)
+            else:
+                server_loop_tcp(s)
         except IOError as e:
             print('I/O Error:', e)
             break
