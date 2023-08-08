@@ -13,6 +13,8 @@ The server may also be called with the following switches (mutually exclusive):
 - `-i` for interactive mode (accept data from the standard input to send to clients)
 - `-e` for echo mode (send back all data that it receives from the client)
 
+When using the server with the unit tests, use the `-e` switch.
+
 ## Server Device
 
 Some tests only need one device involved - for example, Internet Protocol tests can use the loopback address (`127.0.0.1` or `::1`) so they can be run on the same device as the server script. However, Bluetooth does not have such capabilities, so all Bluetooth tests must have a server running on a separate device.

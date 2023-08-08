@@ -10,9 +10,6 @@ import socket
 
 HOST = '::'
 
-# Signals a request for the server to echo back what the client sent
-ECHO_STRING = b'echo test'
-
 # Command-line arguments to set server configuration
 parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--transport', type=str, required=True)
@@ -56,8 +53,8 @@ def server_loop_tcp(s: socket.socket):
                 if is_interactive:
                     input_str = input('> ')
                     conn.sendall(input_str.encode())
-                elif is_echo or data == ECHO_STRING:
-                    # Send back data if requested
+                elif is_echo:
+                    # Send back data
                     conn.sendall(data)
             else:
                 # Connection closed by client
@@ -75,7 +72,7 @@ def server_loop_udp(s: socket.socket):
         if is_interactive:
             input_str = input('> ')
             s.sendto(input_str.encode(), addr)
-        elif is_echo or data == ECHO_STRING:
+        elif is_echo:
             s.sendto(data, addr)
 
 
