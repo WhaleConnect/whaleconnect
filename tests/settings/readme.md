@@ -15,6 +15,12 @@ Create a file called `settings.json` with the following structure:
         // Ports to use for TCP and UDP testing
         "tcpPort": 3000,
         "udpPort": 3001
+    },
+    "bluetooth": {
+        "mac": "[MAC address of your server]",
+
+        "rfcommPort": 1,
+        "l2capPSM": 12345
     }
 }
 ```
