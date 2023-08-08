@@ -17,10 +17,10 @@ namespace Delegates {
         using Handle = Traits::SocketHandleType<Tag>;
 
         static constexpr auto _recvLen = 1024; // Receive buffer length
-        Handle& _handle;
+        const Handle& _handle;
 
     public:
-        explicit Bidirectional(Handle& handle) : _handle(handle) {}
+        explicit Bidirectional(const Handle& handle) : _handle(handle) {}
 
         Task<> send(std::string s) const override;
 
