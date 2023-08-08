@@ -10,7 +10,7 @@
 #include "sockets/clientsocket.hpp"
 
 template <>
-void ClientSocket<SocketTag::BT>::_init() {
+void ClientSocketBT::_init() {
     // Only RFCOMM sockets are supported by the Microsoft Bluetooth stack on Windows
     if (_traits.device.type != ConnectionType::RFCOMM)
         throw System::SystemError{ WSAEPFNOSUPPORT, System::ErrorType::System, "socket" };

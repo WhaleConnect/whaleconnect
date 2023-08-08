@@ -10,7 +10,7 @@
 #include "utils/strings.hpp"
 
 template <>
-void ClientSocket<SocketTag::IP>::_init() {
+void ClientSocketIP::_init() {
     const auto& device = _traits.device;
     bool isUDP = (device.type == ConnectionType::UDP);
 

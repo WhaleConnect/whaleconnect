@@ -10,7 +10,6 @@
 #include "os/async.hpp"
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
-#include "sockets/enums.hpp"
 
 const auto settings = loadSettings();
 const auto ipSettings = settings["ip"];
@@ -31,7 +30,7 @@ struct CancellationMatcher : Catch::Matchers::MatcherGenericBase {
 
 TEST_CASE("Cancellation") {
     // Create IPv4 TCP socket
-    ClientSocket<SocketTag::IP> sock{ { ConnectionType::TCP, "", v4Addr, tcpPort } };
+    ClientSocketIP sock{ { ConnectionType::TCP, "", v4Addr, tcpPort } };
 
     // Connect
     runSync([&sock]() -> Task<> {

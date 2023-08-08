@@ -14,7 +14,7 @@
 #include "sockets/clientsocket.hpp"
 
 template <>
-void ClientSocket<SocketTag::BT>::_init() {
+void ClientSocketBT::_init() {
     using enum ConnectionType;
     const auto& device = _traits.device;
 

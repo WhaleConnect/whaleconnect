@@ -8,6 +8,7 @@
 #include "delegates/bidirectional.hpp"
 #include "delegates/client.hpp"
 #include "delegates/closeable.hpp"
+#include "enums.hpp"
 #include "traits/client.hpp"
 #include "utils/handleptr.hpp"
 #include "utils/task.hpp"
@@ -60,3 +61,6 @@ public:
         return *this;
     }
 };
+
+using ClientSocketIP = ClientSocket<SocketTag::IP>;
+using ClientSocketBT = ClientSocket<SocketTag::BT>;

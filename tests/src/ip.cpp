@@ -8,7 +8,6 @@
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
 #include "sockets/device.hpp"
-#include "sockets/enums.hpp"
 
 const auto settings = loadSettings();
 const auto ipSettings = settings["ip"];
@@ -20,7 +19,7 @@ const auto udpPort = ipSettings["udpPort"].get<uint16_t>();
 
 // Creates a socket connected to the targe device and performs basic I/O checks.
 void runTests(const Device& device) {
-    const ClientSocket<SocketTag::IP> sock{ device };
+    const ClientSocketIP sock{ device };
 
     // Connect
     runSync([&sock]() -> Task<> {

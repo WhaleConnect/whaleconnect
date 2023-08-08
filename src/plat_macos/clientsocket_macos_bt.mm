@@ -10,10 +10,9 @@
 
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
-#include "sockets/enums.hpp"
 
 template <>
-void ClientSocket<SocketTag::BT>::_init() {
+void ClientSocketBT::_init() {
     const auto& device = _traits.device;
 
     auto target = [IOBluetoothDevice deviceWithAddressString:@(device.address.c_str())];
