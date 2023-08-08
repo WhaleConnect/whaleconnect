@@ -10,7 +10,8 @@ add_requires("libsdl3", { configs = { use_sdlmain = true } })
 add_requires("catch2", "icu4c", "magic_enum", "nlohmann_json", "out_ptr", "opengl")
 
 if is_plat("linux") then
-    add_requires("liburing", "dbus", "bluez")
+    add_requires("liburing", "bluez")
+    add_requires("dbus", { configs = { system_bus_address = "unix:path=/run/dbus/system_bus_socket" } })
 end
 
 set_languages("c++20")
