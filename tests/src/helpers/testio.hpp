@@ -6,4 +6,4 @@
 #include "sockets/socket.hpp"
 
 // Performs basic I/O checks on a socket.
-void testIO(const Socket& socket);
+void testIO(const Socket& socket, bool useRunLoop = false);

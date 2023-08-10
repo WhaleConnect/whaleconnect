@@ -23,13 +23,13 @@ TEST_CASE("I/O (Bluetooth)") {
 
     SECTION("RFCOMM") {
         ClientSocketBT s{ { RFCOMM, "", mac, rfcommPort } };
-        testIO(s);
+        testIO(s, true);
     }
 
 #if !OS_WINDOWS
     SECTION("L2CAP") {
         ClientSocketBT s{ { L2CAPStream, "", mac, l2capPSM } };
-        testIO(s);
+        testIO(s, true);
     }
 #endif
 }

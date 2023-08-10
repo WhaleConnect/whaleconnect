@@ -10,6 +10,10 @@
 #include <mutex>
 #include <type_traits>
 
+#if OS_MACOS
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
 #include <nlohmann/json.hpp>
 
 #include "os/error.hpp"
@@ -20,9 +24,16 @@ template <class T>
 concept Awaitable = requires (T) { typename std::coroutine_traits<std::invoke_result_t<T>>::promise_type; };
 
 // Runs a coroutine synchronously.
+// Bluetooth functions on macOS require a run loop for events.
 template <class Fn>
 requires Awaitable<Fn>
-void runSync(const Fn& fn) {
+void runSync(const Fn& fn, [[maybe_unused]] bool useRunLoop = false) {
+#if OS_MACOS
+    bool hasRunLoop = useRunLoop;
+#else
+    bool hasRunLoop = false;
+#endif
+
     // Completion tracking
     std::mutex m;
     std::condition_variable cond;
@@ -44,17 +55,29 @@ void runSync(const Fn& fn) {
         }
 
         // Either the coroutine finished, or it threw an exception
-        std::unique_lock lock{ m };
-        completed = true;
-        lock.unlock();
-        cond.notify_one();
+        if (hasRunLoop) {
+#if OS_MACOS
+            CFRunLoopStop(CFRunLoopGetCurrent());
+#endif
+        } else {
+            std::unique_lock lock{ m };
+            completed = true;
+            lock.unlock();
+            cond.notify_one();
+        }
     }();
 
     // Wait for the completion condition
-    std::unique_lock lock{ m };
-    cond.wait(lock, [&completed] {
-        return completed.load();
-    });
+    if (hasRunLoop) {
+#if OS_MACOS
+        CFRunLoopRun();
+#endif
+    } else {
+        std::unique_lock lock{ m };
+        cond.wait(lock, [&completed] {
+            return completed.load();
+        });
+    }
 
     // Rethrow any exceptions
     if (ptr) std::rethrow_exception(ptr);
