@@ -16,7 +16,11 @@ const auto btSettings = settings["bluetooth"];
 
 const auto mac = btSettings["mac"].get<std::string>();
 const auto rfcommPort = btSettings["rfcommPort"].get<uint16_t>();
+
+// L2CAP sockets are not supported on Windows
+#if !OS_WINDOWS
 const auto l2capPSM = btSettings["l2capPSM"].get<uint16_t>();
+#endif
 
 TEST_CASE("I/O (Bluetooth)") {
     using enum ConnectionType;
