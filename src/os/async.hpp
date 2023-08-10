@@ -70,8 +70,7 @@ namespace Async {
     };
 
     // Awaits an asynchronous operation and returns the result of the operation's end function (if given).
-    template <class Fn>
-    Task<CompletionResult> run(Fn fn, System::ErrorType type = System::ErrorType::System) {
+    Task<CompletionResult> run(auto fn, System::ErrorType type = System::ErrorType::System) {
         CompletionResult result;
         co_await result;
 
