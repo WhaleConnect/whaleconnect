@@ -4,10 +4,8 @@
 #pragma once
 
 #include <atomic>
-#include <condition_variable>
 #include <coroutine>
 #include <exception>
-#include <mutex>
 #include <type_traits>
 
 #if OS_MACOS
@@ -29,12 +27,10 @@ void runSync(const Awaitable auto& fn, [[maybe_unused]] bool useRunLoop = false)
 #if OS_MACOS
     bool hasRunLoop = useRunLoop;
 #else
-    bool hasRunLoop = false;
+    constexpr bool hasRunLoop = false;
 #endif
 
     // Completion tracking
-    std::mutex m;
-    std::condition_variable cond;
     std::atomic_bool completed = false;
 
     // Keep track of exceptions thrown in the coroutine
@@ -58,10 +54,8 @@ void runSync(const Awaitable auto& fn, [[maybe_unused]] bool useRunLoop = false)
             CFRunLoopStop(CFRunLoopGetCurrent());
 #endif
         } else {
-            std::unique_lock lock{ m };
             completed = true;
-            lock.unlock();
-            cond.notify_one();
+            completed.notify_one();
         }
     }();
 
@@ -71,10 +65,7 @@ void runSync(const Awaitable auto& fn, [[maybe_unused]] bool useRunLoop = false)
         CFRunLoopRun();
 #endif
     } else {
-        std::unique_lock lock{ m };
-        cond.wait(lock, [&completed] {
-            return completed.load();
-        });
+        completed.wait(false);
     }
 
     // Rethrow any exceptions
