@@ -28,7 +28,7 @@ add_cxxflags("clang::-Wno-missing-field-initializers", "gcc::-Wno-missing-field-
 add_defines("UNICODE", "_UNICODE", "NOMINMAX")
 
 -- Use Clang libc++ and enable experimental library
-add_cxxflags("clang::-stdlib=libc++", "clang::-fexperimental-library")
+add_cxxflags("clang::-stdlib=libc++", "clang::-fexperimental-library", { force = true })
 add_ldflags("clangxx::-stdlib=libc++", "clangxx::-fexperimental-library", { force = true })
 
 -- UTF-8 charset
