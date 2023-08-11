@@ -4,8 +4,8 @@
 #pragma once
 
 #include "sockets/delegates.hpp"
-#include "sockets/traits/sockethandle.hpp"
 #include "sockets/traits/client.hpp"
+#include "sockets/traits/sockethandle.hpp"
 #include "utils/task.hpp"
 
 namespace Delegates {

@@ -3,12 +3,12 @@
 
 #pragma once
 
+#include "enums.hpp"
 #include "socket.hpp"
 
 #include "delegates/bidirectional.hpp"
 #include "delegates/client.hpp"
 #include "delegates/closeable.hpp"
-#include "enums.hpp"
 #include "traits/client.hpp"
 #include "utils/handleptr.hpp"
 #include "utils/task.hpp"
