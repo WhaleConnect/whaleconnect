@@ -138,11 +138,7 @@ void Async::Internal::worker(unsigned int threadNum) {
         struct kevent event {};
 
         // Wait for new event
-        try {
-            call(FN(kevent, kq, nullptr, 0, &event, 1, nullptr));
-        } catch (const System::SystemError&) {
-            continue;
-        }
+        if (kevent(kq, nullptr, 0, &event, 1, nullptr) == SOCKET_ERROR) continue;
 
         // Handle user events
         if (event.filter == EVFILT_USER) {
