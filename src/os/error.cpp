@@ -18,6 +18,7 @@
 #endif
 
 #include <magic_enum.hpp>
+#include <magic_enum_format.hpp>
 
 #include "error.hpp"
 
@@ -89,7 +90,7 @@ std::string System::formatSystemError(ErrorCode code, ErrorType type, std::strin
 #endif
     }
 
-    return std::format("{} (type {}, in {}): {}", code, magic_enum::enum_name(type), fnName, msg);
+    return std::format("{} (type {}, in {}): {}", code, type, fnName, msg);
 }
 
 bool System::SystemError::isCanceled() const {
