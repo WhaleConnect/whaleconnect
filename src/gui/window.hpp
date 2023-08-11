@@ -17,11 +17,13 @@ class Window {
     bool _initialized = false; // If the initialize function has been called
 
     // Performs initialization required by a window object.
-    virtual void _init() { /* May be overridden optionally */
+    virtual void _init() {
+        // May be overridden optionally
     }
 
     // Always runs on every frame, before _onUpdate is called.
-    virtual void _onBeforeUpdate() { /* May be overridden optionally */
+    virtual void _onBeforeUpdate() {
+        // May be overridden optionally
     }
 
     // Redraws the contents of the window. Must be overridden in derived classes.
@@ -48,10 +50,6 @@ public:
     // Gets the window's open/closed state.
     [[nodiscard]] bool isOpen() const {
         return _open;
-    }
-
-    bool* getOpenPtr() {
-        return &_open;
     }
 
     // Performs any extra required initialization. This may be called once; subsequent calls will do nothing.
