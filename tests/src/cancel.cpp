@@ -38,7 +38,7 @@ TEST_CASE("Cancellation") {
     });
 
     // Create a separate thread to briefly wait, then cancel I/O while recv() is pending
-    std::thread readThread{ [&sock] {
+    std::thread cancelThread{ [&sock] {
         using namespace std::literals;
 
         std::this_thread::sleep_for(20ms);
@@ -53,5 +53,5 @@ TEST_CASE("Cancellation") {
 
     CHECK_THROWS_MATCHES(runSync(recvOperation), System::SystemError, CancellationMatcher{});
 
-    readThread.join();
+    cancelThread.join();
 }
