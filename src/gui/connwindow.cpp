@@ -6,7 +6,6 @@
 #include <format>
 
 #include <magic_enum.hpp>
-#include <magic_enum_format.hpp>
 
 #include "imgui.h"
 
@@ -36,6 +35,7 @@ constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(Co
 static std::string formatDevice(const Device& device, std::string_view extraInfo) {
     // Type of the connection
     bool isIP = (device.type == ConnectionType::TCP || device.type == ConnectionType::UDP);
+    auto typeString = magic_enum::enum_name(device.type);
 
     // Bluetooth-based connections are described using the device's name (e.g. "MyESP32"),
     // IP-based connections use the device's IP address (e.g. 192.168.0.178).
@@ -50,8 +50,8 @@ static std::string formatDevice(const Device& device, std::string_view extraInfo
     // The address is always part of the id hash.
     // The port is not visible for a Bluetooth connection, instead, it is part of the id hash.
     std::string title
-        = isIP ? std::format("{} Connection - {} port {}##{}", device.type, deviceString, device.port, device.address)
-               : std::format("{} Connection - {}##{} port {}", device.type, deviceString, device.address, device.port);
+        = isIP ? std::format("{} Connection - {} port {}##{}", typeString, deviceString, device.port, device.address)
+               : std::format("{} Connection - {}##{} port {}", typeString, deviceString, device.address, device.port);
 
     // If there's extra info, it is formatted before the window title.
     // If it were to be put after the title, it would be part of the invisible id hash (after the "##").
