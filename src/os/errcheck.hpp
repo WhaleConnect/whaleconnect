@@ -32,6 +32,7 @@ struct FnResult {
 
 #ifdef __clang__
 // Clang does not yet support CTAD for aggregates (P1816R0)
+// TODO: Remove in Clang 17
 template <class T>
 FnResult(T, std::string) -> FnResult<T>;
 #endif

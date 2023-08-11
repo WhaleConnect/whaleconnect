@@ -11,6 +11,7 @@ struct Overload : Ts... {
 
 #ifdef __clang__
 // Clang does not yet support CTAD for aggregates (P1816R0)
+// TODO: Remove in Clang 17
 template <class... Ts>
 Overload(Ts...) -> Overload<Ts...>;
 #endif
