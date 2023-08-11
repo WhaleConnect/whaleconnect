@@ -1,15 +1,14 @@
 # Network Socket Terminal
 
-**Network Socket Terminal** (NST) is an application for Internet and Bluetooth communication on Windows and Linux computers.
+**Network Socket Terminal** (NST) is an application for Internet and Bluetooth communication for Windows, Linux, and macOS.
 
 This software is currently in alpha. Feedback and feature requests are welcome.
 
-![Screenshot](img/shot1.png)
+![Screenshot](img/screenshot.png)
 
 ## Documentation Links
 
 - [Building from Source](building.md)
-- [Screenshots](screenshots.md)
 - [Testing](testing.md)
 - [Todo List](todo.txt)
 
@@ -23,7 +22,9 @@ When a feature is merged into `main` it is ready for release.
 
 NST and its build scripts are licensed under the [GPL v3+ license](../COPYING).
 
-## Libraries Used
+## Dependencies
+
+### Libraries
 
 - [BlueZ](https://github.com/bluez/bluez/tree/master/lib) (GNU GPL v2+ License)
 - [Catch2](https://github.com/catchorg/Catch2) (BSL 1.0 License)
@@ -36,7 +37,7 @@ NST and its build scripts are licensed under the [GPL v3+ license](../COPYING).
 - [SDL](https://www.libsdl.org/) (Zlib License)
 - [ztd.out_ptr](https://github.com/soasis/out_ptr) (Apache-2.0 License)
 
-## Fonts Used
+### Fonts
 
 - [Noto Sans Mono](https://fonts.google.com/noto/specimen/Noto+Sans+Mono) (SIL OFL 1.1 License)
 - [Remix Icon](https://remixicon.com/) (Apache-2.0 License)
