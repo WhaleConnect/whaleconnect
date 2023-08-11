@@ -51,11 +51,7 @@ void Async::Internal::worker(unsigned int threadNum) {
         io_uring_cqe* cqe;
 
         // Wait for new completion queue entry
-        try {
-            call(FN(io_uring_wait_cqe, ring, &cqe), checkZero, useReturnCodeNeg);
-        } catch (const System::SystemError&) {
-            continue;
-        }
+        if (io_uring_wait_cqe(ring, &cqe) != NO_ERROR) continue;
 
         // Make sure the wait succeeded before getting user data pointer
         // When io_uring_wait_cqe() fails, cqe is null.
