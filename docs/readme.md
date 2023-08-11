@@ -9,6 +9,7 @@ This software is currently in alpha. Feedback and feature requests are welcome.
 ## Documentation Links
 
 - [Building from Source](building.md)
+- [System Requirements](requirements.md)
 - [Testing](testing.md)
 - [Todo List](todo.txt)
 
