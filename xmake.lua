@@ -28,10 +28,6 @@ add_cxxflags("-Wno-subobject-linkage", { tools = { "gcc", "gxx" } })
 -- Use MSVC Unicode character set and prevent clashing macros
 add_defines("UNICODE", "_UNICODE", "NOMINMAX")
 
--- Use Clang libc++ and enable experimental library
-add_cxxflags("clang::-stdlib=libc++", "clang::-fexperimental-library", { force = true, tools = { "clang", "clangxx" } })
-add_ldflags("clangxx::-stdlib=libc++", "clangxx::-fexperimental-library", { force = true })
-
 -- UTF-8 charset
 add_cxxflags("cl::/utf-8")
 add_cxxflags("-finput-charset=UTF-8", "-fexec-charset=UTF-8", { tools = { "clang", "clangxx", "gcc", "gxx" } })
