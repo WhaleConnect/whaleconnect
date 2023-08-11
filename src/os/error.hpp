@@ -24,9 +24,9 @@ namespace System {
 
     // Where an error came from.
     enum class ErrorType {
-        System,      // From socket functions or other OS APIs
-        AddrInfo,    // From a call to getaddrinfo
-        IOReturn     // From a call to a macOS kernel function
+        System,   // From socket functions or other OS APIs
+        AddrInfo, // From a call to getaddrinfo
+        IOReturn  // From a call to a macOS kernel function
     };
 
     // Gets the last error code. This is platform-specific.

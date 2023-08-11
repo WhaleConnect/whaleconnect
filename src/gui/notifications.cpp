@@ -208,9 +208,7 @@ void ImGui::DrawNotifications() {
     float workHeightHalf = ImGui::GetMainViewport()->WorkSize.y / 2.0f;
 
     // Erase inactive notifications
-    std::erase_if(notifications, [](const Notification& n) {
-        return n.erased();
-    });
+    std::erase_if(notifications, [](const Notification& n) { return n.erased(); });
 
     // Index of the first notification that overflows
     auto overflowIter = notifications.end();

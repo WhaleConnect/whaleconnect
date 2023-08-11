@@ -152,9 +152,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     SDPResultList ret;
 
     // TODO: Use std::bind_back() instead of lambda in C++23
-    using SDPListPtr = HandlePtr<sdp_list_t, [](sdp_list_t* p) {
-        sdp_list_free(p, nullptr);
-    }>;
+    using SDPListPtr = HandlePtr<sdp_list_t, [](sdp_list_t* p) { sdp_list_free(p, nullptr); }>;
 
     // Parse the MAC address into a Bluetooth address structure
     bdaddr_t bdAddr;

@@ -87,9 +87,7 @@ void SDPWindow::_drawConnOptions(std::string_view info) {
 
 void SDPWindow::_checkInquiryStatus() {
     Overload visitor{
-        [](std::monostate) {
-            ImGui::TextUnformatted("No inquiry run");
-        },
+        [](std::monostate) { ImGui::TextUnformatted("No inquiry run"); },
         [this](AsyncSDPInquiry& asyncInq) {
             using namespace std::literals;
             if (asyncInq.wait_for(0s) != std::future_status::ready) {
@@ -107,12 +105,8 @@ void SDPWindow::_checkInquiryStatus() {
                 _sdpInquiry = error;
             }
         },
-        [](const std::system_error&) {
-            ImGui::TextWrapped("System error: Failed to launch thread.");
-        },
-        [](const System::SystemError& error) {
-            ImGui::TextWrapped("Error %s", error.what());
-        },
+        [](const std::system_error&) { ImGui::TextWrapped("System error: Failed to launch thread."); },
+        [](const System::SystemError& error) { ImGui::TextWrapped("Error %s", error.what()); },
         [this](const BTUtils::SDPResultList& list) {
             // Done, print results
             if (list.empty()) {

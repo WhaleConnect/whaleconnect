@@ -17,9 +17,8 @@ class WindowList {
 
     // Checks if the list contains a window with the specified title.
     bool _validateDuplicate(std::string_view title) {
-        auto windowIter = std::ranges::find_if(_windows, [title](const auto& current) {
-            return current->getTitle() == title;
-        });
+        auto windowIter
+            = std::ranges::find_if(_windows, [title](const auto& current) { return current->getTitle() == title; });
 
         return windowIter == _windows.end();
     }
@@ -42,9 +41,7 @@ public:
     // Redraws all contained windows and deletes any that have been closed.
     void update() {
         // Remove all closed windows
-        std::erase_if(_windows, [](const auto& window) {
-            return !window->isOpen();
-        });
+        std::erase_if(_windows, [](const auto& window) { return !window->isOpen(); });
 
         // Update all open windows
         for (const auto& i : _windows) i->update();
