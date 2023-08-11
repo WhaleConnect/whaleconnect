@@ -15,8 +15,6 @@ constexpr auto SOCKET_ERROR = -1; // An error has occurred (returned from a func
 constexpr auto NO_ERROR = 0;      // Done successfully (returned from a function)
 #endif
 
-constexpr auto APP_NO_IP = 1; // No IP address found
-
 namespace System {
 #if OS_WINDOWS
     using ErrorCode = DWORD;
@@ -26,7 +24,6 @@ namespace System {
 
     // Where an error came from.
     enum class ErrorType {
-        Application, // Application-defined errors
         System,      // From socket functions or other OS APIs
         AddrInfo,    // From a call to getaddrinfo
         IOReturn     // From a call to a macOS kernel function

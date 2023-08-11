@@ -29,14 +29,5 @@ void ClientSocketIP::_init() {
          useReturnCode, System::ErrorType::AddrInfo);
 
     // Initialize socket
-    for (ADDRINFOW* addr = _traits.addr.get(); addr; addr = addr->ai_next) {
-        auto fd = socket(_traits.addr->ai_family, _traits.addr->ai_socktype, _traits.addr->ai_protocol);
-
-        if (fd != Traits::invalidSocketHandle<SocketTag::IP>()) {
-            _handle = fd;
-            return;
-        }
-    }
-
-    throw System::SystemError{ APP_NO_IP, System::ErrorType::Application, "ClientSocket" };
+    _handle = call(FN(socket, _traits.addr->ai_family, _traits.addr->ai_socktype, _traits.addr->ai_protocol));
 }

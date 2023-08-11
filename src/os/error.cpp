@@ -27,17 +27,6 @@ constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(Sy
     return default_tag;
 }
 
-static std::string formatApplicationError(System::ErrorCode code) {
-    switch (code) {
-        case 0:
-            return "No error";
-        case APP_NO_IP:
-            return "No suitable IP address found";
-        default:
-            return "Unknown error code";
-    }
-}
-
 System::ErrorCode System::getLastError() {
 #if OS_WINDOWS
     return GetLastError();
@@ -69,9 +58,6 @@ std::string System::formatSystemError(ErrorCode code, ErrorType type, std::strin
     std::string msg;
 
     switch (type) {
-        case Application:
-            msg = formatApplicationError(code);
-            break;
 #if OS_WINDOWS
         case System:
         case AddrInfo: {
