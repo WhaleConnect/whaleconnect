@@ -22,7 +22,7 @@ namespace ImGui {
         // Sets the size of this dimension.
         template <class T>
         requires std::integral<T> || std::floating_point<T>
-        constexpr explicit Dimension(T s) : s(static_cast<float>(s) * ImGui::GetFontSize()) {}
+        constexpr explicit Dimension(T s) : s(static_cast<float>(s) * GetFontSize()) {}
 
         // Gets the size of this dimension. This is not explicit so dimensions can be treated exactly like floats.
         constexpr explicit(false) operator float() const {
@@ -47,11 +47,11 @@ namespace ImGui {
 
         // Multiplies the given value by DeltaTime. For use with consistent transitions and movement.
         inline float operator""_dt(long double s) {
-            return static_cast<float>(s) * ImGui::GetIO().DeltaTime;
+            return static_cast<float>(s) * GetIO().DeltaTime;
         }
 
         inline float operator""_dt(unsigned long long s) {
-            return static_cast<float>(s) * ImGui::GetIO().DeltaTime;
+            return static_cast<float>(s) * GetIO().DeltaTime;
         }
     }
 
