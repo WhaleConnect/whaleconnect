@@ -25,6 +25,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - The app now bundles the Noto Sans Mono font, and support for loading additional fonts will be added in a future release.
 - Allowed hostname entry and DNS lookup in new IP connections.
 - If the app receives multiple IP addresses for a host, it now tries connecting to each to increase the chance of a successful connection.
+- Removed synchronization between worker threads to improve performance.
 
 ### Bug Fixes
 
