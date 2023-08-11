@@ -22,19 +22,19 @@ set_defaultmode("debug")
 add_packages("icu4c", "magic_enum", "out_ptr")
 
 -- Ignored warnings
-add_cxxflags("clangxx::-Wno-missing-field-initializers", "gcc::-Wno-missing-field-initializers", "gcc::-Wno-subobject-linkage")
+add_cxxflags("-Wno-missing-field-initializers", { tools = { "clang", "clangxx", "gcc", "gxx" } })
+add_cxxflags("-Wno-subobject-linkage", { tools = { "gcc", "gxx" } })
 
 -- Use MSVC Unicode character set and prevent clashing macros
 add_defines("UNICODE", "_UNICODE", "NOMINMAX")
 
 -- Use Clang libc++ and enable experimental library
-add_cxxflags("clangxx::-stdlib=libc++", "clangxx::-fexperimental-library", { force = true })
+add_cxxflags("clang::-stdlib=libc++", "clang::-fexperimental-library", { force = true, tools = { "clang", "clangxx" } })
 add_ldflags("clangxx::-stdlib=libc++", "clangxx::-fexperimental-library", { force = true })
 
 -- UTF-8 charset
-add_cxxflags("cl::/utf-8",
-    "clangxx::-finput-charset=UTF-8", "clangxx::-fexec-charset=UTF-8",
-    "gcc::-finput-charset=UTF-8", "gcc::-fexec-charset=UTF-8")
+add_cxxflags("cl::/utf-8")
+add_cxxflags("-finput-charset=UTF-8", "-fexec-charset=UTF-8", { tools = { "clang", "clangxx", "gcc", "gxx" } })
 
 -- Platform detection macros ("or false" is needed because is_plat() can return nil)
 add_defines("OS_WINDOWS=" .. tostring(is_plat("windows") or false),
