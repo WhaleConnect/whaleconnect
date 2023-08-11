@@ -44,7 +44,7 @@ namespace Async {
         int res = 0; // The result the operation (returned to caller, exact meaning depends on operation)
 
 #if OS_WINDOWS
-        CompletionResult() : OVERLAPPED() {}
+        CompletionResult() : OVERLAPPED{} {}
 #else
         CompletionResult() = default;
 #endif
