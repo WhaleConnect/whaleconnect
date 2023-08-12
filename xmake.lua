@@ -82,7 +82,7 @@ target("terminal")
         add_files("res/Info.plist")
     end
 
-    add_ldflags("cl::/SUBSYSTEM:WINDOWS")
+    add_ldflags("link::/SUBSYSTEM:WINDOWS")
 
     -- Download font files next to executable on post-build
     before_build(function (target)
