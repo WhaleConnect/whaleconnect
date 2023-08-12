@@ -1,11 +1,14 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#undef SDL_MAIN_HANDLED
+
 #include <cstdlib> // EXIT_FAILURE, EXIT_SUCCESS
 #include <optional>
 #include <system_error>
 
 #include <imgui.h>
+#include <SDL3/SDL_main.h>
 
 #include "gui/app.hpp"
 #include "gui/imguiext.hpp"
