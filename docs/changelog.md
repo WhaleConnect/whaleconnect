@@ -2,7 +2,7 @@
 
 This document tracks the changes between Network Socket Terminal versions. Dates are written in the MM/DD/YYYY format.
 
-## 0.2.0-alpha (Unreleased)
+## 0.2.0-alpha (08/12/2023)
 
 ### Additions
 
