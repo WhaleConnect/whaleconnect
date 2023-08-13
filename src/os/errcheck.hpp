@@ -7,9 +7,7 @@
 
 #include "error.hpp"
 
-// clang-format off
-
-#define FN(f, ...) FnResult{ f(__VA_ARGS__), #f }
+#define FN(f, ...) FnResult(f(__VA_ARGS__), #f)
 
 // Predicate functions to check success based on return code
 constexpr auto checkTrue = [](auto rc) { return static_cast<bool>(rc); };  // Check if return code evaluates to true
@@ -20,8 +18,6 @@ constexpr auto checkNonError = [](auto rc) { return rc != SOCKET_ERROR; }; // Ch
 constexpr auto useLastError = [](auto) { return System::getLastError(); }; // Ignore return code, use global error value
 constexpr auto useReturnCode = [](auto rc) { return rc; };                 // Use return code as-is
 constexpr auto useReturnCodeNeg = [](auto rc) { return -rc; };             // Use negated return code
-
-// clang-format on
 
 // Structure to contain a function's textual name and return code.
 template <class T>

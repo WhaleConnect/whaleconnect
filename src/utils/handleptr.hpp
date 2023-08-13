@@ -9,5 +9,4 @@
 // T: the type of the handle to manage (pointer removed)
 // Fn: the address of the function to free the handle, taking a parameter of T*
 template <class T, auto Fn>
-// clang-format off
 using HandlePtr = std::unique_ptr<T, decltype([](T* p) { Fn(p); })>;
