@@ -6,7 +6,7 @@ This document lists the minimum system requirements for NST to run.
 
 - **Architecture:** amd64, arm64
 - **Free memory:** 256 MB
-- **Free disk space:** 8 MB
+- **Free disk space:** 32 MB
 - **Display resolution:** 1280x720
 
 32-bit processors are not supported.
