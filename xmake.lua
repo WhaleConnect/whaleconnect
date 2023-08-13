@@ -96,23 +96,11 @@ target("terminal")
 
     -- Download font files next to executable on post-build
     before_build(function (target)
-        local download_path = target:targetdir()
-        local font_path = path.join(download_path, "NotoSansMono-Regular.ttf")
-        local icon_font_path = path.join(download_path, "RemixIcon.ttf")
-        local http = import("net.http")
+        import("download.fonts").download_fonts(target:targetdir())
+    end)
 
-        local font_url = "https://cdn.jsdelivr.net/gh/notofonts/notofonts.github.io/fonts/NotoSansMono/unhinted/ttf/NotoSansMono-Regular.ttf"
-        local icon_font_url = "https://github.com/Remix-Design/RemixIcon/raw/f88a51b6402562c6c2465f61a3e845115992e4c6/fonts/remixicon.ttf"
-
-        if not os.isfile(font_path) then
-            print("Downloading Noto Sans Mono...")
-            http.download(font_url, font_path)
-        end
-
-        if not os.isfile(icon_font_path) then
-            print("Downloading Remix Icon...")
-            http.download(icon_font_url, icon_font_path)
-        end
+    after_install(function (target)
+        import("download.licenses").download_licenses(target:installdir())
     end)
 
 target("socket-tests")
