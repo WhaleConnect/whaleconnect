@@ -2,6 +2,13 @@
 
 This document tracks the changes between Network Socket Terminal versions. Dates are written in the MM/DD/YYYY format.
 
+## 0.2.2-alpha (08/13/2023)
+
+### Improvements
+
+- All libraries are now bundled with the app package to prevent dependency mismatches.
+- Moved the license documents into the Resources directory in the macOS app bundle.
+
 ## 0.2.1-alpha (08/12/2023)
 
 ### Development
