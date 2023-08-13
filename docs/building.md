@@ -16,9 +16,9 @@ All code is standards compliant. However, because the project uses recent C++ fe
 
 ## Configuring the Build
 
-The arguments below are passed to `xmake f` to configure the build process. Configuration should be done before compiling.
+The arguments below are passed to `xmake f`/`xmake config` to configure the build process. Configuration should be done before compiling.
 
-**Note:** You should set all of your desired options in one `xmake f` command. An `xmake f` invocation overwrites previously set configuration options.
+**Note:** You should set all of your desired options in one config command. An invocation overwrites previously set configuration options.
 
 When configuring for the first time, xmake will ask you to install libraries needed by NST. Enter `y` to continue and install them.
 
@@ -74,3 +74,13 @@ Many parts of the C++20 standard library require a separate flag in libc++ to be
 xmake     # Build project
 xmake run # Run app
 ```
+
+## Packaging
+
+Creating a distributable package for NST is done with `xmake i`/`xmake install`:
+
+```shell
+xmake i -o /path/to/package terminal
+```
+
+This command must be run after a successful compilation. Xmake will copy files such as the built executable and all required shared libraries and download third-party licenses into the specified output directory.
