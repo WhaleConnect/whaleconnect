@@ -84,9 +84,17 @@ target("terminal")
 
     add_ldflags("link::/SUBSYSTEM:WINDOWS")
 
+    -- Install font files next to executable
+    -- Fonts are embedded in the Resources directory in the macOS bundle.
+    on_load(function (target)
+        if not is_plat("macosx") then
+            target:add("installfiles", format("%s/(*.ttf)", target:targetdir()), { prefixdir = "bin" })
+        end
+    end)
+
     -- Download font files next to executable on post-build
     before_build(function (target)
-        local download_path = target:targetdir(), "fonts"
+        local download_path = target:targetdir()
         local font_path = path.join(download_path, "NotoSansMono-Regular.ttf")
         local icon_font_path = path.join(download_path, "RemixIcon.ttf")
         local http = import("net.http")
@@ -103,8 +111,6 @@ target("terminal")
             print("Downloading Remix Icon...")
             http.download(icon_font_url, icon_font_path)
         end
-
-        target:add("installfiles", format("%s/*.ttf", download_path))
     end)
 
 target("socket-tests")
