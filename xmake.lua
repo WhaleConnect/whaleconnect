@@ -84,12 +84,14 @@ target("terminal")
 
     add_ldflags("link::/SUBSYSTEM:WINDOWS")
 
-    -- Install font files next to executable
-    -- Fonts are embedded in the Resources directory in the macOS bundle.
     on_load(function (target)
+        -- Install font files next to executable
+        -- Fonts are embedded in the Resources directory in the macOS bundle.
         if not is_plat("macosx") then
             target:add("installfiles", format("%s/(*.ttf)", target:targetdir()), { prefixdir = "bin" })
         end
+
+        target:add("installfiles", "COPYING")
     end)
 
     -- Download font files next to executable on post-build
