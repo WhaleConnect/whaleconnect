@@ -1,6 +1,9 @@
 function download_licenses(installdir)
     print("Downloading licenses...")
 
+    -- Licenses are installed to Resources in macOS bundle
+    local target_dir = is_plat("macosx") and path.join(installdir, "Contents", "Resources") or installdir
+
     local license_files = {
         -- Libraries
         ["bluez"] = { "https://raw.githubusercontent.com/bluez/bluez/master/LICENSES/preferred/GPL-2.0" },
@@ -27,7 +30,7 @@ function download_licenses(installdir)
     for name, urls in pairs(license_files) do
         for _, url in ipairs(urls) do
             local filename = path.filename(url)
-            local target_path = path.join(installdir, "3rdparty", name, filename)
+            local target_path = path.join(target_dir, "3rdparty", name, filename)
 
             if not os.isfile(target_path) then
                 print("- %s -> %s", url, target_path)
