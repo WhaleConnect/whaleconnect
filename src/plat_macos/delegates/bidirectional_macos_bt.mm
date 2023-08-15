@@ -15,7 +15,7 @@ Task<> Delegates::Bidirectional<SocketTag::BT>::send(std::string data) const {
 }
 
 template <>
-Task<std::optional<std::string>> Delegates::Bidirectional<SocketTag::BT>::recv() const {
+Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv() const {
     co_await Async::run(std::bind_front(Async::submitIOBluetooth, [_handle channelHash], Async::IOType::Receive),
                         System::ErrorType::IOReturn);
 

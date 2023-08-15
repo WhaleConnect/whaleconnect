@@ -11,6 +11,8 @@
 
 #include "utils/task.hpp"
 
+using RecvResult = std::optional<std::string>;
+
 namespace Delegates {
     // Manages closure of a socket.
     struct CloseDelegate {
@@ -32,7 +34,7 @@ namespace Delegates {
         virtual Task<> send(std::string s) const = 0;
 
         // Receives a string.
-        virtual Task<std::optional<std::string>> recv() const = 0;
+        virtual Task<RecvResult> recv() const = 0;
 
         // Cancels all pending I/O.
         virtual void cancelIO() const = 0;

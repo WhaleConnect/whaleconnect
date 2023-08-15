@@ -21,7 +21,7 @@ Task<> Delegates::Bidirectional<SocketTag::IP>::send(std::string data) const {
 }
 
 template <>
-Task<std::optional<std::string>> Delegates::Bidirectional<SocketTag::IP>::recv() const {
+Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv() const {
     co_await Async::run(std::bind_front(Async::submitKqueue, _handle, Async::IOType::Receive));
 
     std::string data(_recvLen, 0);

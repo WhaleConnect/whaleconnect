@@ -17,7 +17,7 @@ Task<> Delegates::Bidirectional<Tag>::send(std::string data) const {
 }
 
 template <auto Tag>
-Task<std::optional<std::string>> Delegates::Bidirectional<Tag>::recv() const {
+Task<RecvResult> Delegates::Bidirectional<Tag>::recv() const {
     std::string data(_recvLen, 0);
 
     auto recvResult = co_await Async::run([this, &data](Async::CompletionResult& result) {
@@ -40,10 +40,10 @@ void Delegates::Bidirectional<Tag>::cancelIO() const {
 }
 
 template Task<> Delegates::Bidirectional<SocketTag::IP>::send(std::string) const;
-template Task<std::optional<std::string>> Delegates::Bidirectional<SocketTag::IP>::recv() const;
+template Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv() const;
 template void Delegates::Bidirectional<SocketTag::IP>::cancelIO() const;
 
 template Task<> Delegates::Bidirectional<SocketTag::BT>::send(std::string) const;
-template Task<std::optional<std::string>> Delegates::Bidirectional<SocketTag::BT>::recv() const;
+template Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv() const;
 template void Delegates::Bidirectional<SocketTag::BT>::cancelIO() const;
 #endif

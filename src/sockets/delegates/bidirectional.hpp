@@ -24,7 +24,7 @@ namespace Delegates {
 
         Task<> send(std::string s) const override;
 
-        Task<std::optional<std::string>> recv() const override;
+        Task<RecvResult> recv() const override;
 
         void cancelIO() const override;
     };

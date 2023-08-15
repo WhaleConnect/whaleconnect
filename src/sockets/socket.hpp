@@ -39,7 +39,7 @@ public:
         return _io.send(s);
     }
 
-    Task<std::optional<std::string>> recv() const {
+    Task<RecvResult> recv() const {
         return _io.recv();
     }
 
