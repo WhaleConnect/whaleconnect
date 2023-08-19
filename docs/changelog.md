@@ -2,6 +2,12 @@
 
 This document tracks the changes between Network Socket Terminal versions. Dates are written in the MM/DD/YYYY format.
 
+## 0.3.0-alpha (Unreleased)
+
+### Improvements
+
+- Prevented multiple close calls on invalid or already closed sockets.
+
 ## 0.2.2-alpha (08/13/2023)
 
 ### Improvements
