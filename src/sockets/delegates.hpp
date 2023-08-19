@@ -4,6 +4,7 @@
 #pragma once
 
 #include <concepts>
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -11,7 +12,15 @@
 
 #include "utils/task.hpp"
 
+class Socket;
+
+using SocketPtr = std::unique_ptr<Socket>;
 using RecvResult = std::optional<std::string>;
+
+struct DgramRecvResult {
+    std::string fromAddr;
+    RecvResult data;
+};
 
 namespace Delegates {
     // Manages closure of a socket.
@@ -19,10 +28,10 @@ namespace Delegates {
         virtual ~CloseDelegate() = default;
 
         // Closes the socket.
-        virtual void close() const = 0;
+        virtual void close() = 0;
 
         // Checks if the socket is valid.
-        virtual bool isValid() const = 0;
+        virtual bool isValid() = 0;
     };
 
     // Manages I/O operations on a socket.
@@ -31,13 +40,13 @@ namespace Delegates {
 
         // Sends a string.
         // The data is passed as a string to make a copy and prevent dangling pointers in the coroutine.
-        virtual Task<> send(std::string s) const = 0;
+        virtual Task<> send(std::string s) = 0;
 
         // Receives a string.
-        virtual Task<RecvResult> recv() const = 0;
+        virtual Task<RecvResult> recv() = 0;
 
         // Cancels all pending I/O.
-        virtual void cancelIO() const = 0;
+        virtual void cancelIO() = 0;
     };
 
     // Manages client operations on a socket.
@@ -45,9 +54,25 @@ namespace Delegates {
         virtual ~ClientDelegate() = default;
 
         // Connects to a host.
-        virtual Task<> connect() const = 0;
+        virtual Task<> connect() = 0;
 
         // Accesses the connected device information.
-        virtual const Device& getServer() const = 0;
+        virtual const Device& getServer() = 0;
+    };
+
+    // Manages server operations on a connection-oriented socket.
+    struct ConnServerDelegate {
+        virtual ~ConnServerDelegate() = default;
+
+        virtual Task<SocketPtr> accept() = 0;
+    };
+
+    // Manages server operations on a datagram-oriented socket.
+    struct DgramServerDelegate {
+        virtual ~DgramServerDelegate() = default;
+
+        virtual Task<DgramRecvResult> recvFrom() = 0;
+
+        virtual Task<> sendTo(std::string addrTo, std::string s) = 0;
     };
 }
