@@ -18,7 +18,7 @@ namespace Delegates {
         Traits::Client<Tag>& _traits;
 
     public:
-        Client(Handle& handle, const Traits::Client<Tag>& traits) : _handle(handle), _traits(traits) {}
+        Client(Handle& handle, Traits::Client<Tag>& traits) : _handle(handle), _traits(traits) {}
 
         Task<> connect() override;
 
