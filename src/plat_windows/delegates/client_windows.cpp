@@ -49,7 +49,7 @@ static void finalizeConnect(SOCKET s) {
 }
 
 template <>
-Task<> Delegates::Client<SocketTag::IP>::connect() const {
+Task<> Delegates::Client<SocketTag::IP>::connect() {
     auto& addr = *_traits.addr;
 
     // Datagram sockets can be directly connected (ConnectEx doesn't support them)
@@ -64,7 +64,7 @@ Task<> Delegates::Client<SocketTag::IP>::connect() const {
 }
 
 template <>
-Task<> Delegates::Client<SocketTag::BT>::connect() const {
+Task<> Delegates::Client<SocketTag::BT>::connect() {
     // Convert the MAC address from string form into integer form
     // This is done by removing all colons in the address string, then parsing the resultant string as an
     // integer in base-16 (which is how a MAC address is structured).

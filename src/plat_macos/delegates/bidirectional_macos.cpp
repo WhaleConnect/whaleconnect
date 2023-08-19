@@ -14,14 +14,14 @@
 #include "sockets/enums.hpp"
 
 template <>
-Task<> Delegates::Bidirectional<SocketTag::IP>::send(std::string data) const {
+Task<> Delegates::Bidirectional<SocketTag::IP>::send(std::string data) {
     co_await Async::run(std::bind_front(Async::submitKqueue, _handle, Async::IOType::Send));
 
     call(FN(::send, _handle, data.data(), data.size(), 0));
 }
 
 template <>
-Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv() const {
+Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv() {
     co_await Async::run(std::bind_front(Async::submitKqueue, _handle, Async::IOType::Receive));
 
     std::string data(_recvLen, 0);
@@ -34,7 +34,7 @@ Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv() const {
 }
 
 template <>
-void Delegates::Bidirectional<SocketTag::IP>::cancelIO() const {
+void Delegates::Bidirectional<SocketTag::IP>::cancelIO() {
     Async::cancelPending(_handle);
 }
 #endif

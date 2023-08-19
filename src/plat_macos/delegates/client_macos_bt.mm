@@ -11,7 +11,7 @@
 #include "sockets/enums.hpp"
 
 template <>
-Task<> Delegates::Client<SocketTag::BT>::connect() const {
+Task<> Delegates::Client<SocketTag::BT>::connect() {
     // The channel will not be fully opened until a delegate is registered
     // https://developer.apple.com/documentation/iobluetooth/iobluetoothdevice/1430889-openl2capchannelasync
     // https://developer.apple.com/documentation/iobluetooth/iobluetoothdevice/1435022-openrfcommchannelasync

@@ -13,13 +13,21 @@ namespace Delegates {
         using Handle = Traits::SocketHandleType<Tag>;
 
         const Handle& _handle;
+        bool _closed = false;
+
+        void _closeImpl() const;
 
     public:
         explicit Closeable(const Handle& handle) : _handle(handle) {}
 
-        void close() const override;
+        void close() override {
+            if (!_closed && isValid()) {
+                _closeImpl();
+                _closed = true;
+            }
+        }
 
-        bool isValid() const override {
+        bool isValid() override {
             return _handle != Traits::invalidSocketHandle<Tag>();
         }
     };

@@ -21,12 +21,12 @@ static void startConnect(int s, const sockaddr* addr, socklen_t len, Async::Comp
 }
 
 template <>
-Task<> Delegates::Client<SocketTag::IP>::connect() const {
+Task<> Delegates::Client<SocketTag::IP>::connect() {
     co_await Async::run(std::bind_front(startConnect, _handle, _traits.addr->ai_addr, _traits.addr->ai_addrlen));
 }
 
 template <>
-Task<> Delegates::Client<SocketTag::BT>::connect() const {
+Task<> Delegates::Client<SocketTag::BT>::connect() {
     const auto& device = _traits.device;
 
     // Address of the device to connect to

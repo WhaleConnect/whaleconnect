@@ -6,11 +6,11 @@
 #include "sockets/enums.hpp"
 
 template <auto Tag>
-void Delegates::Closeable<Tag>::close() const {
+void Delegates::Closeable<Tag>::close() {
     shutdown(_handle, SD_BOTH);
     closesocket(_handle);
 }
 
-template void Delegates::Closeable<SocketTag::IP>::close() const;
-template void Delegates::Closeable<SocketTag::BT>::close() const;
+template void Delegates::Closeable<SocketTag::IP>::close();
+template void Delegates::Closeable<SocketTag::BT>::close();
 #endif

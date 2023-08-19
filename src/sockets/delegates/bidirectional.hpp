@@ -22,10 +22,10 @@ namespace Delegates {
     public:
         explicit Bidirectional(const Handle& handle) : _handle(handle) {}
 
-        Task<> send(std::string s) const override;
+        Task<> send(std::string s) override;
 
-        Task<RecvResult> recv() const override;
+        Task<RecvResult> recv() override;
 
-        void cancelIO() const override;
+        void cancelIO() override;
     };
 }

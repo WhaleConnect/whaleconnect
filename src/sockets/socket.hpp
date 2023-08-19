@@ -12,46 +12,60 @@
 #include "delegates/closeable.hpp"
 #include "utils/task.hpp"
 
-// Class to manage a socket file descriptor with RAII.
+// Represents a socket of any type.
 class Socket {
-    const Delegates::CloseDelegate& _close;
-    const Delegates::IODelegate& _io;
-    const Delegates::ClientDelegate& _client;
+    Delegates::CloseDelegate* _close;
+    Delegates::IODelegate* _io;
+    Delegates::ClientDelegate* _client;
+    Delegates::ConnServerDelegate* _connServer;
+    Delegates::DgramServerDelegate* _dgramServer;
 
 public:
     // Constructs an object with delegates.
-    Socket(const Delegates::CloseDelegate& close, const Delegates::IODelegate& io,
-           const Delegates::ClientDelegate& client) :
-        _close(close),
-        _io(io), _client(client) {}
+    Socket(Delegates::CloseDelegate& close, Delegates::IODelegate& io, Delegates::ClientDelegate& client,
+           Delegates::ConnServerDelegate& connServer, Delegates::DgramServerDelegate& dgramServer) :
+        _close(&close),
+        _io(&io), _client(&client), _connServer(&connServer), _dgramServer(&dgramServer) {}
 
     virtual ~Socket() = default;
 
     bool isValid() const {
-        return _close.isValid();
+        return _close->isValid();
     }
 
     void close() const {
-        _close.close();
+        _close->close();
     }
 
     Task<> send(const std::string& s) const {
-        return _io.send(s);
+        return _io->send(s);
     }
 
     Task<RecvResult> recv() const {
-        return _io.recv();
+        return _io->recv();
     }
 
     void cancelIO() const {
-        _io.cancelIO();
+        _io->cancelIO();
     }
 
     Task<> connect() const {
-        return _client.connect();
+        return _client->connect();
     }
 
     const Device& getServer() const {
-        return _client.getServer();
+        return _client->getServer();
+    }
+
+    Task<SocketPtr> accept() const {
+        return _connServer->accept();
+    }
+
+    Task<DgramRecvResult> recvFrom() const {
+        return _dgramServer->recvFrom();
+    }
+
+    Task<> sendTo(const std::string& addrTo, const std::string& s) const {
+        return _dgramServer->sendTo(addrTo, s);
     }
 };

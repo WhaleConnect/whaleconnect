@@ -20,9 +20,9 @@ namespace Delegates {
     public:
         Client(const Handle& handle, const Traits::Client<Tag>& traits) : _handle(handle), _traits(traits) {}
 
-        Task<> connect() const override;
+        Task<> connect() override;
 
-        const Device& getServer() const override {
+        const Device& getServer() override {
             return _traits.device;
         }
     };

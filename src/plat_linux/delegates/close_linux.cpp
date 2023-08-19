@@ -9,12 +9,12 @@
 #include "sockets/delegates/closeable.hpp"
 
 template <auto Tag>
-void Delegates::Closeable<Tag>::close() const {
+void Delegates::Closeable<Tag>::_closeImpl() const {
     io_uring_prep_shutdown(Async::getUringSQE(), _handle, SHUT_RDWR);
     io_uring_prep_close(Async::getUringSQE(), _handle);
     Async::submitRing();
 }
 
-template void Delegates::Closeable<SocketTag::IP>::close() const;
-template void Delegates::Closeable<SocketTag::BT>::close() const;
+template void Delegates::Closeable<SocketTag::IP>::_closeImpl() const;
+template void Delegates::Closeable<SocketTag::BT>::_closeImpl() const;
 #endif

@@ -9,7 +9,7 @@
 #include "utils/task.hpp"
 
 template <auto Tag>
-Task<> Delegates::Bidirectional<Tag>::send(std::string data) const {
+Task<> Delegates::Bidirectional<Tag>::send(std::string data) {
     co_await Async::run([this, &data](Async::CompletionResult& result) {
         WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
         call(FN(WSASend, _handle, &buf, 1, nullptr, 0, &result, nullptr));
@@ -17,7 +17,7 @@ Task<> Delegates::Bidirectional<Tag>::send(std::string data) const {
 }
 
 template <auto Tag>
-Task<RecvResult> Delegates::Bidirectional<Tag>::recv() const {
+Task<RecvResult> Delegates::Bidirectional<Tag>::recv() {
     std::string data(_recvLen, 0);
 
     auto recvResult = co_await Async::run([this, &data](Async::CompletionResult& result) {
@@ -35,15 +35,15 @@ Task<RecvResult> Delegates::Bidirectional<Tag>::recv() const {
 }
 
 template <auto Tag>
-void Delegates::Bidirectional<Tag>::cancelIO() const {
+void Delegates::Bidirectional<Tag>::cancelIO() {
     CancelIoEx(std::bit_cast<HANDLE>(_handle), nullptr);
 }
 
-template Task<> Delegates::Bidirectional<SocketTag::IP>::send(std::string) const;
-template Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv() const;
-template void Delegates::Bidirectional<SocketTag::IP>::cancelIO() const;
+template Task<> Delegates::Bidirectional<SocketTag::IP>::send(std::string);
+template Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv();
+template void Delegates::Bidirectional<SocketTag::IP>::cancelIO();
 
-template Task<> Delegates::Bidirectional<SocketTag::BT>::send(std::string) const;
-template Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv() const;
-template void Delegates::Bidirectional<SocketTag::BT>::cancelIO() const;
+template Task<> Delegates::Bidirectional<SocketTag::BT>::send(std::string);
+template Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv();
+template void Delegates::Bidirectional<SocketTag::BT>::cancelIO();
 #endif

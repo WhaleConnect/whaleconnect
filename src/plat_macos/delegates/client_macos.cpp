@@ -11,7 +11,7 @@
 #include "sockets/delegates/client.hpp"
 
 template <>
-Task<> Delegates::Client<SocketTag::IP>::connect() const {
+Task<> Delegates::Client<SocketTag::IP>::connect() {
     // Make socket non-blocking
     int flags = call(FN(fcntl, _handle, F_GETFL, 0));
     call(FN(fcntl, _handle, F_SETFL, flags | O_NONBLOCK));

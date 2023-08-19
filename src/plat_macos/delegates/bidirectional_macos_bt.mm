@@ -8,14 +8,14 @@
 #include "sockets/enums.hpp"
 
 template <>
-Task<> Delegates::Bidirectional<SocketTag::BT>::send(std::string data) const {
+Task<> Delegates::Bidirectional<SocketTag::BT>::send(std::string data) {
     [_handle write:data];
     co_await Async::run(std::bind_front(Async::submitIOBluetooth, [_handle channelHash], Async::IOType::Send),
                         System::ErrorType::IOReturn);
 }
 
 template <>
-Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv() const {
+Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv() {
     co_await Async::run(std::bind_front(Async::submitIOBluetooth, [_handle channelHash], Async::IOType::Receive),
                         System::ErrorType::IOReturn);
 
@@ -23,7 +23,7 @@ Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv() const {
 }
 
 template <>
-void Delegates::Bidirectional<SocketTag::BT>::cancelIO() const {
+void Delegates::Bidirectional<SocketTag::BT>::cancelIO() {
     Async::bluetoothCancel([_handle channelHash]);
 }
 #endif
