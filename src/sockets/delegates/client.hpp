@@ -14,11 +14,11 @@ namespace Delegates {
     class Client : public ClientDelegate {
         using Handle = Traits::SocketHandleType<Tag>;
 
-        const Handle& _handle;
-        const Traits::Client<Tag>& _traits;
+        Handle& _handle;
+        Traits::Client<Tag>& _traits;
 
     public:
-        Client(const Handle& handle, const Traits::Client<Tag>& traits) : _handle(handle), _traits(traits) {}
+        Client(Handle& handle, const Traits::Client<Tag>& traits) : _handle(handle), _traits(traits) {}
 
         Task<> connect() override;
 

@@ -10,7 +10,7 @@
 #include "sockets/enums.hpp"
 
 template <>
-void Delegates::Closeable<SocketTag::IP>::close() {
+void Delegates::Closeable<SocketTag::IP>::_closeImpl() {
     shutdown(_handle, SHUT_RDWR);
     ::close(_handle);
 }

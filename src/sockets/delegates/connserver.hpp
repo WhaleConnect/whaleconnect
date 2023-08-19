@@ -16,11 +16,11 @@ namespace Delegates {
     class ConnServer : public ConnServerDelegate {
         using Handle = Traits::SocketHandleType<Tag>;
 
-        const Handle& _handle;
-        const Traits::ConnServer<Tag>& _traits;
+        Handle& _handle;
+        Traits::ConnServer<Tag>& _traits;
 
     public:
-        ConnServer(const Handle& handle, const Traits::ConnServer<Tag>& traits) : _handle(handle), _traits(traits) {}
+        ConnServer(Handle& handle, Traits::ConnServer<Tag>& traits) : _handle(handle), _traits(traits) {}
 
         Task<SocketPtr> accept() override;
     };

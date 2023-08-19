@@ -12,13 +12,13 @@ namespace Delegates {
     class Closeable : public CloseDelegate {
         using Handle = Traits::SocketHandleType<Tag>;
 
-        const Handle& _handle;
+        Handle& _handle;
         bool _closed = false;
 
         void _closeImpl() const;
 
     public:
-        explicit Closeable(const Handle& handle) : _handle(handle) {}
+        explicit Closeable(Handle& handle) : _handle(handle) {}
 
         void close() override {
             if (!_closed && isValid()) {

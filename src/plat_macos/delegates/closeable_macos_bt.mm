@@ -7,7 +7,7 @@
 #include "sockets/enums.hpp"
 
 template <>
-void Delegates::Closeable<SocketTag::BT>::close() {
+void Delegates::Closeable<SocketTag::BT>::_closeImpl() {
     [_handle close];
 }
 #endif
