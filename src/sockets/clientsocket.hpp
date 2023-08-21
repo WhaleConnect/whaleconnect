@@ -10,8 +10,7 @@
 #include "delegates/bidirectional.hpp"
 #include "delegates/client.hpp"
 #include "delegates/closeable.hpp"
-#include "delegates/noopconnserver.hpp"
-#include "delegates/noopdgramserver.hpp"
+#include "delegates/noops.hpp"
 #include "traits/client.hpp"
 #include "utils/task.hpp"
 

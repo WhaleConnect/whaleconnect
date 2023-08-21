@@ -10,9 +10,7 @@
 
 #include "delegates/bidirectional.hpp"
 #include "delegates/closeable.hpp"
-#include "delegates/noopclient.hpp"
-#include "delegates/noopconnserver.hpp"
-#include "delegates/noopdgramserver.hpp"
+#include "delegates/noops.hpp"
 #include "traits/sockethandle.hpp"
 
 template <auto Tag>

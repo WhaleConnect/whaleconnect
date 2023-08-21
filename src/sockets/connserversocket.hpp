@@ -9,9 +9,7 @@
 
 #include "delegates/closeable.hpp"
 #include "delegates/connserver.hpp"
-#include "delegates/noopclient.hpp"
-#include "delegates/noopdgramserver.hpp"
-#include "delegates/noopio.hpp"
+#include "delegates/noops.hpp"
 
 template <auto Tag>
 class ConnServerSocket : public Socket {
