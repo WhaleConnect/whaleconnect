@@ -30,6 +30,10 @@ class ConnServerSocket : public Socket {
 
     SocketHandle<Tag> _socketHandle{ _close, _handle };
 
+    void _init(uint16_t port, int backlog);
+
 public:
-    //
+    explicit ConnServerSocket(uint16_t port, int backlog) : Socket(_close, _io, _client, _connServer, _dgramServer) {
+        _init(port, backlog);
+    }
 };
