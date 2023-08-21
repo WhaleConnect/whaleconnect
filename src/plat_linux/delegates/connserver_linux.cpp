@@ -1,7 +1,6 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "sockets/enums.hpp"
 #if OS_LINUX
 #include <bit>
 #include <memory>
@@ -13,6 +12,7 @@
 #include "os/errcheck.hpp"
 #include "plat_linux/async_linux.hpp"
 #include "sockets/delegates/connserver.hpp"
+#include "sockets/enums.hpp"
 #include "sockets/incomingsocket.hpp"
 
 template <auto Tag>
@@ -28,11 +28,12 @@ Task<AcceptResult> Delegates::ConnServer<Tag>::accept() {
         Async::submitRing();
     });
 
-    // std::string clientIP(INET6_ADDRSTRLEN, '\0');
-    // call(FN(getnameinfo, clientAddr, clientLen, clientIP.data(), clientIP.size(), nullptr, 0, 0), checkZero,
-    //      useReturnCode, System::ErrorType::AddrInfo);
+    // Look up IP from sockaddr struct
+    std::string clientIP(INET6_ADDRSTRLEN, '\0');
+    call(FN(getnameinfo, clientAddr, clientLen, clientIP.data(), clientIP.size(), nullptr, 0, NI_NUMERICHOST),
+         checkZero, useReturnCode, System::ErrorType::AddrInfo);
 
-    Device device{ ConnectionType::TCP, "", "asds", client.sin6_port };
+    Device device{ ConnectionType::TCP, "", clientIP, client.sin6_port };
     Handle fd = acceptResult.res;
 
     co_return { device, std::make_unique<IncomingSocket<Tag>>(fd) };
