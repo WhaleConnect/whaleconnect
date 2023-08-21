@@ -6,7 +6,6 @@
 #include <memory>
 
 #include "sockets/delegates.hpp"
-#include "sockets/traits/connserver.hpp"
 #include "sockets/traits/sockethandle.hpp"
 
 class Socket;
@@ -17,10 +16,9 @@ namespace Delegates {
         using Handle = Traits::SocketHandleType<Tag>;
 
         Handle& _handle;
-        Traits::ConnServer<Tag>& _traits;
 
     public:
-        ConnServer(Handle& handle, Traits::ConnServer<Tag>& traits) : _handle(handle), _traits(traits) {}
+        explicit ConnServer(Handle& handle) : _handle(handle) {}
 
         Task<SocketPtr> accept() override;
     };

@@ -21,16 +21,14 @@ void ConnServerSocket<SocketTag::IP>::_init(uint16_t port, int backlog) {
     constexpr int off = 0;
     call(FN(setsockopt, _handle, IPPROTO_IPV6, IPV6_V6ONLY, &off, sizeof(off)));
 
-    _traits = {
-        .addr = {
-            .sin6_family = AF_INET6,
-            .sin6_port = htons(port),
-            .sin6_addr = in6addr_any,
-        },
-        .addrLen = sizeof(_traits.addr),
+    sockaddr_in6 addr{
+        .sin6_family = AF_INET6,
+        .sin6_port = htons(port),
+        .sin6_addr = in6addr_any,
     };
+    unsigned int addrLen = sizeof(addr);
 
     // Bind and listen
-    call(FN(bind, _handle, std::bit_cast<sockaddr*>(&_traits.addr), _traits.addrLen));
+    call(FN(bind, _handle, std::bit_cast<sockaddr*>(&addr), addrLen));
     call(FN(listen, _handle, backlog));
 }

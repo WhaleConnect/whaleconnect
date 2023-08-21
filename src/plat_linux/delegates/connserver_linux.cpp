@@ -6,6 +6,7 @@
 #include <memory>
 
 #include <liburing.h>
+#include <netinet/in.h>
 
 #include "plat_linux/async_linux.hpp"
 #include "sockets/delegates/connserver.hpp"
@@ -14,10 +15,11 @@
 template <auto Tag>
 Task<SocketPtr> Delegates::ConnServer<Tag>::accept() {
     auto acceptResult = co_await Async::run([this](Async::CompletionResult& result) {
-        auto addr = std::bit_cast<sockaddr*>(&_traits.addr);
+        sockaddr_in6 client;
+        unsigned int clientLen = sizeof(client);
 
         io_uring_sqe* sqe = Async::getUringSQE();
-        io_uring_prep_accept(sqe, _handle, addr, &_traits.addrLen, 0);
+        io_uring_prep_accept(sqe, _handle, std::bit_cast<sockaddr*>(&client), &clientLen, 0);
         io_uring_sqe_set_data(sqe, &result);
         Async::submitRing();
     });

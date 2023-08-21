@@ -12,7 +12,6 @@
 #include "delegates/noopclient.hpp"
 #include "delegates/noopdgramserver.hpp"
 #include "delegates/noopio.hpp"
-#include "traits/connserver.hpp"
 
 template <auto Tag>
 class ConnServerSocket : public Socket {
@@ -20,12 +19,11 @@ class ConnServerSocket : public Socket {
     static constexpr auto invalidHandle = Traits::invalidSocketHandle<Tag>();
 
     Handle _handle;
-    Traits::ConnServer<Tag> _traits;
 
     Delegates::Closeable<Tag> _close{ _handle };
     Delegates::NoopIO _io;
     Delegates::NoopClient _client;
-    Delegates::ConnServer<Tag> _connServer{ _handle, _traits };
+    Delegates::ConnServer<Tag> _connServer{ _handle };
     Delegates::NoopDgramServer _dgramServer;
 
     SocketHandle<Tag> _socketHandle{ _close, _handle };
