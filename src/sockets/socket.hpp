@@ -55,7 +55,7 @@ public:
         return _client->getServer();
     }
 
-    Task<SocketPtr> accept() const {
+    Task<AcceptResult> accept() const {
         return _connServer->accept();
     }
 

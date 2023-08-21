@@ -39,8 +39,8 @@ namespace Delegates {
 
     // Provides no-ops for connection-oriented server operations.
     struct NoopConnServer : public ConnServerDelegate {
-        Task<SocketPtr> accept() override {
-            co_return nullptr;
+        Task<AcceptResult> accept() override {
+            co_return {};
         }
     };
 

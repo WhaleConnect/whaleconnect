@@ -17,6 +17,11 @@ class Socket;
 using SocketPtr = std::unique_ptr<Socket>;
 using RecvResult = std::optional<std::string>;
 
+struct AcceptResult {
+    Device device;
+    SocketPtr socket;
+};
+
 struct DgramRecvResult {
     std::string fromAddr;
     RecvResult data;
@@ -64,7 +69,7 @@ namespace Delegates {
     struct ConnServerDelegate {
         virtual ~ConnServerDelegate() = default;
 
-        virtual Task<SocketPtr> accept() = 0;
+        virtual Task<AcceptResult> accept() = 0;
     };
 
     // Manages server operations on a datagram-oriented socket.

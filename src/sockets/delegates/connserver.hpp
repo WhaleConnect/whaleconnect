@@ -20,6 +20,6 @@ namespace Delegates {
     public:
         explicit ConnServer(Handle& handle) : _handle(handle) {}
 
-        Task<SocketPtr> accept() override;
+        Task<AcceptResult> accept() override;
     };
 }
