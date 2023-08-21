@@ -14,4 +14,9 @@ void Delegates::Closeable<SocketTag::IP>::_closeImpl() const {
     shutdown(_handle, SHUT_RDWR);
     ::close(_handle);
 }
+
+template <>
+void Delegates::Cancel<SocketTag::IP>::cancelIO() {
+    Async::cancelPending(_handle);
+}
 #endif

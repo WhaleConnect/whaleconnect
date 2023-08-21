@@ -30,5 +30,7 @@ namespace Delegates {
         bool isValid() override {
             return _handle != Traits::invalidSocketHandle<Tag>();
         }
+
+        void cancelIO() override;
     };
 }

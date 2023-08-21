@@ -25,7 +25,5 @@ namespace Delegates {
         Task<> send(std::string s) override;
 
         Task<RecvResult> recv() override;
-
-        void cancelIO() override;
     };
 }

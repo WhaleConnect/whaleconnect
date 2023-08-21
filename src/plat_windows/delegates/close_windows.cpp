@@ -11,6 +11,14 @@ void Delegates::Closeable<Tag>::_closeImpl() const {
     closesocket(_handle);
 }
 
+template <auto Tag>
+void Delegates::Cancel<Tag>::cancelIO() {
+    CancelIoEx(std::bit_cast<HANDLE>(_handle), nullptr);
+}
+
 template void Delegates::Closeable<SocketTag::IP>::_closeImpl() const;
+template void Delegates::Closeable<SocketTag::IP>::cancelIO();
+
 template void Delegates::Closeable<SocketTag::BT>::_closeImpl() const;
+template void Delegates::Closeable<SocketTag::BT>::cancelIO();
 #endif

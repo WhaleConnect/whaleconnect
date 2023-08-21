@@ -21,9 +21,4 @@ Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv() {
 
     co_return Async::getBluetoothReadResult([_handle channelHash]);
 }
-
-template <>
-void Delegates::Bidirectional<SocketTag::BT>::cancelIO() {
-    Async::bluetoothCancel([_handle channelHash]);
-}
 #endif

@@ -17,10 +17,6 @@ namespace Delegates {
         Task<RecvResult> recv() override {
             co_return {};
         }
-
-        void cancelIO() override {
-            // No-op
-        }
     };
 
     // Provides no-ops for client operations.

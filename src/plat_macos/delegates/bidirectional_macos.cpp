@@ -32,9 +32,4 @@ Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv() {
     data.resize(recvLen);
     co_return data;
 }
-
-template <>
-void Delegates::Bidirectional<SocketTag::IP>::cancelIO() {
-    Async::cancelPending(_handle);
-}
 #endif

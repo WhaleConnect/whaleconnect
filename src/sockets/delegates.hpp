@@ -37,6 +37,9 @@ namespace Delegates {
 
         // Checks if the socket is valid.
         virtual bool isValid() = 0;
+
+        // Cancels all pending I/O.
+        virtual void cancelIO() = 0;
     };
 
     // Manages I/O operations on a socket.
@@ -49,9 +52,6 @@ namespace Delegates {
 
         // Receives a string.
         virtual Task<RecvResult> recv() = 0;
-
-        // Cancels all pending I/O.
-        virtual void cancelIO() = 0;
     };
 
     // Manages client operations on a socket.

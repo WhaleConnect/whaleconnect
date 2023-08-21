@@ -35,16 +35,9 @@ Task<RecvResult> Delegates::Bidirectional<Tag>::recv() {
     co_return data;
 }
 
-template <auto Tag>
-void Delegates::Bidirectional<Tag>::cancelIO() {
-    Async::cancelPending(_handle);
-}
-
 template Task<> Delegates::Bidirectional<SocketTag::IP>::send(std::string);
 template Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv();
-template void Delegates::Bidirectional<SocketTag::IP>::cancelIO();
 
 template Task<> Delegates::Bidirectional<SocketTag::BT>::send(std::string);
 template Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv();
-template void Delegates::Bidirectional<SocketTag::BT>::cancelIO();
 #endif

@@ -28,11 +28,11 @@ Task<AcceptResult> Delegates::ConnServer<Tag>::accept() {
         Async::submitRing();
     });
 
-    std::string clientIP(INET6_ADDRSTRLEN, '\0');
-    call(FN(getnameinfo, clientAddr, clientLen, clientIP.data(), clientIP.size(), nullptr, 0, 0), checkZero,
-         useReturnCode, System::ErrorType::AddrInfo);
+    // std::string clientIP(INET6_ADDRSTRLEN, '\0');
+    // call(FN(getnameinfo, clientAddr, clientLen, clientIP.data(), clientIP.size(), nullptr, 0, 0), checkZero,
+    //      useReturnCode, System::ErrorType::AddrInfo);
 
-    Device device{ ConnectionType::TCP, "", clientIP, client.sin6_port };
+    Device device{ ConnectionType::TCP, "", "asds", client.sin6_port };
     Handle fd = acceptResult.res;
 
     co_return { device, std::make_unique<IncomingSocket<Tag>>(fd) };

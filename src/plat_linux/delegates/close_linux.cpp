@@ -15,6 +15,14 @@ void Delegates::Closeable<Tag>::_closeImpl() const {
     Async::submitRing();
 }
 
+template <auto Tag>
+void Delegates::Closeable<Tag>::cancelIO() {
+    Async::cancelPending(_handle);
+}
+
 template void Delegates::Closeable<SocketTag::IP>::_closeImpl() const;
+template void Delegates::Closeable<SocketTag::IP>::cancelIO();
+
 template void Delegates::Closeable<SocketTag::BT>::_closeImpl() const;
+template void Delegates::Closeable<SocketTag::BT>::cancelIO();
 #endif

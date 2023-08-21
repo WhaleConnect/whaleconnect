@@ -10,4 +10,9 @@ template <>
 void Delegates::Closeable<SocketTag::BT>::_closeImpl() const {
     [_handle close];
 }
+
+template <>
+void Delegates::Cancel<SocketTag::BT>::cancelIO() {
+    Async::bluetoothCancel([_handle channelHash]);
+}
 #endif

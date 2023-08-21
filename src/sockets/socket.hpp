@@ -27,12 +27,16 @@ public:
 
     virtual ~Socket() = default;
 
+    void close() const {
+        _close->close();
+    }
+
     bool isValid() const {
         return _close->isValid();
     }
 
-    void close() const {
-        _close->close();
+    void cancelIO() const {
+        _close->cancelIO();
     }
 
     Task<> send(const std::string& s) const {
@@ -41,10 +45,6 @@ public:
 
     Task<RecvResult> recv() const {
         return _io->recv();
-    }
-
-    void cancelIO() const {
-        _io->cancelIO();
     }
 
     Task<> connect() const {
