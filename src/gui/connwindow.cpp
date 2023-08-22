@@ -79,8 +79,7 @@ Task<> ConnWindow::_sendHandler(std::string_view s) try {
 }
 
 Task<> ConnWindow::_readHandler() try {
-    if (!_connected) co_return;
-    if (_pendingRecv) co_return;
+    if (!_connected || _pendingRecv) co_return;
 
     _pendingRecv = true;
     auto recvRet = co_await _socket->recv();
