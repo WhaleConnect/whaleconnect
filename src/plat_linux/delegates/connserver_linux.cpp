@@ -33,7 +33,7 @@ Task<AcceptResult> Delegates::ConnServer<Tag>::accept() {
     call(FN(getnameinfo, clientAddr, clientLen, clientIP.data(), clientIP.size(), nullptr, 0, NI_NUMERICHOST),
          checkZero, useReturnCode, System::ErrorType::AddrInfo);
 
-    Device device{ ConnectionType::TCP, "", clientIP, client.sin6_port };
+    Device device{ ConnectionType::TCP, "", clientIP, ntohs(client.sin6_port) };
     Handle fd = acceptResult.res;
 
     co_return { device, std::make_unique<IncomingSocket<Tag>>(fd) };
