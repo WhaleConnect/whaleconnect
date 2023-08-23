@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "enums.hpp"
 #include "socket.hpp"
-#include "sockethandle.hpp"
 
 #include "delegates/closeable.hpp"
 #include "delegates/connserver.hpp"
 #include "delegates/noops.hpp"
+#include "net/enums.hpp"
+#include "net/sockethandle.hpp"
 
 template <auto Tag>
 class ConnServerSocket : public Socket {

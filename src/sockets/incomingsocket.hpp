@@ -6,11 +6,11 @@
 #include <functional>
 
 #include "socket.hpp"
-#include "sockethandle.hpp"
 
 #include "delegates/bidirectional.hpp"
 #include "delegates/closeable.hpp"
 #include "delegates/noops.hpp"
+#include "net/sockethandle.hpp"
 #include "traits/sockethandle.hpp"
 
 template <auto Tag>

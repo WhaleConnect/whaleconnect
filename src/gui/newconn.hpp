@@ -6,13 +6,13 @@
 #include <memory>
 #include <string_view>
 
-#include "connwindow.hpp"
 #include "notifications.hpp"
-#include "windowlist.hpp"
 
+#include "net/device.hpp"
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
-#include "sockets/device.hpp"
+#include "windows/connwindow.hpp"
+#include "windows/windowlist.hpp"
 
 // Adds a ConnWindow to a window list and handles errors during socket creation.
 template <auto Tag>

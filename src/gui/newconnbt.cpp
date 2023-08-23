@@ -10,12 +10,11 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#include "sdpwindow.hpp"
-#include "windowlist.hpp"
-
-#include "os/btutils.hpp"
-#include "sockets/device.hpp"
+#include "net/btutils.hpp"
+#include "net/device.hpp"
 #include "utils/overload.hpp"
+#include "windows/sdpwindow.hpp"
+#include "windows/windowlist.hpp"
 
 static void sortTable(DeviceList& devices) {
     // A sort is only needed for 2 or more entries

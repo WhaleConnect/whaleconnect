@@ -5,11 +5,11 @@
 
 #include "helpers/helpers.hpp"
 #include "helpers/testio.hpp"
+#include "net/device.hpp"
+#include "net/enums.hpp"
 #include "os/async.hpp"
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
-#include "sockets/device.hpp"
-#include "sockets/enums.hpp"
 
 const auto settings = loadSettings();
 const auto btSettings = settings["bluetooth"];

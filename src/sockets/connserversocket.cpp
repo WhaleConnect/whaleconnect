@@ -9,8 +9,8 @@
 #endif
 
 #include "connserversocket.hpp"
-#include "enums.hpp"
 
+#include "net/enums.hpp"
 #include "os/errcheck.hpp"
 
 template <>

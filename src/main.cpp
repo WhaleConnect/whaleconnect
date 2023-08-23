@@ -1,7 +1,9 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#ifdef SDL_MAIN_HANDLED
 #undef SDL_MAIN_HANDLED
+#endif
 
 #include <cstdlib> // EXIT_FAILURE, EXIT_SUCCESS
 #include <optional>
@@ -10,15 +12,15 @@
 #include <imgui.h>
 #include <SDL3/SDL_main.h>
 
-#include "gui/app.hpp"
+#include "app/app.hpp"
+#include "app/settings.hpp"
 #include "gui/imguiext.hpp"
 #include "gui/newconnbt.hpp"
 #include "gui/newconnip.hpp"
 #include "gui/notifications.hpp"
-#include "gui/windowlist.hpp"
+#include "net/btutils.hpp"
 #include "os/async.hpp"
-#include "os/btutils.hpp"
-#include "utils/settings.hpp"
+#include "windows/windowlist.hpp"
 
 // Draws the new connection window.
 void drawNewConnectionWindow(bool& open, WindowList& connections, WindowList& sdpWindows) {

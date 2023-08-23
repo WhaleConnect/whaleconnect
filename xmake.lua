@@ -58,15 +58,15 @@ target("terminal-core")
     -- Project files
     set_kind("object")
 
-    add_files("src/os/*.cpp", "src/sockets/*.cpp", "src/utils/*.cpp")
+    add_files("src/*/*.cpp|app/*|gui/*|windows/*|**_windows.*|**_macos.*|**_linux.*")
 
     -- Platform-specific files
     if is_plat("windows") then
-        add_files("src/plat_windows/**.cpp")
+        add_files("src/**_windows.cpp")
     elseif is_plat("macosx") then
-        add_files("src/plat_macos/**.cpp", "src/plat_macos/**.mm")
+        add_files("src/**_macos.cpp", "src/**_macos.mm")
     elseif is_plat("linux") then
-        add_files("src/plat_linux/**.cpp")
+        add_files("src/**_linux.cpp")
     end
 
 target("terminal")
@@ -74,7 +74,7 @@ target("terminal")
     add_deps("terminal-core")
 
     -- GUI code and main entry point
-    add_files("src/gui/*.cpp", "src/main.cpp")
+    add_files("src/app/*.cpp", "src/gui/*.cpp", "src/windows/*.cpp", "src/main.cpp")
 
     -- Add application manifests
     if is_plat("windows") then
@@ -112,7 +112,7 @@ target("socket-tests")
 
     add_packages("catch2", "nlohmann_json")
     add_deps("terminal-core")
-    add_files("tests/src/*.cpp", "tests/src/helpers/*.cpp")
+    add_files("tests/src/**.cpp")
 
      -- Path to settings file
     add_defines(format("SETTINGS_FILE=R\"(%s)\"", path.absolute("tests/settings/settings.json")))

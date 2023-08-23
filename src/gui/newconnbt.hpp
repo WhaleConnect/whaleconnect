@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "windowlist.hpp"
+#include "windows/windowlist.hpp"
 
 // Renders the tab in the "New Connection" window for Bluetooth-based connections.
 void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows);
