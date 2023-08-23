@@ -8,9 +8,8 @@
 #include <WinSock2.h>
 #elif OS_MACOS
 #include "net/bthandle.h"
-#endif
-
 #include "net/enums.hpp"
+#endif
 
 namespace Traits {
     // Platform-specific traits for socket handles.
