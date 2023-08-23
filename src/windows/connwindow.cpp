@@ -5,9 +5,8 @@
 
 #include <format>
 
+#include <imgui.h>
 #include <magic_enum.hpp>
-
-#include "imgui.h"
 
 #include "gui/imguiext.hpp"
 #include "net/device.hpp"
@@ -59,21 +58,21 @@ static std::string formatDevice(const Device& device, std::string_view extraInfo
 }
 
 ConnWindow::ConnWindow(std::unique_ptr<Socket>&& socket, const Device& device, std::string_view extraInfo) :
-    Window(formatDevice(device, extraInfo)), _socket(std::move(socket)) {}
+    ConsoleWindow(formatDevice(device, extraInfo)), _socket(std::move(socket)) {}
 
 Task<> ConnWindow::_connect() try {
     // Connect the socket
-    _output.addInfo("Connecting...");
+    _addInfo("Connecting...");
     co_await _socket->connect();
 
-    _output.addInfo("Connected.");
+    _addInfo("Connected.");
     _connected = true;
 } catch (const System::SystemError& error) {
     _errorHandler(error);
 }
 
-Task<> ConnWindow::_sendHandler(std::string_view s) try {
-    co_await _socket->send(std::string{ s });
+Task<> ConnWindow::_sendHandlerAsync(std::string s) try {
+    co_await _socket->send(s);
 } catch (const System::SystemError& error) {
     _errorHandler(error);
 }
@@ -85,10 +84,10 @@ Task<> ConnWindow::_readHandler() try {
     auto recvRet = co_await _socket->recv();
 
     if (recvRet) {
-        _output.addText(*recvRet);
+        _addText(*recvRet);
     } else {
         // Peer closed connection
-        _output.addInfo("Remote host closed connection.");
+        _addInfo("Remote host closed connection.");
         _socket->close();
         _connected = false;
     }
@@ -98,92 +97,9 @@ Task<> ConnWindow::_readHandler() try {
     _errorHandler(error);
 }
 
-void ConnWindow::_errorHandler(const System::SystemError& error) {
-    // Check for non-fatal errors, then add error line to console
-    // Don't handle errors caused by I/O cancellation
-    if (error && !error.isCanceled()) _output.addError(error.what());
-}
-
 void ConnWindow::_onBeforeUpdate() {
     using namespace ImGui::Literals;
 
     ImGui::SetNextWindowSize(35_fh * 20_fh, ImGuiCond_Appearing);
     _readHandler();
-}
-
-void ConnWindow::_onUpdate() {
-    // Apply foxus to textbox
-    // An InputTextMultiline is an InputText contained within a child window so focus must be set before rendering it to
-    // apply focus to the InputText.
-    if (_focusOnTextbox) {
-        ImGui::SetKeyboardFocusHere();
-        _focusOnTextbox = false;
-    }
-
-    // Textbox
-    using namespace ImGui::Literals;
-
-    float textboxHeight = 4_fh; // Number of lines that can be displayed
-    ImVec2 size{ ImGui::FILL, textboxHeight };
-    ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
-                              | ImGuiInputTextFlags_AllowTabInput;
-
-    if (ImGui::InputTextMultiline("##input", _textBuf, size, flags)) {
-        // Line ending
-        std::array endings{ "\n", "\r", "\r\n" };
-        auto selectedEnding = endings[_currentLE];
-
-        // InputTextMultiline() always uses \n as a line ending, replace all occurences of \n with the selected ending
-        std::string sendString = Strings::replaceAll(_textBuf, "\n", selectedEnding);
-
-        // Add a final line ending if set
-        if (_addFinalLineEnding) sendString += selectedEnding;
-
-        // Invoke the callback function if the string is not empty
-        if (!sendString.empty()) {
-            if (_sendEchoing) _output.addMessage(sendString, "SENT ", { 0.28f, 0.67f, 0.68f, 1 });
-
-            _sendHandler(sendString);
-        }
-
-        // Blank out input textbox
-        if (_clearTextboxOnSubmit) _textBuf.clear();
-
-        _focusOnTextbox = true;
-    }
-
-    _output.update("console", ImVec2{ ImGui::FILL, -ImGui::GetFrameHeightWithSpacing() });
-    _drawControls();
-}
-
-void ConnWindow::_drawControls() {
-    // "Clear output" button
-    if (ImGui::Button("Clear output")) _output.clear();
-
-    // "Options" button
-    ImGui::SameLine();
-    if (ImGui::Button("Options...")) ImGui::OpenPopup("options");
-
-    // Popup for more options
-    if (ImGui::BeginPopup("options")) {
-        _output.drawOptions();
-
-        // Options for the input textbox
-        ImGui::Separator();
-        ImGui::MenuItem("Send echoing", nullptr, &_sendEchoing);
-        ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSubmit);
-        ImGui::MenuItem("Add final line ending", nullptr, &_addFinalLineEnding);
-        ImGui::EndPopup();
-    }
-
-    // Line ending combobox
-    // The code used to calculate where to put the combobox is derived from
-    // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
-    using namespace ImGui::Literals;
-
-    float comboWidth = 10_fh;
-    ImGui::SameLine();
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
-    ImGui::SetNextItemWidth(comboWidth);
-    ImGui::Combo("##lineEnding", &_currentLE, "Newline\0Carriage return\0Both\0");
 }
