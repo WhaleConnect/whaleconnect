@@ -27,7 +27,6 @@ add_packages("icu4c", "magic_enum", "out_ptr")
 
 -- Ignored warnings
 add_cxxflags("-Wno-missing-field-initializers", { tools = { "clang", "clangxx", "gcc", "gxx" } })
-add_cxxflags("-Wno-subobject-linkage", { tools = { "gcc", "gxx" } })
 
 -- Use MSVC Unicode character set and prevent clashing macros
 add_defines("UNICODE", "_UNICODE", "NOMINMAX")
