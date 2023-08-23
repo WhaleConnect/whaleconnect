@@ -14,6 +14,8 @@
 
 // Handles a socket connection in a GUI window.
 class ConnWindow : public ConsoleWindow {
+    friend class ConnServerWindow;
+
     std::unique_ptr<Socket> _socket; // Internal socket
     bool _connected = false;
     bool _pendingRecv = false;
