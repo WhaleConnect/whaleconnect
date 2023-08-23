@@ -217,7 +217,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
                         case SDP_UUID32:
                         case SDP_UUID128:
                             // Keep track of protocol UUIDs
-                            proto = sdp_uuid_to_proto(&d->val.uuid);
+                            proto = static_cast<uint16_t>(sdp_uuid_to_proto(&d->val.uuid));
                             result.protoUUIDs.push_back(proto);
                             break;
                         case SDP_UINT8:
@@ -236,16 +236,16 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
         SDPListPtr svClassList;
         if (sdp_get_service_classes(rec.get(), std2::out_ptr(svClassList)) == NO_ERROR) {
             for (auto iter = svClassList.get(); iter; iter = iter->next) {
-                auto uuid = static_cast<uuid_t*>(iter->data);
-                switch (uuid->type) {
+                auto svUUID = static_cast<uuid_t*>(iter->data);
+                switch (svUUID->type) {
                     case SDP_UUID16:
-                        result.serviceUUIDs.push_back(createUUIDFromBase(uuid->value.uuid16));
+                        result.serviceUUIDs.push_back(createUUIDFromBase(svUUID->value.uuid16));
                         break;
                     case SDP_UUID32:
-                        result.serviceUUIDs.push_back(createUUIDFromBase(uuid->value.uuid32));
+                        result.serviceUUIDs.push_back(createUUIDFromBase(svUUID->value.uuid32));
                         break;
                     case SDP_UUID128:
-                        result.serviceUUIDs.push_back(std::to_array(uuid->value.uuid128.data));
+                        result.serviceUUIDs.push_back(std::to_array(svUUID->value.uuid128.data));
                 }
             }
         }
