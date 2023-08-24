@@ -41,6 +41,10 @@ class ConnWindow : public ConsoleWindow {
     // Handles incoming I/O.
     void _onBeforeUpdate() override;
 
+    void _onUpdate() override {
+        _updateConsole();
+    }
+
 public:
     // Sets the window information (title and remote host).
     ConnWindow(std::unique_ptr<Socket>&& socket, const Device& device, std::string_view extraInfo);

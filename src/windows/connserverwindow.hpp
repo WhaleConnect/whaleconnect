@@ -5,22 +5,28 @@
 
 #include <memory>
 #include <string_view>
+#include <vector>
 
 #include "consolewindow.hpp"
 #include "windowlist.hpp"
 
+#include "delegates/delegates.hpp"
 #include "sockets/socket.hpp"
 #include "utils/task.hpp"
 
 class ConnServerWindow : public ConsoleWindow {
-    std::unique_ptr<Socket> _socket;
+    SocketPtr _socket;
     bool _pendingAccept = false;
+
+    std::vector<AcceptResult> _unopenedSockets;
 
     WindowList _connWindows;
 
     Task<> _accept();
 
     void _onBeforeUpdate() override;
+
+    void _onUpdate() override;
 
     // Sends data to all connected clients.
     void _sendHandler(std::string_view s) override;

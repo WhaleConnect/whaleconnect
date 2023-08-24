@@ -25,9 +25,6 @@ class ConsoleWindow : public Window {
 
     Console _output; // Console output
 
-    // Draws the window contents.
-    void _onUpdate() override;
-
     // Draws the controls under the console output.
     void _drawControls();
 
@@ -35,6 +32,9 @@ class ConsoleWindow : public Window {
     virtual void _sendHandler(std::string_view s) = 0;
 
 protected:
+    // Draws the window contents.
+    void _updateConsole(int numLines = 0);
+
     // Prints the details of a thrown exception.
     void _errorHandler(const System::SystemError& error);
 

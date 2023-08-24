@@ -8,7 +8,7 @@
 #include "gui/imguiext.hpp"
 #include "utils/strings.hpp"
 
-void ConsoleWindow::_onUpdate() {
+void ConsoleWindow::_updateConsole(int numLines) {
     // Apply foxus to textbox
     // An InputTextMultiline is an InputText contained within a child window so focus must be set before rendering it to
     // apply focus to the InputText.
@@ -49,7 +49,9 @@ void ConsoleWindow::_onUpdate() {
         _focusOnTextbox = true;
     }
 
-    _output.update("console", ImVec2{ ImGui::FILL, -ImGui::GetFrameHeightWithSpacing() });
+    // Reserve space at bottom
+    float y = -static_cast<float>(numLines + 1) * ImGui::GetFrameHeightWithSpacing();
+    _output.update("console", ImVec2{ ImGui::FILL, y });
     _drawControls();
 }
 
