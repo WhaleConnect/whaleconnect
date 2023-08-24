@@ -47,7 +47,7 @@ with open(SETTINGS_FILE) as f:
             PORT = data['bluetooth']['rfcommPort']
             HOST = socket.BDADDR_ANY
         case 'L2CAP':
-            SOCKET_TYPE = socket.SOCK_STREAM
+            SOCKET_TYPE = socket.SOCK_SEQPACKET
             SOCKET_FAMILY = socket.AF_BLUETOOTH
             SOCKET_PROTO = socket.BTPROTO_L2CAP
             PORT = data['bluetooth']['l2capPSM']
