@@ -7,6 +7,7 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/l2cap.h>
 #include <bluetooth/rfcomm.h>
+#include <sys/socket.h>
 
 #include "clientsocket.hpp"
 
@@ -19,24 +20,21 @@ void ClientSocketBT::_init() {
     const auto& device = _traits.device;
 
     // Determine the socket type
+    int sockProto;
     int sockType;
     switch (device.type) {
-        case L2CAPStream:
-        case RFCOMM:
-            sockType = SOCK_STREAM;
-            break;
-        case L2CAPDgram:
-            sockType = SOCK_DGRAM;
-            break;
-        case L2CAPSeqPacket:
+        case L2CAP:
+            sockProto = BTPROTO_L2CAP;
             sockType = SOCK_SEQPACKET;
+            break;
+        case RFCOMM:
+            sockProto = BTPROTO_RFCOMM;
+            sockType = SOCK_STREAM;
             break;
         default:
             throw std::invalid_argument{ "Invalid socket type" };
     }
 
-    // Determine the socket protocol
-    int sockProto = (device.type == RFCOMM) ? BTPROTO_RFCOMM : BTPROTO_L2CAP;
     _handle = call(FN(socket, AF_BLUETOOTH, sockType, sockProto));
 }
 #endif

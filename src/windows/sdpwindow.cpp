@@ -74,9 +74,7 @@ void SDPWindow::_drawConnOptions(std::string_view info) {
 
     // Connection type selection
     ImGui::RadioButton("RFCOMM", _connType, RFCOMM);
-    ImGui::RadioButton("L2CAP Sequential Packet", _connType, L2CAPSeqPacket);
-    ImGui::RadioButton("L2CAP Stream", _connType, L2CAPStream);
-    ImGui::RadioButton("L2CAP Datagram", _connType, L2CAPDgram);
+    ImGui::RadioButton("L2CAP", _connType, L2CAP);
 
     // Connect button
     ImGui::Spacing();

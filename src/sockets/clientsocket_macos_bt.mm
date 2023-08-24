@@ -23,7 +23,7 @@ void ClientSocketBT::_init() {
 
     using enum ConnectionType;
     switch (device.type) {
-        case L2CAPStream:
+        case L2CAP:
             result = [target openL2CAPChannelAsync:&channel withPSM:device.port delegate:nil];
             break;
         case RFCOMM:

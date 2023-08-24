@@ -14,22 +14,6 @@
 #include "os/error.hpp"
 #include "utils/strings.hpp"
 
-template <>
-constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(ConnectionType value) noexcept {
-    using enum ConnectionType;
-
-    switch (value) {
-        case L2CAPSeqPacket:
-            return "L2CAP SeqPacket";
-        case L2CAPStream:
-            return "L2CAP Stream";
-        case L2CAPDgram:
-            return "L2CAP Datagram";
-        default:
-            return default_tag;
-    }
-}
-
 // Formats a Device instance into a string for use in a ConnWindow title.
 static std::string formatDevice(const Device& device, std::string_view extraInfo) {
     // Type of the connection

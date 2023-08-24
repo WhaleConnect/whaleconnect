@@ -32,7 +32,7 @@ TEST_CASE("I/O (Bluetooth)") {
 
 #if !OS_WINDOWS
     SECTION("L2CAP") {
-        ClientSocketBT s{ { L2CAPStream, "", mac, l2capPSM } };
+        ClientSocketBT s{ { L2CAP, "", mac, l2capPSM } };
         testIO(s, true);
     }
 #endif
