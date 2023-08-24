@@ -6,6 +6,8 @@
 
 #include <array>
 #include <bit>
+#include <functional>
+#include <stdexcept>
 #include <string_view>
 
 #include <bluetooth/sdp.h>
@@ -32,6 +34,76 @@ static void recurseDictIter(DBusMessageIter& dictIter, auto fn) {
             fn(sub);
         } while (dbus_message_iter_next(&iter));
     } while (dbus_message_iter_next(&dictIter));
+}
+
+static void getDeviceInfo(dbus_bool_t& paired, Device& device, DBusMessageIter& propDict) {
+    using namespace std::literals;
+
+    // Property name - s
+    const char* propName;
+    dbus_message_iter_get_basic(&propDict, &propName);
+    dbus_message_iter_next(&propDict);
+
+    // Property value - v
+    // Since this is a variant type, we'll need another message iterator for it.
+    DBusMessageIter propVal;
+    dbus_message_iter_recurse(&propDict, &propVal);
+
+    // Check if the device is paired (boolean value)
+    if (propName == "Paired"sv) dbus_message_iter_get_basic(&propVal, &paired);
+
+    // Get the name of the device (string value)
+    if (propName == "Name"sv) {
+        const char* name;
+        dbus_message_iter_get_basic(&propVal, &name);
+        device.name = name;
+    }
+
+    // Get the address of the device (string value)
+    if (propName == "Address"sv) {
+        const char* address;
+        dbus_message_iter_get_basic(&propVal, &address);
+        device.address = address;
+    }
+}
+
+static void checkProtocolAttributes(sdp_list_t* pds, BTUtils::SDPResult& result) {
+    uint16_t proto = 0;
+    for (auto d = static_cast<sdp_data_t*>(pds->data); d; d = d->next) {
+        switch (d->dtd) {
+            case SDP_UUID16:
+            case SDP_UUID32:
+            case SDP_UUID128:
+                // Keep track of protocol UUIDs
+                proto = static_cast<uint16_t>(sdp_uuid_to_proto(&d->val.uuid));
+                result.protoUUIDs.push_back(proto);
+                break;
+            case SDP_UINT8:
+                // RFCOMM channel is stored in an 8-bit integer
+                if (proto == RFCOMM_UUID) result.port = d->val.int8;
+                break;
+            case SDP_UINT16:
+                // L2CAP PSM is stored in a 16-bit integer
+                if (proto == L2CAP_UUID) result.port = d->val.int16;
+                break;
+            default:
+                // Other values not handled
+                break;
+        }
+    }
+}
+
+static BTUtils::UUID128 getUUID(uuid_t* uuid) {
+    switch (uuid->type) {
+        case SDP_UUID16:
+            return BTUtils::createUUIDFromBase(uuid->value.uuid16);
+        case SDP_UUID32:
+            return BTUtils::createUUIDFromBase(uuid->value.uuid32);
+        case SDP_UUID128:
+            return std::to_array(uuid->value.uuid128.data);
+        default:
+            throw std::invalid_argument{ "Unknown UUID type" };
+    }
 }
 
 BTUtils::Instance::Instance() {
@@ -86,7 +158,6 @@ DeviceList BTUtils::getPaired() {
     // https://dbus.freedesktop.org/doc/dbus-specification.html
 
     // Iterate through the "a{o" part of the signature - array of object paths
-
     using namespace std::literals;
     recurseDictIter(responseIter, [&deviceList](DBusMessageIter& objectDict) {
         // Object path - o
@@ -114,35 +185,10 @@ DeviceList BTUtils::getPaired() {
             dbus_bool_t paired = false;
 
             // Iterate through the a{s part of the signature - array of properties
-            recurseDictIter(ifaceDict, [&paired, &device](DBusMessageIter& propDict) {
-                // Property name - s
-                const char* propName;
-                dbus_message_iter_get_basic(&propDict, &propName);
-                dbus_message_iter_next(&propDict);
+            recurseDictIter(ifaceDict, std::bind_front(getDeviceInfo, std::ref(paired), std::ref(device)));
 
-                // Property value - v
-                // Since this is a variant type, we'll need another message iterator for it.
-                DBusMessageIter propVal;
-                dbus_message_iter_recurse(&propDict, &propVal);
-
-                // Check if the device is paired (boolean value)
-                if (propName == "Paired"sv) dbus_message_iter_get_basic(&propVal, &paired);
-
-                // Get the name of the device (string value)
-                if (propName == "Name"sv) {
-                    const char* name;
-                    dbus_message_iter_get_basic(&propVal, &name);
-                    device.name = name;
-                }
-
-                // Get the address of the device (string value)
-                if (propName == "Address"sv) {
-                    const char* address;
-                    dbus_message_iter_get_basic(&propVal, &address);
-                    device.address = address;
-                }
-            });
-            if (paired) deviceList.push_back(device); // If the device is paired, add it to the results
+            // If the device is paired, add it to the results
+            if (paired) deviceList.push_back(device);
         });
     });
 
@@ -205,50 +251,16 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
         HandlePtr<sdp_list_t, protoListFreeFn> protoList;
         if (sdp_get_access_protos(rec.get(), std2::out_ptr(protoList)) == SOCKET_ERROR) continue;
 
-        // Iterate through each protocol sequence
-        for (auto p = protoList.get(); p; p = p->next) {
-            // Iterate through each protocol list of the protocol sequence
-            for (auto pds = static_cast<sdp_list_t*>(p->data); pds; pds = pds->next) {
-                // Check protocol attributes
-                uint16_t proto = 0;
-                for (auto d = static_cast<sdp_data_t*>(pds->data); d; d = d->next) {
-                    switch (d->dtd) {
-                        case SDP_UUID16:
-                        case SDP_UUID32:
-                        case SDP_UUID128:
-                            // Keep track of protocol UUIDs
-                            proto = static_cast<uint16_t>(sdp_uuid_to_proto(&d->val.uuid));
-                            result.protoUUIDs.push_back(proto);
-                            break;
-                        case SDP_UINT8:
-                            // RFCOMM channel is stored in an 8-bit integer
-                            if (proto == RFCOMM_UUID) result.port = d->val.int8;
-                            break;
-                        case SDP_UINT16:
-                            // L2CAP PSM is stored in a 16-bit integer
-                            if (proto == L2CAP_UUID) result.port = d->val.int16;
-                    }
-                }
-            }
-        }
+        // Iterate through each protocol sequence, then through each protocol list
+        for (auto p = protoList.get(); p; p = p->next)
+            for (auto pds = static_cast<sdp_list_t*>(p->data); pds; pds = pds->next)
+                checkProtocolAttributes(pds, result);
 
         // Get the list of service class IDs
         SDPListPtr svClassList;
-        if (sdp_get_service_classes(rec.get(), std2::out_ptr(svClassList)) == NO_ERROR) {
-            for (auto iter = svClassList.get(); iter; iter = iter->next) {
-                auto svUUID = static_cast<uuid_t*>(iter->data);
-                switch (svUUID->type) {
-                    case SDP_UUID16:
-                        result.serviceUUIDs.push_back(createUUIDFromBase(svUUID->value.uuid16));
-                        break;
-                    case SDP_UUID32:
-                        result.serviceUUIDs.push_back(createUUIDFromBase(svUUID->value.uuid32));
-                        break;
-                    case SDP_UUID128:
-                        result.serviceUUIDs.push_back(std::to_array(svUUID->value.uuid128.data));
-                }
-            }
-        }
+        if (sdp_get_service_classes(rec.get(), std2::out_ptr(svClassList)) == NO_ERROR)
+            for (auto iter = svClassList.get(); iter; iter = iter->next)
+                result.serviceUUIDs.push_back(getUUID(static_cast<uuid_t*>(iter->data)));
 
         // Get the list of profile descriptors
         SDPListPtr profileDescList;
