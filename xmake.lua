@@ -63,7 +63,7 @@ target("terminal-core")
     if is_plat("windows") then
         add_files("src/**_windows.cpp")
     elseif is_plat("macosx") then
-        add_files("src/**_macos.cpp", "src/**_macos.mm")
+        add_files("src/**_macos.cpp", "src/**.mm")
     elseif is_plat("linux") then
         add_files("src/**_linux.cpp")
     end

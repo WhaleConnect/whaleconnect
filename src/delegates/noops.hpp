@@ -22,7 +22,7 @@ namespace Delegates {
 
     // Provides no-ops for client operations.
     class NoopClient : public ClientDelegate {
-        static constexpr Device _nullDevice{};
+        inline static Device _nullDevice{};
 
     public:
         Task<> connect() override {

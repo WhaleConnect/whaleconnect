@@ -11,7 +11,7 @@
 
 #include "async.hpp"
 
-#include "sockets/enums.hpp"
+#include "net/enums.hpp"
 
 namespace Async {
     // The type of a Bluetooth I/O operation.

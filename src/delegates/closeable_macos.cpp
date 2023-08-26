@@ -6,8 +6,10 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "sockets/delegates/closeable.hpp"
-#include "sockets/enums.hpp"
+#include "closeable.hpp"
+
+#include "net/enums.hpp"
+#include "os/async_macos.hpp"
 
 template <>
 void Delegates::Closeable<SocketTag::IP>::_closeImpl() const {
@@ -16,7 +18,7 @@ void Delegates::Closeable<SocketTag::IP>::_closeImpl() const {
 }
 
 template <>
-void Delegates::Cancel<SocketTag::IP>::cancelIO() {
+void Delegates::Closeable<SocketTag::IP>::cancelIO() {
     Async::cancelPending(_handle);
 }
 #endif

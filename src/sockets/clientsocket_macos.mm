@@ -7,8 +7,8 @@
 
 #include "clientsocket.hpp"
 
+#include "net/bthandle.h"
 #include "os/async_macos.hpp"
-#include "os/bthandle.h"
 #include "os/error.hpp"
 
 template <>

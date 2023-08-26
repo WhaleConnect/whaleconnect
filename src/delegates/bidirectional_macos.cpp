@@ -10,9 +10,9 @@
 
 #include "bidirectional.hpp"
 
+#include "net/enums.hpp"
 #include "os/async_macos.hpp"
 #include "os/errcheck.hpp"
-#include "sockets/enums.hpp"
 
 template <>
 Task<> Delegates::Bidirectional<SocketTag::IP>::send(std::string data) {

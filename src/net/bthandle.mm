@@ -4,8 +4,8 @@
 #if OS_MACOS
 #include "bthandle.h"
 
-#include "async_macos.hpp"
-#include "error.hpp"
+#include "os/async_macos.hpp"
+#include "os/error.hpp"
 
 // Objective-C++ wrappers for C++ async functions.
 // The hash of the channel is passed to C++ code for identification of each channel.

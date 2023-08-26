@@ -20,8 +20,8 @@ class ClientSocket : public Socket {
     using Handle = Traits::SocketHandleType<Tag>;
     static constexpr auto invalidHandle = Traits::invalidSocketHandle<Tag>();
 
-    Handle _handle;              // Socket handle
-    Traits::Client<Tag> _traits; // Extra data for client sockets
+    Handle _handle = invalidHandle; // Socket handle
+    Traits::Client<Tag> _traits;    // Extra data for client sockets
 
     // Clients support closure, bidirectional communication, and client operations
     Delegates::Closeable<Tag> _close{ _handle };

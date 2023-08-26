@@ -4,9 +4,9 @@
 #if OS_MACOS
 #include "bidirectional.hpp"
 
+#include "net/enums.hpp"
 #include "os/async_macos.hpp"
 #include "os/error.hpp"
-#include "sockets/enums.hpp"
 
 template <>
 Task<> Delegates::Bidirectional<SocketTag::BT>::send(std::string data) {

@@ -6,10 +6,10 @@
 
 #include "client.hpp"
 
+#include "net/bthandle.h"
+#include "net/enums.hpp"
 #include "os/async_macos.hpp"
-#include "os/bthandle.h"
 #include "os/error.hpp"
-#include "sockets/enums.hpp"
 
 template <>
 Task<> Delegates::Client<SocketTag::BT>::connect() {
