@@ -61,6 +61,29 @@ static uint16_t getUUIDInt(IOBluetoothSDPDataElement* data) {
     return ret;
 }
 
+static void checkProtocolAttributes(IOBluetoothSDPDataElement* p, BTUtils::SDPResult& result) {
+    uint16_t proto = 0;
+    for (IOBluetoothSDPDataElement* data in [p getArrayValue]) {
+        switch ([data getTypeDescriptor]) {
+            case kBluetoothSDPDataElementTypeUUID:
+                // Keep track of protocol UUIDs
+                proto = getUUIDInt(data);
+                result.protoUUIDs.push_back(proto);
+                break;
+            case kBluetoothSDPDataElementTypeUnsignedInt:
+                uint32_t size = [data getSize];
+                bool isRFCOMM = proto == kBluetoothSDPUUID16RFCOMM;
+                bool isL2CAP = proto == kBluetoothSDPUUID16L2CAP;
+
+                // Get port - make sure size matches the protocol
+                // RFCOMM channel is stored in an 8-bit integer (1 byte)
+                // L2CAP channel is stored in a 16-bit integer (2 bytes)
+                if (((size == 1) && isRFCOMM) || ((size == 2) && isL2CAP))
+                    result.port = [[data getNumberValue] integerValue];
+        }
+    }
+}
+
 BTUtils::Instance::Instance() = default;
 
 BTUtils::Instance::~Instance() = default;
@@ -116,28 +139,8 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
         result.desc = descPtr ? [descPtr UTF8String] : "";
 
         // Protocol descriptors
-        for (IOBluetoothSDPDataElement* p in [[rec getAttributeDataElement:SDP_ATTR_PROTOCOLS] getArrayValue]) {
-            uint16_t proto = 0;
-            for (IOBluetoothSDPDataElement* data in [p getArrayValue]) {
-                switch ([data getTypeDescriptor]) {
-                    case kBluetoothSDPDataElementTypeUUID:
-                        // Keep track of protocol UUIDs
-                        proto = getUUIDInt(data);
-                        result.protoUUIDs.push_back(proto);
-                        break;
-                    case kBluetoothSDPDataElementTypeUnsignedInt:
-                        uint32_t size = [data getSize];
-                        bool isRFCOMM = proto == kBluetoothSDPUUID16RFCOMM;
-                        bool isL2CAP = proto == kBluetoothSDPUUID16L2CAP;
-
-                        // Get port - make sure size matches the protocol
-                        // RFCOMM channel is stored in an 8-bit integer (1 byte)
-                        // L2CAP channel is stored in a 16-bit integer (2 bytes)
-                        if (((size == 1) && isRFCOMM) || ((size == 2) && isL2CAP))
-                            result.port = [[data getNumberValue] integerValue];
-                }
-            }
-        }
+        for (IOBluetoothSDPDataElement* p in [[rec getAttributeDataElement:SDP_ATTR_PROTOCOLS] getArrayValue])
+            checkProtocolAttributes(p, result);
 
         // Service class UUIDs
         for (IOBluetoothSDPDataElement* data in [[rec getAttributeDataElement:SDP_ATTR_SERVICES] getArrayValue]) {
