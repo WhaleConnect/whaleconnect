@@ -4,7 +4,7 @@
 #if OS_WINDOWS
 #include "closeable.hpp"
 
-#include "sockets/enums.hpp"
+#include "net/enums.hpp"
 
 template <auto Tag>
 void Delegates::Closeable<Tag>::_closeImpl() const {
@@ -13,7 +13,7 @@ void Delegates::Closeable<Tag>::_closeImpl() const {
 }
 
 template <auto Tag>
-void Delegates::Cancel<Tag>::cancelIO() {
+void Delegates::Closeable<Tag>::cancelIO() {
     CancelIoEx(std::bit_cast<HANDLE>(_handle), nullptr);
 }
 

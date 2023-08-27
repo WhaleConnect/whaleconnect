@@ -3,6 +3,7 @@
 
 #if OS_WINDOWS
 #include <WinSock2.h>
+#include <ws2ipdef.h>
 #else
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -13,13 +14,19 @@
 #include "net/enums.hpp"
 #include "os/errcheck.hpp"
 
+#if OS_WINDOWS
+using OptType = char;
+#else
+using OptType = int;
+#endif
+
 template <>
 void ConnServerSocket<SocketTag::IP>::_init(uint16_t port, int backlog) {
     _handle = call(FN(socket, AF_INET6, SOCK_STREAM, 0));
 
     // Enable dual-stack server and address reuse
-    constexpr int off = 0;
-    constexpr int on = 1;
+    constexpr OptType off = 0;
+    constexpr OptType on = 1;
     call(FN(setsockopt, _handle, IPPROTO_IPV6, IPV6_V6ONLY, &off, sizeof(off)));
     call(FN(setsockopt, _handle, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)));
 

@@ -4,9 +4,9 @@
 #if OS_WINDOWS
 #include "bidirectional.hpp"
 
+#include "net/enums.hpp"
 #include "os/async.hpp"
 #include "os/errcheck.hpp"
-#include "sockets/enums.hpp"
 #include "utils/task.hpp"
 
 template <auto Tag>
