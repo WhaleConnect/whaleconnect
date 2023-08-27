@@ -50,10 +50,6 @@ public:
         return _client->connect();
     }
 
-    const Device& getServer() const {
-        return _client->getServer();
-    }
-
     Task<AcceptResult> accept() const {
         return _connServer->accept();
     }

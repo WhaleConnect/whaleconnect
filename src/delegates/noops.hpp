@@ -21,16 +21,9 @@ namespace Delegates {
     };
 
     // Provides no-ops for client operations.
-    class NoopClient : public ClientDelegate {
-        inline static Device _nullDevice{};
-
-    public:
+    struct NoopClient : public ClientDelegate {
         Task<> connect() override {
             co_return;
-        }
-
-        const Device& getServer() override {
-            return _nullDevice;
         }
     };
 

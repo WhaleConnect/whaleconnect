@@ -18,7 +18,7 @@
 template <auto Tag>
 void addConnWindow(WindowList& list, const Device& device, std::string_view extraInfo) try {
     auto socket = std::make_unique<ClientSocket<Tag>>(device);
-    bool isNew = list.add<ConnWindow>(std::move(socket), socket->getServer(), extraInfo);
+    bool isNew = list.add<ConnWindow>(std::move(socket), device, extraInfo);
 
     // If the connection exists, show a message
     if (!isNew) ImGui::AddNotification("This connection is already open.", NotificationType::Warning);

@@ -59,9 +59,6 @@ namespace Delegates {
 
         // Connects to a host.
         virtual Task<> connect() = 0;
-
-        // Accesses the connected device information.
-        virtual const Device& getServer() = 0;
     };
 
     // Manages server operations on a connection-oriented socket.

@@ -22,9 +22,5 @@ namespace Delegates {
         Client(Handle& handle, Traits::Client<Tag>& traits) : _handle(handle), _traits(traits) {}
 
         Task<> connect() override;
-
-        const Device& getServer() override {
-            return _traits.device;
-        }
     };
 }
