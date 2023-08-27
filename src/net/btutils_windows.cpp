@@ -82,6 +82,54 @@ static std::vector<SDP_ELEMENT_DATA> getSDPListData(LPBLOB blob, USHORT attrib) 
     return getSDPListData(element);
 }
 
+static void checkProtocolAttributes(SDP_ELEMENT_DATA& element, BTUtils::SDPResult& result) {
+    uint16_t proto = 0;
+    for (const auto& [_, specificType, data] : getSDPListData(element)) {
+        switch (specificType) {
+            case SDP_ST_UUID16:
+                // Keep track of protocol UUIDs
+                proto = data.uuid16;
+                result.protoUUIDs.push_back(proto);
+                break;
+            case SDP_ST_UINT8:
+                // RFCOMM channel is stored in an 8-bit integer
+                if (proto == RFCOMM_PROTOCOL_UUID16) result.port = data.uint8;
+                break;
+            case SDP_ST_UINT16:
+                // L2CAP PSM is stored in a 16-bit integer
+                if (proto == L2CAP_PROTOCOL_UUID16) result.port = data.uint16;
+                break;
+            default:
+                // Other types not handled
+                break;
+        }
+    }
+}
+
+static BTUtils::UUID128 getUUID(const SDP_ELEMENT_DATA& element) {
+    switch (element.specificType) {
+        case SDP_ST_UUID16:
+            return BTUtils::createUUIDFromBase(element.data.uuid16);
+        case SDP_ST_UUID32:
+            return BTUtils::createUUIDFromBase(element.data.uuid32);
+        case SDP_ST_UUID128:
+            return toUUID(element.data.uuid128);
+        default:
+            throw std::invalid_argument{ "Unknown UUID type" };
+    }
+}
+
+static BTUtils::ProfileDesc checkProfileDescriptors(SDP_ELEMENT_DATA& element) {
+    // Construct a profile descriptor and populate it with the data in the nested container
+    BTUtils::ProfileDesc pd;
+    for (const auto& [_, specificType, data] : getSDPListData(element)) {
+        if (specificType == SDP_ST_UUID16) pd.uuid = data.uuid16;
+        else if (specificType == SDP_ST_UINT16) BTUtils::Internal::extractVersionNums(data.uint16, pd);
+    }
+
+    return pd;
+}
+
 BTUtils::Instance::Instance() = default;
 
 BTUtils::Instance::~Instance() = default;
@@ -179,58 +227,15 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
         if (protoList.empty()) continue; // Contains the port, which is required for connecting
 
         // Iterate through the list of protocol descriptors (UUIDs + port)
-        for (auto& element : protoList) {
-            uint16_t proto = 0;
-            for (const auto& [_, specificType, data] : getSDPListData(element)) {
-                switch (specificType) {
-                    case SDP_ST_UUID16:
-                        // Keep track of protocol UUIDs
-                        proto = data.uuid16;
-                        result.protoUUIDs.push_back(proto);
-                        break;
-                    case SDP_ST_UINT8:
-                        // RFCOMM channel is stored in an 8-bit integer
-                        if (proto == RFCOMM_PROTOCOL_UUID16) result.port = data.uint8;
-                        break;
-                    case SDP_ST_UINT16:
-                        // L2CAP PSM is stored in a 16-bit integer
-                        if (proto == L2CAP_PROTOCOL_UUID16) result.port = data.uint16;
-                        break;
-                    default:
-                        // Other types not handled
-                        break;
-                }
-            }
-        }
+        for (auto& element : protoList) checkProtocolAttributes(element, result);
 
         // Service class UUIDs
-        for (const auto& [_, specificType, data] : getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_CLASS_ID_LIST)) {
-            switch (specificType) {
-                case SDP_ST_UUID16:
-                    result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid16));
-                    break;
-                case SDP_ST_UUID32:
-                    result.serviceUUIDs.push_back(createUUIDFromBase(data.uuid32));
-                    break;
-                case SDP_ST_UUID128:
-                    result.serviceUUIDs.push_back(toUUID(data.uuid128));
-                    break;
-                default:
-                    break; // Other types not handled
-            }
-        }
+        for (const auto& element : getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_CLASS_ID_LIST))
+            result.serviceUUIDs.push_back(getUUID(element));
 
         // Profile descriptors
-        for (auto& element : getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_PROFILE_DESCRIPTOR_LIST)) {
-            // Construct a profile descriptor and populate it with the data in the nested container
-            ProfileDesc pd;
-            for (const auto& [_, specificType, data] : getSDPListData(element)) {
-                if (specificType == SDP_ST_UUID16) pd.uuid = data.uuid16;
-                else if (specificType == SDP_ST_UINT16) Internal::extractVersionNums(data.uint16, pd);
-            }
-
-            result.profileDescs.push_back(pd);
-        }
+        for (auto& element : getSDPListData(wsaResults->lpBlob, SDP_ATTRIB_PROFILE_DESCRIPTOR_LIST))
+            result.profileDescs.push_back(checkProfileDescriptors(element));
 
         // Add to return vector
         ret.push_back(result);
