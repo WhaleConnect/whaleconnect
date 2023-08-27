@@ -32,8 +32,7 @@ add_cxxflags("-Wno-missing-field-initializers", { tools = { "clang", "clangxx", 
 add_defines("UNICODE", "_UNICODE", "NOMINMAX")
 
 -- UTF-8 charset
-add_cxxflags("cl::/utf-8")
-add_cxxflags("-finput-charset=UTF-8", "-fexec-charset=UTF-8", { tools = { "clang", "clangxx", "gcc", "gxx" } })
+set_encodings("utf-8")
 
 -- Platform detection macros ("or false" is needed because is_plat() can return nil)
 add_defines("OS_WINDOWS=" .. tostring(is_plat("windows") or false),
