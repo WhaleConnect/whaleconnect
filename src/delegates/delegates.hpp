@@ -65,6 +65,7 @@ namespace Delegates {
     struct ConnServerDelegate {
         virtual ~ConnServerDelegate() = default;
 
+        // Accepts a client connection.
         virtual Task<AcceptResult> accept() = 0;
     };
 
@@ -72,8 +73,10 @@ namespace Delegates {
     struct DgramServerDelegate {
         virtual ~DgramServerDelegate() = default;
 
+        // Receives data from a client.
         virtual Task<DgramRecvResult> recvFrom() = 0;
 
+        // Sends data to a client.
         virtual Task<> sendTo(std::string addrTo, std::string s) = 0;
     };
 }
