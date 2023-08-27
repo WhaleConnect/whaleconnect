@@ -18,7 +18,7 @@ class IncomingSocket : public Socket {
     using Handle = Traits::SocketHandleType<Tag>;
     static constexpr auto invalidHandle = Traits::invalidSocketHandle<Tag>();
 
-    Handle _handle;
+    Handle _handle = invalidHandle;
 
     Delegates::Closeable<Tag> _close{ _handle };
     Delegates::Bidirectional<Tag> _io{ _handle };
