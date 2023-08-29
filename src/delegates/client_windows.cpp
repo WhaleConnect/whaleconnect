@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_WINDOWS
+#include <bit>
 #include <functional>
 
 #include <WinSock2.h>
