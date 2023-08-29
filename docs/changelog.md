@@ -8,6 +8,10 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 - Prevented multiple close calls on invalid or already closed sockets.
 
+### Bug Fixes
+
+- Fixed an issue where receive operations would not continue after an error.
+
 ### Removals
 
 - Removed L2CAP stream and datagram options due to their infrequent usage.

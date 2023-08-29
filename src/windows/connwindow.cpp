@@ -79,6 +79,7 @@ Task<> ConnWindow::_readHandler() try {
     _pendingRecv = false;
 } catch (const System::SystemError& error) {
     _errorHandler(error);
+    _pendingRecv = false;
 }
 
 void ConnWindow::_onBeforeUpdate() {
