@@ -17,9 +17,11 @@
 #include "os/errcheck.hpp"
 
 #if OS_WINDOWS
-using OptType = char;
+using OptType = DWORD;
+using OptPtrType = char*;
 #else
 using OptType = int;
+using OptPtrType = int*;
 #endif
 
 template <>
@@ -29,8 +31,8 @@ void ConnServerSocket<SocketTag::IP>::_init(uint16_t port, int backlog) {
     // Enable dual-stack server and address reuse
     constexpr OptType off = 0;
     constexpr OptType on = 1;
-    call(FN(setsockopt, _handle, IPPROTO_IPV6, IPV6_V6ONLY, &off, sizeof(off)));
-    call(FN(setsockopt, _handle, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)));
+    call(FN(setsockopt, _handle, IPPROTO_IPV6, IPV6_V6ONLY, std::bit_cast<OptPtrType>(&off), sizeof(off)));
+    call(FN(setsockopt, _handle, SOL_SOCKET, SO_REUSEADDR, std::bit_cast<OptPtrType>(&on), sizeof(on)));
 
     sockaddr_in6 addr{
         .sin6_family = AF_INET6,
