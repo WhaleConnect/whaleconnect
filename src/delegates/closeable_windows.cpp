@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_WINDOWS
+#include <bit>
+
 #include "closeable.hpp"
 
 #include "net/enums.hpp"
