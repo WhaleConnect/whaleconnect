@@ -6,6 +6,8 @@
 #if OS_WINDOWS
 #include <WinSock2.h>
 #include <ws2ipdef.h>
+
+#include "os/async_windows.hpp"
 #else
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -14,6 +16,7 @@
 #include "connserversocket.hpp"
 
 #include "net/enums.hpp"
+#include "net/netutils.hpp"
 #include "os/errcheck.hpp"
 
 #if OS_WINDOWS
@@ -26,22 +29,22 @@ using OptPtrType = int*;
 
 template <>
 void ConnServerSocket<SocketTag::IP>::_init(uint16_t port, int backlog) {
-    _handle = call(FN(socket, AF_INET6, SOCK_STREAM, 0));
+    _handle.reset(call(FN(socket, AF_INET6, SOCK_STREAM, 0)));
+
+#if OS_WINDOWS
+    // Add the handle to IOCP
+    Async::add(*_handle);
+#endif
 
     // Enable dual-stack server and address reuse
     constexpr OptType off = 0;
     constexpr OptType on = 1;
-    call(FN(setsockopt, _handle, IPPROTO_IPV6, IPV6_V6ONLY, std::bit_cast<OptPtrType>(&off), sizeof(off)));
-    call(FN(setsockopt, _handle, SOL_SOCKET, SO_REUSEADDR, std::bit_cast<OptPtrType>(&on), sizeof(on)));
+    call(FN(setsockopt, *_handle, IPPROTO_IPV6, IPV6_V6ONLY, std::bit_cast<OptPtrType>(&off), sizeof(off)));
+    call(FN(setsockopt, *_handle, SOL_SOCKET, SO_REUSEADDR, std::bit_cast<OptPtrType>(&on), sizeof(on)));
 
-    sockaddr_in6 addr{
-        .sin6_family = AF_INET6,
-        .sin6_port = htons(port),
-        .sin6_addr = in6addr_any,
-    };
-    unsigned int addrLen = sizeof(addr);
+    auto addr = NetUtils::resolveAddr({ ConnectionType::TCP, "", "", port }, NetUtils::IPType::V6, AI_PASSIVE, true);
 
     // Bind and listen
-    call(FN(bind, _handle, std::bit_cast<sockaddr*>(&addr), addrLen));
-    call(FN(listen, _handle, backlog));
+    call(FN(bind, *_handle, addr->ai_addr, addr->ai_addrlen));
+    call(FN(listen, *_handle, backlog));
 }
