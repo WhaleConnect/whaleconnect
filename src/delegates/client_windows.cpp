@@ -3,6 +3,7 @@
 
 #if OS_WINDOWS
 #include <bit>
+#include <exception>
 #include <functional>
 
 #include <WinSock2.h>
@@ -52,6 +53,7 @@ template <>
 Task<> Delegates::Client<SocketTag::IP>::connect() {
     auto addr = NetUtils::resolveAddr(_device, NetUtils::IPType::None);
 
+    std::exception_ptr lastException;
     for (auto result = addr.get(); result; result = result->ai_next) {
         try {
             _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
@@ -68,11 +70,13 @@ Task<> Delegates::Client<SocketTag::IP>::connect() {
             }
 
             co_return;
-        } catch (const System::SystemError&) {}
+        } catch (const System::SystemError&) {
+            lastException = std::current_exception();
+        }
     }
 
     _handle.reset();
-    throw System::SystemError{ 3, System::ErrorType::System, "" };
+    std::rethrow_exception(lastException);
 }
 
 template <>
