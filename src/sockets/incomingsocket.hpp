@@ -16,18 +16,15 @@
 template <auto Tag>
 class IncomingSocket : public Socket {
     using Handle = Traits::SocketHandleType<Tag>;
-    static constexpr auto invalidHandle = Traits::invalidSocketHandle<Tag>();
 
-    Handle _handle = invalidHandle;
+    SocketHandle<Tag> _handle;
 
-    Delegates::Closeable<Tag> _close{ _handle };
     Delegates::Bidirectional<Tag> _io{ _handle };
     Delegates::NoopClient _client;
     Delegates::NoopConnServer _connServer;
     Delegates::NoopDgramServer _dgramServer;
 
-    SocketHandle<Tag> _socketHandle{ _close, _handle };
-
 public:
-    explicit IncomingSocket(Handle handle) : Socket(_close, _io, _client, _connServer, _dgramServer), _handle(handle) {}
+    explicit IncomingSocket(Handle handle) :
+        Socket(_handle.closeDelegate(), _io, _client, _connServer, _dgramServer), _handle(handle) {}
 };

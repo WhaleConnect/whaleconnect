@@ -11,36 +11,22 @@
 #include "delegates/noops.hpp"
 #include "net/enums.hpp"
 #include "net/sockethandle.hpp"
-#include "traits/client.hpp"
 #include "utils/task.hpp"
 
 // A socket representing an outgoing connection.
 template <auto Tag>
 class ClientSocket : public Socket {
-    using Handle = Traits::SocketHandleType<Tag>;
-    static constexpr auto invalidHandle = Traits::invalidSocketHandle<Tag>();
+    SocketHandle<Tag> _handle;
 
-    Handle _handle = invalidHandle; // Socket handle
-    Traits::Client<Tag> _traits;    // Extra data for client sockets
-
-    // Clients support closure, bidirectional communication, and client operations
-    Delegates::Closeable<Tag> _close{ _handle };
     Delegates::Bidirectional<Tag> _io{ _handle };
-    Delegates::Client<Tag> _client{ _handle, _traits };
+    Delegates::Client<Tag> _client;
     Delegates::NoopConnServer _connServer;
     Delegates::NoopDgramServer _dgramServer;
-
-    SocketHandle<Tag> _socketHandle{ _close, _handle };
-
-    // Creates the socket.
-    void _init();
 
 public:
     // Constructs an object with a target device.
     explicit ClientSocket(const Device& device) :
-        Socket(_close, _io, _client, _connServer, _dgramServer), _traits{ .device = device } {
-        _init();
-    }
+        Socket(_handle.closeDelegate(), _io, _client, _connServer, _dgramServer), _client(_handle, device) {}
 };
 
 using ClientSocketIP = ClientSocket<SocketTag::IP>;

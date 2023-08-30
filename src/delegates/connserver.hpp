@@ -7,19 +7,17 @@
 
 #include "delegates.hpp"
 
-#include "traits/sockethandle.hpp"
+#include "net/sockethandle.hpp"
 
 class Socket;
 
 namespace Delegates {
     template <auto Tag>
     class ConnServer : public ConnServerDelegate {
-        using Handle = Traits::SocketHandleType<Tag>;
-
-        Handle& _handle;
+        SocketHandle<Tag>& _handle;
 
     public:
-        explicit ConnServer(Handle& handle) : _handle(handle) {}
+        explicit ConnServer(SocketHandle<Tag>& handle) : _handle(handle) {}
 
         Task<AcceptResult> accept() override;
     };

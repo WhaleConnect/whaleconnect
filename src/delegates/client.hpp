@@ -5,21 +5,19 @@
 
 #include "delegates.hpp"
 
-#include "traits/client.hpp"
-#include "traits/sockethandle.hpp"
+#include "net/device.hpp"
+#include "net/sockethandle.hpp"
 #include "utils/task.hpp"
 
 namespace Delegates {
     // Manages operations on client sockets.
     template <auto Tag>
     class Client : public ClientDelegate {
-        using Handle = Traits::SocketHandleType<Tag>;
-
-        Handle& _handle;
-        Traits::Client<Tag>& _traits;
+        SocketHandle<Tag>& _handle;
+        const Device& _device;
 
     public:
-        Client(Handle& handle, Traits::Client<Tag>& traits) : _handle(handle), _traits(traits) {}
+        Client(SocketHandle<Tag>& handle, const Device& device) : _handle(handle), _device(device) {}
 
         Task<> connect() override;
     };

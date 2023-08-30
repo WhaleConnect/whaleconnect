@@ -8,20 +8,18 @@
 
 #include "delegates.hpp"
 
-#include "traits/sockethandle.hpp"
+#include "net/sockethandle.hpp"
 #include "utils/task.hpp"
 
 namespace Delegates {
     // Manages bidirectional communication on a socket.
     template <auto Tag>
     class Bidirectional : public IODelegate {
-        using Handle = Traits::SocketHandleType<Tag>;
-
         static constexpr auto _recvLen = 1024; // Receive buffer length
-        Handle& _handle;
+        SocketHandle<Tag>& _handle;
 
     public:
-        explicit Bidirectional(Handle& handle) : _handle(handle) {}
+        explicit Bidirectional(SocketHandle<Tag>& handle) : _handle(handle) {}
 
         Task<> send(std::string s) override;
 
