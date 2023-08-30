@@ -14,42 +14,52 @@ class SocketHandle {
     using Handle = Traits::SocketHandleType<Tag>;
     static constexpr auto invalidHandle = Traits::invalidSocketHandle<Tag>();
 
-    Delegates::Closeable<Tag>* _close;
-    Handle _handle; // Socket handle
-
-    // Releases ownership of the managed handle.
-    Handle _release() {
-        return std::exchange(_handle, invalidHandle);
-    }
+    Handle _handle;
+    Delegates::Closeable<Tag> _close{ _handle };
 
 public:
-    explicit SocketHandle(Delegates::Closeable<Tag>& close, Handle handle) :
-        _close(&close), _handle(handle) {}
+    SocketHandle() : SocketHandle(invalidHandle) {}
+
+    explicit SocketHandle(Handle handle) : _handle(handle) {}
 
     // Closes the socket.
     ~SocketHandle() {
-        _close->close();
+        _close.close();
     }
 
     SocketHandle(const SocketHandle&) = delete;
 
     // Constructs an object and transfers ownership from another object.
-    SocketHandle(SocketHandle&& other) noexcept : _handle(other._release()) {}
+    SocketHandle(SocketHandle&& other) noexcept : _handle(other.release()) {}
 
     SocketHandle& operator=(const SocketHandle&) = delete;
 
-    SocketHandle& operator=(Handle other) noexcept {
-        _close->close();
-        _handle = other;
+    // Transfers ownership from another object.
+    SocketHandle& operator=(SocketHandle&& other) noexcept {
+        set(other.release());
+        _close = other._close;
 
         return *this;
     }
 
-    // Transfers ownership from another object.
-    SocketHandle& operator=(SocketHandle&& other) noexcept {
-        this = other._release();
-        _close = other._close;
+    // Closes the current handle and acquires a new one.
+    void reset(Handle other = invalidHandle) noexcept {
+        _close.close();
+        _handle = other;
+    }
 
-        return *this;
+    // Releases ownership of the managed handle.
+    Handle release() {
+        return std::exchange(_handle, invalidHandle);
+    }
+
+    // Accesses the handle.
+    const Handle& operator*() const {
+        return _handle;
+    }
+
+    // Accesses the close delegate.
+    Delegates::Closeable<Tag>& closeDelegate() {
+        return _close;
     }
 };
