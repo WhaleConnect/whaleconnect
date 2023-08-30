@@ -11,14 +11,12 @@
 
 #include "client.hpp"
 
+#include "net/netutils.hpp"
 #include "os/async_windows.hpp"
 #include "os/errcheck.hpp"
 #include "utils/strings.hpp"
 
 static void startConnect(SOCKET s, sockaddr* addr, size_t len, Async::CompletionResult& result) {
-    // Add the socket to the async queue
-    Async::add(s);
-
     // ConnectEx() requires the socket to be initially bound.
     // A sockaddr_storage can be used with all connection types, Internet and Bluetooth.
     sockaddr_storage addrBind{ .ss_family = addr->sa_family };
@@ -52,28 +50,46 @@ static void finalizeConnect(SOCKET s) {
 
 template <>
 Task<> Delegates::Client<SocketTag::IP>::connect() {
-    auto& addr = *_traits.addr;
+    auto addr = NetUtils::resolveAddr(_device, NetUtils::IPType::None);
 
-    // Datagram sockets can be directly connected (ConnectEx doesn't support them)
-    if (_traits.device.type == ConnectionType::UDP) {
-        Async::add(_handle);
-        call(FN(::connect, _handle, addr.ai_addr, static_cast<int>(addr.ai_addrlen)));
-        co_return;
+    for (auto result = addr.get(); result; result = result->ai_next) {
+        try {
+            _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
+
+            // Add the socket to the async queue
+            Async::add(*_handle);
+
+            // Datagram sockets can be directly connected (ConnectEx doesn't support them)
+            if (_device.type == ConnectionType::UDP) {
+                call(FN(::connect, *_handle, addr->ai_addr, static_cast<int>(addr->ai_addrlen)));
+            } else {
+                co_await Async::run(std::bind_front(startConnect, *_handle, addr->ai_addr, addr->ai_addrlen));
+                finalizeConnect(*_handle);
+            }
+
+            co_return;
+        } catch (const System::SystemError&) {}
     }
 
-    co_await Async::run(std::bind_front(startConnect, _handle, addr.ai_addr, addr.ai_addrlen));
-    finalizeConnect(_handle);
+    _handle.reset();
+    throw System::SystemError{ 3, System::ErrorType::System, "" };
 }
 
 template <>
 Task<> Delegates::Client<SocketTag::BT>::connect() {
+    // Only RFCOMM sockets are supported by the Microsoft Bluetooth stack on Windows
+    if (_device.type != ConnectionType::RFCOMM)
+        throw System::SystemError{ WSAEPFNOSUPPORT, System::ErrorType::System, "socket" };
+
+    _handle.reset(call(FN(socket, AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM)));
+
     // Convert the MAC address from string form into integer form
     // This is done by removing all colons in the address string, then parsing the resultant string as an
     // integer in base-16 (which is how a MAC address is structured).
-    BTH_ADDR btAddr = std::stoull(Strings::replaceAll(_traits.device.address, ":", ""), nullptr, 16);
-    SOCKADDR_BTH sAddrBT{ .addressFamily = AF_BTH, .btAddr = btAddr, .port = _traits.device.port };
+    BTH_ADDR btAddr = std::stoull(Strings::replaceAll(_device.address, ":", ""), nullptr, 16);
+    SOCKADDR_BTH sAddrBT{ .addressFamily = AF_BTH, .btAddr = btAddr, .port = _device.port };
 
-    co_await Async::run(std::bind_front(startConnect, _handle, std::bit_cast<sockaddr*>(&sAddrBT), sizeof(sAddrBT)));
-    finalizeConnect(_handle);
+    co_await Async::run(std::bind_front(startConnect, *_handle, std::bit_cast<sockaddr*>(&sAddrBT), sizeof(sAddrBT)));
+    finalizeConnect(*_handle);
 }
 #endif
