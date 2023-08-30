@@ -6,12 +6,11 @@ add_repositories("xrepo-patches https://github.com/NSTerminal/xrepo-patches.git"
 add_rules("mode.debug", "mode.release")
 
 -- Avoid linking to system libraries - prevents dependency mismatches on different platforms and makes package self-contained
-add_requireconfs("*", { system = false })
+add_requireconfs("*|opengl", { system = false })
 
 add_requires("imgui-with-sdl3 v20230807-docking", { configs = { sdl3_no_renderer = true, opengl3 = true, freetype = true } })
 add_requires("libsdl3", { configs = { use_sdlmain = true } })
-add_requires("catch2", "icu4c", "magic_enum", "nlohmann_json", "out_ptr")
-add_requires("opengl", { system = true }) -- OpenGL must be linked to system libraries - no installable sources in xmake-repo
+add_requires("catch2", "icu4c", "magic_enum", "nlohmann_json", "opengl", "out_ptr")
 
 if is_plat("linux") then
     add_requires("liburing", "bluez")
