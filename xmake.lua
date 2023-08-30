@@ -82,19 +82,15 @@ target("terminal")
         add_files("res/Info.plist")
     end
 
-    on_load(function (target)
-        -- Install font files next to executable
-        -- Fonts are embedded in the Resources directory in the macOS bundle.
-        if not is_plat("macosx") then
-            target:add("installfiles", format("%s/(*.ttf)", target:targetdir()), { prefixdir = "bin" })
-        end
-
-        target:add("installfiles", "COPYING")
-    end)
-
-    -- Download font files next to executable on post-build
     before_build(function (target)
+        -- Download font files next to executable on pre-build
         import("download.fonts").download_fonts(target:targetdir())
+
+        -- Install font files and license next to executable
+        -- Fonts are embedded in the Resources directory in the macOS bundle.
+        local prefixdir = is_plat("macosx") and "" or "bin"
+        target:add("installfiles", format("%s/*.ttf", target:targetdir()), { prefixdir = prefixdir })
+        target:add("installfiles", "COPYING")
     end)
 
     after_install(function (target)
