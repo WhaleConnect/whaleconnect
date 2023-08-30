@@ -74,17 +74,14 @@ target("terminal")
     -- GUI code and main entry point
     add_files("src/app/*.cpp", "src/gui/*.cpp", "src/windows/*.cpp", "src/main.cpp")
 
-    -- Add application manifests
+    -- Add platform rules
     if is_plat("windows") then
+        add_rules("win.sdk.application")
         add_files("res/app.manifest")
     elseif is_plat("macosx") then
-        -- Generate application bundle
         add_rules("xcode.application")
-
         add_files("res/Info.plist")
     end
-
-    add_ldflags("link::/SUBSYSTEM:WINDOWS")
 
     on_load(function (target)
         -- Install font files next to executable
