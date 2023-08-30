@@ -19,7 +19,7 @@ Task<> ConnServerWindow::_accept() try {
     _pendingAccept = true;
 
     AcceptResult result = co_await _socket->accept();
-    _addInfo(std::format("Accepted connection from {}", result.device.address));
+    _addInfo(std::format("Accepted connection from {} on port {}", result.device.address, result.device.port));
     _unopenedSockets.push_back(std::move(result));
 
     _pendingAccept = false;
