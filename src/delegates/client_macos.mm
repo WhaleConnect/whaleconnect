@@ -13,13 +13,31 @@
 
 template <>
 Task<> Delegates::Client<SocketTag::BT>::connect() {
-    // The channel will not be fully opened until a delegate is registered
-    // https://developer.apple.com/documentation/iobluetooth/iobluetoothdevice/1430889-openl2capchannelasync
-    // https://developer.apple.com/documentation/iobluetooth/iobluetoothdevice/1435022-openrfcommchannelasync
-    // This makes delegate registration similar to a connect() socket call.
-    [_handle registerAsDelegate];
+    auto target = [IOBluetoothDevice deviceWithAddressString:@(_device.address.c_str())];
+    IOReturn result = kIOReturnSuccess;
+    id channel = nil;
 
-    NSUInteger hash = [_handle channelHash];
+    const char* fnName = "<opening channel>";
+
+    using enum ConnectionType;
+    switch (_device.type) {
+        case L2CAP:
+            result = [target openL2CAPChannelAsync:&channel withPSM:_device.port delegate:nil];
+            break;
+        case RFCOMM:
+            result = [target openRFCOMMChannelAsync:&channel withChannelID:_device.port delegate:nil];
+            break;
+        default:
+            throw System::SystemError{ kIOReturnUnsupported, System::ErrorType::IOReturn, fnName };
+    }
+
+    if (result != kIOReturnSuccess) throw System::SystemError{ result, System::ErrorType::IOReturn, fnName };
+
+    // Init channel
+    _handle.reset([[BTHandle alloc] initWithChannel:channel]);
+    [*_handle registerAsDelegate];
+
+    NSUInteger hash = [*_handle channelHash];
     co_await Async::run(std::bind_front(Async::submitIOBluetooth, hash, Async::IOType::Send),
                         System::ErrorType::IOReturn);
 }

@@ -15,8 +15,6 @@
 
 template <auto Tag>
 class IncomingSocket : public Socket {
-    using Handle = Traits::SocketHandleType<Tag>;
-
     SocketHandle<Tag> _handle;
 
     Delegates::Bidirectional<Tag> _io{ _handle };
@@ -25,6 +23,6 @@ class IncomingSocket : public Socket {
     Delegates::NoopDgramServer _dgramServer;
 
 public:
-    explicit IncomingSocket(Handle handle) :
-        Socket(_handle.closeDelegate(), _io, _client, _connServer, _dgramServer), _handle(handle) {}
+    explicit IncomingSocket(SocketHandle<Tag>&& handle) :
+        Socket(_handle.closeDelegate(), _io, _client, _connServer, _dgramServer), _handle(std::move(handle)) {}
 };
