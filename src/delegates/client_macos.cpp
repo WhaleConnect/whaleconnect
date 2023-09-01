@@ -32,7 +32,9 @@ Task<> Delegates::Client<SocketTag::IP>::connect() {
             co_await Async::run(std::bind_front(Async::submitKqueue, *_handle, Async::IOType::Send));
 
             co_return;
-        } catch (const System::SystemError&) {
+        } catch (const System::SystemError& e) {
+            if (e.isCanceled()) co_return;
+
             lastException = std::current_exception();
         }
     }

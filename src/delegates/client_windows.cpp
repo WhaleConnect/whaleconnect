@@ -70,7 +70,9 @@ Task<> Delegates::Client<SocketTag::IP>::connect() {
             }
 
             co_return;
-        } catch (const System::SystemError&) {
+        } catch (const System::SystemError& e) {
+            if (e.isCanceled()) co_return;
+
             lastException = std::current_exception();
         }
     }
