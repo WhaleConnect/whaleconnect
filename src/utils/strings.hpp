@@ -41,4 +41,10 @@ namespace Strings {
 
     // Replaces all occurrences of a substring within a given base string.
     std::string replaceAll(std::string str, std::string_view from, std::string_view to);
+
+    // Removes null characters from the end of a string.
+    template <class T>
+    void stripNull(std::basic_string<T>& s) {
+        s.erase(s.find(T{}));
+    }
 }
