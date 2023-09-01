@@ -20,6 +20,7 @@
 #include "os/errcheck.hpp"
 #include "utils/handleptr.hpp"
 #include "utils/out_ptr_compat.hpp"
+#include "utils/strings.hpp"
 
 static DBusConnection* conn = nullptr;
 
@@ -236,9 +237,9 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
         sdp_get_service_name(rec.get(), result.name.data(), strBufLen);
         sdp_get_service_desc(rec.get(), result.desc.data(), strBufLen);
 
-        // Erase null chars (sdp_get_service_* doesn't return string length so erase must be used instead of resize)
-        std::erase(result.name, '\0');
-        std::erase(result.desc, '\0');
+        // Erase null chars
+        Strings::stripNull(result.name);
+        Strings::stripNull(result.desc);
 
         // Free function for the list returned from sdp_get_access_protos (inner lists must also be freed)
         auto protoListFreeFn = [](sdp_list_t* p) {
