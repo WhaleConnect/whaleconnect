@@ -5,7 +5,6 @@
 
 #include <string>
 
-#include "delegates/closeable.hpp"
 #include "delegates/delegates.hpp"
 #include "utils/task.hpp"
 
