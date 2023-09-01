@@ -6,19 +6,19 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "closeable.hpp"
+#include "sockethandle.hpp"
 
 #include "net/enums.hpp"
 #include "os/async_macos.hpp"
 
 template <>
-void Delegates::Closeable<SocketTag::IP>::_closeImpl() const {
+void Delegates::SocketHandle<SocketTag::IP>::_closeImpl() const {
     shutdown(_handle, SHUT_RDWR);
     ::close(_handle);
 }
 
 template <>
-void Delegates::Closeable<SocketTag::IP>::cancelIO() {
+void Delegates::SocketHandle<SocketTag::IP>::cancelIO() {
     Async::cancelPending(_handle);
 }
 #endif

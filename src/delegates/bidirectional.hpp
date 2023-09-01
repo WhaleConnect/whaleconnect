@@ -7,8 +7,8 @@
 #include <string>
 
 #include "delegates.hpp"
+#include "sockethandle.hpp"
 
-#include "net/sockethandle.hpp"
 #include "utils/task.hpp"
 
 namespace Delegates {

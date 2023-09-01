@@ -7,17 +7,15 @@
 
 #include "delegates/bidirectional.hpp"
 #include "delegates/client.hpp"
-#include "delegates/closeable.hpp"
 #include "delegates/noops.hpp"
+#include "delegates/sockethandle.hpp"
 #include "net/enums.hpp"
-#include "net/sockethandle.hpp"
 #include "utils/task.hpp"
 
 // A socket representing an outgoing connection.
 template <auto Tag>
 class ClientSocket : public Socket {
-    SocketHandle<Tag> _handle;
-
+    Delegates::SocketHandle<Tag> _handle;
     Delegates::Bidirectional<Tag> _io{ _handle };
     Delegates::Client<Tag> _client;
     Delegates::NoopConnServer _connServer;
@@ -26,7 +24,7 @@ class ClientSocket : public Socket {
 public:
     // Constructs an object with a target device.
     explicit ClientSocket(const Device& device) :
-        Socket(_handle.closeDelegate(), _io, _client, _connServer, _dgramServer), _client(_handle, device) {}
+        Socket(_handle, _io, _client, _connServer, _dgramServer), _client(_handle, device) {}
 };
 
 using ClientSocketIP = ClientSocket<SocketTag::IP>;

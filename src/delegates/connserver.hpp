@@ -6,8 +6,7 @@
 #include <memory>
 
 #include "delegates.hpp"
-
-#include "net/sockethandle.hpp"
+#include "sockethandle.hpp"
 
 class Socket;
 

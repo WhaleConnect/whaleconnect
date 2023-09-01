@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_MACOS
-#include "closeable.hpp"
+#include "sockethandle.hpp"
 
 #include "net/enums.hpp"
 #include "os/async_macos.hpp"
 
 template <>
-void Delegates::Closeable<SocketTag::BT>::_closeImpl() const {
+void Delegates::SocketHandle<SocketTag::BT>::_closeImpl() const {
     [_handle close];
 }
 
 template <>
-void Delegates::Closeable<SocketTag::BT>::cancelIO() {
+void Delegates::SocketHandle<SocketTag::BT>::cancelIO() {
     Async::bluetoothCancel([_handle channelHash]);
 }
 #endif

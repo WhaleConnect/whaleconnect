@@ -4,9 +4,9 @@
 #pragma once
 
 #include "delegates.hpp"
+#include "sockethandle.hpp"
 
 #include "net/device.hpp"
-#include "net/sockethandle.hpp"
 #include "utils/task.hpp"
 
 namespace Delegates {
@@ -14,7 +14,7 @@ namespace Delegates {
     template <auto Tag>
     class Client : public ClientDelegate {
         SocketHandle<Tag>& _handle;
-        const Device& _device;
+        Device _device;
 
     public:
         Client(SocketHandle<Tag>& handle, const Device& device) : _handle(handle), _device(device) {}
