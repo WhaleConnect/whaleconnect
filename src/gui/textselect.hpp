@@ -62,8 +62,7 @@ public:
     // getLineAtIdx: Function taking a size_t (line number) and returning the string in that line in a UnicodeString
     // getNumLines: Function returning a size_t (total number of lines of text)
     template <class T, class U>
-    explicit TextSelect(const T& getLineAtIdx, const U& getNumLines) :
-        _getLineAtIdx(getLineAtIdx), _getNumLines(getNumLines) {}
+    TextSelect(const T& getLineAtIdx, const U& getNumLines) : _getLineAtIdx(getLineAtIdx), _getNumLines(getNumLines) {}
 
     // Checks if there is an active selection in the text.
     bool hasSelection() const {
