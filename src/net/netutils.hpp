@@ -8,8 +8,8 @@
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #else
-// addrinfo/getaddrinfo() related identifiers
 #include <netdb.h>
+#include <sys/socket.h>
 #endif
 
 #include "device.hpp"
@@ -21,13 +21,11 @@
 // Winsock-specific definitions and their Berkeley equivalents
 #if OS_WINDOWS
 using AddrInfoType = ADDRINFOW;
-#else
-constexpr auto GetAddrInfo = getaddrinfo;
-constexpr auto FreeAddrInfo = freeaddrinfo;
-using AddrInfoType = addrinfo;
-#endif
-
 using AddrInfoHandle = HandlePtr<AddrInfoType, FreeAddrInfo>;
+#else
+using AddrInfoType = addrinfo;
+using AddrInfoHandle = HandlePtr<AddrInfoType, freeaddrinfo>;
+#endif
 
 namespace NetUtils {
     // Resolves an address with getaddrinfo.

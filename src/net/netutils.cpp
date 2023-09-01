@@ -9,6 +9,11 @@
 #include "utils/out_ptr_compat.hpp"
 #include "utils/strings.hpp"
 
+#if !OS_WINDOWS
+constexpr auto GetAddrInfo = getaddrinfo;
+constexpr auto GetNameInfo = getnameinfo;
+#endif
+
 AddrInfoHandle NetUtils::resolveAddr(const Device& device, IPType ipType, int flags, bool useLoopback) {
     bool isUDP = device.type == ConnectionType::UDP;
     int family;
