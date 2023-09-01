@@ -27,22 +27,10 @@ template <>
 Task<> Delegates::Client<SocketTag::IP>::connect() {
     auto addr = NetUtils::resolveAddr(_device, IPType::None);
 
-    std::exception_ptr lastException;
-    for (auto result = addr.get(); result; result = result->ai_next) {
-        try {
-            _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
-            co_await Async::run(std::bind_front(startConnect, *_handle, result->ai_addr, result->ai_addrlen));
-
-            co_return;
-        } catch (const System::SystemError& e) {
-            if (e.isCanceled()) throw;
-
-            lastException = std::current_exception();
-        }
-    }
-
-    _handle.reset();
-    std::rethrow_exception(lastException);
+    co_await NetUtils::loopWithAddr(addr.get(), [this](const AddrInfoType* result) -> Task<> {
+        _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
+        co_await Async::run(std::bind_front(startConnect, *_handle, result->ai_addr, result->ai_addrlen));
+    });
 }
 
 template <>

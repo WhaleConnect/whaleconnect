@@ -53,32 +53,20 @@ template <>
 Task<> Delegates::Client<SocketTag::IP>::connect() {
     auto addr = NetUtils::resolveAddr(_device, IPType::None);
 
-    std::exception_ptr lastException;
-    for (auto result = addr.get(); result; result = result->ai_next) {
-        try {
-            _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
+    co_await NetUtils::loopWithAddr(addr.get(), [this](const AddrInfoType* result) -> Task<> {
+        _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
 
-            // Add the socket to the async queue
-            Async::add(*_handle);
+        // Add the socket to the async queue
+        Async::add(*_handle);
 
-            // Datagram sockets can be directly connected (ConnectEx doesn't support them)
-            if (_device.type == ConnectionType::UDP) {
-                call(FN(::connect, *_handle, addr->ai_addr, static_cast<int>(addr->ai_addrlen)));
-            } else {
-                co_await Async::run(std::bind_front(startConnect, *_handle, addr->ai_addr, addr->ai_addrlen));
-                finalizeConnect(*_handle);
-            }
-
-            co_return;
-        } catch (const System::SystemError& e) {
-            if (e.isCanceled()) throw;
-
-            lastException = std::current_exception();
+        // Datagram sockets can be directly connected (ConnectEx doesn't support them)
+        if (_device.type == ConnectionType::UDP) {
+            call(FN(::connect, *_handle, result->ai_addr, static_cast<int>(result->ai_addrlen)));
+        } else {
+            co_await Async::run(std::bind_front(startConnect, *_handle, result->ai_addr, result->ai_addrlen));
+            finalizeConnect(*_handle);
         }
-    }
-
-    _handle.reset();
-    std::rethrow_exception(lastException);
+    });
 }
 
 template <>
