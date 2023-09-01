@@ -25,7 +25,7 @@ static void startConnect(int s, const sockaddr* addr, socklen_t len, Async::Comp
 
 template <>
 Task<> Delegates::Client<SocketTag::IP>::connect() {
-    auto addr = NetUtils::resolveAddr(_device, NetUtils::IPType::None);
+    auto addr = NetUtils::resolveAddr(_device, IPType::None);
 
     std::exception_ptr lastException;
     for (auto result = addr.get(); result; result = result->ai_next) {

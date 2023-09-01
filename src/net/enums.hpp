@@ -9,3 +9,6 @@ enum class SocketTag { IP, BT };
 // All possible connection types.
 // L2CAP connections are not supported on Windows because of limitations with the Microsoft Bluetooth stack.
 enum class ConnectionType { TCP, UDP, L2CAP, RFCOMM, None };
+
+// IP versions.
+enum class IPType { None, V4, V6 };

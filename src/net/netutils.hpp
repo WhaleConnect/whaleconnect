@@ -13,6 +13,7 @@
 #endif
 
 #include "device.hpp"
+#include "enums.hpp"
 
 #include "sockets/clientsocket.hpp"
 #include "utils/handleptr.hpp"
@@ -29,8 +30,6 @@ using AddrInfoType = addrinfo;
 using AddrInfoHandle = HandlePtr<AddrInfoType, FreeAddrInfo>;
 
 namespace NetUtils {
-    enum class IPType { None, V4, V6 };
-
     // Resolves an address with getaddrinfo.
     AddrInfoHandle resolveAddr(const Device& device, IPType ipType, int flags = 0, bool useLoopback = false);
 }
