@@ -7,6 +7,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Improvements
 
 - Prevented multiple close calls on invalid or already closed sockets.
+- If the app receives multiple IP addresses for a host, it now tries connecting to each to increase the chance of a successful connection.
 
 ### Bug Fixes
 
