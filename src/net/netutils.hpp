@@ -4,7 +4,6 @@
 #pragma once
 
 #if OS_WINDOWS
-// Winsock headers
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #else
@@ -30,4 +29,7 @@ using AddrInfoHandle = HandlePtr<AddrInfoType, freeaddrinfo>;
 namespace NetUtils {
     // Resolves an address with getaddrinfo.
     AddrInfoHandle resolveAddr(const Device& device, IPType ipType, int flags = 0, bool useLoopback = false);
+
+    // Returns address information with getnameinfo.
+    Device fromAddr(sockaddr* addr, socklen_t addrLen, ConnectionType type);
 }

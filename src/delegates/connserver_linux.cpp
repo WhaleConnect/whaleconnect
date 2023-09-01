@@ -29,12 +29,7 @@ Task<AcceptResult> Delegates::ConnServer<Tag>::accept() {
         Async::submitRing();
     });
 
-    // Look up IP from sockaddr struct
-    std::string clientIP(INET6_ADDRSTRLEN, '\0');
-    call(FN(getnameinfo, clientAddr, clientLen, clientIP.data(), clientIP.size(), nullptr, 0, NI_NUMERICHOST),
-         checkZero, useReturnCode, System::ErrorType::AddrInfo);
-
-    Device device{ ConnectionType::TCP, "", clientIP, ntohs(client.sin6_port) };
+    Device device = NetUtils::fromAddr(clientAddr, clientLen, ConnectionType::TCP);
     SocketHandle<Tag> fd{ acceptResult.res };
 
     co_return { device, std::make_unique<IncomingSocket<Tag>>(std::move(fd)) };

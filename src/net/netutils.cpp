@@ -51,3 +51,23 @@ AddrInfoHandle NetUtils::resolveAddr(const Device& device, IPType ipType, int fl
 
     return ret;
 }
+
+Device NetUtils::fromAddr(sockaddr* addr, socklen_t addrLen, ConnectionType type) {
+    constexpr auto nullChar = Strings::SysStr::value_type{};
+
+    Strings::SysStr ipStr(NI_MAXHOST, nullChar);
+    Strings::SysStr portStr(NI_MAXSERV, nullChar);
+
+    auto ipLen = static_cast<socklen_t>(ipStr.size());
+    auto portLen = static_cast<socklen_t>(portStr.size());
+
+    call(FN(GetNameInfo, addr, addrLen, ipStr.data(), ipLen, portStr.data(), portLen, NI_NUMERICHOST | NI_NUMERICSERV),
+         checkZero, useReturnCode, System::ErrorType::AddrInfo);
+
+    // Process returned strings
+    Strings::stripNull(ipStr);
+    std::string ip = Strings::fromSys(ipStr);
+    auto port = static_cast<uint16_t>(std::stoi(Strings::fromSys(portStr)));
+
+    return { type, "", ip, port };
+}
