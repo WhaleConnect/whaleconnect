@@ -24,7 +24,7 @@ Task<AcceptResult> Delegates::ConnServer<Tag>::accept() {
 
     auto acceptResult = co_await Async::run([this, &clientAddr, &clientLen](Async::CompletionResult& result) {
         io_uring_sqe* sqe = Async::getUringSQE();
-        io_uring_prep_accept(sqe, _handle, clientAddr, &clientLen, 0);
+        io_uring_prep_accept(sqe, *_handle, clientAddr, &clientLen, 0);
         io_uring_sqe_set_data(sqe, &result);
         Async::submitRing();
     });
@@ -35,9 +35,9 @@ Task<AcceptResult> Delegates::ConnServer<Tag>::accept() {
          checkZero, useReturnCode, System::ErrorType::AddrInfo);
 
     Device device{ ConnectionType::TCP, "", clientIP, ntohs(client.sin6_port) };
-    Handle fd = acceptResult.res;
+    SocketHandle<Tag> fd{ acceptResult.res };
 
-    co_return { device, std::make_unique<IncomingSocket<Tag>>(fd) };
+    co_return { device, std::make_unique<IncomingSocket<Tag>>(std::move(fd)) };
 }
 
 template Task<AcceptResult> Delegates::ConnServer<SocketTag::IP>::accept();
