@@ -1,6 +1,7 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <stdexcept>
 #if OS_WINDOWS
 #include <bit>
 #include <exception>
@@ -73,7 +74,7 @@ template <>
 Task<> Delegates::Client<SocketTag::BT>::connect() {
     // Only RFCOMM sockets are supported by the Microsoft Bluetooth stack on Windows
     if (_device.type != ConnectionType::RFCOMM)
-        throw System::SystemError{ WSAEPFNOSUPPORT, System::ErrorType::System, "socket" };
+        throw std::invalid_argument{ "Socket type not supported" };
 
     _handle.reset(call(FN(socket, AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM)));
 
