@@ -11,6 +11,7 @@
 
 #include "delegates/delegates.hpp"
 #include "net/enums.hpp"
+#include "net/netutils.hpp"
 #include "os/async_macos.hpp"
 #include "os/errcheck.hpp"
 #include "sockets/incomingsocket.hpp"

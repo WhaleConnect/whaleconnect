@@ -12,6 +12,7 @@
 #include "connserver.hpp"
 
 #include "net/enums.hpp"
+#include "net/netutils.hpp"
 #include "os/async_linux.hpp"
 #include "os/errcheck.hpp"
 #include "sockets/incomingsocket.hpp"
