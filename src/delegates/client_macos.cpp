@@ -33,7 +33,7 @@ Task<> Delegates::Client<SocketTag::IP>::connect() {
 
             co_return;
         } catch (const System::SystemError& e) {
-            if (e.isCanceled()) co_return;
+            if (e.isCanceled()) throw;
 
             lastException = std::current_exception();
         }
