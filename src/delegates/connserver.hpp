@@ -8,15 +8,16 @@
 #include "delegates.hpp"
 #include "sockethandle.hpp"
 
-class Socket;
+#include "traits/server.hpp"
 
 namespace Delegates {
     template <auto Tag>
     class ConnServer : public ConnServerDelegate {
         SocketHandle<Tag>& _handle;
+        Traits::Server<Tag> _traits;
 
     public:
-        explicit ConnServer(SocketHandle<Tag>& handle) : _handle(handle) {}
+        ConnServer(SocketHandle<Tag>& handle, const Traits::Server<Tag>& traits) : _handle(handle), _traits(traits) {}
 
         Task<AcceptResult> accept() override;
     };

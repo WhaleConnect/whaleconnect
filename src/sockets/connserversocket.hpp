@@ -15,13 +15,14 @@ class ConnServerSocket : public Socket {
     Delegates::SocketHandle<Tag> _handle;
     Delegates::NoopIO _io;
     Delegates::NoopClient _client;
-    Delegates::ConnServer<Tag> _connServer{ _handle };
+    Delegates::ConnServer<Tag> _connServer;
     Delegates::NoopDgramServer _dgramServer;
 
     void _init(uint16_t port, int backlog);
 
 public:
-    explicit ConnServerSocket(uint16_t port, int backlog) : Socket(_handle, _io, _client, _connServer, _dgramServer) {
+    ConnServerSocket(uint16_t port, int backlog, const Traits::Server<Tag>& traits) :
+        Socket(_handle, _io, _client, _connServer, _dgramServer), _connServer(_handle, traits) {
         _init(port, backlog);
     }
 };
