@@ -41,7 +41,7 @@ namespace NetUtils {
             try {
                 co_await fn(result);
                 co_return;
-            } catch (System::SystemError& e) {
+            } catch (const System::SystemError& e) {
                 lastException = std::current_exception();
 
                 // Leave loop if operation was canceled
