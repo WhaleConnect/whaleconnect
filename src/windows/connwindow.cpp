@@ -66,6 +66,7 @@ Task<> ConnWindow::_readHandler() try {
 
     _pendingRecv = true;
     auto recvRet = co_await _socket->recv();
+    _pendingRecv = false;
 
     if (recvRet) {
         _addText(*recvRet);
@@ -75,8 +76,6 @@ Task<> ConnWindow::_readHandler() try {
         _socket->close();
         _connected = false;
     }
-
-    _pendingRecv = false;
 } catch (const System::SystemError& error) {
     _errorHandler(error);
     _pendingRecv = false;
