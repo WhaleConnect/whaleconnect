@@ -13,15 +13,14 @@ class Socket {
     Delegates::CloseDelegate* _close;
     Delegates::IODelegate* _io;
     Delegates::ClientDelegate* _client;
-    Delegates::ConnServerDelegate* _connServer;
-    Delegates::DgramServerDelegate* _dgramServer;
+    Delegates::ServerDelegate* _server;
 
 public:
     // Constructs an object with delegates.
     Socket(Delegates::CloseDelegate& close, Delegates::IODelegate& io, Delegates::ClientDelegate& client,
-           Delegates::ConnServerDelegate& connServer, Delegates::DgramServerDelegate& dgramServer) :
+           Delegates::ServerDelegate& server) :
         _close(&close),
-        _io(&io), _client(&client), _connServer(&connServer), _dgramServer(&dgramServer) {}
+        _io(&io), _client(&client), _server(&server) {}
 
     virtual ~Socket() = default;
 
@@ -49,15 +48,19 @@ public:
         return _client->connect();
     }
 
+    uint16_t startServer(uint16_t port) const {
+        return _server->startServer(port);
+    }
+
     Task<AcceptResult> accept() const {
-        return _connServer->accept();
+        return _server->accept();
     }
 
     Task<DgramRecvResult> recvFrom() const {
-        return _dgramServer->recvFrom();
+        return _server->recvFrom();
     }
 
     Task<> sendTo(const std::string& addrTo, const std::string& s) const {
-        return _dgramServer->sendTo(addrTo, s);
+        return _server->sendTo(addrTo, s);
     }
 };

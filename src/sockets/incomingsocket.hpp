@@ -17,10 +17,9 @@ class IncomingSocket : public Socket {
     Delegates::SocketHandle<Tag> _handle;
     Delegates::Bidirectional<Tag> _io{ _handle };
     Delegates::NoopClient _client;
-    Delegates::NoopConnServer _connServer;
-    Delegates::NoopDgramServer _dgramServer;
+    Delegates::NoopServer _server;
 
 public:
     explicit IncomingSocket(Delegates::SocketHandle<Tag>&& handle) :
-        Socket(_handle, _io, _client, _connServer, _dgramServer), _handle(std::move(handle)) {}
+        Socket(_handle, _io, _client, _server), _handle(std::move(handle)) {}
 };

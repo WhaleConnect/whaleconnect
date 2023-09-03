@@ -9,7 +9,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
-#include "connserver.hpp"
+#include "server.hpp"
 
 #include "net/enums.hpp"
 #include "net/netutils.hpp"
@@ -18,7 +18,7 @@
 #include "sockets/incomingsocket.hpp"
 
 template <auto Tag>
-Task<AcceptResult> Delegates::ConnServer<Tag>::accept() {
+Task<AcceptResult> Delegates::Server<Tag>::accept() {
     sockaddr_in6 client;
     auto clientAddr = std::bit_cast<sockaddr*>(&client);
     unsigned int clientLen = sizeof(client);
@@ -36,6 +36,6 @@ Task<AcceptResult> Delegates::ConnServer<Tag>::accept() {
     co_return { device, std::make_unique<IncomingSocket<Tag>>(std::move(fd)) };
 }
 
-template Task<AcceptResult> Delegates::ConnServer<SocketTag::IP>::accept();
-template Task<AcceptResult> Delegates::ConnServer<SocketTag::BT>::accept();
+template Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept();
+template Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept();
 #endif

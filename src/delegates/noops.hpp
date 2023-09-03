@@ -27,15 +27,16 @@ namespace Delegates {
         }
     };
 
-    // Provides no-ops for connection-oriented server operations.
-    struct NoopConnServer : public ConnServerDelegate {
+    // Provides no-ops for server operations.
+    struct NoopServer : public ServerDelegate {
+        uint16_t startServer(uint16_t) override {
+            return {};
+        }
+
         Task<AcceptResult> accept() override {
             co_return {};
         }
-    };
 
-    // Provides no-ops for datagram-oriented server operations.
-    struct NoopDgramServer : public DgramServerDelegate {
         Task<DgramRecvResult> recvFrom() override {
             co_return {};
         }
