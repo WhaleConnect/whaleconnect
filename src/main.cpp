@@ -97,7 +97,7 @@ int main(int, char**) {
 
     // Initialize APIs for sockets and Bluetooth
     try {
-        asyncInstance.emplace(Settings::numThreads);
+        asyncInstance.emplace(Settings::numThreads, Settings::queueEntries);
         btutilsInstance.emplace();
     } catch (const System::SystemError& error) {
         ImGui::AddNotification("Initialization error "s + error.what(), NotificationType::Error, 0);

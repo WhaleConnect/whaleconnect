@@ -18,7 +18,7 @@
 static std::vector<io_uring> rings;
 static int currentRingIdx = 0;
 
-void Async::Internal::init(unsigned int numThreads) {
+void Async::Internal::init(unsigned int numThreads, unsigned int queueEntries) {
     rings.reserve(numThreads);
 
     for (unsigned int i = 0; i < numThreads; i++) {
@@ -26,7 +26,7 @@ void Async::Internal::init(unsigned int numThreads) {
         io_uring& ring = rings.emplace_back();
 
         // Initialize the instance
-        call(FN(io_uring_queue_init, 128, &ring, 0), checkZero, useReturnCodeNeg);
+        call(FN(io_uring_queue_init, queueEntries, &ring, 0), checkZero, useReturnCodeNeg);
     }
 }
 

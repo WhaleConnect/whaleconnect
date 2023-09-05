@@ -13,7 +13,7 @@ namespace Async::Internal {
     constexpr auto ASYNC_INTERRUPT = 1;
 
     // Initializes the background thread pool.
-    void init(unsigned int numThreads);
+    void init(unsigned int numThreads, unsigned int queueEntries);
 
     // Signals all threads to exit.
     void stopThreads(unsigned int numThreads);

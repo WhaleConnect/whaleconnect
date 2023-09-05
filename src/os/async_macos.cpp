@@ -109,7 +109,7 @@ static void handleCancel(int kq, SocketQueueMap& sockets, const struct kevent& e
     while (const auto sendCancel = cancelOne(id, sockets, Send)) (*sendCancel)->coroHandle();
 }
 
-void Async::Internal::init(unsigned int numThreads) {
+void Async::Internal::init(unsigned int numThreads, unsigned int) {
     // Populate the vector of kqueues
     kqs.reserve(numThreads);
 

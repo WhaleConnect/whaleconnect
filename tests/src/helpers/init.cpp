@@ -18,7 +18,7 @@ public:
         // construction only when this function is called
         static std::optional<Async::Instance> asyncInstance;
 
-        asyncInstance.emplace(1);
+        asyncInstance.emplace(1, 128);
     }
 };
 

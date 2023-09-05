@@ -12,7 +12,7 @@
 
 static HANDLE completionPort = nullptr; // The IOCP handle
 
-void Async::Internal::init(unsigned int numThreads) {
+void Async::Internal::init(unsigned int numThreads, unsigned int) {
     // Start Winsock
     WSADATA wsaData{};
     call(FN(WSAStartup, MAKEWORD(2, 2), &wsaData), checkTrue, useReturnCode); // MAKEWORD(2, 2) for Winsock 2.2

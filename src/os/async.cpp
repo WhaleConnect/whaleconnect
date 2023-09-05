@@ -13,11 +13,11 @@
 
 #include "os/error.hpp"
 
-Async::Instance::Instance(unsigned int numThreads) :
+Async::Instance::Instance(unsigned int numThreads, unsigned int queueEntries) :
     _workerThreadPool((numThreads == 0) ? std::max(std::thread::hardware_concurrency(), 1U) : numThreads) {
     // If 0 threads are specified, the number is chosen with hardware_concurrency.
     // If the number of supported threads cannot be determined, 1 is created.
-    Internal::init(static_cast<unsigned int>(_workerThreadPool.size()));
+    Internal::init(static_cast<unsigned int>(_workerThreadPool.size()), queueEntries);
 
     // Populate thread pool
     // TODO: Use views::enumerate() in C++23
