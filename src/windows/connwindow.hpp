@@ -18,7 +18,7 @@ class ConnWindow : public ConsoleWindow {
     friend class ConnServerWindow;
 
     std::unique_ptr<Socket> _socket; // Internal socket
-    bool _connected = false;
+    std::atomic_bool _connected = false;
     std::atomic_bool _pendingRecv = false;
 
     // Connects to the server.
