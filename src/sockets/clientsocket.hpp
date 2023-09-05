@@ -18,13 +18,11 @@ class ClientSocket : public Socket {
     Delegates::SocketHandle<Tag> _handle;
     Delegates::Bidirectional<Tag> _io{ _handle };
     Delegates::Client<Tag> _client;
-    Delegates::NoopConnServer _connServer;
-    Delegates::NoopDgramServer _dgramServer;
+    Delegates::NoopServer _server;
 
 public:
     // Constructs an object with a target device.
-    explicit ClientSocket(const Device& device) :
-        Socket(_handle, _io, _client, _connServer, _dgramServer), _client(_handle, device) {}
+    explicit ClientSocket(const Device& device) : Socket(_handle, _io, _client, _server), _client(_handle, device) {}
 };
 
 using ClientSocketIP = ClientSocket<SocketTag::IP>;

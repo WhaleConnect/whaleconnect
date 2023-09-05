@@ -7,7 +7,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
-#include "connserver.hpp"
+#include "server.hpp"
 
 #include "delegates/delegates.hpp"
 #include "net/enums.hpp"
@@ -17,7 +17,7 @@
 #include "sockets/incomingsocket.hpp"
 
 template <>
-Task<AcceptResult> Delegates::ConnServer<SocketTag::IP>::accept() {
+Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     co_await Async::run(std::bind_front(Async::submitKqueue, *_handle, Async::IOType::Receive));
 
     sockaddr_in6 client;

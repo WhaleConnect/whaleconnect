@@ -61,22 +61,20 @@ namespace Delegates {
         virtual Task<> connect() = 0;
     };
 
-    // Manages server operations on a connection-oriented socket.
-    struct ConnServerDelegate {
-        virtual ~ConnServerDelegate() = default;
+    // Manages server operations on a socket.
+    struct ServerDelegate {
+        virtual ~ServerDelegate() = default;
+
+        // Starts the server and returns the server port number.
+        virtual uint16_t startServer(uint16_t port) = 0;
 
         // Accepts a client connection.
         virtual Task<AcceptResult> accept() = 0;
-    };
 
-    // Manages server operations on a datagram-oriented socket.
-    struct DgramServerDelegate {
-        virtual ~DgramServerDelegate() = default;
-
-        // Receives data from a client.
+        // Receives data from a connectionless client.
         virtual Task<DgramRecvResult> recvFrom() = 0;
 
-        // Sends data to a client.
+        // Sends data to a connectionless client.
         virtual Task<> sendTo(std::string addrTo, std::string s) = 0;
     };
 }

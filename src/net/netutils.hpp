@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include <concepts>
 #include <exception>
+#include <type_traits>
 
 #if OS_WINDOWS
 #include <WinSock2.h>
@@ -35,6 +37,7 @@ namespace NetUtils {
 
     // Loops through a getaddrinfo result.
     template <class Fn>
+    requires std::same_as<std::invoke_result_t<Fn, AddrInfoType*>, Task<>>
     Task<> loopWithAddr(const AddrInfoType* addr, Fn fn) {
         std::exception_ptr lastException;
         for (auto result = addr; result; result = result->ai_next) {
@@ -46,6 +49,22 @@ namespace NetUtils {
 
                 // Leave loop if operation was canceled
                 if (e.isCanceled()) break;
+            }
+        }
+
+        std::rethrow_exception(lastException);
+    }
+
+    // Loops through a getaddrinfo result.
+    template <class Fn>
+    void loopWithAddr(const AddrInfoType* addr, Fn fn) {
+        std::exception_ptr lastException;
+        for (auto result = addr; result; result = result->ai_next) {
+            try {
+                fn(result);
+                return;
+            } catch (const System::SystemError&) {
+                lastException = std::current_exception();
             }
         }
 
