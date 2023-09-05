@@ -23,6 +23,6 @@ namespace Delegates {
 
         Task<> send(std::string s) override;
 
-        Task<RecvResult> recv() override;
+        Task<RecvResult> recv(size_t size) override;
     };
 }

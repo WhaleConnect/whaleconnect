@@ -20,12 +20,12 @@ Task<> Delegates::Bidirectional<Tag>::send(std::string data) {
 }
 
 template <auto Tag>
-Task<RecvResult> Delegates::Bidirectional<Tag>::recv() {
-    std::string data(_recvLen, 0);
+Task<RecvResult> Delegates::Bidirectional<Tag>::recv(size_t size) {
+    std::string data(size, 0);
 
     auto recvResult = co_await Async::run([this, &data](Async::CompletionResult& result) {
         io_uring_sqe* sqe = Async::getUringSQE();
-        io_uring_prep_recv(sqe, *_handle, data.data(), _recvLen, MSG_NOSIGNAL);
+        io_uring_prep_recv(sqe, *_handle, data.data(), data.size(), MSG_NOSIGNAL);
         io_uring_sqe_set_data(sqe, &result);
         Async::submitRing();
     });
@@ -37,8 +37,8 @@ Task<RecvResult> Delegates::Bidirectional<Tag>::recv() {
 }
 
 template Task<> Delegates::Bidirectional<SocketTag::IP>::send(std::string);
-template Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv();
+template Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv(size_t);
 
 template Task<> Delegates::Bidirectional<SocketTag::BT>::send(std::string);
-template Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv();
+template Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv(size_t);
 #endif

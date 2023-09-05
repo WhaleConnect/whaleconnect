@@ -40,8 +40,8 @@ public:
         return _io->send(s);
     }
 
-    Task<RecvResult> recv() const {
-        return _io->recv();
+    Task<RecvResult> recv(size_t size) const {
+        return _io->recv(size);
     }
 
     Task<> connect() const {
@@ -56,8 +56,8 @@ public:
         return _server->accept();
     }
 
-    Task<DgramRecvResult> recvFrom() const {
-        return _server->recvFrom();
+    Task<DgramRecvResult> recvFrom(size_t size) const {
+        return _server->recvFrom(size);
     }
 
     Task<> sendTo(const std::string& addrTo, const std::string& s) const {

@@ -25,7 +25,7 @@ namespace Delegates {
 
         Task<AcceptResult> accept() override;
 
-        Task<DgramRecvResult> recvFrom() override {
+        Task<DgramRecvResult> recvFrom(size_t) override {
             co_return {};
         }
 

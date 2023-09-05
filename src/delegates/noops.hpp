@@ -15,7 +15,7 @@ namespace Delegates {
             co_return;
         }
 
-        Task<RecvResult> recv() override {
+        Task<RecvResult> recv(size_t) override {
             co_return {};
         }
     };
@@ -37,7 +37,7 @@ namespace Delegates {
             co_return {};
         }
 
-        Task<DgramRecvResult> recvFrom() override {
+        Task<DgramRecvResult> recvFrom(size_t) override {
             co_return {};
         }
 

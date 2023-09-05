@@ -4,6 +4,7 @@
 #pragma once
 
 #include <concepts>
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <string>
@@ -50,7 +51,7 @@ namespace Delegates {
         virtual Task<> send(std::string s) = 0;
 
         // Receives a string.
-        virtual Task<RecvResult> recv() = 0;
+        virtual Task<RecvResult> recv(size_t size) = 0;
     };
 
     // Manages client operations on a socket.
@@ -72,7 +73,7 @@ namespace Delegates {
         virtual Task<AcceptResult> accept() = 0;
 
         // Receives data from a connectionless client.
-        virtual Task<DgramRecvResult> recvFrom() = 0;
+        virtual Task<DgramRecvResult> recvFrom(size_t size) = 0;
 
         // Sends data to a connectionless client.
         virtual Task<> sendTo(std::string addrTo, std::string s) = 0;
