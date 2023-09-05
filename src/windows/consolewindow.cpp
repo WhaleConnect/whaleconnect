@@ -92,5 +92,8 @@ void ConsoleWindow::_drawControls() {
 void ConsoleWindow::_errorHandler(const System::SystemError& error) {
     // Check for non-fatal errors, then add error line to console
     // Don't handle errors caused by I/O cancellation
-    if (error && !error.isCanceled()) _output.addError(error.what());
+    if (error && !error.isCanceled()) {
+        std::scoped_lock g{ _m };
+        _output.addError(error.what());
+    }
 }

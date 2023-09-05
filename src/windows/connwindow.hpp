@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -18,7 +19,7 @@ class ConnWindow : public ConsoleWindow {
 
     std::unique_ptr<Socket> _socket; // Internal socket
     bool _connected = false;
-    bool _pendingRecv = false;
+    std::atomic_bool _pendingRecv = false;
 
     // Connects to the server.
     Task<> _connect();

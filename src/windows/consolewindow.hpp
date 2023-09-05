@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <mutex>
 #include <string>
 #include <string_view>
 
@@ -24,6 +25,7 @@ class ConsoleWindow : public Window {
     bool _addFinalLineEnding = false;  // If a final line ending is added to the callback input string
 
     Console _output; // Console output
+    std::mutex _m;
 
     // Draws the controls under the console output.
     void _drawControls();
@@ -39,10 +41,12 @@ protected:
     void _errorHandler(const System::SystemError& error);
 
     void _addInfo(std::string_view s) {
+        std::scoped_lock g{ _m };
         _output.addInfo(s);
     }
 
     void _addText(std::string_view s) {
+        std::scoped_lock g{ _m };
         _output.addText(s);
     }
 
