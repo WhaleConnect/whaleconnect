@@ -74,6 +74,8 @@ void ConsoleWindow::_drawControls() {
         ImGui::MenuItem("Send echoing", nullptr, &_sendEchoing);
         ImGui::MenuItem("Clear texbox on send", nullptr, &_clearTextboxOnSubmit);
         ImGui::MenuItem("Add final line ending", nullptr, &_addFinalLineEnding);
+
+        _drawOptions();
         ImGui::EndPopup();
     }
 

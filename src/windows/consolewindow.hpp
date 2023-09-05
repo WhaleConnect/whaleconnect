@@ -30,6 +30,11 @@ class ConsoleWindow : public Window {
     // Draws the controls under the console output.
     void _drawControls();
 
+    // Draws additional options.
+    virtual void _drawOptions() {
+        // May be overridden optionally
+    }
+
     // Called when Enter is hit in the textbox.
     virtual void _sendHandler(std::string_view s) = 0;
 

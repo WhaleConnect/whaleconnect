@@ -61,11 +61,11 @@ Task<> ConnWindow::_sendHandlerAsync(std::string s) try {
     _errorHandler(error);
 }
 
-Task<> ConnWindow::_readHandler() try {
+Task<> ConnWindow::_readHandler(unsigned int recvSize) try {
     if (!_connected || _pendingRecv) co_return;
 
     _pendingRecv = true;
-    auto recvRet = co_await _socket->recv();
+    auto recvRet = co_await _socket->recv(recvSize);
     _pendingRecv = false;
 
     if (recvRet) {
@@ -81,9 +81,17 @@ Task<> ConnWindow::_readHandler() try {
     _pendingRecv = false;
 }
 
+void ConnWindow::_drawOptions() {
+    using namespace ImGui::Literals;
+
+    ImGui::Separator();
+    ImGui::SetNextItemWidth(4_fh);
+    ImGui::InputScalar("Receive size", _recvSize);
+}
+
 void ConnWindow::_onBeforeUpdate() {
     using namespace ImGui::Literals;
 
     ImGui::SetNextWindowSize(35_fh * 20_fh, ImGuiCond_Appearing);
-    _readHandler();
+    _readHandler(_recvSize);
 }

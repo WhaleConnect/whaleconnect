@@ -20,6 +20,7 @@ class ConnWindow : public ConsoleWindow {
     std::unique_ptr<Socket> _socket; // Internal socket
     std::atomic_bool _connected = false;
     std::atomic_bool _pendingRecv = false;
+    unsigned int _recvSize = 1024; // Unsigned int to work with ImGuiDataType
 
     // Connects to the server.
     Task<> _connect();
@@ -28,7 +29,8 @@ class ConnWindow : public ConsoleWindow {
     Task<> _sendHandlerAsync(std::string s);
 
     // Receives a string from the socket and displays it in the console output.
-    Task<> _readHandler();
+    // The receive size is passed as a parameter to avoid concurrent access.
+    Task<> _readHandler(unsigned int recvSize);
 
     // Connects to the target server.
     void _init() override {
@@ -38,6 +40,8 @@ class ConnWindow : public ConsoleWindow {
     void _sendHandler(std::string_view s) override {
         _sendHandlerAsync(std::string{ s });
     }
+
+    void _drawOptions() override;
 
     // Handles incoming I/O.
     void _onBeforeUpdate() override;
