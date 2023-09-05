@@ -15,7 +15,6 @@ namespace Delegates {
     // Manages bidirectional communication on a socket.
     template <auto Tag>
     class Bidirectional : public IODelegate {
-        static constexpr auto _recvLen = 1024; // Receive buffer length
         SocketHandle<Tag>& _handle;
 
     public:
