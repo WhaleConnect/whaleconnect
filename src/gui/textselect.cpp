@@ -77,7 +77,7 @@ static float getScrollDelta(float v, float min, float max) {
 
 TextSelect::Selection TextSelect::_getSelection() const {
     // Start and end may be out of order (ordering is based on Y position)
-    bool startBeforeEnd = _selectStart.y <= _selectEnd.y;
+    bool startBeforeEnd = (_selectStart.y < _selectEnd.y) || ((_selectStart.y == _selectEnd.y) && (_selectStart.x < _selectEnd.x));
 
     // Reorder X points if necessary
     int startX = startBeforeEnd ? _selectStart.x : _selectEnd.x;

@@ -19,6 +19,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 - Fixed an issue where receive operations would not continue after an error.
 - Fixed text selection in connection windows with lots of lines.
+- Fixed copying text in connection windows if a selection was made on one line dragging right to left.
 
 ### Removals
 
