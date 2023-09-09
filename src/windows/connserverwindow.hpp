@@ -26,7 +26,7 @@ class ConnServerWindow : public ConsoleWindow {
 
     void _init() override {
         uint16_t e = _socket->startServer(0);
-        _addInfo(std::format("{} sdf", e));
+        _addInfo(std::format("Server is listening on port {}", e));
     }
 
     void _onBeforeUpdate() override;
