@@ -34,7 +34,7 @@ static void setupSocket(SOCKET s, const AddrInfoType* result) {
 template <>
 uint16_t Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
     auto addr = NetUtils::resolveAddr({ _type, "", "", port }, _traits.ip, AI_PASSIVE, true);
-    bool isV4;
+    bool isV4 = false;
 
     NetUtils::loopWithAddr(addr.get(), [this, &isV4](const AddrInfoType* result) {
         switch (result->ai_family) {
