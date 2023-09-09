@@ -34,7 +34,6 @@ static void setupSocket(SOCKET s, const AddrInfoType* result) {
 template <>
 uint16_t Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
     auto addr = NetUtils::resolveAddr({ _type, "", "", port }, _traits.ip, AI_PASSIVE, true);
-
     bool isV4;
 
     NetUtils::loopWithAddr(addr.get(), [this, &isV4](const AddrInfoType* result) {
@@ -53,11 +52,7 @@ uint16_t Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
         setupSocket(*_handle, result);
     });
 
-    sockaddr_storage localAddr;
-    socklen_t localAddrLen = sizeof(localAddr);
-    call(FN(getsockname, *_handle, std::bit_cast<sockaddr*>(&localAddr), &localAddrLen));
-
-    return NetUtils::getPort(&localAddr, isV4);
+    return NetUtils::getPort(*_handle, isV4);
 }
 
 template <auto Tag>

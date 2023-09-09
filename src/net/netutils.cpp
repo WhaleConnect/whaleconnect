@@ -6,7 +6,10 @@
 #include <bit>
 #include <stdexcept>
 
+#include "enums.hpp"
+
 #include "os/errcheck.hpp"
+#include "traits/sockethandle.hpp"
 #include "utils/out_ptr_compat.hpp"
 #include "utils/strings.hpp"
 
@@ -73,8 +76,12 @@ Device NetUtils::fromAddr(sockaddr* addr, socklen_t addrLen, ConnectionType type
     return { type, "", ip, port };
 }
 
-uint16_t NetUtils::getPort(sockaddr_storage* addr, bool isV4) {
-    uint16_t serverPort = isV4 ? std::bit_cast<sockaddr_in*>(&addr)->sin_port
-                               : std::bit_cast<sockaddr_in6*>(&addr)->sin6_port;
-    return ntohs(serverPort);
+uint16_t NetUtils::getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4) {
+    sockaddr_storage addr;
+    socklen_t localAddrLen = sizeof(addr);
+    call(FN(getsockname, handle, std::bit_cast<sockaddr*>(&addr), &localAddrLen));
+
+    uint16_t port
+        = isV4 ? std::bit_cast<sockaddr_in*>(&addr)->sin_port : std::bit_cast<sockaddr_in6*>(&addr)->sin6_port;
+    return ntohs(port);
 }

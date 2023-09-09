@@ -19,6 +19,7 @@
 #include "enums.hpp"
 
 #include "os/error.hpp"
+#include "traits/sockethandle.hpp"
 #include "utils/handleptr.hpp"
 #include "utils/task.hpp"
 
@@ -75,5 +76,5 @@ namespace NetUtils {
     Device fromAddr(sockaddr* addr, socklen_t addrLen, ConnectionType type);
 
     // Returns the port from a sockaddr.
-    uint16_t getPort(sockaddr_storage* addr, bool isV4);
+    uint16_t getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4);
 }
