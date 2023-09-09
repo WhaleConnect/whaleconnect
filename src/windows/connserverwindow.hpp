@@ -24,10 +24,7 @@ class ConnServerWindow : public ConsoleWindow {
 
     Task<> _accept();
 
-    void _init() override {
-        uint16_t e = _socket->startServer(0);
-        _addInfo(std::format("Server is listening on port {}", e));
-    }
+    void _init() override;
 
     void _onBeforeUpdate() override;
 

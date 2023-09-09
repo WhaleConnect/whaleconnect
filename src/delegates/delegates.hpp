@@ -10,6 +10,7 @@
 #include <string>
 
 #include "net/device.hpp"
+#include "net/enums.hpp"
 #include "utils/task.hpp"
 
 class Socket;
@@ -25,6 +26,11 @@ struct AcceptResult {
 struct DgramRecvResult {
     std::string fromAddr;
     RecvResult data;
+};
+
+struct ServerAddress {
+    uint16_t port = 0;
+    IPType ipType = IPType::None;
 };
 
 namespace Delegates {
@@ -67,7 +73,7 @@ namespace Delegates {
         virtual ~ServerDelegate() = default;
 
         // Starts the server and returns the server port number.
-        virtual uint16_t startServer(uint16_t port) = 0;
+        virtual ServerAddress startServer(uint16_t port) = 0;
 
         // Accepts a client connection.
         virtual Task<AcceptResult> accept() = 0;

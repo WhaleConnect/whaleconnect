@@ -27,10 +27,10 @@ AddrInfoHandle NetUtils::resolveAddr(const Device& device, IPType ipType, int fl
         case None:
             family = AF_UNSPEC;
             break;
-        case V4:
+        case IPv4:
             family = AF_INET;
             break;
-        case V6:
+        case IPv6:
             family = AF_INET6;
             break;
         default:

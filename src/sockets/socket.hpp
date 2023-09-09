@@ -48,7 +48,7 @@ public:
         return _client->connect();
     }
 
-    uint16_t startServer(uint16_t port) const {
+    ServerAddress startServer(uint16_t port) const {
         return _server->startServer(port);
     }
 

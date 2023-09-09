@@ -20,7 +20,7 @@ template <>
 Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     co_await Async::run(std::bind_front(Async::submitKqueue, *_handle, Async::IOType::Receive));
 
-    sockaddr_in6 client;
+    sockaddr_storage client;
     auto clientAddr = std::bit_cast<sockaddr*>(&client);
     unsigned int clientLen = sizeof(client);
 

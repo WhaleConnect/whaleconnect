@@ -11,4 +11,4 @@ enum class SocketTag { IP, BT };
 enum class ConnectionType { TCP, UDP, L2CAP, RFCOMM, None };
 
 // IP versions.
-enum class IPType { None, V4, V6 };
+enum class IPType { None, IPv4, IPv6 };

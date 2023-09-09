@@ -21,7 +21,7 @@ namespace Delegates {
         Server(SocketHandle<Tag>& handle, ConnectionType type, const Traits::Server<Tag>& traits) :
             _handle(handle), _type(type), _traits(traits) {}
 
-        uint16_t startServer(uint16_t port) override;
+        ServerAddress startServer(uint16_t port) override;
 
         Task<AcceptResult> accept() override;
 

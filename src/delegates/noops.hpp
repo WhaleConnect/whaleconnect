@@ -29,7 +29,7 @@ namespace Delegates {
 
     // Provides no-ops for server operations.
     struct NoopServer : public ServerDelegate {
-        uint16_t startServer(uint16_t) override {
+        ServerAddress startServer(uint16_t) override {
             return {};
         }
 

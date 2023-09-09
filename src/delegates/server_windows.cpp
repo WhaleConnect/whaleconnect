@@ -32,7 +32,7 @@ static void setupSocket(SOCKET s, const AddrInfoType* result) {
 }
 
 template <>
-uint16_t Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
+ServerAddress Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
     auto addr = NetUtils::resolveAddr({ _type, "", "", port }, _traits.ip, AI_PASSIVE, true);
     bool isV4 = false;
 
@@ -52,7 +52,7 @@ uint16_t Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
         setupSocket(*_handle, result);
     });
 
-    return NetUtils::getPort(*_handle, isV4);
+    return { NetUtils::getPort(*_handle, isV4), isV4 ? IPType::IPv4 : IPType::IPv6 };
 }
 
 template <auto Tag>
