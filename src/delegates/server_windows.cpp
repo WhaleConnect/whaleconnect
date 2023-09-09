@@ -27,7 +27,7 @@ static void setupSocket(SOCKET s, const AddrInfoType* result) {
     call(FN(setsockopt, s, SOL_SOCKET, SO_REUSEADDR, std::bit_cast<char*>(&on), sizeof(on)));
 
     // Bind and listen
-    call(FN(bind, s, result->ai_addr, result->ai_addrlen));
+    call(FN(bind, s, result->ai_addr, static_cast<socklen_t>(result->ai_addrlen)));
     call(FN(listen, s, SOMAXCONN));
 }
 
