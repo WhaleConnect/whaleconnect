@@ -35,15 +35,29 @@ template <>
 uint16_t Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
     auto addr = NetUtils::resolveAddr({ _type, "", "", port }, _traits.ip, AI_PASSIVE, true);
 
-    NetUtils::loopWithAddr(addr.get(), [this](const AddrInfoType* result) {
+    bool isV4;
+
+    NetUtils::loopWithAddr(addr.get(), [this, &isV4](const AddrInfoType* result) {
+        switch (result->ai_family) {
+            case AF_INET:
+                isV4 = true;
+                break;
+            case AF_INET6:
+                isV4 = false;
+                break;
+            default:
+                return;
+        }
+
         _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
         setupSocket(*_handle, result);
     });
 
-    sockaddr_in6 localAddr;
+    sockaddr_storage localAddr;
     socklen_t localAddrLen = sizeof(localAddr);
     call(FN(getsockname, *_handle, std::bit_cast<sockaddr*>(&localAddr), &localAddrLen));
-    return ntohs(localAddr.sin6_port);
+
+    return NetUtils::getPort(&localAddr, isV4);
 }
 
 template <auto Tag>

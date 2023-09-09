@@ -73,4 +73,7 @@ namespace NetUtils {
 
     // Returns address information with getnameinfo.
     Device fromAddr(sockaddr* addr, socklen_t addrLen, ConnectionType type);
+
+    // Returns the port from a sockaddr.
+    uint16_t getPort(sockaddr_storage* addr, bool isV4);
 }

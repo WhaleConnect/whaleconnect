@@ -3,6 +3,7 @@
 
 #include "netutils.hpp"
 
+#include <bit>
 #include <stdexcept>
 
 #include "os/errcheck.hpp"
@@ -70,4 +71,10 @@ Device NetUtils::fromAddr(sockaddr* addr, socklen_t addrLen, ConnectionType type
     auto port = static_cast<uint16_t>(std::stoi(Strings::fromSys(portStr)));
 
     return { type, "", ip, port };
+}
+
+uint16_t NetUtils::getPort(sockaddr_storage* addr, bool isV4) {
+    uint16_t serverPort = isV4 ? std::bit_cast<sockaddr_in*>(&addr)->sin_port
+                               : std::bit_cast<sockaddr_in6*>(&addr)->sin6_port;
+    return ntohs(serverPort);
 }
