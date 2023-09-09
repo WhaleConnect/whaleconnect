@@ -91,7 +91,7 @@ TextSelect::Selection TextSelect::_getSelection() const {
 }
 
 void TextSelect::_handleMouseDown(const ImVec2& cursorPosStart) {
-    const float textHeight = ImGui::GetTextLineHeight();
+    const float textHeight = ImGui::GetTextLineHeightWithSpacing();
     ImVec2 mousePos = ImGui::GetMousePos() - cursorPosStart;
 
     // Get Y position of mouse cursor, in terms of line number (capped to the index of the last line)
@@ -171,7 +171,7 @@ void TextSelect::_drawSelection(const ImVec2& cursorPosStart) const {
         // Display sizes
         // The width of the space character is used for the width of newlines.
         const float newlineWidth = ImGui::CalcTextSize(" ").x;
-        const float textHeight = ImGui::GetTextLineHeight();
+        const float textHeight = ImGui::GetTextLineHeightWithSpacing();
 
         // The first and last rectangles should only extend to the selection boundaries
         // The middle rectangles (if any) enclose the entire line + some extra width for the newline.
