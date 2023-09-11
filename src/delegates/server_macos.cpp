@@ -17,6 +17,14 @@
 #include "sockets/incomingsocket.hpp"
 
 template <>
+ServerAddress Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
+    ServerAddress result = NetUtils::startServer(port, _handle, _type, _traits.ip);
+
+    Async::prepSocket(*_handle);
+    return result;
+}
+
+template <>
 Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     co_await Async::run(std::bind_front(Async::submitKqueue, *_handle, Async::IOType::Receive));
 
@@ -24,9 +32,10 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     auto clientAddr = std::bit_cast<sockaddr*>(&client);
     unsigned int clientLen = sizeof(client);
 
-    Device device = NetUtils::fromAddr(clientAddr, clientLen, ConnectionType::TCP);
     SocketHandle<SocketTag::IP> fd{ call(FN(::accept, *_handle, clientAddr, &clientLen)) };
+    Device device = NetUtils::fromAddr(clientAddr, clientLen, ConnectionType::TCP);
 
+    Async::prepSocket(*fd);
     co_return { device, std::make_unique<IncomingSocket<SocketTag::IP>>(std::move(fd)) };
 }
 #endif
