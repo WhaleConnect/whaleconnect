@@ -78,7 +78,7 @@ ServerAddress Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
 }
 
 template <>
-ServerAddress Delegates::Server<SocketTag::BT>::startServer() {
+ServerAddress Delegates::Server<SocketTag::BT>::startServer(uint16_t port) {
     // TODO
     return {};
 }
