@@ -56,7 +56,7 @@ AddrInfoHandle NetUtils::resolveAddr(const Device& device, IPType ipType, int fl
     return ret;
 }
 
-Device NetUtils::fromAddr(sockaddr* addr, socklen_t addrLen, ConnectionType type) {
+Device NetUtils::fromAddr(const sockaddr* addr, socklen_t addrLen, ConnectionType type) {
     constexpr auto nullChar = Strings::SysStr::value_type{};
 
     Strings::SysStr ipStr(NI_MAXHOST, nullChar);

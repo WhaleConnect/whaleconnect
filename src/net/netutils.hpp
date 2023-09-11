@@ -75,7 +75,7 @@ namespace NetUtils {
     }
 
     // Returns address information with getnameinfo.
-    Device fromAddr(sockaddr* addr, socklen_t addrLen, ConnectionType type);
+    Device fromAddr(const sockaddr* addr, socklen_t addrLen, ConnectionType type);
 
     // Returns the port from a sockaddr.
     uint16_t getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4);
