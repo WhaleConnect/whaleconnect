@@ -21,8 +21,8 @@
 #include "unicode/unistr.h"
 #include "utils/strings.hpp"
 
-constexpr const char* selectAllShortcut = OS_MACOS ? "Cmd+A" : "Ctrl+A";
-constexpr const char* copyShortcut = OS_MACOS ? "Cmd+C" : "Ctrl+C";
+constexpr const char* selectAllShortcut = OS_MACOS ? "\uEBB8A" : "Ctrl+A";
+constexpr const char* copyShortcut = OS_MACOS ? "\uEBB8C" : "Ctrl+C";
 
 // Formatter used for creating timestamp strings
 static const auto formatter = [] {
