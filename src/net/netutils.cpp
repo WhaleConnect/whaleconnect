@@ -85,3 +85,32 @@ uint16_t NetUtils::getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool 
         = isV4 ? std::bit_cast<sockaddr_in*>(&addr)->sin_port : std::bit_cast<sockaddr_in6*>(&addr)->sin6_port;
     return ntohs(port);
 }
+
+ServerAddress NetUtils::startServer(uint16_t port, Delegates::SocketHandle<SocketTag::IP>& handle, ConnectionType type,
+                                    IPType ip) {
+    auto addr = resolveAddr({ type, "", "", port }, ip, AI_PASSIVE, true);
+    bool isTCP = type == ConnectionType::TCP;
+    bool isV4 = false;
+
+    NetUtils::loopWithAddr(addr.get(), [&handle, &isV4, isTCP](const AddrInfoType* result) {
+        // Only AF_INET/AF_INET6 are supported
+        switch (result->ai_family) {
+            case AF_INET:
+                isV4 = true;
+                break;
+            case AF_INET6:
+                isV4 = false;
+                break;
+            default:
+                return;
+        }
+
+        handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
+
+        // Bind and listen
+        call(FN(bind, *handle, result->ai_addr, static_cast<socklen_t>(result->ai_addrlen)));
+        if (isTCP) call(FN(listen, *handle, SOMAXCONN));
+    });
+
+    return { getPort(*handle, isV4), isV4 ? IPType::IPv4 : IPType::IPv6 };
+}

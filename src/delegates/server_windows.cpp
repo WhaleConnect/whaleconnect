@@ -25,17 +25,6 @@
 constexpr DWORD addrSize = sizeof(sockaddr_storage) + 16;
 using AcceptExBuf = std::vector<BYTE>;
 
-static void setupSocket(SOCKET s, const AddrInfoType* result) {
-    Async::add(s);
-
-    constexpr DWORD on = 1;
-    call(FN(setsockopt, s, SOL_SOCKET, SO_REUSEADDR, std::bit_cast<char*>(&on), sizeof(on)));
-
-    // Bind and listen
-    call(FN(bind, s, result->ai_addr, static_cast<socklen_t>(result->ai_addrlen)));
-    call(FN(listen, s, SOMAXCONN));
-}
-
 static Task<std::pair<sockaddr*, int>> startAccept(SOCKET s, AcceptExBuf& buf, SOCKET clientSocket) {
     static LPFN_ACCEPTEX acceptExPtr = nullptr;
 
@@ -80,27 +69,12 @@ static Task<std::pair<sockaddr*, int>> startAccept(SOCKET s, AcceptExBuf& buf, S
 
 template <>
 ServerAddress Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
-    auto addr = NetUtils::resolveAddr({ _type, "", "", port }, _traits.ip, AI_PASSIVE, true);
-    bool isV4 = false;
+    ServerAddress result = NetUtils::startServer(port, _handle, _type, _traits.ip);
 
-    NetUtils::loopWithAddr(addr.get(), [this, &isV4](const AddrInfoType* result) {
-        switch (result->ai_family) {
-            case AF_INET:
-                isV4 = true;
-                break;
-            case AF_INET6:
-                isV4 = false;
-                break;
-            default:
-                return;
-        }
+    Async::add(*_handle);
+    _traits.ip = result.ipType; // Update IP type in case it was set to None
 
-        _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
-        setupSocket(*_handle, result);
-    });
-
-    _traits.ip = isV4 ? IPType::IPv4 : IPType::IPv6;
-    return { NetUtils::getPort(*_handle, isV4), _traits.ip };
+    return result;
 }
 
 template <>

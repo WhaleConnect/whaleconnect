@@ -18,6 +18,8 @@
 #include "device.hpp"
 #include "enums.hpp"
 
+#include "delegates/delegates.hpp"
+#include "delegates/sockethandle.hpp"
 #include "os/error.hpp"
 #include "traits/sockethandle.hpp"
 #include "utils/handleptr.hpp"
@@ -77,4 +79,8 @@ namespace NetUtils {
 
     // Returns the port from a sockaddr.
     uint16_t getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4);
+
+    // Starts a server with the specified socket handle.
+    ServerAddress startServer(uint16_t port, Delegates::SocketHandle<SocketTag::IP>& handle, ConnectionType type,
+                              IPType ip);
 }
