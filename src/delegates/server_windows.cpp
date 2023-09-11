@@ -80,7 +80,7 @@ ServerAddress Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
 template <>
 ServerAddress Delegates::Server<SocketTag::BT>::startServer() {
     // TODO
-    co_return {};
+    return {};
 }
 
 template <>
