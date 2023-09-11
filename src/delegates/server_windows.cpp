@@ -78,6 +78,12 @@ ServerAddress Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
 }
 
 template <>
+ServerAddress Delegates::Server<SocketTag::BT>::startServer() {
+    // TODO
+    co_return {};
+}
+
+template <>
 Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     // Socket which is associated to the client upon accept
     int af = (_traits.ip == IPType::IPv4) ? AF_INET : AF_INET6;
