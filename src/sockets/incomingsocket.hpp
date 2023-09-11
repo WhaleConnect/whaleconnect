@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <functional>
-
 #include "socket.hpp"
 
 #include "delegates/bidirectional.hpp"
