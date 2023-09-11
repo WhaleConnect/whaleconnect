@@ -3,9 +3,10 @@
 
 #pragma once
 
-#include <concepts> // std::integral, std::floating_point
+#include <concepts>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace Strings {
     // A generalized string type for system functions.
@@ -13,11 +14,7 @@ namespace Strings {
     // On Windows, for a program to be Unicode-aware, it needs to use the Windows API functions ending in "W",
     // indicating the function takes strings of wchar_t which are UTF-16 encoded.
     // Other platforms can use strings of char which are UTF-8 encoded and can handle Unicode.
-#if OS_WINDOWS
-    using SysStr = std::wstring;
-#else
-    using SysStr = std::string;
-#endif
+    using SysStr = std::conditional_t<OS_WINDOWS, std::wstring, std::string>;
 
     // A generalized string view type for system functions.
     using SysStrView = std::basic_string_view<SysStr::value_type>;
@@ -32,11 +29,8 @@ namespace Strings {
     template <class T>
     requires std::integral<T> || std::floating_point<T>
     inline SysStr toSys(T from) {
-#if OS_WINDOWS
-        return std::to_wstring(from);
-#else
-        return std::to_string(from);
-#endif
+        if constexpr (OS_WINDOWS) return std::to_wstring(from);
+        else return std::to_string(from);
     }
 
     // Replaces all occurrences of a substring within a given base string.

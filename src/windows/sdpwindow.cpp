@@ -139,12 +139,12 @@ void SDPWindow::_drawSDPTab() {
         ImGui::EndCombo();
     }
 
-#if OS_WINDOWS || OS_MACOS
-    // Flush cache option (Windows/macOS only)
-    ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x * 4);
-    ImGui::Checkbox("Flush cache", &_flushCache);
-    ImGui::HelpMarker("Ignore previous cached advertising data on this inquiry.");
-#endif
+    if constexpr (OS_WINDOWS || OS_MACOS) {
+        // Flush cache option (Windows/macOS only)
+        ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x * 4);
+        ImGui::Checkbox("Flush cache", &_flushCache);
+        ImGui::HelpMarker("Ignore previous cached advertising data on this inquiry.");
+    }
 
     // Run button
     if (ImGui::Button("Run SDP Inquiry")) {

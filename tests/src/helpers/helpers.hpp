@@ -23,12 +23,8 @@ concept Awaitable = requires (T) { typename std::coroutine_traits<std::invoke_re
 
 // Runs a coroutine synchronously.
 // Bluetooth functions on macOS require a run loop for events.
-void runSync(const Awaitable auto& fn, [[maybe_unused]] bool useRunLoop = false) {
-#if OS_MACOS
-    bool hasRunLoop = useRunLoop;
-#else
-    constexpr bool hasRunLoop = false;
-#endif
+void runSync(const Awaitable auto& fn, bool useRunLoop = false) {
+    bool hasRunLoop = OS_MACOS && useRunLoop;
 
     // Completion tracking
     std::atomic_bool completed = false;
