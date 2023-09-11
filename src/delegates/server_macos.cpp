@@ -30,7 +30,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
 
     sockaddr_storage client;
     auto clientAddr = std::bit_cast<sockaddr*>(&client);
-    unsigned int clientLen = sizeof(client);
+    socklen_t clientLen = sizeof(client);
 
     SocketHandle<SocketTag::IP> fd{ call(FN(::accept, *_handle, clientAddr, &clientLen)) };
     Device device = NetUtils::fromAddr(clientAddr, clientLen, ConnectionType::TCP);
