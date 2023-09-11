@@ -60,4 +60,13 @@ namespace Traits {
     constexpr auto invalidSocketHandle() {
         return SocketHandle<Tag>::invalidHandle;
     }
+
+    // Traits for server sockets.
+    template <auto Tag>
+    struct Server {};
+
+    template <>
+    struct Server<SocketTag::IP> {
+        IPType ip;
+    };
 }

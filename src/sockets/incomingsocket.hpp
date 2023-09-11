@@ -10,7 +10,7 @@
 #include "delegates/bidirectional.hpp"
 #include "delegates/noops.hpp"
 #include "delegates/sockethandle.hpp"
-#include "traits/sockethandle.hpp"
+#include "delegates/traits.hpp"
 
 template <auto Tag>
 class IncomingSocket : public Socket {

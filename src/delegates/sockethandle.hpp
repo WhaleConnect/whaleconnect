@@ -6,8 +6,7 @@
 #include <utility>
 
 #include "delegates.hpp"
-
-#include "traits/sockethandle.hpp"
+#include "traits.hpp"
 
 namespace Delegates {
     // Manages close operations on a socket.

@@ -7,8 +7,7 @@
 
 #include "delegates.hpp"
 #include "sockethandle.hpp"
-
-#include "traits/server.hpp"
+#include "traits.hpp"
 
 namespace Delegates {
     template <auto Tag>

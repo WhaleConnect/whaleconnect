@@ -9,7 +9,6 @@
 #include "enums.hpp"
 
 #include "os/errcheck.hpp"
-#include "traits/sockethandle.hpp"
 #include "utils/out_ptr_compat.hpp"
 #include "utils/strings.hpp"
 

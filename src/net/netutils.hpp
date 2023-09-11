@@ -20,8 +20,8 @@
 
 #include "delegates/delegates.hpp"
 #include "delegates/sockethandle.hpp"
+#include "delegates/traits.hpp"
 #include "os/error.hpp"
-#include "traits/sockethandle.hpp"
 #include "utils/handleptr.hpp"
 #include "utils/task.hpp"
 
