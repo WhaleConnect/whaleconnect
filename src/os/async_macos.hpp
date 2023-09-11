@@ -17,6 +17,9 @@ namespace Async {
     // The type of a Bluetooth I/O operation.
     enum class IOType { Send, Receive };
 
+    // Makes a socket nonblocking for use with kqueue.
+    void prepSocket(int s);
+
     // Submits an event to the kernel queue.
     void submitKqueue(int ident, IOType ioType, CompletionResult& result);
 

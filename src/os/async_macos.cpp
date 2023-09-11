@@ -18,6 +18,7 @@
 #include <IOKit/IOReturn.h>
 #include <magic_enum.hpp>
 #include <sys/event.h>
+#include <sys/fcntl.h>
 
 #include "async.hpp"
 #include "errcheck.hpp"
@@ -177,6 +178,11 @@ void Async::Internal::worker(unsigned int threadNum) {
 
         result.coroHandle();
     }
+}
+
+void Async::prepSocket(int s) {
+    int flags = call(FN(fcntl, s, F_GETFL, 0));
+    call(FN(fcntl, s, F_SETFL, flags | O_NONBLOCK));
 }
 
 void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
