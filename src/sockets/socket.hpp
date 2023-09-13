@@ -36,8 +36,8 @@ public:
         _close->cancelIO();
     }
 
-    Task<> send(const std::string& s) const {
-        return _io->send(s);
+    Task<> send(std::string_view s) const {
+        return _io->send(std::string{ s });
     }
 
     Task<RecvResult> recv(size_t size) const {
@@ -48,8 +48,8 @@ public:
         return _client->connect();
     }
 
-    ServerAddress startServer(uint16_t port) const {
-        return _server->startServer(port);
+    ServerAddress startServer(std::string_view addr, uint16_t port) const {
+        return _server->startServer(addr, port);
     }
 
     Task<AcceptResult> accept() const {
@@ -60,7 +60,7 @@ public:
         return _server->recvFrom(size);
     }
 
-    Task<> sendTo(const std::string& addrTo, const std::string& s) const {
-        return _server->sendTo(addrTo, s);
+    Task<> sendTo(std::string_view addrTo, std::string_view s) const {
+        return _server->sendTo(std::string{ addrTo }, std::string{ s });
     }
 };
