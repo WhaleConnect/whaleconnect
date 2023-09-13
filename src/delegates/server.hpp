@@ -3,11 +3,16 @@
 
 #pragma once
 
+#include <functional>
+#include <map>
 #include <memory>
+#include <stdexcept>
 
 #include "delegates.hpp"
 #include "sockethandle.hpp"
 #include "traits.hpp"
+
+#include "net/enums.hpp"
 
 namespace Delegates {
     template <auto Tag>
@@ -15,6 +20,11 @@ namespace Delegates {
         SocketHandle<Tag>& _handle;
         ConnectionType _type;
         Traits::Server<Tag> _traits;
+        std::map<std::string, sockaddr_storage, std::less<>> _udpClients;
+
+        static std::invalid_argument _unsupported() {
+            return std::invalid_argument{ "Operation not supported with socket type" };
+        }
 
     public:
         Server(SocketHandle<Tag>& handle, ConnectionType type, const Traits::Server<Tag>& traits) :
@@ -32,4 +42,16 @@ namespace Delegates {
             co_return;
         }
     };
+}
+
+// There are no connectionless operations on Bluetooth sockets
+
+template <>
+inline Task<DgramRecvResult> Delegates::Server<SocketTag::BT>::recvFrom(size_t) {
+    throw _unsupported();
+}
+
+template <>
+inline Task<> Delegates::Server<SocketTag::BT>::sendTo(std::string, std::string) {
+    co_return throw _unsupported(); // co_return to indicate this is a coroutine and strings should be passed by value
 }
