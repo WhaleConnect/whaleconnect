@@ -36,7 +36,7 @@ namespace Delegates {
     public:
         explicit Server(SocketHandle<Tag>& handle) : _handle(handle) {}
 
-        ServerAddress startServer(ConnectionType type, std::string_view addr, uint16_t port) override;
+        ServerAddress startServer(const Device& serverInfo) override;
 
         Task<AcceptResult> accept() override;
 

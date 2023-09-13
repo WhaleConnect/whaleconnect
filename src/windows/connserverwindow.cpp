@@ -31,7 +31,7 @@ Task<> ConnServerWindow::_accept() try {
 }
 
 void ConnServerWindow::_init() {
-    auto [port, ip] = _socket->startServer(ConnectionType::TCP, "127.0.0.1", 0);
+    auto [port, ip] = _socket->startServer({ ConnectionType::TCP, "", "127.0.0.1", 0 });
     if (ip == IPType::None) _addInfo(std::format("Server is active on port {}", port));
     else _addInfo(std::format("Server is active on port {} ({})", port, magic_enum::enum_name(ip)));
 }

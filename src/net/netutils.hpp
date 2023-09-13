@@ -81,6 +81,5 @@ namespace NetUtils {
     uint16_t getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4);
 
     // Starts a server with the specified socket handle.
-    ServerAddress startServer(std::string_view addr, uint16_t port, Delegates::SocketHandle<SocketTag::IP>& handle,
-                              ConnectionType type);
+    ServerAddress startServer(const Device& serverInfo, Delegates::SocketHandle<SocketTag::IP>& handle);
 }

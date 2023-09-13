@@ -27,12 +27,12 @@ static void startAccept(int s, sockaddr* clientAddr, socklen_t& clientLen, Async
 }
 
 template <>
-ServerAddress Delegates::Server<SocketTag::IP>::startServer(ConnectionType type, std::string_view addr, uint16_t port) {
-    return NetUtils::startServer(addr, port, _handle, type);
+ServerAddress Delegates::Server<SocketTag::IP>::startServer(const Device& serverInfo) {
+    return NetUtils::startServer(serverInfo, _handle);
 }
 
 template <>
-ServerAddress Delegates::Server<SocketTag::BT>::startServer(ConnectionType type, std::string_view addr, uint16_t port) {
+ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device&) {
     // TODO
     return {};
 }

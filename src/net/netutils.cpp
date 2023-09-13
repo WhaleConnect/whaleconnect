@@ -67,10 +67,9 @@ uint16_t NetUtils::getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool 
     return ntohs(port);
 }
 
-ServerAddress NetUtils::startServer(std::string_view addr, uint16_t port,
-                                    Delegates::SocketHandle<SocketTag::IP>& handle, ConnectionType type) {
-    auto resolved = resolveAddr({ type, "", std::string{ addr }, port });
-    bool isTCP = type == ConnectionType::TCP;
+ServerAddress NetUtils::startServer(const Device& serverInfo, Delegates::SocketHandle<SocketTag::IP>& handle) {
+    auto resolved = resolveAddr(serverInfo);
+    bool isTCP = serverInfo.type == ConnectionType::TCP;
     bool isV4 = false;
 
     NetUtils::loopWithAddr(resolved.get(), [&handle, &isV4, isTCP](const AddrInfoType* result) {

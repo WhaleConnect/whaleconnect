@@ -68,8 +68,8 @@ static Task<std::pair<sockaddr*, int>> startAccept(SOCKET s, AcceptExBuf& buf, S
 }
 
 template <>
-ServerAddress Delegates::Server<SocketTag::IP>::startServer(ConnectionType type, std::string_view addr, uint16_t port) {
-    ServerAddress result = NetUtils::startServer(port, _handle, type, _traits.ip);
+ServerAddress Delegates::Server<SocketTag::IP>::startServer(const Device& serverInfo) {
+    ServerAddress result = NetUtils::startServer(serverInfo, _handle);
 
     Async::add(*_handle);
     _traits.ip = result.ipType; // Update IP type in case it was set to None
