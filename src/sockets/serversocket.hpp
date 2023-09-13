@@ -11,13 +11,13 @@
 #include "net/enums.hpp"
 
 template <auto Tag>
-class ConnServerSocket : public Socket {
+class ServerSocket : public Socket {
     Delegates::SocketHandle<Tag> _handle;
     Delegates::NoopIO _io;
     Delegates::NoopClient _client;
     Delegates::Server<Tag> _server;
 
 public:
-    ConnServerSocket(ConnectionType type, const Traits::Server<Tag>& traits) :
+    ServerSocket(ConnectionType type, const Traits::Server<Tag>& traits) :
         Socket(_handle, _io, _client, _server), _server(_handle, type, traits) {}
 };
