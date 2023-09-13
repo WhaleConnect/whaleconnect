@@ -13,16 +13,21 @@
 
 #include "net/enums.hpp"
 
+#if OS_WINDOWS
+#if __clang__
+#define NO_UNIQUE_ADDRESS // Not supported on Clang on Windows
+#else
+#define NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#endif
+#else
+#define NO_UNIQUE_ADDRESS [[no_unique_address]]
+#endif
+
 namespace Delegates {
     template <auto Tag>
     class Server : public ServerDelegate {
         SocketHandle<Tag>& _handle;
-
-#if OS_WINDOWS
-        [[msvc::no_unique_address]] Traits::Server<Tag> _traits;
-#else
-        [[no_unique_address]] Traits::Server<Tag> _traits;
-#endif
+        NO_UNIQUE_ADDRESS Traits::Server<Tag> _traits;
 
         [[noreturn]] static void _throwUnsupported() {
             throw std::invalid_argument{ "Operation not supported with socket type" };
