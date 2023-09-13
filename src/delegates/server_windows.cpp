@@ -78,12 +78,6 @@ ServerAddress Delegates::Server<SocketTag::IP>::startServer(const Device& server
 }
 
 template <>
-ServerAddress Delegates::Server<SocketTag::BT>::startServer(ConnectionType type, std::string_view addr, uint16_t port) {
-    // TODO
-    return {};
-}
-
-template <>
 Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     // Socket which is associated to the client upon accept
     int af = (_traits.ip == IPType::IPv4) ? AF_INET : AF_INET6;
@@ -97,8 +91,26 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
 }
 
 template <>
+Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t) {
+    // TODO
+    co_return {};
+}
+
+template <>
+Task<> Delegates::Server<SocketTag::IP>::sendTo(std::string, std::string) {
+    // TODO
+    co_return;
+}
+
+template <>
 Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
     // TODO
     co_return {};
+}
+
+template <>
+ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device&) {
+    // TODO
+    return {};
 }
 #endif

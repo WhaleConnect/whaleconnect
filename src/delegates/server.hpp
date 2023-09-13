@@ -40,15 +40,17 @@ namespace Delegates {
 
         Task<AcceptResult> accept() override;
 
-        Task<DgramRecvResult> recvFrom(size_t) override {
-            co_return {};
-        }
+        Task<DgramRecvResult> recvFrom(size_t) override;
 
-        Task<> sendTo(std::string, std::string) override {
-            co_return;
-        }
+        Task<> sendTo(std::string, std::string) override;
     };
 }
+
+template <>
+ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& serverInfo);
+
+template <>
+Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept();
 
 // There are no connectionless operations on Bluetooth sockets
 
