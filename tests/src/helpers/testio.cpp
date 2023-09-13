@@ -8,9 +8,6 @@
 #include "helpers.hpp"
 
 void testIO(const Socket& socket, bool useRunLoop) {
-    // Connect
-    runSync([&socket]() -> Task<> { co_await socket.connect(); }, useRunLoop);
-
     // Check the socket is valid
     REQUIRE(socket.isValid());
 
@@ -23,8 +20,16 @@ void testIO(const Socket& socket, bool useRunLoop) {
 
             // Receive data and check if the string matches
             // The co_await is outside the CHECK() macro to prevent it from being expanded and evaluated multiple times.
-            auto recvResult = co_await socket.recv();
+            auto recvResult = co_await socket.recv(1024);
             CHECK(recvResult == echoString);
         },
         useRunLoop);
+}
+
+void testIOClient(const Socket& socket, const Device &device, bool useRunLoop) {
+    runSync([&socket, &device]() -> Task<> {
+        co_await socket.connect(device);
+    });
+
+    testIO(socket, useRunLoop);
 }

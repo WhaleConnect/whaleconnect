@@ -51,7 +51,7 @@ static void finalizeConnect(SOCKET s) {
 }
 
 template <>
-Task<> Delegates::Client<SocketTag::IP>::connect(const Device& device) {
+Task<> Delegates::Client<SocketTag::IP>::connect(Device device) {
     auto addr = NetUtils::resolveAddr(device);
 
     co_await NetUtils::loopWithAddr(addr.get(), [this](const AddrInfoType* result) -> Task<> {
@@ -71,7 +71,7 @@ Task<> Delegates::Client<SocketTag::IP>::connect(const Device& device) {
 }
 
 template <>
-Task<> Delegates::Client<SocketTag::BT>::connect() {
+Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     // Only RFCOMM sockets are supported by the Microsoft Bluetooth stack on Windows
     if (device.type != ConnectionType::RFCOMM)
         throw std::invalid_argument{ "Socket type not supported" };

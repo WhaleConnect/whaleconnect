@@ -18,6 +18,6 @@ namespace Delegates {
     public:
         explicit Client(SocketHandle<Tag>& handle) : _handle(handle) {}
 
-        Task<> connect(const Device& device) override;
+        Task<> connect(Device device) override;
     };
 }

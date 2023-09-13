@@ -48,8 +48,8 @@ public:
         return _client->connect(device);
     }
 
-    ServerAddress startServer(std::string_view addr, uint16_t port) const {
-        return _server->startServer(addr, port);
+    ServerAddress startServer(ConnectionType type, std::string_view addr, uint16_t port) const {
+        return _server->startServer(type, addr, port);
     }
 
     Task<AcceptResult> accept() const {

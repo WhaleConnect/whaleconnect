@@ -30,10 +30,10 @@ struct CancellationMatcher : Catch::Matchers::MatcherGenericBase {
 
 TEST_CASE("Cancellation") {
     // Create IPv4 TCP socket
-    ClientSocketIP sock{ { ConnectionType::TCP, "", v4Addr, tcpPort } };
+    ClientSocketIP sock;
 
     // Connect
-    runSync([&sock]() -> Task<> { co_await sock.connect(); });
+    runSync([&sock]() -> Task<> { co_await sock.connect({ ConnectionType::TCP, "", v4Addr, tcpPort }); });
 
     // Create a separate thread to briefly wait, then cancel I/O while recv() is pending
     std::thread cancelThread{ [&sock] {
@@ -45,7 +45,7 @@ TEST_CASE("Cancellation") {
 
     // Start a receive operation
     // It should be interrupted by the second thread and throw an exception
-    auto recvOperation = [&sock]() -> Task<> { co_await sock.recv(); };
+    auto recvOperation = [&sock]() -> Task<> { co_await sock.recv(4); };
 
     CHECK_THROWS_MATCHES(runSync(recvOperation), System::SystemError, CancellationMatcher{});
 

@@ -24,25 +24,25 @@ TEST_CASE("I/O (Internet Protocol)") {
 
     SECTION("TCP") {
         SECTION("IPv4 TCP sockets") {
-            ClientSocketIP s{ { TCP, "", v4Addr, tcpPort } };
-            testIO(s);
+            ClientSocketIP s;
+            testIOClient(s, { TCP, "", v4Addr, tcpPort });
         }
 
         SECTION("IPv6 TCP sockets") {
-            ClientSocketIP s{ { TCP, "", v6Addr, tcpPort } };
-            testIO(s);
+            ClientSocketIP s;
+            testIOClient(s, { TCP, "", v6Addr, tcpPort });
         }
     }
 
     SECTION("UDP") {
         SECTION("IPv4 UDP sockets") {
-            ClientSocketIP s{ { UDP, "", v4Addr, udpPort } };
-            testIO(s);
+            ClientSocketIP s;
+            testIOClient(s, { UDP, "", v4Addr, udpPort });
         }
 
         SECTION("IPv6 UDP sockets") {
-            ClientSocketIP s{ { UDP, "", v6Addr, udpPort } };
-            testIO(s);
+            ClientSocketIP s;
+            testIOClient(s, { UDP, "", v6Addr, udpPort });
         }
     }
 }

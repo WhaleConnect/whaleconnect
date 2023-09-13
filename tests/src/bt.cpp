@@ -26,14 +26,14 @@ TEST_CASE("I/O (Bluetooth)") {
     using enum ConnectionType;
 
     SECTION("RFCOMM") {
-        ClientSocketBT s{ { RFCOMM, "", mac, rfcommPort } };
-        testIO(s, true);
+        ClientSocketBT s;
+        testIOClient(s, { RFCOMM, "", mac, rfcommPort }, true);
     }
 
 #if !OS_WINDOWS
     SECTION("L2CAP") {
-        ClientSocketBT s{ { L2CAP, "", mac, l2capPSM } };
-        testIO(s, true);
+        ClientSocketBT s;
+        testIOClient(s, { L2CAP, "", mac, l2capPSM }, true);
     }
 #endif
 }
