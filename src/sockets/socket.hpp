@@ -44,8 +44,8 @@ public:
         return _io->recv(size);
     }
 
-    Task<> connect() const {
-        return _client->connect();
+    Task<> connect(const Device& device) const {
+        return _client->connect(device);
     }
 
     ServerAddress startServer(std::string_view addr, uint16_t port) const {

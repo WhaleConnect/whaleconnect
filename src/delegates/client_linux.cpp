@@ -24,8 +24,8 @@ static void startConnect(int s, const sockaddr* addr, socklen_t len, Async::Comp
 }
 
 template <>
-Task<> Delegates::Client<SocketTag::IP>::connect() {
-    auto addr = NetUtils::resolveAddr(_device);
+Task<> Delegates::Client<SocketTag::IP>::connect(const Device& device) {
+    auto addr = NetUtils::resolveAddr(device);
 
     co_await NetUtils::loopWithAddr(addr.get(), [this](const AddrInfoType* result) -> Task<> {
         _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
@@ -34,10 +34,10 @@ Task<> Delegates::Client<SocketTag::IP>::connect() {
 }
 
 template <>
-Task<> Delegates::Client<SocketTag::BT>::connect() {
+Task<> Delegates::Client<SocketTag::BT>::connect(const Device& device) {
     // Address of the device to connect to
     bdaddr_t bdaddr;
-    str2ba(_device.address.c_str(), &bdaddr);
+    str2ba(device.address.c_str(), &bdaddr);
 
     // The structure used depends on the protocol
     union {
@@ -48,15 +48,15 @@ Task<> Delegates::Client<SocketTag::BT>::connect() {
     socklen_t addrSize;
 
     // Set the appropriate sockaddr struct based on the protocol
-    if (_device.type == ConnectionType::RFCOMM) {
+    if (device.type == ConnectionType::RFCOMM) {
         _handle.reset(call(FN(socket, AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)));
 
-        sAddrBT.addrRC = { AF_BLUETOOTH, bdaddr, static_cast<uint8_t>(_device.port) };
+        sAddrBT.addrRC = { AF_BLUETOOTH, bdaddr, static_cast<uint8_t>(device.port) };
         addrSize = sizeof(sAddrBT.addrRC);
     } else {
         _handle.reset(call(FN(socket, AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)));
 
-        sAddrBT.addrL2 = { AF_BLUETOOTH, htobs(_device.port), bdaddr, 0, 0 };
+        sAddrBT.addrL2 = { AF_BLUETOOTH, htobs(device.port), bdaddr, 0, 0 };
         addrSize = sizeof(sAddrBT.addrL2);
     }
 

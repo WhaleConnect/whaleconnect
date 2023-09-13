@@ -22,7 +22,7 @@ namespace Delegates {
 
     // Provides no-ops for client operations.
     struct NoopClient : ClientDelegate {
-        Task<> connect() override {
+        Task<> connect(const Device&) override {
             co_return;
         }
     };

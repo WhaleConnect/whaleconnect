@@ -22,7 +22,7 @@ class ClientSocket : public Socket {
 
 public:
     // Constructs an object with a target device.
-    explicit ClientSocket(const Device& device) : Socket(_handle, _io, _client, _server), _client(_handle, device) {}
+    ClientSocket() : Socket(_handle, _io, _client, _server), _client(_handle) {}
 };
 
 using ClientSocketIP = ClientSocket<SocketTag::IP>;

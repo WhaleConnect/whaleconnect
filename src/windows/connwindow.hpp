@@ -18,6 +18,7 @@ class ConnWindow : public ConsoleWindow {
     friend class ConnServerWindow;
 
     std::unique_ptr<Socket> _socket; // Internal socket
+    Device _device;
     std::atomic_bool _connected = false;
     std::atomic_bool _pendingRecv = false;
     unsigned int _recvSize = 1024; // Unsigned int to work with ImGuiDataType

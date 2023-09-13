@@ -65,7 +65,7 @@ namespace Delegates {
         virtual ~ClientDelegate() = default;
 
         // Connects to a host.
-        virtual Task<> connect() = 0;
+        virtual Task<> connect(const Device& device) = 0;
     };
 
     // Manages server operations on a socket.

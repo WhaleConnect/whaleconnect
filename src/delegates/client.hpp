@@ -14,11 +14,10 @@ namespace Delegates {
     template <auto Tag>
     class Client : public ClientDelegate {
         SocketHandle<Tag>& _handle;
-        Device _device;
 
     public:
-        Client(SocketHandle<Tag>& handle, const Device& device) : _handle(handle), _device(device) {}
+        explicit Client(SocketHandle<Tag>& handle) : _handle(handle) {}
 
-        Task<> connect() override;
+        Task<> connect(const Device& device) override;
     };
 }

@@ -42,12 +42,12 @@ static std::string formatDevice(const Device& device, std::string_view extraInfo
 }
 
 ConnWindow::ConnWindow(std::unique_ptr<Socket>&& socket, const Device& device, std::string_view extraInfo) :
-    ConsoleWindow(formatDevice(device, extraInfo)), _socket(std::move(socket)) {}
+    ConsoleWindow(formatDevice(device, extraInfo)), _socket(std::move(socket)), _device(device) {}
 
 Task<> ConnWindow::_connect() try {
     // Connect the socket
     _addInfo("Connecting...");
-    co_await _socket->connect();
+    co_await _socket->connect(_device);
 
     _addInfo("Connected.");
     _connected = true;

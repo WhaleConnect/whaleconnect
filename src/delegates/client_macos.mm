@@ -12,20 +12,20 @@
 #include "os/error.hpp"
 
 template <>
-Task<> Delegates::Client<SocketTag::BT>::connect() {
-    auto target = [IOBluetoothDevice deviceWithAddressString:@(_device.address.c_str())];
+Task<> Delegates::Client<SocketTag::BT>::connect(const Device& device) {
+    auto target = [IOBluetoothDevice deviceWithAddressString:@(device.address.c_str())];
     IOReturn result = kIOReturnSuccess;
     id channel = nil;
 
     const char* fnName = "<opening channel>";
 
     using enum ConnectionType;
-    switch (_device.type) {
+    switch (device.type) {
         case L2CAP:
-            result = [target openL2CAPChannelAsync:&channel withPSM:_device.port delegate:nil];
+            result = [target openL2CAPChannelAsync:&channel withPSM:device.port delegate:nil];
             break;
         case RFCOMM:
-            result = [target openRFCOMMChannelAsync:&channel withChannelID:_device.port delegate:nil];
+            result = [target openRFCOMMChannelAsync:&channel withChannelID:device.port delegate:nil];
             break;
         default:
             throw System::SystemError{ kIOReturnUnsupported, System::ErrorType::IOReturn, fnName };

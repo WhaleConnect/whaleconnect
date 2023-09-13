@@ -14,8 +14,8 @@
 #include "os/errcheck.hpp"
 
 template <>
-Task<> Delegates::Client<SocketTag::IP>::connect() {
-    auto addr = NetUtils::resolveAddr(_device);
+Task<> Delegates::Client<SocketTag::IP>::connect(const Device& device) {
+    auto addr = NetUtils::resolveAddr(device);
 
     co_await NetUtils::loopWithAddr(addr.get(), [this](const AddrInfoType* result) -> Task<> {
         _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));

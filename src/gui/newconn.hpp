@@ -16,7 +16,7 @@
 // Adds a ConnWindow to a window list and handles errors during socket creation.
 template <auto Tag>
 void addConnWindow(WindowList& list, const Device& device, std::string_view extraInfo) {
-    auto socket = std::make_unique<ClientSocket<Tag>>(device);
+    auto socket = std::make_unique<ClientSocket<Tag>>();
     bool isNew = list.add<ConnWindow>(std::move(socket), device, extraInfo);
 
     // If the connection exists, show a message
