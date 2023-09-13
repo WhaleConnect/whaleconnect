@@ -32,12 +32,6 @@ ServerAddress Delegates::Server<SocketTag::IP>::startServer(const Device& server
 }
 
 template <>
-ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device&) {
-    // TODO
-    return {};
-}
-
-template <>
 Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     sockaddr_storage client;
     auto clientAddr = std::bit_cast<sockaddr*>(&client);
@@ -52,8 +46,26 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
 }
 
 template <>
+Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t) {
+    // TODO
+    co_return {};
+}
+
+template <>
+Task<> Delegates::Server<SocketTag::IP>::sendTo(std::string, std::string) {
+    // TODO
+    co_return;
+}
+
+template <>
 Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
     // TODO
     co_return {};
+}
+
+template <>
+ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device&) {
+    // TODO
+    return {};
 }
 #endif
