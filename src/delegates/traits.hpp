@@ -3,10 +3,16 @@
 
 #pragma once
 
+#include <functional>
+#include <map>
+
 #if OS_WINDOWS
-// Winsock header
 #include <WinSock2.h>
-#elif OS_MACOS
+#else
+#include <sys/socket.h>
+#endif
+
+#if OS_MACOS
 #include "net/bthandle.h"
 #include "net/enums.hpp"
 #endif
@@ -68,5 +74,6 @@ namespace Traits {
     template <>
     struct Server<SocketTag::IP> {
         IPType ip;
+        std::map<std::string, sockaddr_storage, std::less<>> udpClients;
     };
 }

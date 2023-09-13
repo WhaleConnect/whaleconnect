@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include <functional>
-#include <map>
+#include <coroutine>
 #include <memory>
 #include <stdexcept>
 
@@ -19,11 +18,15 @@ namespace Delegates {
     class Server : public ServerDelegate {
         SocketHandle<Tag>& _handle;
         ConnectionType _type;
-        Traits::Server<Tag> _traits;
-        std::map<std::string, sockaddr_storage, std::less<>> _udpClients;
 
-        static std::invalid_argument _unsupported() {
-            return std::invalid_argument{ "Operation not supported with socket type" };
+#if OS_WINDOWS
+        [[msvc::no_unique_address]] Traits::Server<Tag> _traits;
+#else
+        [[no_unique_address]] Traits::Server<Tag> _traits;
+#endif
+
+        [[noreturn]] static void _throwUnsupported() {
+            throw std::invalid_argument{ "Operation not supported with socket type" };
         }
 
     public:
@@ -47,10 +50,11 @@ namespace Delegates {
 
 template <>
 inline Task<DgramRecvResult> Delegates::Server<SocketTag::BT>::recvFrom(size_t) {
-    throw _unsupported();
+    _throwUnsupported();
 }
 
 template <>
 inline Task<> Delegates::Server<SocketTag::BT>::sendTo(std::string, std::string) {
-    co_return throw _unsupported(); // co_return to indicate this is a coroutine and strings should be passed by value
+    co_await std::suspend_never{}; // Indicate this is a coroutine and strings should be passed by value
+    _throwUnsupported();
 }
