@@ -54,14 +54,14 @@ template <>
 Task<> Delegates::Client<SocketTag::IP>::connect(Device device) {
     auto addr = NetUtils::resolveAddr(device);
 
-    co_await NetUtils::loopWithAddr(addr.get(), [this](const AddrInfoType* result) -> Task<> {
+    co_await NetUtils::loopWithAddr(addr.get(), [this, type = device.type](const AddrInfoType* result) -> Task<> {
         _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
 
         // Add the socket to the async queue
         Async::add(*_handle);
 
         // Datagram sockets can be directly connected (ConnectEx doesn't support them)
-        if (device.type == ConnectionType::UDP) {
+        if (type == ConnectionType::UDP) {
             call(FN(::connect, *_handle, result->ai_addr, static_cast<int>(result->ai_addrlen)));
         } else {
             co_await Async::run(std::bind_front(startConnect, *_handle, result->ai_addr, result->ai_addrlen));
@@ -73,8 +73,7 @@ Task<> Delegates::Client<SocketTag::IP>::connect(Device device) {
 template <>
 Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     // Only RFCOMM sockets are supported by the Microsoft Bluetooth stack on Windows
-    if (device.type != ConnectionType::RFCOMM)
-        throw std::invalid_argument{ "Socket type not supported" };
+    if (device.type != ConnectionType::RFCOMM) throw std::invalid_argument{ "Socket type not supported" };
 
     _handle.reset(call(FN(socket, AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM)));
 
