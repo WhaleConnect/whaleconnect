@@ -72,8 +72,8 @@ namespace Delegates {
     struct ServerDelegate {
         virtual ~ServerDelegate() = default;
 
-        // Starts the server and returns the server port number.
-        virtual ServerAddress startServer(std::string_view addr, uint16_t port) = 0;
+        // Starts the server and returns server information.
+        virtual ServerAddress startServer(ConnectionType type, std::string_view addr, uint16_t port) = 0;
 
         // Accepts a client connection.
         virtual Task<AcceptResult> accept() = 0;

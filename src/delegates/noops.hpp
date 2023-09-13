@@ -6,6 +6,7 @@
 #include "delegates.hpp"
 
 #include "net/device.hpp"
+#include "net/enums.hpp"
 #include "utils/task.hpp"
 
 namespace Delegates {
@@ -29,7 +30,7 @@ namespace Delegates {
 
     // Provides no-ops for server operations.
     struct NoopServer : ServerDelegate {
-        ServerAddress startServer(std::string_view, uint16_t) override {
+        ServerAddress startServer(ConnectionType, std::string_view, uint16_t) override {
             return {};
         }
 

@@ -17,7 +17,6 @@ namespace Delegates {
     template <auto Tag>
     class Server : public ServerDelegate {
         SocketHandle<Tag>& _handle;
-        ConnectionType _type;
 
 #if OS_WINDOWS
         [[msvc::no_unique_address]] Traits::Server<Tag> _traits;
@@ -30,9 +29,9 @@ namespace Delegates {
         }
 
     public:
-        Server(SocketHandle<Tag>& handle, ConnectionType type) : _handle(handle), _type(type) {}
+        explicit Server(SocketHandle<Tag>& handle) : _handle(handle) {}
 
-        ServerAddress startServer(std::string_view addr, uint16_t port) override;
+        ServerAddress startServer(ConnectionType type, std::string_view addr, uint16_t port) override;
 
         Task<AcceptResult> accept() override;
 

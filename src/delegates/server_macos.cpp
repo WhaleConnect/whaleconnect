@@ -17,8 +17,8 @@
 #include "sockets/incomingsocket.hpp"
 
 template <>
-ServerAddress Delegates::Server<SocketTag::IP>::startServer(std::string_view addr, uint16_t port) {
-    ServerAddress result = NetUtils::startServer(addr, port, _handle, _type);
+ServerAddress Delegates::Server<SocketTag::IP>::startServer(ConnectionType type, std::string_view addr, uint16_t port) {
+    ServerAddress result = NetUtils::startServer(addr, port, _handle, type);
 
     Async::prepSocket(*_handle);
     return result;
