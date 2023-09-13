@@ -24,7 +24,7 @@ static void startConnect(int s, const sockaddr* addr, socklen_t len, Async::Comp
 }
 
 template <>
-Task<> Delegates::Client<SocketTag::IP>::connect(const Device& device) {
+Task<> Delegates::Client<SocketTag::IP>::connect(Device device) {
     auto addr = NetUtils::resolveAddr(device);
 
     co_await NetUtils::loopWithAddr(addr.get(), [this](const AddrInfoType* result) -> Task<> {
@@ -34,7 +34,7 @@ Task<> Delegates::Client<SocketTag::IP>::connect(const Device& device) {
 }
 
 template <>
-Task<> Delegates::Client<SocketTag::BT>::connect(const Device& device) {
+Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     // Address of the device to connect to
     bdaddr_t bdaddr;
     str2ba(device.address.c_str(), &bdaddr);

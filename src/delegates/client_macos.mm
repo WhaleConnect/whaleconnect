@@ -12,7 +12,7 @@
 #include "os/error.hpp"
 
 template <>
-Task<> Delegates::Client<SocketTag::BT>::connect(const Device& device) {
+Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     auto target = [IOBluetoothDevice deviceWithAddressString:@(device.address.c_str())];
     IOReturn result = kIOReturnSuccess;
     id channel = nil;
