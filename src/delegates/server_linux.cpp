@@ -27,8 +27,8 @@ static void startAccept(int s, sockaddr* clientAddr, socklen_t& clientLen, Async
 }
 
 template <>
-ServerAddress Delegates::Server<SocketTag::IP>::startServer(uint16_t port) {
-    return NetUtils::startServer(port, _handle, _type, _traits.ip);
+ServerAddress Delegates::Server<SocketTag::IP>::startServer(std::string_view addr, uint16_t port) {
+    return NetUtils::startServer(addr, port, _handle, _type);
 }
 
 template <>

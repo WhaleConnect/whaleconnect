@@ -18,6 +18,5 @@ class ServerSocket : public Socket {
     Delegates::Server<Tag> _server;
 
 public:
-    ServerSocket(ConnectionType type, const Traits::Server<Tag>& traits) :
-        Socket(_handle, _io, _client, _server), _server(_handle, type, traits) {}
+    explicit ServerSocket(ConnectionType type) : Socket(_handle, _io, _client, _server), _server(_handle, type) {}
 };

@@ -29,7 +29,7 @@ namespace Delegates {
 
     // Provides no-ops for server operations.
     struct NoopServer : ServerDelegate {
-        ServerAddress startServer(uint16_t) override {
+        ServerAddress startServer(std::string_view, uint16_t) override {
             return {};
         }
 

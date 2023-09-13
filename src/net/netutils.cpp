@@ -6,6 +6,8 @@
 #include <bit>
 #include <stdexcept>
 
+#include <sys/socket.h>
+
 #include "enums.hpp"
 
 #include "os/errcheck.hpp"
@@ -17,28 +19,10 @@ constexpr auto GetAddrInfo = getaddrinfo;
 constexpr auto GetNameInfo = getnameinfo;
 #endif
 
-AddrInfoHandle NetUtils::resolveAddr(const Device& device, IPType ipType, int flags, bool useLoopback) {
+AddrInfoHandle NetUtils::resolveAddr(const Device& device) {
     bool isUDP = device.type == ConnectionType::UDP;
-    int family;
-
-    using enum IPType;
-    switch (ipType) {
-        case None:
-            family = AF_UNSPEC;
-            break;
-        case IPv4:
-            family = AF_INET;
-            break;
-        case IPv6:
-            family = AF_INET6;
-            break;
-        default:
-            throw std::invalid_argument{ "Invalid IP type" };
-    }
-
     AddrInfoType hints{
-        .ai_flags = flags,
-        .ai_family = family,
+        .ai_family = AF_UNSPEC,
         .ai_socktype = isUDP ? SOCK_DGRAM : SOCK_STREAM,
         .ai_protocol = isUDP ? IPPROTO_UDP : IPPROTO_TCP,
     };
@@ -49,8 +33,8 @@ AddrInfoHandle NetUtils::resolveAddr(const Device& device, IPType ipType, int fl
 
     // Resolve the IP
     AddrInfoHandle ret;
-    call(FN(GetAddrInfo, useLoopback ? nullptr : addrWide.c_str(), portWide.c_str(), &hints, std2::out_ptr(ret)),
-         checkZero, useReturnCode, System::ErrorType::AddrInfo);
+    call(FN(GetAddrInfo, addrWide.c_str(), portWide.c_str(), &hints, std2::out_ptr(ret)), checkZero, useReturnCode,
+         System::ErrorType::AddrInfo);
 
     return ret;
 }
@@ -85,13 +69,13 @@ uint16_t NetUtils::getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool 
     return ntohs(port);
 }
 
-ServerAddress NetUtils::startServer(uint16_t port, Delegates::SocketHandle<SocketTag::IP>& handle, ConnectionType type,
-                                    IPType ip) {
-    auto addr = resolveAddr({ type, "", "", port }, ip, AI_PASSIVE, true);
+ServerAddress NetUtils::startServer(std::string_view addr, uint16_t port,
+                                    Delegates::SocketHandle<SocketTag::IP>& handle, ConnectionType type) {
+    auto resolved = resolveAddr({ type, "", std::string{ addr }, port });
     bool isTCP = type == ConnectionType::TCP;
     bool isV4 = false;
 
-    NetUtils::loopWithAddr(addr.get(), [&handle, &isV4, isTCP](const AddrInfoType* result) {
+    NetUtils::loopWithAddr(resolved.get(), [&handle, &isV4, isTCP](const AddrInfoType* result) {
         // Only AF_INET/AF_INET6 are supported
         switch (result->ai_family) {
             case AF_INET:

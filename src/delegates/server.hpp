@@ -27,10 +27,9 @@ namespace Delegates {
         }
 
     public:
-        Server(SocketHandle<Tag>& handle, ConnectionType type, const Traits::Server<Tag>& traits) :
-            _handle(handle), _type(type), _traits(traits) {}
+        Server(SocketHandle<Tag>& handle, ConnectionType type) : _handle(handle), _type(type) {}
 
-        ServerAddress startServer(uint16_t port) override;
+        ServerAddress startServer(std::string_view addr, uint16_t port) override;
 
         Task<AcceptResult> accept() override;
 

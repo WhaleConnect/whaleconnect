@@ -36,7 +36,7 @@ using AddrInfoHandle = HandlePtr<AddrInfoType, freeaddrinfo>;
 
 namespace NetUtils {
     // Resolves an address with getaddrinfo.
-    AddrInfoHandle resolveAddr(const Device& device, IPType ipType, int flags = 0, bool useLoopback = false);
+    AddrInfoHandle resolveAddr(const Device& device);
 
     // Loops through a getaddrinfo result.
     template <class Fn>
@@ -81,6 +81,6 @@ namespace NetUtils {
     uint16_t getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4);
 
     // Starts a server with the specified socket handle.
-    ServerAddress startServer(uint16_t port, Delegates::SocketHandle<SocketTag::IP>& handle, ConnectionType type,
-                              IPType ip);
+    ServerAddress startServer(std::string_view addr, uint16_t port, Delegates::SocketHandle<SocketTag::IP>& handle,
+                              ConnectionType type);
 }
