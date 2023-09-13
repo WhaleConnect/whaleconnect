@@ -6,8 +6,6 @@
 #include <bit>
 #include <stdexcept>
 
-#include <sys/socket.h>
-
 #include "enums.hpp"
 
 #include "os/errcheck.hpp"
