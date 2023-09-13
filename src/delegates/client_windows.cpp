@@ -52,7 +52,7 @@ static void finalizeConnect(SOCKET s) {
 
 template <>
 Task<> Delegates::Client<SocketTag::IP>::connect() {
-    auto addr = NetUtils::resolveAddr(_device, IPType::None);
+    auto addr = NetUtils::resolveAddr(_device);
 
     co_await NetUtils::loopWithAddr(addr.get(), [this](const AddrInfoType* result) -> Task<> {
         _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
