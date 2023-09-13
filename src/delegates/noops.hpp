@@ -10,7 +10,7 @@
 
 namespace Delegates {
     // Provides no-ops for I/O operations.
-    struct NoopIO : public IODelegate {
+    struct NoopIO : IODelegate {
         Task<> send(std::string) override {
             co_return;
         }
@@ -21,14 +21,14 @@ namespace Delegates {
     };
 
     // Provides no-ops for client operations.
-    struct NoopClient : public ClientDelegate {
+    struct NoopClient : ClientDelegate {
         Task<> connect() override {
             co_return;
         }
     };
 
     // Provides no-ops for server operations.
-    struct NoopServer : public ServerDelegate {
+    struct NoopServer : ServerDelegate {
         ServerAddress startServer(uint16_t) override {
             return {};
         }
