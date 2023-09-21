@@ -33,7 +33,7 @@ void Async::Internal::init(unsigned int numThreads, unsigned int queueEntries) {
 void Async::Internal::stopThreads(unsigned int) {
     for (auto& ring : rings) {
         // Submit a no-op to the queue to get the waiting call terminated
-        io_uring_sqe* sqe = _io_uring_get_sqe(&ring);
+        io_uring_sqe* sqe = io_uring_get_sqe(&ring);
         io_uring_prep_nop(sqe);
         io_uring_sqe_set_data64(sqe, ASYNC_INTERRUPT);
         io_uring_submit(&ring);
