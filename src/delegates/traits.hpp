@@ -3,19 +3,13 @@
 
 #pragma once
 
-#include <functional>
-#include <map>
-
 #if OS_WINDOWS
 #include <WinSock2.h>
-#else
-#include <sys/socket.h>
+#elif OS_MACOS
+#include "net/bthandle.h"
 #endif
 
-#if OS_MACOS
-#include "net/bthandle.h"
 #include "net/enums.hpp"
-#endif
 
 namespace Traits {
     // Platform-specific traits for socket handles.
@@ -74,6 +68,5 @@ namespace Traits {
     template <>
     struct Server<SocketTag::IP> {
         IPType ip;
-        std::map<std::string, sockaddr_storage, std::less<>> udpClients;
     };
 }
