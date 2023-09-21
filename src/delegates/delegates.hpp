@@ -34,9 +34,9 @@ struct ServerAddress {
 };
 
 namespace Delegates {
-    // Manages closure of a socket.
-    struct CloseDelegate {
-        virtual ~CloseDelegate() = default;
+    // Manages handle operations.
+    struct HandleDelegate {
+        virtual ~HandleDelegate() = default;
 
         // Closes the socket.
         virtual void close() = 0;
@@ -48,7 +48,7 @@ namespace Delegates {
         virtual void cancelIO() = 0;
     };
 
-    // Manages I/O operations on a socket.
+    // Manages I/O operations.
     struct IODelegate {
         virtual ~IODelegate() = default;
 
@@ -60,7 +60,7 @@ namespace Delegates {
         virtual Task<RecvResult> recv(size_t size) = 0;
     };
 
-    // Manages client operations on a socket.
+    // Manages client operations.
     struct ClientDelegate {
         virtual ~ClientDelegate() = default;
 
@@ -68,7 +68,7 @@ namespace Delegates {
         virtual Task<> connect(Device device) = 0;
     };
 
-    // Manages server operations on a socket.
+    // Manages server operations.
     struct ServerDelegate {
         virtual ~ServerDelegate() = default;
 

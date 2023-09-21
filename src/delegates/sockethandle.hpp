@@ -11,7 +11,7 @@
 namespace Delegates {
     // Manages close operations on a socket.
     template <auto Tag>
-    class SocketHandle : public CloseDelegate {
+    class SocketHandle : public HandleDelegate {
         using Handle = Traits::SocketHandleType<Tag>;
         static constexpr auto invalidHandle = Traits::invalidSocketHandle<Tag>();
 
