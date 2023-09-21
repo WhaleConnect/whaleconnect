@@ -36,8 +36,8 @@ public:
         _close->cancelIO();
     }
 
-    Task<> send(std::string_view s) const {
-        return _io->send(std::string{ s });
+    Task<> send(std::string_view data) const {
+        return _io->send(std::string{ data });
     }
 
     Task<RecvResult> recv(size_t size) const {
@@ -60,7 +60,7 @@ public:
         return _server->recvFrom(size);
     }
 
-    Task<> sendTo(std::string_view addrTo, std::string_view s) const {
-        return _server->sendTo(std::string{ addrTo }, std::string{ s });
+    Task<> sendTo(const Device& device, std::string_view data) const {
+        return _server->sendTo(device, std::string{ data });
     }
 };

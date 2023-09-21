@@ -24,7 +24,7 @@ struct AcceptResult {
 };
 
 struct DgramRecvResult {
-    std::string fromAddr;
+    Device from;
     RecvResult data;
 };
 
@@ -54,7 +54,7 @@ namespace Delegates {
 
         // Sends a string.
         // The data is passed as a string to make a copy and prevent dangling pointers in the coroutine.
-        virtual Task<> send(std::string s) = 0;
+        virtual Task<> send(std::string data) = 0;
 
         // Receives a string.
         virtual Task<RecvResult> recv(size_t size) = 0;
@@ -82,6 +82,6 @@ namespace Delegates {
         virtual Task<DgramRecvResult> recvFrom(size_t size) = 0;
 
         // Sends data to a connectionless client.
-        virtual Task<> sendTo(std::string addrTo, std::string s) = 0;
+        virtual Task<> sendTo(Device device, std::string data) = 0;
     };
 }

@@ -40,9 +40,9 @@ namespace Delegates {
 
         Task<AcceptResult> accept() override;
 
-        Task<DgramRecvResult> recvFrom(size_t) override;
+        Task<DgramRecvResult> recvFrom(size_t size) override;
 
-        Task<> sendTo(std::string, std::string) override;
+        Task<> sendTo(Device device, std::string data) override;
     };
 }
 
@@ -60,7 +60,7 @@ inline Task<DgramRecvResult> Delegates::Server<SocketTag::BT>::recvFrom(size_t) 
 }
 
 template <>
-inline Task<> Delegates::Server<SocketTag::BT>::sendTo(std::string, std::string) {
+inline Task<> Delegates::Server<SocketTag::BT>::sendTo(Device, std::string) {
     co_await std::suspend_never{}; // Indicate this is a coroutine and strings should be passed by value
     _throwUnsupported();
 }

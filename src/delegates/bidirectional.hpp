@@ -20,7 +20,7 @@ namespace Delegates {
     public:
         explicit Bidirectional(SocketHandle<Tag>& handle) : _handle(handle) {}
 
-        Task<> send(std::string s) override;
+        Task<> send(std::string data) override;
 
         Task<RecvResult> recv(size_t size) override;
     };

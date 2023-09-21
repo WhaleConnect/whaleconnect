@@ -42,7 +42,7 @@ namespace Delegates {
             co_return {};
         }
 
-        Task<> sendTo(std::string, std::string) override {
+        Task<> sendTo(Device, std::string) override {
             co_return;
         }
     };

@@ -72,7 +72,7 @@ ServerAddress Delegates::Server<SocketTag::IP>::startServer(const Device& server
     ServerAddress result = NetUtils::startServer(serverInfo, _handle);
 
     Async::add(*_handle);
-    _traits.ip = result.ipType; // Update IP type in case it was set to None
+    _traits.ip = result.ipType;
 
     return result;
 }
@@ -91,26 +91,45 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
 }
 
 template <>
-Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t) {
-    // TODO
-    co_return {};
+Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
+    sockaddr_storage from;
+    auto fromPtr = std::bit_cast<sockaddr*>(&from);
+    socklen_t fromLen = sizeof(from);
+
+    std::string data(size, 0);
+    auto recvResult = co_await Async::run([this, &data, fromPtr, &fromLen](Async::CompletionResult& result) {
+        DWORD flags = 0;
+        WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
+        call(FN(WSARecvFrom, *_handle, &buf, 1, nullptr, &flags, fromPtr, &fromLen, &result, nullptr));
+    });
+
+    data.resize(recvResult.res);
+
+    co_return { NetUtils::fromAddr(fromPtr, fromLen, ConnectionType::UDP), data };
 }
 
 template <>
-Task<> Delegates::Server<SocketTag::IP>::sendTo(std::string, std::string) {
-    // TODO
-    co_return;
-}
+Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data) {
+    auto addr = NetUtils::resolveAddr(device, false);
 
-template <>
-Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
-    // TODO
-    co_return {};
+    co_await NetUtils::loopWithAddr(addr.get(), [this, &data](const AddrInfoType* resolveRes) -> Task<> {
+        co_await Async::run([this, resolveRes, &data](Async::CompletionResult& result) {
+            WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
+            call(FN(WSASendTo, *_handle, &buf, 1, nullptr, 0, resolveRes->ai_addr,
+                    static_cast<int>(resolveRes->ai_addrlen), &result, nullptr));
+        });
+    });
 }
 
 template <>
 ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device&) {
     // TODO
     return {};
+}
+
+template <>
+Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
+    // TODO
+    co_return {};
 }
 #endif
