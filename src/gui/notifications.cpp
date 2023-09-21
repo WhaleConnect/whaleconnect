@@ -26,23 +26,23 @@ class Notification {
         Fading = 1 << 3   // Fading out (or-ed with another value)
     };
 
-    static inline int _numNotifications = 0; // Total number of notifications
+    static inline int numNotifications = 0; // Total number of notifications
 
-    std::string _id = std::format("Notification {}", _numNotifications); // String to identify the notification
+    std::string id = std::format("Notification {}", numNotifications); // String to identify the notification
 
-    double _timeAdded = ImGui::GetTime(); // When this notification was added
+    double timeAdded = ImGui::GetTime(); // When this notification was added
 
-    std::string _text;         // Text shown
-    NotificationType _type;    // Icon type
-    int _visibility = Visible; // How this notification is displayed
-    float _timeout;            // Number of seconds before automatically closing this notification
-    float _opacity = 1.0f;     // Opacity of the notification
+    std::string text;         // Text shown
+    NotificationType type;    // Icon type
+    int visibility = Visible; // How this notification is displayed
+    float timeout;            // Number of seconds before automatically closing this notification
+    float opacity = 1.0f;     // Opacity of the notification
 
 public:
     // Sets the information to draw the notification.
     Notification(std::string_view text, NotificationType type, float timeout) :
-        _text(text), _type(type), _timeout(timeout) {
-        _numNotifications++;
+        text(text), type(type), timeout(timeout) {
+        numNotifications++;
     }
 
     // Draws this notification.
@@ -50,17 +50,17 @@ public:
 
     // Starts the fade out animation.
     void setFadeOut(bool eraseOnFinish) {
-        _visibility = Fading | (eraseOnFinish ? Erased : Hidden);
+        visibility = Fading | (eraseOnFinish ? Erased : Hidden);
     }
 
     // Checks if this notification is hidden.
     bool hidden() const {
-        return _visibility == Hidden;
+        return visibility == Hidden;
     }
 
     // Checks if this notification is erased.
     bool erased() const {
-        return _visibility == Erased;
+        return visibility == Erased;
     }
 };
 
@@ -76,13 +76,13 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
     ImVec2 windowPos = viewport->Pos + viewportSize - pos;
 
     if (showInCorner) {
-        if (_visibility & Fading) _opacity -= 5_dt;
+        if (visibility & Fading) opacity -= 5_dt;
 
         // Set notification opacity, if it is zero then it should be hidden
-        if (_opacity > 0) {
-            ImGui::SetNextWindowBgAlpha(_opacity);
+        if (opacity > 0) {
+            ImGui::SetNextWindowBgAlpha(opacity);
         } else {
-            _visibility &= ~Fading;
+            visibility &= ~Fading;
             return pos.y;
         }
 
@@ -93,12 +93,12 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
         // The Tooltip flag is added to make it stay above other windows.
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav
                                | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_Tooltip;
-        ImGui::Begin(_id.c_str(), nullptr, flags);
+        ImGui::Begin(id.c_str(), nullptr, flags);
     }
 
     // Draw icon
     using enum NotificationType;
-    switch (_type) {
+    switch (type) {
         case Warning:
             ImGui::TextColored({ 0.98f, 0.74f, 0.02f, 1 }, "\uea21");
             break;
@@ -121,7 +121,7 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
     // Draw text
     ImGui::SameLine();
     ImGui::PushTextWrapPos(wrapPos);
-    ImGui::TextWrapped("%s", _text.c_str());
+    ImGui::TextWrapped("%s", text.c_str());
     ImGui::PopTextWrapPos();
 
     // Styles for close button
@@ -134,9 +134,9 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
     // The cursor position is set to make each notification have the same width
     ImGui::SameLine();
     ImGui::SetCursorPosX(wrapPos + ImGui::GetStyle().ItemSpacing.x);
-    ImGui::PushID(_id.c_str());
+    ImGui::PushID(id.c_str());
 
-    if (ImGui::Button("\ueb99")) _visibility = Erased | Fading;
+    if (ImGui::Button("\ueb99")) visibility = Erased | Fading;
 
     ImGui::PopID();
     ImGui::PopStyleColor(3);
@@ -145,10 +145,10 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
     if (showInCorner) {
         ImVec2 windowSize = ImGui::GetWindowSize();
 
-        if ((_visibility == Visible) && (_timeout > 0.0f)) {
+        if ((visibility == Visible) && (timeout > 0.0f)) {
             // If the timeout is 0, skip the countdown
             // Calculate the percent of time since the notification was created
-            auto timePercent = static_cast<float>((ImGui::GetTime() - _timeAdded) / _timeout);
+            auto timePercent = static_cast<float>((ImGui::GetTime() - timeAdded) / timeout);
 
             // If this percent reaches 1, fade out the notification
             if (timePercent >= 1.0f) setFadeOut(false);

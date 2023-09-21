@@ -12,12 +12,12 @@
 
 template <auto Tag>
 class IncomingSocket : public Socket {
-    Delegates::SocketHandle<Tag> _handle;
-    Delegates::Bidirectional<Tag> _io{ _handle };
-    Delegates::NoopClient _client;
-    Delegates::NoopServer _server;
+    Delegates::SocketHandle<Tag> handle;
+    Delegates::Bidirectional<Tag> io{ handle };
+    Delegates::NoopClient client;
+    Delegates::NoopServer server;
 
 public:
     explicit IncomingSocket(Delegates::SocketHandle<Tag>&& handle) :
-        Socket(_handle, _io, _client, _server), _handle(std::move(handle)) {}
+        Socket(handle, io, client, server), handle(std::move(handle)) {}
 };

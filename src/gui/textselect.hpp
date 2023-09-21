@@ -37,36 +37,36 @@ class TextSelect {
     // Selection bounds
     // In a selection, the start and end positions may not be in order (the user can click and drag left/up which
     // reverses start and end).
-    CursorPos _selectStart;
-    CursorPos _selectEnd;
+    CursorPos selectStart;
+    CursorPos selectEnd;
 
     // Accessor functions to get line information
     // This class only knows about line numbers so it must be provided with functions that give it text data.
-    std::function<icu::UnicodeString(size_t)> _getLineAtIdx; // Gets the string given a line number
-    std::function<size_t()> _getNumLines;                    // Gets the total number of lines
+    std::function<icu::UnicodeString(size_t)> getLineAtIdx; // Gets the string given a line number
+    std::function<size_t()> getNumLines;                    // Gets the total number of lines
 
     // Gets the user selection. Start and end are guaranteed to be in order.
-    Selection _getSelection() const;
+    Selection getSelection() const;
 
     // Processes mouse down (click/drag) events.
-    void _handleMouseDown(const ImVec2& cursorPosStart);
+    void handleMouseDown(const ImVec2& cursorPosStart);
 
     // Processes scrolling events.
-    void _handleScrolling() const;
+    void handleScrolling() const;
 
     // Draws the text selection rectangle in the window.
-    void _drawSelection(const ImVec2& cursorPosStart) const;
+    void drawSelection(const ImVec2& cursorPosStart) const;
 
 public:
     // Sets the text accessor functions.
     // getLineAtIdx: Function taking a size_t (line number) and returning the string in that line in a UnicodeString
     // getNumLines: Function returning a size_t (total number of lines of text)
     template <class T, class U>
-    TextSelect(const T& getLineAtIdx, const U& getNumLines) : _getLineAtIdx(getLineAtIdx), _getNumLines(getNumLines) {}
+    TextSelect(const T& getLineAtIdx, const U& getNumLines) : getLineAtIdx(getLineAtIdx), getNumLines(getNumLines) {}
 
     // Checks if there is an active selection in the text.
     bool hasSelection() const {
-        return !_selectStart.isInvalid() && !_selectEnd.isInvalid();
+        return !selectStart.isInvalid() && !selectEnd.isInvalid();
     }
 
     // Copies the selected text to the clipboard.

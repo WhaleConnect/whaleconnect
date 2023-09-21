@@ -12,7 +12,7 @@
 template <class T = void>
 class Task {
     // If this template type is void-returning
-    static constexpr bool _isVoid = std::is_void_v<T>;
+    static constexpr bool isVoid = std::is_void_v<T>;
 
     // Base class containing definitions for a void-returning coroutine.
     struct PromiseTypeVoid {
@@ -33,7 +33,7 @@ class Task {
     // The promise object containing the coroutine's information (returned value, exceptions).
     // This class inherits from either the "void" base or the "value" base depending on if T is void. This inheritance
     // will give the class the appropriate return function for each template instantiation.
-    struct PromiseType : std::conditional_t<_isVoid, PromiseTypeVoid, PromiseTypeValue<T>> {
+    struct PromiseType : std::conditional_t<isVoid, PromiseTypeVoid, PromiseTypeValue<T>> {
         // In the case of another coroutine calling this one, keep track of the caller. This allows us to resume the
         // caller when this one exits.
         std::coroutine_handle<> continuation;
@@ -80,10 +80,10 @@ class Task {
     };
 
     // The handle for the coroutine performing work with this task object
-    std::coroutine_handle<PromiseType> _handle;
+    std::coroutine_handle<PromiseType> handle;
 
     // Constructs a task object from a coroutine promise object.
-    explicit Task(PromiseType& promiseType) : _handle(std::coroutine_handle<PromiseType>::from_promise(promiseType)) {}
+    explicit Task(PromiseType& promiseType) : handle(std::coroutine_handle<PromiseType>::from_promise(promiseType)) {}
 
 public:
     // Type alias for the promise object for use by the compiler.
@@ -96,23 +96,23 @@ public:
     [[nodiscard]] bool await_ready() const noexcept {
         // There is no need to suspend if this task has no work to do.
         // If done() is false, this coroutine is suspended and await_suspend is called.
-        return _handle.done();
+        return handle.done();
     }
 
     // Keeps track of the current coroutine to resume on suspend.
     // Called when the coroutine is suspended.
     void await_suspend(std::coroutine_handle<> current) const noexcept {
         // Keep track of the current coroutine so it can be resumed in final_suspend
-        _handle.promise().continuation = current;
+        handle.promise().continuation = current;
     }
 
     // Returns the result of the entire co_await expression (the value the coroutine produced).
     // Called last when the coroutine is awaited.
     T await_resume() const {
         // Propagate any exception that was thrown inside the coroutine to the caller
-        if (auto exception = _handle.promise().exception) std::rethrow_exception(exception);
+        if (auto exception = handle.promise().exception) std::rethrow_exception(exception);
 
         // Return a value if this template instantiation is non-void
-        if constexpr (!_isVoid) return std::move(_handle.promise().data);
+        if constexpr (!isVoid) return std::move(handle.promise().data);
     }
 };

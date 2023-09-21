@@ -26,40 +26,40 @@ class Console {
     };
 
     // State
-    bool _scrollToEnd = false; // If the console is force-scrolled to the end
+    bool scrollToEnd = false; // If the console is force-scrolled to the end
 
     // Options
-    bool _autoscroll = true;      // If console autoscrolls when new data is put
-    bool _showTimestamps = false; // If timestamps are shown in the output
-    bool _showHex = false;        // If items are shown in hexadecimal
+    bool autoscroll = true;      // If console autoscrolls when new data is put
+    bool showTimestamps = false; // If timestamps are shown in the output
+    bool showHex = false;        // If items are shown in hexadecimal
 
-    std::vector<ConsoleItem> _items; // Items in console output
+    std::vector<ConsoleItem> items; // Items in console output
 
     // Text selection manager
-    TextSelect _textSelect{ std::bind_front(&Console::_getLineAtIdx, this),
-                            std::bind_front(&Console::_getNumLines, this) };
+    TextSelect textSelect{ std::bind_front(&Console::getLineAtIdx, this),
+                           std::bind_front(&Console::getNumLines, this) };
 
     // Forces subsequent text to go on a new line.
-    void _forceNextLine() {
+    void forceNextLine() {
         // If there are no items, new text will have to be on its own line.
-        if (_items.empty()) return;
+        if (items.empty()) return;
 
-        icu::UnicodeString& lastItem = _items.back().text;
+        icu::UnicodeString& lastItem = items.back().text;
         if (!lastItem.endsWith('\n')) lastItem += '\n';
     }
 
     // Adds text to the console. Does not make it go on its own line.
-    void _add(std::string_view s, const ImVec4& color, bool canUseHex);
+    void add(std::string_view s, const ImVec4& color, bool canUseHex);
 
     // Draws the contents of the right-click context menu.
-    void _drawContextMenu();
+    void drawContextMenu();
 
     // Gets the line at an index.
-    icu::UnicodeString _getLineAtIdx(size_t i) const;
+    icu::UnicodeString getLineAtIdx(size_t i) const;
 
     // Gets the number of lines in the output.
-    size_t _getNumLines() const {
-        return _items.size();
+    size_t getNumLines() const {
+        return items.size();
     }
 
 public:
@@ -76,29 +76,29 @@ public:
 
     // Adds a message with a given color and description.
     void addMessage(std::string_view s, std::string_view desc, const ImVec4& color) {
-        _forceNextLine();
+        forceNextLine();
         addText(s, std::format("[{}] ", desc), color, false);
-        _forceNextLine();
+        forceNextLine();
     }
 
     // Adds a red error message.
     void addError(std::string_view s) {
         // Error messages in red
-        _forceNextLine();
+        forceNextLine();
         addMessage(s, "ERROR", { 1.0f, 0.4f, 0.4f, 1.0f });
-        _forceNextLine();
+        forceNextLine();
     }
 
     // Adds a yellow information message.
     void addInfo(std::string_view s) {
         // Information in yellow
-        _forceNextLine();
+        forceNextLine();
         addMessage(s, "INFO ", { 1.0f, 0.8f, 0.6f, 1.0f });
-        _forceNextLine();
+        forceNextLine();
     }
 
     // Clears the output.
     void clear() {
-        _items.clear();
+        items.clear();
     }
 };

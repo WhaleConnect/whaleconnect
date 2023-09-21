@@ -42,56 +42,56 @@ static std::string formatDevice(const Device& device, std::string_view extraInfo
 }
 
 ConnWindow::ConnWindow(std::unique_ptr<Socket>&& socket, const Device& device, std::string_view extraInfo) :
-    ConsoleWindow(formatDevice(device, extraInfo)), _socket(std::move(socket)), _device(device) {}
+    ConsoleWindow(formatDevice(device, extraInfo)), socket(std::move(socket)), device(device) {}
 
-Task<> ConnWindow::_connect() try {
+Task<> ConnWindow::connect() try {
     // Connect the socket
-    _addInfo("Connecting...");
-    co_await _socket->connect(_device);
+    addInfo("Connecting...");
+    co_await socket->connect(device);
 
-    _addInfo("Connected.");
-    _connected = true;
+    addInfo("Connected.");
+    connected = true;
 } catch (const System::SystemError& error) {
-    _errorHandler(error);
+    errorHandler(error);
 }
 
-Task<> ConnWindow::_sendHandlerAsync(std::string s) try {
-    co_await _socket->send(s);
+Task<> ConnWindow::sendHandlerAsync(std::string s) try {
+    co_await socket->send(s);
 } catch (const System::SystemError& error) {
-    _errorHandler(error);
+    errorHandler(error);
 }
 
-Task<> ConnWindow::_readHandler(unsigned int recvSize) try {
-    if (!_connected || _pendingRecv) co_return;
+Task<> ConnWindow::readHandler(unsigned int size) try {
+    if (!connected || pendingRecv) co_return;
 
-    _pendingRecv = true;
-    auto recvRet = co_await _socket->recv(recvSize);
-    _pendingRecv = false;
+    pendingRecv = true;
+    auto recvRet = co_await socket->recv(size);
+    pendingRecv = false;
 
     if (recvRet) {
-        _addText(*recvRet);
+        addText(*recvRet);
     } else {
         // Peer closed connection
-        _addInfo("Remote host closed connection.");
-        _socket->close();
-        _connected = false;
+        addInfo("Remote host closed connection.");
+        socket->close();
+        connected = false;
     }
 } catch (const System::SystemError& error) {
-    _errorHandler(error);
-    _pendingRecv = false;
+    errorHandler(error);
+    pendingRecv = false;
 }
 
-void ConnWindow::_drawOptions() {
+void ConnWindow::drawOptions() {
     using namespace ImGui::Literals;
 
     ImGui::Separator();
     ImGui::SetNextItemWidth(4_fh);
-    ImGui::InputScalar("Receive size", _recvSize);
+    ImGui::InputScalar("Receive size", recvSize);
 }
 
-void ConnWindow::_onBeforeUpdate() {
+void ConnWindow::onBeforeUpdate() {
     using namespace ImGui::Literals;
 
     ImGui::SetNextWindowSize(35_fh * 20_fh, ImGuiCond_Appearing);
-    _readHandler(_recvSize);
+    readHandler(recvSize);
 }

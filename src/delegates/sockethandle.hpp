@@ -15,15 +15,15 @@ namespace Delegates {
         using Handle = Traits::SocketHandleType<Tag>;
         static constexpr auto invalidHandle = Traits::invalidSocketHandle<Tag>();
 
-        Handle _handle;
-        bool _closed = false;
+        Handle handle;
+        bool closed = false;
 
-        void _closeImpl() const;
+        void closeImpl() const;
 
     public:
         SocketHandle() : SocketHandle(invalidHandle) {}
 
-        explicit SocketHandle(Handle handle) : _handle(handle) {}
+        explicit SocketHandle(Handle handle) : handle(handle) {}
 
         // Closes the socket.
         ~SocketHandle() override {
@@ -33,7 +33,7 @@ namespace Delegates {
         SocketHandle(const SocketHandle&) = delete;
 
         // Constructs an object and transfers ownership from another object.
-        SocketHandle(SocketHandle&& other) noexcept : _handle(other.release()) {}
+        SocketHandle(SocketHandle&& other) noexcept : handle(other.release()) {}
 
         SocketHandle& operator=(const SocketHandle&) = delete;
 
@@ -44,14 +44,14 @@ namespace Delegates {
         }
 
         void close() override {
-            if (!_closed && this->isValid()) {
-                _closeImpl();
-                _closed = true;
+            if (!closed && this->isValid()) {
+                closeImpl();
+                closed = true;
             }
         }
 
         bool isValid() override {
-            return _handle != Traits::invalidSocketHandle<Tag>();
+            return handle != Traits::invalidSocketHandle<Tag>();
         }
 
         void cancelIO() override;
@@ -59,17 +59,17 @@ namespace Delegates {
         // Closes the current handle and acquires a new one.
         void reset(Handle other = invalidHandle) noexcept {
             this->close();
-            _handle = other;
+            handle = other;
         }
 
         // Releases ownership of the managed handle.
         Handle release() {
-            return std::exchange(_handle, invalidHandle);
+            return std::exchange(handle, invalidHandle);
         }
 
         // Accesses the handle.
         const Handle& operator*() const {
-            return _handle;
+            return handle;
         }
     };
 }

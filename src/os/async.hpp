@@ -18,7 +18,7 @@
 namespace Async {
     // Class to manage resources automatically.
     class Instance {
-        std::vector<std::thread> _workerThreadPool; // Vector of threads to serve as a thread pool
+        std::vector<std::thread> workerThreadPool; // Vector of threads to serve as a thread pool
 
     public:
         // Initializes the OS asynchronous I/O queue and starts the background thread pool.

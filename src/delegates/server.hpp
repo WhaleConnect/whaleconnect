@@ -26,15 +26,15 @@
 namespace Delegates {
     template <auto Tag>
     class Server : public ServerDelegate {
-        SocketHandle<Tag>& _handle;
-        NO_UNIQUE_ADDRESS Traits::Server<Tag> _traits;
+        SocketHandle<Tag>& handle;
+        NO_UNIQUE_ADDRESS Traits::Server<Tag> traits;
 
-        [[noreturn]] static void _throwUnsupported() {
+        [[noreturn]] static void throwUnsupported() {
             throw std::invalid_argument{ "Operation not supported with socket type" };
         }
 
     public:
-        explicit Server(SocketHandle<Tag>& handle) : _handle(handle) {}
+        explicit Server(SocketHandle<Tag>& handle) : handle(handle) {}
 
         ServerAddress startServer(const Device& serverInfo) override;
 
@@ -56,11 +56,11 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept();
 
 template <>
 inline Task<DgramRecvResult> Delegates::Server<SocketTag::BT>::recvFrom(size_t) {
-    _throwUnsupported();
+    throwUnsupported();
 }
 
 template <>
 inline Task<> Delegates::Server<SocketTag::BT>::sendTo(Device, std::string) {
     co_await std::suspend_never{}; // Indicate this is a coroutine and strings should be passed by value
-    _throwUnsupported();
+    throwUnsupported();
 }

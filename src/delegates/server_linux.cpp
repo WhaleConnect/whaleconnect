@@ -28,7 +28,7 @@ static void startAccept(int s, sockaddr* clientAddr, socklen_t& clientLen, Async
 
 template <>
 ServerAddress Delegates::Server<SocketTag::IP>::startServer(const Device& serverInfo) {
-    return NetUtils::startServer(serverInfo, _handle);
+    return NetUtils::startServer(serverInfo, handle);
 }
 
 template <>
@@ -37,7 +37,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     auto clientAddr = std::bit_cast<sockaddr*>(&client);
     socklen_t clientLen = sizeof(client);
 
-    auto acceptResult = co_await Async::run(std::bind_front(startAccept, *_handle, clientAddr, clientLen));
+    auto acceptResult = co_await Async::run(std::bind_front(startAccept, *handle, clientAddr, clientLen));
 
     Device device = NetUtils::fromAddr(clientAddr, clientLen, ConnectionType::TCP);
     SocketHandle<SocketTag::IP> fd{ acceptResult.res };

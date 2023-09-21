@@ -10,62 +10,62 @@
 
 // A class to represent a Dear ImGui window.
 class Window {
-    std::string _title;      // Window title
-    bool _open = true;       // If this window is open
-    bool* _openPtr = &_open; // Pointer passed to ImGui::Begin
+    std::string title;     // Window title
+    bool open = true;      // If this window is open
+    bool* openPtr = &open; // Pointer passed to ImGui::Begin
 
-    bool _initialized = false; // If the initialize function has been called
+    bool initialized = false; // If the initialize function has been called
 
     // Performs initialization required by a window object.
-    virtual void _init() {
+    virtual void onInit() {
         // May be overridden optionally
     }
 
-    // Always runs on every frame, before _onUpdate is called.
-    virtual void _onBeforeUpdate() {
+    // Always runs on every frame, before onUpdate is called.
+    virtual void onBeforeUpdate() {
         // May be overridden optionally
     }
 
     // Redraws the contents of the window. Must be overridden in derived classes.
-    virtual void _onUpdate() = 0;
+    virtual void onUpdate() = 0;
 
 protected:
     // Enables or disables the window's close button.
-    void _setClosable(bool closable) {
-        _openPtr = closable ? &_open : nullptr;
+    void setClosable(bool closable) {
+        openPtr = closable ? &open : nullptr;
     }
 
 public:
     // Sets the window title.
-    explicit Window(std::string_view title) : _title(title) {}
+    explicit Window(std::string_view title) : title(title) {}
 
     // Virtual destructor provided for derived classes.
     virtual ~Window() = default;
 
     // Gets the window title.
     [[nodiscard]] std::string_view getTitle() const {
-        return _title;
+        return title;
     }
 
     // Gets the window's open/closed state.
     [[nodiscard]] bool isOpen() const {
-        return _open;
+        return open;
     }
 
     // Performs any extra required initialization. This may be called once; subsequent calls will do nothing.
     void init() {
-        if (_initialized) return;
+        if (initialized) return;
 
-        _init();
-        _initialized = true;
+        onInit();
+        initialized = true;
     }
 
     // Updates the window and its contents.
     void update() {
-        _onBeforeUpdate();
+        onBeforeUpdate();
 
         // Render window
-        if (ImGui::Begin(_title.c_str(), _openPtr)) _onUpdate();
+        if (ImGui::Begin(title.c_str(), openPtr)) onUpdate();
         ImGui::End();
     }
 };

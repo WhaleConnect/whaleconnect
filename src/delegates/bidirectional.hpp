@@ -15,10 +15,10 @@ namespace Delegates {
     // Manages bidirectional communication on a socket.
     template <auto Tag>
     class Bidirectional : public IODelegate {
-        SocketHandle<Tag>& _handle;
+        SocketHandle<Tag>& handle;
 
     public:
-        explicit Bidirectional(SocketHandle<Tag>& handle) : _handle(handle) {}
+        explicit Bidirectional(SocketHandle<Tag>& handle) : handle(handle) {}
 
         Task<> send(std::string data) override;
 

@@ -69,10 +69,10 @@ static Task<std::pair<sockaddr*, int>> startAccept(SOCKET s, AcceptExBuf& buf, S
 
 template <>
 ServerAddress Delegates::Server<SocketTag::IP>::startServer(const Device& serverInfo) {
-    ServerAddress result = NetUtils::startServer(serverInfo, _handle);
+    ServerAddress result = NetUtils::startServer(serverInfo, handle);
 
-    Async::add(*_handle);
-    _traits.ip = result.ipType;
+    Async::add(*handle);
+    traits.ip = result.ipType;
 
     return result;
 }
@@ -84,7 +84,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     SocketHandle<SocketTag::IP> fd{ call(FN(socket, af, SOCK_STREAM, 0)) };
 
     std::vector<BYTE> buf(addrSize * 2);
-    auto [remoteAddrPtr, remoteAddrLen] = co_await startAccept(*_handle, buf, *fd);
+    auto [remoteAddrPtr, remoteAddrLen] = co_await startAccept(*handle, buf, *fd);
 
     Device device = NetUtils::fromAddr(remoteAddrPtr, remoteAddrLen, ConnectionType::TCP);
     co_return { device, std::make_unique<IncomingSocket<SocketTag::IP>>(std::move(fd)) };
@@ -100,7 +100,7 @@ Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
     auto recvResult = co_await Async::run([this, &data, fromPtr, &fromLen](Async::CompletionResult& result) {
         DWORD flags = 0;
         WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-        call(FN(WSARecvFrom, *_handle, &buf, 1, nullptr, &flags, fromPtr, &fromLen, &result, nullptr));
+        call(FN(WSARecvFrom, *handle, &buf, 1, nullptr, &flags, fromPtr, &fromLen, &result, nullptr));
     });
 
     data.resize(recvResult.res);
@@ -115,7 +115,7 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
     co_await NetUtils::loopWithAddr(addr.get(), [this, &data](const AddrInfoType* resolveRes) -> Task<> {
         co_await Async::run([this, resolveRes, &data](Async::CompletionResult& result) {
             WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-            call(FN(WSASendTo, *_handle, &buf, 1, nullptr, 0, resolveRes->ai_addr,
+            call(FN(WSASendTo, *handle, &buf, 1, nullptr, 0, resolveRes->ai_addr,
                     static_cast<int>(resolveRes->ai_addrlen), &result, nullptr));
         });
     });

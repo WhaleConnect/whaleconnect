@@ -17,38 +17,38 @@
 class ConnWindow : public ConsoleWindow {
     friend class ConnServerWindow;
 
-    std::unique_ptr<Socket> _socket; // Internal socket
-    Device _device;
-    std::atomic_bool _connected = false;
-    std::atomic_bool _pendingRecv = false;
-    unsigned int _recvSize = 1024; // Unsigned int to work with ImGuiDataType
+    std::unique_ptr<Socket> socket; // Internal socket
+    Device device;
+    std::atomic_bool connected = false;
+    std::atomic_bool pendingRecv = false;
+    unsigned int recvSize = 1024; // Unsigned int to work with ImGuiDataType
 
     // Connects to the server.
-    Task<> _connect();
+    Task<> connect();
 
     // Sends a string through the socket.
-    Task<> _sendHandlerAsync(std::string s);
+    Task<> sendHandlerAsync(std::string s);
 
     // Receives a string from the socket and displays it in the console output.
     // The receive size is passed as a parameter to avoid concurrent access.
-    Task<> _readHandler(unsigned int recvSize);
+    Task<> readHandler(unsigned int size);
 
     // Connects to the target server.
-    void _init() override {
-        _connect();
+    void onInit() override {
+        connect();
     }
 
-    void _sendHandler(std::string_view s) override {
-        _sendHandlerAsync(std::string{ s });
+    void sendHandler(std::string_view s) override {
+        sendHandlerAsync(std::string{ s });
     }
 
-    void _drawOptions() override;
+    void drawOptions() override;
 
     // Handles incoming I/O.
-    void _onBeforeUpdate() override;
+    void onBeforeUpdate() override;
 
-    void _onUpdate() override {
-        _updateConsole();
+    void onUpdate() override {
+        updateConsole();
     }
 
 public:
@@ -57,6 +57,6 @@ public:
 
     // Cancels pending socket I/O.
     ~ConnWindow() override {
-        _socket->cancelIO();
+        socket->cancelIO();
     }
 };

@@ -1,6 +1,9 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "delegates/server.hpp"
+#include "net/enums.hpp"
+#include "delegates/traits.hpp"
 #ifdef SDL_MAIN_HANDLED
 #undef SDL_MAIN_HANDLED
 #endif
@@ -21,6 +24,8 @@
 #include "net/btutils.hpp"
 #include "os/async.hpp"
 #include "windows/windowlist.hpp"
+#include "sockets/serversocket.hpp"
+#include "windows/connserverwindow.hpp"
 
 // Draws the new connection window.
 void drawNewConnectionWindow(bool& open, WindowList& connections, WindowList& sdpWindows) {
@@ -67,6 +72,9 @@ void mainLoop() {
     // cleanup
     WindowList connections; // List of open windows
     WindowList sdpWindows;  // List of windows for creating Bluetooth connections
+
+    auto t = std::make_unique<ServerSocket<SocketTag::IP>>();
+    connections.add<ConnServerWindow>(std::move(t));
 
     while (App::newFrame()) {
         static bool newConnOpen = true;

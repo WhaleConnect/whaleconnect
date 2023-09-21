@@ -12,13 +12,13 @@
 #include "os/async_macos.hpp"
 
 template <>
-void Delegates::SocketHandle<SocketTag::IP>::_closeImpl() const {
-    shutdown(_handle, SHUT_RDWR);
-    ::close(_handle);
+void Delegates::SocketHandle<SocketTag::IP>::closeImpl() const {
+    shutdown(handle, SHUT_RDWR);
+    ::close(handle);
 }
 
 template <>
 void Delegates::SocketHandle<SocketTag::IP>::cancelIO() {
-    Async::cancelPending(_handle);
+    Async::cancelPending(handle);
 }
 #endif

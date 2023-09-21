@@ -8,12 +8,12 @@
 #include "os/async_macos.hpp"
 
 template <>
-void Delegates::SocketHandle<SocketTag::BT>::_closeImpl() const {
-    [_handle close];
+void Delegates::SocketHandle<SocketTag::BT>::closeImpl() const {
+    [handle close];
 }
 
 template <>
 void Delegates::SocketHandle<SocketTag::BT>::cancelIO() {
-    Async::bluetoothCancel([_handle channelHash]);
+    Async::bluetoothCancel([handle channelHash]);
 }
 #endif

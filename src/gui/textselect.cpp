@@ -75,61 +75,61 @@ static float getScrollDelta(float v, float min, float max) {
     return 0.0f;
 }
 
-TextSelect::Selection TextSelect::_getSelection() const {
+TextSelect::Selection TextSelect::getSelection() const {
     // Start and end may be out of order (ordering is based on Y position)
     bool startBeforeEnd
-        = (_selectStart.y < _selectEnd.y) || ((_selectStart.y == _selectEnd.y) && (_selectStart.x < _selectEnd.x));
+        = (selectStart.y < selectEnd.y) || ((selectStart.y == selectEnd.y) && (selectStart.x < selectEnd.x));
 
     // Reorder X points if necessary
-    int startX = startBeforeEnd ? _selectStart.x : _selectEnd.x;
-    int endX = startBeforeEnd ? _selectEnd.x : _selectStart.x;
+    int startX = startBeforeEnd ? selectStart.x : selectEnd.x;
+    int endX = startBeforeEnd ? selectEnd.x : selectStart.x;
 
     // Get min and max Y positions for start and end
-    int startY = std::min(_selectStart.y, _selectEnd.y);
-    int endY = std::max(_selectStart.y, _selectEnd.y);
+    int startY = std::min(selectStart.y, selectEnd.y);
+    int endY = std::max(selectStart.y, selectEnd.y);
 
     return { startX, startY, endX, endY };
 }
 
-void TextSelect::_handleMouseDown(const ImVec2& cursorPosStart) {
+void TextSelect::handleMouseDown(const ImVec2& cursorPosStart) {
     const float textHeight = ImGui::GetTextLineHeightWithSpacing();
     ImVec2 mousePos = ImGui::GetMousePos() - cursorPosStart;
 
     // Get Y position of mouse cursor, in terms of line number (capped to the index of the last line)
-    int y = std::min(static_cast<int>(std::floor(mousePos.y / textHeight)), static_cast<int>(_getNumLines() - 1));
+    int y = std::min(static_cast<int>(std::floor(mousePos.y / textHeight)), static_cast<int>(getNumLines() - 1));
 
-    icu::UnicodeString currentLine = _getLineAtIdx(y);
+    icu::UnicodeString currentLine = getLineAtIdx(y);
     int x = getCharIndex(currentLine, mousePos.x);
 
     // Get mouse click count and determine action
     if (int mouseClicks = ImGui::GetMouseClickedCount(ImGuiMouseButton_Left); mouseClicks > 0) {
         if (mouseClicks % 3 == 0) {
             // Triple click - select line
-            _selectStart = { 0, y };
-            _selectEnd = { currentLine.length(), y };
+            selectStart = { 0, y };
+            selectEnd = { currentLine.length(), y };
         } else if (mouseClicks % 2 == 0) {
             // Double click - select word
             bi->setText(currentLine);
-            _selectStart = { bi->preceding(x + 1), y };
-            _selectEnd = { bi->next(), y };
+            selectStart = { bi->preceding(x + 1), y };
+            selectEnd = { bi->next(), y };
         } else if (ImGui::IsKeyDown(ImGuiMod_Shift)) {
             // Single click with shift - select text from start to click
             // The selection starts from the beginning if no start position exists
-            if (_selectStart.isInvalid()) _selectStart = { 0, 0 };
+            if (selectStart.isInvalid()) selectStart = { 0, 0 };
 
-            _selectEnd = { x, y };
+            selectEnd = { x, y };
         } else {
             // Single click - set start position, invalidate end position
-            _selectStart = { x, y };
-            _selectEnd = { -1, -1 };
+            selectStart = { x, y };
+            selectEnd = { -1, -1 };
         }
     } else if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
         // Mouse dragging - set end position
-        _selectEnd = { x, y };
+        selectEnd = { x, y };
     }
 }
 
-void TextSelect::_handleScrolling() const {
+void TextSelect::handleScrolling() const {
     // Window boundaries
     ImVec2 windowMin = ImGui::GetWindowPos();
     ImVec2 windowMax = windowMin + ImGui::GetWindowSize();
@@ -159,15 +159,15 @@ void TextSelect::_handleScrolling() const {
     if (std::abs(scrollYDelta) > 0.0f) ImGui::SetScrollY(ImGui::GetScrollY() + scrollYDelta);
 }
 
-void TextSelect::_drawSelection(const ImVec2& cursorPosStart) const {
+void TextSelect::drawSelection(const ImVec2& cursorPosStart) const {
     if (!hasSelection()) return;
 
     // Start and end positions
-    auto [startX, startY, endX, endY] = _getSelection();
+    auto [startX, startY, endX, endY] = getSelection();
 
     // Add a rectangle to the draw list for each line contained in the selection
     for (int i = startY; i <= endY; i++) {
-        icu::UnicodeString line = _getLineAtIdx(i);
+        icu::UnicodeString line = getLineAtIdx(i);
 
         // Display sizes
         // The width of the space character is used for the width of newlines.
@@ -196,7 +196,7 @@ void TextSelect::_drawSelection(const ImVec2& cursorPosStart) const {
 void TextSelect::copy() const {
     if (!hasSelection()) return;
 
-    auto [startX, startY, endX, endY] = _getSelection();
+    auto [startX, startY, endX, endY] = getSelection();
 
     // Collect selected text in a single string
     icu::UnicodeString selectedText;
@@ -206,7 +206,7 @@ void TextSelect::copy() const {
         int32_t subStart = (i == startY) ? startX : 0;
         int32_t subEnd = (i == endY) ? endX : INT32_MAX;
 
-        icu::UnicodeString line = _getLineAtIdx(i);
+        icu::UnicodeString line = getLineAtIdx(i);
         selectedText += line.tempSubStringBetween(subStart, subEnd);
     }
 
@@ -217,12 +217,12 @@ void TextSelect::copy() const {
 }
 
 void TextSelect::selectAll() {
-    size_t lastLineIdx = _getNumLines() - 1;
-    icu::UnicodeString lastLine = _getLineAtIdx(lastLineIdx);
+    size_t lastLineIdx = getNumLines() - 1;
+    icu::UnicodeString lastLine = getLineAtIdx(lastLineIdx);
 
     // Set the selection range from the beginning to the end of the last line
-    _selectStart = { 0, 0 };
-    _selectEnd = { lastLine.length(), static_cast<int>(lastLineIdx) };
+    selectStart = { 0, 0 };
+    selectEnd = { lastLine.length(), static_cast<int>(lastLineIdx) };
 }
 
 void TextSelect::update() {
@@ -235,11 +235,11 @@ void TextSelect::update() {
 
     // Handle mouse events
     if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
-        if (hovered) _handleMouseDown(cursorPosStart);
-        else _handleScrolling();
+        if (hovered) handleMouseDown(cursorPosStart);
+        else handleScrolling();
     }
 
-    _drawSelection(cursorPosStart);
+    drawSelection(cursorPosStart);
 
     ImGuiID windowID = ImGui::GetCurrentWindow()->ID;
 

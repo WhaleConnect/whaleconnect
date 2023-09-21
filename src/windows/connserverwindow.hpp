@@ -15,28 +15,28 @@
 #include "utils/task.hpp"
 
 class ConnServerWindow : public ConsoleWindow {
-    SocketPtr _socket;
-    bool _pendingAccept = false;
+    SocketPtr socket;
+    bool pendingAccept = false;
 
-    std::vector<AcceptResult> _unopenedSockets;
+    std::vector<AcceptResult> unopenedSockets;
 
-    WindowList _connWindows;
+    WindowList connWindows;
 
-    Task<> _accept();
+    Task<> accept();
 
-    void _init() override;
+    void onInit() override;
 
-    void _onBeforeUpdate() override;
+    void onBeforeUpdate() override;
 
-    void _onUpdate() override;
+    void onUpdate() override;
 
     // Sends data to all connected clients.
-    void _sendHandler(std::string_view s) override;
+    void sendHandler(std::string_view s) override;
 
 public:
-    explicit ConnServerWindow(std::unique_ptr<Socket>&& socket) : ConsoleWindow("asdsa"), _socket(std::move(socket)) {}
+    explicit ConnServerWindow(std::unique_ptr<Socket>&& socket) : ConsoleWindow("asdsa"), socket(std::move(socket)) {}
 
     ~ConnServerWindow() override {
-        _socket->cancelIO();
+        socket->cancelIO();
     }
 };

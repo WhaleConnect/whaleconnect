@@ -24,20 +24,20 @@ class SDPWindow : public Window {
     using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>;          // Results of an SDP search
     using UUIDMap = std::map<std::string, BTUtils::UUID128, std::less<>>; // List of UUIDs used for SDP filtering
 
-    Device _target; // Target to perform SDP inquiries on and connect to
+    Device target; // Target to perform SDP inquiries on and connect to
 
     // Fields for SDP connections
-    const UUIDMap& _uuids;     // Available UUIDs used for SDP inquiries
-    std::string _selectedUUID; // UUID selected for an inquiry
-    bool _flushCache = false;  // If data should be flushed on the next inquiry
-    std::string _serviceName;  // Service name of the selected SDP result, displayed in the connection window title
+    const UUIDMap& uuids;     // Available UUIDs used for SDP inquiries
+    std::string selectedUUID; // UUID selected for an inquiry
+    bool flushCache = false;  // If data should be flushed on the next inquiry
+    std::string serviceName;  // Service name of the selected SDP result, displayed in the connection window title
 
     // Fields for SDP and manual connection state
-    ConnectionType _connType = ConnectionType::RFCOMM; // Selected connection type
-    uint16_t _port = 0;                                // Port to connect to
+    ConnectionType connType = ConnectionType::RFCOMM; // Selected connection type
+    uint16_t port = 0;                                // Port to connect to
 
     // Fields for connection management
-    WindowList& _list; // List of connection window objects to add to when making a new connection
+    WindowList& list; // List of connection window objects to add to when making a new connection
 
     // SDP inquiry data
     // The value this variant currently holds contains data about the SDP inquiry.
@@ -48,32 +48,32 @@ class SDPWindow : public Window {
                  System::SystemError,   // An error that occurred during an in-progress inquiry
                  BTUtils::SDPResultList // The results of the inquiry when it has completed
                  >
-        _sdpInquiry;
+        sdpInquiry;
 
     // Draws the entries from an SDP lookup with buttons to connect to each in a tree format.
-    bool _drawSDPList(const BTUtils::SDPResultList& list);
+    bool drawSDPList(const BTUtils::SDPResultList& list);
 
     // Draws the options for connecting to a device with Bluetooth.
-    void _drawConnOptions(std::string_view info);
+    void drawConnOptions(std::string_view info);
 
     // Draws information about the SDP inquiry.
-    void _checkInquiryStatus();
+    void checkInquiryStatus();
 
     // Draws the tab to initiate an SDP inquiry.
-    void _drawSDPTab();
+    void drawSDPTab();
 
     // Draws the tab to initiate a connection without SDP.
-    void _drawManualTab();
+    void drawManualTab();
 
     // Checks the status of the inquiry and prevents closing the window if it is running.
-    void _onBeforeUpdate() override;
+    void onBeforeUpdate() override;
 
     // Draws the window contents.
-    void _onUpdate() override;
+    void onUpdate() override;
 
 public:
     // Sets the information needed to create connections.
     SDPWindow(const Device& target, const UUIDMap& uuids, WindowList& list) :
-        Window(std::format("Connect To {}##{}", target.name, target.address)), _target(target), _uuids(uuids),
-        _selectedUUID(_uuids.begin()->first), _list(list) {}
+        Window(std::format("Connect To {}##{}", target.name, target.address)), target(target), uuids(uuids),
+        selectedUUID(uuids.begin()->first), list(list) {}
 };

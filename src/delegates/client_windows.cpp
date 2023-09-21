@@ -55,17 +55,17 @@ Task<> Delegates::Client<SocketTag::IP>::connect(Device device) {
     auto addr = NetUtils::resolveAddr(device);
 
     co_await NetUtils::loopWithAddr(addr.get(), [this, type = device.type](const AddrInfoType* result) -> Task<> {
-        _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
+        handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
 
         // Add the socket to the async queue
-        Async::add(*_handle);
+        Async::add(*handle);
 
         // Datagram sockets can be directly connected (ConnectEx doesn't support them)
         if (type == ConnectionType::UDP) {
-            call(FN(::connect, *_handle, result->ai_addr, static_cast<int>(result->ai_addrlen)));
+            call(FN(::connect, *handle, result->ai_addr, static_cast<int>(result->ai_addrlen)));
         } else {
-            co_await Async::run(std::bind_front(startConnect, *_handle, result->ai_addr, result->ai_addrlen));
-            finalizeConnect(*_handle);
+            co_await Async::run(std::bind_front(startConnect, *handle, result->ai_addr, result->ai_addrlen));
+            finalizeConnect(*handle);
         }
     });
 }
@@ -75,7 +75,7 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     // Only RFCOMM sockets are supported by the Microsoft Bluetooth stack on Windows
     if (device.type != ConnectionType::RFCOMM) throw std::invalid_argument{ "Socket type not supported" };
 
-    _handle.reset(call(FN(socket, AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM)));
+    handle.reset(call(FN(socket, AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM)));
 
     // Convert the MAC address from string form into integer form
     // This is done by removing all colons in the address string, then parsing the resultant string as an
@@ -83,7 +83,7 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     BTH_ADDR btAddr = std::stoull(Strings::replaceAll(device.address, ":", ""), nullptr, 16);
     SOCKADDR_BTH sAddrBT{ .addressFamily = AF_BTH, .btAddr = btAddr, .port = device.port };
 
-    co_await Async::run(std::bind_front(startConnect, *_handle, std::bit_cast<sockaddr*>(&sAddrBT), sizeof(sAddrBT)));
-    finalizeConnect(*_handle);
+    co_await Async::run(std::bind_front(startConnect, *handle, std::bit_cast<sockaddr*>(&sAddrBT), sizeof(sAddrBT)));
+    finalizeConnect(*handle);
 }
 #endif

@@ -18,13 +18,13 @@ Task<> Delegates::Client<SocketTag::IP>::connect(Device device) {
     auto addr = NetUtils::resolveAddr(device);
 
     co_await NetUtils::loopWithAddr(addr.get(), [this](const AddrInfoType* result) -> Task<> {
-        _handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
+        handle.reset(call(FN(socket, result->ai_family, result->ai_socktype, result->ai_protocol)));
 
-        Async::prepSocket(*_handle);
+        Async::prepSocket(*handle);
 
         // Start connect
-        call(FN(::connect, *_handle, result->ai_addr, result->ai_addrlen));
-        co_await Async::run(std::bind_front(Async::submitKqueue, *_handle, Async::IOType::Send));
+        call(FN(::connect, *handle, result->ai_addr, result->ai_addrlen));
+        co_await Async::run(std::bind_front(Async::submitKqueue, *handle, Async::IOType::Send));
     });
 }
 #endif

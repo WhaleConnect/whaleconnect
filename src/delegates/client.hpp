@@ -13,10 +13,10 @@ namespace Delegates {
     // Manages operations on client sockets.
     template <auto Tag>
     class Client : public ClientDelegate {
-        SocketHandle<Tag>& _handle;
+        SocketHandle<Tag>& handle;
 
     public:
-        explicit Client(SocketHandle<Tag>& handle) : _handle(handle) {}
+        explicit Client(SocketHandle<Tag>& handle) : handle(handle) {}
 
         Task<> connect(Device device) override;
     };

@@ -14,24 +14,24 @@
 #include "os/error.hpp"
 
 Async::Instance::Instance(unsigned int numThreads, unsigned int queueEntries) :
-    _workerThreadPool((numThreads == 0) ? std::max(std::thread::hardware_concurrency(), 1U) : numThreads) {
+    workerThreadPool((numThreads == 0) ? std::max(std::thread::hardware_concurrency(), 1U) : numThreads) {
     // If 0 threads are specified, the number is chosen with hardware_concurrency.
     // If the number of supported threads cannot be determined, 1 is created.
-    Internal::init(static_cast<unsigned int>(_workerThreadPool.size()), queueEntries);
+    Internal::init(static_cast<unsigned int>(workerThreadPool.size()), queueEntries);
 
     // Populate thread pool
     // TODO: Use views::enumerate() in C++23
-    for (unsigned int i = 0; i < _workerThreadPool.size(); i++)
-        _workerThreadPool[i] = std::thread{ Async::Internal::worker, i };
+    for (unsigned int i = 0; i < workerThreadPool.size(); i++)
+        workerThreadPool[i] = std::thread{ Async::Internal::worker, i };
 }
 
 Async::Instance::~Instance() {
-    Internal::stopThreads(static_cast<unsigned int>(_workerThreadPool.size()));
+    Internal::stopThreads(static_cast<unsigned int>(workerThreadPool.size()));
 
     // Join threads
     // Manual join calls are used instead of a jthread so the program can wait (briefly) for all threads to exit
     // before cleaning up.
-    for (auto& i : _workerThreadPool)
+    for (auto& i : workerThreadPool)
         if (i.joinable()) i.join();
 
     Internal::cleanup();

@@ -34,10 +34,10 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     if (result != kIOReturnSuccess) throw System::SystemError{ result, System::ErrorType::IOReturn, fnName };
 
     // Init channel
-    _handle.reset([[BTHandle alloc] initWithChannel:channel]);
-    [*_handle registerAsDelegate];
+    handle.reset([[BTHandle alloc] initWithChannel:channel]);
+    [*handle registerAsDelegate];
 
-    NSUInteger hash = [*_handle channelHash];
+    NSUInteger hash = [*handle channelHash];
     co_await Async::run(std::bind_front(Async::submitIOBluetooth, hash, Async::IOType::Send),
                         System::ErrorType::IOReturn);
 }

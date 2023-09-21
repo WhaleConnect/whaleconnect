@@ -37,43 +37,43 @@ static icu::UnicodeString getTimestamp() {
     return dateReturned;
 }
 
-void Console::_add(std::string_view s, const ImVec4& color, bool canUseHex) {
+void Console::add(std::string_view s, const ImVec4& color, bool canUseHex) {
     // Avoid empty strings
     if (s.empty()) return;
 
     icu::UnicodeString newText = icu::UnicodeString::fromUTF8(s);
 
     // Text goes on its own line if there are no items or the last line ends with a newline
-    if (_items.empty() || _items.back().text.endsWith('\n'))
-        _items.emplace_back(canUseHex, newText, "", color, getTimestamp());
-    else _items.back().text += newText;
+    if (items.empty() || items.back().text.endsWith('\n'))
+        items.emplace_back(canUseHex, newText, "", color, getTimestamp());
+    else items.back().text += newText;
 
     // Computing the string's hex representation here removes the need to recompute it every application frame.
     if (canUseHex)
         for (unsigned char c : s)
-            _items.back().textHex += icu::UnicodeString::fromUTF8(std::format("{:02X} ", static_cast<int>(c)));
+            items.back().textHex += icu::UnicodeString::fromUTF8(std::format("{:02X} ", static_cast<int>(c)));
 
-    _scrollToEnd = _autoscroll; // Scroll to the end if autoscroll is enabled
+    scrollToEnd = autoscroll; // Scroll to the end if autoscroll is enabled
 }
 
-void Console::_drawContextMenu() {
-    ImGui::BeginDisabled(!_textSelect.hasSelection());
-    if (ImGui::MenuItem("Copy", copyShortcut)) _textSelect.copy();
+void Console::drawContextMenu() {
+    ImGui::BeginDisabled(!textSelect.hasSelection());
+    if (ImGui::MenuItem("Copy", copyShortcut)) textSelect.copy();
     ImGui::EndDisabled();
 
-    if (ImGui::MenuItem("Select all", selectAllShortcut)) _textSelect.selectAll();
+    if (ImGui::MenuItem("Select all", selectAllShortcut)) textSelect.selectAll();
 }
 
-icu::UnicodeString Console::_getLineAtIdx(size_t i) const {
-    ConsoleItem item = _items[i];
-    const icu::UnicodeString& lineBase = (_showHex && item.canUseHex) ? item.textHex : item.text;
-    return _showTimestamps ? item.timestamp + lineBase : lineBase;
+icu::UnicodeString Console::getLineAtIdx(size_t i) const {
+    ConsoleItem item = items[i];
+    const icu::UnicodeString& lineBase = (showHex && item.canUseHex) ? item.textHex : item.text;
+    return showTimestamps ? item.timestamp + lineBase : lineBase;
 }
 
 void Console::drawOptions() {
-    ImGui::MenuItem("Autoscroll", nullptr, &_autoscroll);
-    ImGui::MenuItem("Show timestamps", nullptr, &_showTimestamps);
-    ImGui::MenuItem("Show hexadecimal", nullptr, &_showHex);
+    ImGui::MenuItem("Autoscroll", nullptr, &autoscroll);
+    ImGui::MenuItem("Show timestamps", nullptr, &showTimestamps);
+    ImGui::MenuItem("Show hexadecimal", nullptr, &showHex);
 }
 
 void Console::update(std::string_view id, const ImVec2& size) {
@@ -84,10 +84,10 @@ void Console::update(std::string_view id, const ImVec2& size) {
 
     // Add each item
     ImGuiListClipper clipper;
-    clipper.Begin(static_cast<int>(_items.size()));
+    clipper.Begin(static_cast<int>(items.size()));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
-            const auto& item = _items[i];
+            const auto& item = items[i];
 
             // Only color tuples with the alpha value set are considered
             bool hasColor = item.color.w > 0.0f;
@@ -96,7 +96,7 @@ void Console::update(std::string_view id, const ImVec2& size) {
             if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, item.color);
 
             std::string line;
-            _getLineAtIdx(i).toUTF8String(line);
+            getLineAtIdx(i).toUTF8String(line);
             ImGui::TextUnformatted(line);
 
             if (hasColor) ImGui::PopStyleColor();
@@ -105,16 +105,16 @@ void Console::update(std::string_view id, const ImVec2& size) {
     clipper.End();
 
     // Scroll to end
-    if (_scrollToEnd) {
+    if (scrollToEnd) {
         ImGui::SetScrollHereX(1.0f);
         ImGui::SetScrollHereY(1.0f);
-        _scrollToEnd = false;
+        scrollToEnd = false;
     }
 
-    _textSelect.update();
+    textSelect.update();
 
     if (ImGui::BeginPopupContextWindow()) {
-        _drawContextMenu();
+        drawContextMenu();
         ImGui::EndPopup();
     }
 
@@ -129,6 +129,6 @@ void Console::addText(std::string_view s, std::string_view pre, const ImVec4& co
 
         // Get substring
         if (end != s.end()) end++; // Increment end to include the newline in the substring
-        _add(std::string{ pre } + std::string{ start, end }, color, canUseHex);
+        add(std::string{ pre } + std::string{ start, end }, color, canUseHex);
     }
 }

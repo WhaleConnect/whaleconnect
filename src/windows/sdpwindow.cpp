@@ -40,14 +40,14 @@ static void drawServiceDetails(const BTUtils::SDPResult& result) {
     ImGui::Text("Port: %d", result.port);
 }
 
-bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
+bool SDPWindow::drawSDPList(const BTUtils::SDPResultList& resultList) {
     // Begin a scrollable child window to contain the list
     ImGui::BeginChild("sdpList", {}, true);
     bool ret = false;
 
     // ID to use in case multiple services have the same name
     int id = 0;
-    for (const auto& result : list) {
+    for (const auto& result : resultList) {
         ImGui::PushID(id); // Push the ID, then increment it
         id++;              // TODO: Use views::enumerate() in C++23
 
@@ -56,8 +56,8 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
 
             // Connection options
             if (ImGui::Button("Connect...")) {
-                _serviceName = name;
-                _port = result.port;
+                serviceName = name;
+                port = result.port;
                 ret = true;
             }
             ImGui::TreePop();
@@ -69,20 +69,20 @@ bool SDPWindow::_drawSDPList(const BTUtils::SDPResultList& list) {
     return ret;
 }
 
-void SDPWindow::_drawConnOptions(std::string_view info) {
+void SDPWindow::drawConnOptions(std::string_view info) {
     using enum ConnectionType;
 
     // Connection type selection
-    ImGui::RadioButton("RFCOMM", _connType, RFCOMM);
-    ImGui::RadioButton("L2CAP", _connType, L2CAP);
+    ImGui::RadioButton("RFCOMM", connType, RFCOMM);
+    ImGui::RadioButton("L2CAP", connType, L2CAP);
 
     // Connect button
     ImGui::Spacing();
     if (ImGui::Button("Connect"))
-        addConnWindow<SocketTag::BT>(_list, { _connType, _target.name, _target.address, _port }, info);
+        addConnWindow<SocketTag::BT>(list, { connType, target.name, target.address, port }, info);
 }
 
-void SDPWindow::_checkInquiryStatus() {
+void SDPWindow::checkInquiryStatus() {
     Overload visitor{
         [](std::monostate) { ImGui::TextUnformatted("No inquiry run"); },
         [this](AsyncSDPInquiry& asyncInq) {
@@ -97,52 +97,52 @@ void SDPWindow::_checkInquiryStatus() {
 
             // The async operation has completed, attempt to get its results
             try {
-                _sdpInquiry = asyncInq.get();
+                sdpInquiry = asyncInq.get();
             } catch (const System::SystemError& error) {
-                _sdpInquiry = error;
+                sdpInquiry = error;
             }
         },
         [](const std::system_error&) { ImGui::TextWrapped("System error: Failed to launch thread."); },
         [](const System::SystemError& error) { ImGui::TextWrapped("Error %s", error.what()); },
-        [this](const BTUtils::SDPResultList& list) {
+        [this](const BTUtils::SDPResultList& resultList) {
             // Done, print results
             if (list.empty()) {
-                ImGui::Text("No SDP results found for \"%s\".", _target.name.c_str());
+                ImGui::Text("No SDP results found for \"%s\".", target.name.c_str());
                 return;
             }
 
-            if (_drawSDPList(list)) ImGui::OpenPopup("options");
+            if (drawSDPList(resultList)) ImGui::OpenPopup("options");
 
             if (ImGui::BeginPopup("options")) {
-                _drawConnOptions(_serviceName);
+                drawConnOptions(serviceName);
                 ImGui::EndPopup();
             }
         },
     };
 
-    std::visit(visitor, _sdpInquiry);
+    std::visit(visitor, sdpInquiry);
 }
 
-void SDPWindow::_drawSDPTab() {
+void SDPWindow::drawSDPTab() {
     if (!ImGui::BeginTabItem("Connect with SDP")) return;
 
     // Disable the widgets if the async inquiry is running
-    ImGui::BeginDisabled(std::holds_alternative<AsyncSDPInquiry>(_sdpInquiry));
+    ImGui::BeginDisabled(std::holds_alternative<AsyncSDPInquiry>(sdpInquiry));
 
     // UUID selection combobox
     using namespace ImGui::Literals;
 
     ImGui::SetNextItemWidth(10_fh);
-    if (ImGui::BeginCombo("Protocol/Service UUID", _selectedUUID.c_str())) {
-        for (const auto& [name, _] : _uuids)
-            if (ImGui::Selectable(name.c_str())) _selectedUUID = name;
+    if (ImGui::BeginCombo("Protocol/Service UUID", selectedUUID.c_str())) {
+        for (const auto& [name, _] : uuids)
+            if (ImGui::Selectable(name.c_str())) selectedUUID = name;
         ImGui::EndCombo();
     }
 
     if constexpr (OS_WINDOWS || OS_MACOS) {
         // Flush cache option (Windows/macOS only)
         ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x * 4);
-        ImGui::Checkbox("Flush cache", &_flushCache);
+        ImGui::Checkbox("Flush cache", &flushCache);
         ImGui::HelpMarker("Ignore previous cached advertising data on this inquiry.");
     }
 
@@ -150,40 +150,40 @@ void SDPWindow::_drawSDPTab() {
     if (ImGui::Button("Run SDP Inquiry")) {
         try {
             // Start the inquiry
-            _sdpInquiry = std::async(std::launch::async, BTUtils::sdpLookup, _target.address, _uuids.at(_selectedUUID),
-                                     _flushCache);
+            sdpInquiry = std::async(std::launch::async, BTUtils::sdpLookup, target.address, uuids.at(selectedUUID),
+                                    flushCache);
         } catch (const std::system_error& error) {
-            _sdpInquiry = error;
+            sdpInquiry = error;
         }
     }
 
     ImGui::EndDisabled();
-    _checkInquiryStatus();
+    checkInquiryStatus();
     ImGui::EndTabItem();
 }
 
-void SDPWindow::_drawManualTab() {
+void SDPWindow::drawManualTab() {
     if (!ImGui::BeginTabItem("Connect Manually")) return;
 
     using namespace ImGui::Literals;
     ImGui::SetNextItemWidth(7_fh);
-    ImGui::InputScalar("Port", _port, 1, 10);
+    ImGui::InputScalar("Port", port, 1, 10);
 
-    _drawConnOptions(std::format("Port {}", _port));
+    drawConnOptions(std::format("Port {}", port));
     ImGui::EndTabItem();
 }
 
-void SDPWindow::_onBeforeUpdate() {
+void SDPWindow::onBeforeUpdate() {
     using namespace ImGui::Literals;
 
     ImGui::SetNextWindowSize(30_fh * 18_fh, ImGuiCond_Appearing);
-    _setClosable(!std::holds_alternative<AsyncSDPInquiry>(_sdpInquiry));
+    setClosable(!std::holds_alternative<AsyncSDPInquiry>(sdpInquiry));
 }
 
-void SDPWindow::_onUpdate() {
+void SDPWindow::onUpdate() {
     if (ImGui::BeginTabBar("ConnectionOptions")) {
-        _drawSDPTab();
-        _drawManualTab();
+        drawSDPTab();
+        drawManualTab();
         ImGui::EndTabBar();
     }
 }

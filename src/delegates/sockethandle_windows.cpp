@@ -9,19 +9,19 @@
 #include "net/enums.hpp"
 
 template <auto Tag>
-void Delegates::SocketHandle<Tag>::_closeImpl() const {
-    shutdown(_handle, SD_BOTH);
-    closesocket(_handle);
+void Delegates::SocketHandle<Tag>::closeImpl() const {
+    shutdown(handle, SD_BOTH);
+    closesocket(handle);
 }
 
 template <auto Tag>
 void Delegates::SocketHandle<Tag>::cancelIO() {
-    CancelIoEx(std::bit_cast<HANDLE>(_handle), nullptr);
+    CancelIoEx(std::bit_cast<HANDLE>(handle), nullptr);
 }
 
-template void Delegates::SocketHandle<SocketTag::IP>::_closeImpl() const;
+template void Delegates::SocketHandle<SocketTag::IP>::closeImpl() const;
 template void Delegates::SocketHandle<SocketTag::IP>::cancelIO();
 
-template void Delegates::SocketHandle<SocketTag::BT>::_closeImpl() const;
+template void Delegates::SocketHandle<SocketTag::BT>::closeImpl() const;
 template void Delegates::SocketHandle<SocketTag::BT>::cancelIO();
 #endif

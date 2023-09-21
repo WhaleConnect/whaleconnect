@@ -15,14 +15,14 @@
 // A socket representing an outgoing connection.
 template <auto Tag>
 class ClientSocket : public Socket {
-    Delegates::SocketHandle<Tag> _handle;
-    Delegates::Bidirectional<Tag> _io{ _handle };
-    Delegates::Client<Tag> _client;
-    Delegates::NoopServer _server;
+    Delegates::SocketHandle<Tag> handle;
+    Delegates::Bidirectional<Tag> io{ handle };
+    Delegates::Client<Tag> client;
+    Delegates::NoopServer server;
 
 public:
     // Constructs an object with a target device.
-    ClientSocket() : Socket(_handle, _io, _client, _server), _client(_handle) {}
+    ClientSocket() : Socket(handle, io, client, server), client(handle) {}
 };
 
 using ClientSocketIP = ClientSocket<SocketTag::IP>;
