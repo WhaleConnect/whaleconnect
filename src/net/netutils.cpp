@@ -17,9 +17,10 @@ constexpr auto GetAddrInfo = getaddrinfo;
 constexpr auto GetNameInfo = getnameinfo;
 #endif
 
-AddrInfoHandle NetUtils::resolveAddr(const Device& device) {
+AddrInfoHandle NetUtils::resolveAddr(const Device& device, bool useDNS) {
     bool isUDP = device.type == ConnectionType::UDP;
     AddrInfoType hints{
+        .ai_flags = useDNS ? 0 : AI_NUMERICHOST,
         .ai_family = AF_UNSPEC,
         .ai_socktype = isUDP ? SOCK_DGRAM : SOCK_STREAM,
         .ai_protocol = isUDP ? IPPROTO_UDP : IPPROTO_TCP,

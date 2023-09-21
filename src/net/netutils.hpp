@@ -36,7 +36,7 @@ using AddrInfoHandle = HandlePtr<AddrInfoType, freeaddrinfo>;
 
 namespace NetUtils {
     // Resolves an address with getaddrinfo.
-    AddrInfoHandle resolveAddr(const Device& device);
+    AddrInfoHandle resolveAddr(const Device& device, bool useDNS = true);
 
     // Loops through a getaddrinfo result.
     template <class Fn>
