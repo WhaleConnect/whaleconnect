@@ -80,7 +80,7 @@ ServerAddress Delegates::Server<SocketTag::IP>::startServer(const Device& server
 template <>
 Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     // Socket which is associated to the client upon accept
-    int af = (_traits.ip == IPType::IPv4) ? AF_INET : AF_INET6;
+    int af = (traits.ip == IPType::IPv4) ? AF_INET : AF_INET6;
     SocketHandle<SocketTag::IP> fd{ call(FN(socket, af, SOCK_STREAM, 0)) };
 
     std::vector<BYTE> buf(addrSize * 2);
