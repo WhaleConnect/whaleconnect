@@ -9,7 +9,7 @@ All commands are run in the repository root.
 This project uses C++20 features. Compilation is officially supported with:
 
 - GCC 13+
-- Clang 16+ (if using libc++, enable the experimental library)
+- Clang 17+
 - Visual Studio 2022 17.5+
 
 All code is standards compliant. However, because the project uses recent C++ features, other compilers, and versions older than those listed above, are not supported.
@@ -58,14 +58,6 @@ If you need to use an alternative C++ standard library (e.g., you want to use a 
 ```text
 --cxxflags="-I/path/to/library/headers -nostdinc++"                          # Compile flags - duplicate with --mxxflags for Objective-C/C++ (macOS only)
 --ldflags="-L/path/to/library/archives -Wl,-rpath,/path/to/library/archives" # Link flags
-```
-
-### Using libc++ (Clang)
-
-Many parts of the C++20 standard library require a separate flag in libc++ to be enabled. Add the following flags to `cxxflags` (and `mxxflags` if needed) and `ldflags`:
-
-```text
--stdlib=libc++ -fexperimental-library
 ```
 
 ### Locating Packaged Libraries (Linux)
