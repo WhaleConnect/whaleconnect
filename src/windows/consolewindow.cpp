@@ -1,14 +1,16 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+module;
 #include <array>
+#include <string>
+#include <mutex>
 
 #include <imgui.h>
 
-#include "consolewindow.hpp"
-
-#include "gui/imguiext.hpp"
-#include "utils/strings.hpp"
+module windows.consolewindow;
+import gui.imguiext;
+import utils.strings;
 
 void ConsoleWindow::updateConsole(int numLines) {
     // Apply foxus to textbox

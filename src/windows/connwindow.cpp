@@ -1,21 +1,22 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "connwindow.hpp"
-
+module;
+#include <coroutine>
 #include <format>
 
 #include <imgui.h>
 #include <magic_enum.hpp>
 
-#include "gui/imguiext.hpp"
-#include "net/device.hpp"
-#include "net/enums.hpp"
-#include "os/error.hpp"
-#include "utils/strings.hpp"
+module windows.connwindow;
+import gui.imguiext;
+import net.device;
+import net.enums;
+import os.error;
+import utils.strings;
 
 // Formats a Device instance into a string for use in a ConnWindow title.
-static std::string formatDevice(const Device& device, std::string_view extraInfo) {
+std::string formatDevice(const Device& device, std::string_view extraInfo) {
     // Type of the connection
     bool isIP = (device.type == ConnectionType::TCP || device.type == ConnectionType::UDP);
     auto typeString = magic_enum::enum_name(device.type);

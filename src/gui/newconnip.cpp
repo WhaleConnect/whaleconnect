@@ -1,17 +1,16 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "newconnip.hpp"
-
+module;
 #include <string>
 
 #include <imgui.h>
 
-#include "imguiext.hpp"
-#include "newconn.hpp"
-
-#include "net/enums.hpp"
-#include "windows/windowlist.hpp"
+module gui.newconnip;
+import gui.imguiext;
+import gui.newconn;
+import net.enums;
+import windows.windowlist;
 
 void drawIPConnectionTab(WindowList& connections) {
     if (!ImGui::BeginTabItem("Internet Protocol")) return;

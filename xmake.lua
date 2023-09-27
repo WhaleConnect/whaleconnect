@@ -24,8 +24,7 @@ set_defaultmode("debug")
 
 add_packages("icu4c", "magic_enum", "out_ptr")
 
--- Ignored warnings
-add_cxxflags("-Wno-missing-field-initializers", { tools = { "clang", "clangxx", "gcc", "gxx" } })
+add_cxxflags("-Wno-missing-field-initializers", "-pthread", { tools = { "clang", "clangxx" } })
 
 -- Use MSVC Unicode character set and prevent clashing macros
 add_defines("UNICODE", "_UNICODE", "NOMINMAX")
@@ -55,15 +54,25 @@ target("terminal-core")
     -- Project files
     set_kind("object")
 
-    add_files("src/*/*.cpp|app/*|gui/*|windows/*|**_windows.*|**_macos.*|**_linux.*")
+    add_files("src/net/*.cpp", "src/net/*.mpp",
+              "src/os/*.cpp", "src/os/*.mpp",
+              "src/sockets/*.mpp", "src/sockets/delegates/*.mpp",
+              "src/utils/*.cpp", "src/utils/*.mpp")
 
     -- Platform-specific files
     if is_plat("windows") then
-        add_files("src/**_windows.cpp")
+        add_files("src/net/windows/*.cpp",
+                  "src/os/windows/*.cpp", "src/os/windows/*.mpp",
+                  "src/sockets/delegates/windows/*.cpp")
     elseif is_plat("macosx") then
-        add_files("src/**_macos.cpp", "src/**.mm")
+        add_files("src/objc/*.mm", "src/objc/*.cpp",
+                  "src/net/macos/*.cpp",
+                  "src/os/macos/*.cpp", "src/os/macos/*.mpp",
+                  "src/sockets/delegates/macos/*.cpp")
     elseif is_plat("linux") then
-        add_files("src/**_linux.cpp")
+        add_files("src/net/linux/*.cpp",
+                  "src/os/linux/*.cpp", "src/os/linux/*.mpp",
+                  "src/sockets/delegates/linux/*.cpp")
     end
 
 target("terminal")
@@ -71,7 +80,10 @@ target("terminal")
     add_deps("terminal-core")
 
     -- GUI code and main entry point
-    add_files("src/app/*.cpp", "src/gui/*.cpp", "src/windows/*.cpp", "src/main.cpp")
+    add_files("src/app/*.cpp", "src/app/*.mpp",
+              "src/gui/*.cpp", "src/gui/*.mpp",
+              "src/windows/*.cpp", "src/windows/*.mpp",
+              "src/main.cpp")
 
     -- Add platform rules
     if is_plat("windows") then
@@ -104,7 +116,7 @@ target("socket-tests")
 
     add_packages("catch2", "nlohmann_json")
     add_deps("terminal-core")
-    add_files("tests/src/**.cpp")
+    add_files("tests/src/**.cpp", "tests/src/**.mpp")
 
      -- Path to settings file
     add_defines(format("SETTINGS_FILE=R\"(%s)\"", path.absolute("tests/settings/settings.json")))

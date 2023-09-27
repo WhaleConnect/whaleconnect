@@ -1,14 +1,16 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "imguiext.hpp"
-
+module;
 #include <bit>
-#include <numbers> // std::numbers::pi
+#include <numbers>
+#include <string_view>
 
 #include <imgui.h>
 
-static int stringCallback(ImGuiInputTextCallbackData* data) {
+module gui.imguiext;
+
+int stringCallback(ImGuiInputTextCallbackData* data) {
     // Get user data (assume it's a string pointer)
     auto& str = *std::bit_cast<std::string*>(data->UserData);
 

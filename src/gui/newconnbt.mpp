@@ -1,0 +1,8 @@
+// Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+export module gui.newconnbt;
+import windows.windowlist;
+
+// Renders the tab in the "New Connection" window for Bluetooth-based connections.
+export void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows);

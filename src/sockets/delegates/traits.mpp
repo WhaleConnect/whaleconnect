@@ -1,0 +1,64 @@
+// Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+module;
+#if OS_WINDOWS
+#include <WinSock2.h>
+#elif OS_MACOS
+#include "objc/bthandle.h"
+#endif
+
+export module sockets.delegates.traits;
+import net.enums;
+
+export namespace Traits {
+    // Platform-specific traits for socket handles.
+
+#if OS_WINDOWS
+    template <auto Tag>
+    struct SocketHandle {
+        using HandleType = SOCKET;
+        static constexpr auto invalidHandle = INVALID_SOCKET;
+    };
+#elif OS_MACOS
+    template <auto Tag>
+    struct SocketHandle {};
+
+    template <>
+    struct SocketHandle<SocketTag::IP> {
+        using HandleType = int;
+        static constexpr auto invalidHandle = -1;
+    };
+
+    template <>
+    struct SocketHandle<SocketTag::BT> {
+        using HandleType = BTHandle*;
+        static constexpr auto invalidHandle = nullptr;
+    };
+#else
+    template <auto Tag>
+    struct SocketHandle {
+        using HandleType = int;
+        static constexpr auto invalidHandle = -1;
+    };
+#endif
+
+    // Convenience type alias for socket handle types.
+    template <auto Tag>
+    using SocketHandleType = SocketHandle<Tag>::HandleType;
+
+    // Convenience function for invalid socket handle values.
+    template <auto Tag>
+    constexpr auto invalidSocketHandle() {
+        return SocketHandle<Tag>::invalidHandle;
+    }
+
+    // Traits for server sockets.
+    template <auto Tag>
+    struct Server {};
+
+    template <>
+    struct Server<SocketTag::IP> {
+        IPType ip;
+    };
+}

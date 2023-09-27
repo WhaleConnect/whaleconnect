@@ -1,10 +1,10 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+module;
 #define IMGUI_DEFINE_MATH_OPERATORS
 
-#include "textselect.hpp"
-
+#include <cmath>
 #include <memory>
 #include <numeric>
 
@@ -15,10 +15,11 @@
 #include <unicode/unistr.h>
 #include <unicode/utypes.h>
 
-#include "imguiext.hpp"
+module gui.textselect;
+import gui.imguiext;
 
 // Word break iterator for double-click selection, created inside an IIFE to avoid leaking symbols to the global scope
-static const auto bi = [] {
+const auto bi = [] {
     using icu::BreakIterator;
 
     UErrorCode status = U_ZERO_ERROR;
@@ -26,7 +27,7 @@ static const auto bi = [] {
 }();
 
 // Gets the display width of a substring of a UnicodeString.
-static float substringSizeX(const icu::UnicodeString& s, int32_t start, int32_t length = INT32_MAX) {
+float substringSizeX(const icu::UnicodeString& s, int32_t start, int32_t length = INT32_MAX) {
     std::string sub;
 
     s.tempSubString(start, length).toUTF8String(sub);
@@ -34,7 +35,7 @@ static float substringSizeX(const icu::UnicodeString& s, int32_t start, int32_t 
 }
 
 // Gets the index of the character the mouse cursor is over.
-static int32_t getCharIndex(const icu::UnicodeString& s, float cursorPosX, int32_t start, int32_t end) {
+int32_t getCharIndex(const icu::UnicodeString& s, float cursorPosX, int32_t start, int32_t end) {
     // Ignore cursor position when it is invalid
     if (cursorPosX < 0) return 0;
 
@@ -59,12 +60,12 @@ static int32_t getCharIndex(const icu::UnicodeString& s, float cursorPosX, int32
 }
 
 // Wrapper for getCharIndex providing the inditial bounds.
-static int32_t getCharIndex(const icu::UnicodeString& s, float cursorPosX) {
+int32_t getCharIndex(const icu::UnicodeString& s, float cursorPosX) {
     return getCharIndex(s, cursorPosX, 0, s.length());
 }
 
 // Gets the scroll delta for the given cursor position and window bounds.
-static float getScrollDelta(float v, float min, float max) {
+float getScrollDelta(float v, float min, float max) {
     using namespace ImGui::Literals;
 
     const float scrollDelta = 250_dt;

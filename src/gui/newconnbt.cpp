@@ -1,22 +1,28 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "newconnbt.hpp"
-
+module;
 #include <algorithm>
 #include <map>
 #include <variant>
 
+#ifdef _MSC_VER
+// Prevents an error in stable_sort with modules
+#include <ranges>
+#endif
+
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#include "net/btutils.hpp"
-#include "net/device.hpp"
-#include "utils/overload.hpp"
-#include "windows/sdpwindow.hpp"
-#include "windows/windowlist.hpp"
+module gui.newconnbt;
+import net.btutils;
+import net.device;
+import os.error;
+import utils.overload;
+import windows.sdpwindow;
+import windows.windowlist;
 
-static void sortTable(DeviceList& devices) {
+void sortTable(DeviceList& devices) {
     // A sort is only needed for 2 or more entries
     if (devices.size() < 2) return;
 
@@ -37,7 +43,7 @@ static void sortTable(DeviceList& devices) {
 }
 
 // Draws a menu composed of the paired Bluetooth devices.
-static const Device* drawPairedDevices(DeviceList& devices, bool needsSort) {
+const Device* drawPairedDevices(DeviceList& devices, bool needsSort) {
     // Using a pointer so the return value can be nullable without copying large objects.
     const Device* ret = nullptr;
 

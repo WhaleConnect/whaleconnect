@@ -1,15 +1,19 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <coroutine>
 #include <thread>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_templated.hpp>
+#include <nlohmann/json.hpp>
 
-#include "helpers/helpers.hpp"
-#include "os/async.hpp"
-#include "os/error.hpp"
-#include "sockets/clientsocket.hpp"
+import helpers.helpers;
+import net.enums;
+import os.async;
+import os.error;
+import sockets.clientsocket;
+import utils.task;
 
 const auto settings = loadSettings();
 const auto ipSettings = settings["ip"];

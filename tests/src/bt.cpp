@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <catch2/catch_test_macros.hpp>
+#include <nlohmann/json.hpp>
 
-#include "helpers/helpers.hpp"
-#include "helpers/testio.hpp"
-#include "net/device.hpp"
-#include "net/enums.hpp"
-#include "os/async.hpp"
-#include "os/error.hpp"
-#include "sockets/clientsocket.hpp"
+import helpers.helpers;
+import helpers.testio;
+import net.device;
+import net.enums;
+import os.async;
+import os.error;
+import sockets.clientsocket;
 
 const auto settings = loadSettings();
 const auto btSettings = settings["bluetooth"];

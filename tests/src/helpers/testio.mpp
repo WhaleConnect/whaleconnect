@@ -1,0 +1,12 @@
+// Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+export module helpers.testio;
+import net.device;
+import sockets.socket;
+
+// Performs basic I/O checks on a socket.
+export void testIO(const Socket& socket, bool useRunLoop = false);
+
+// Connects a socket, then performs I/O checks.
+export void testIOClient(const Socket& socket, const Device& device, bool useRunLoop = false);

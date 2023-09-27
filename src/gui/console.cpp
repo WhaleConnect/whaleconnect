@@ -1,10 +1,7 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "console.hpp"
-
-#include <array>
-#include <chrono>
+module;
 #include <ctime>
 #include <cmath>
 #include <format>
@@ -16,21 +13,20 @@
 #include <unicode/unistr.h>
 #include <unicode/utypes.h>
 
-#include "imguiext.hpp"
-
-#include "unicode/unistr.h"
-#include "utils/strings.hpp"
+module gui.console;
+import gui.imguiext;
+import utils.strings;
 
 constexpr const char* selectAllShortcut = OS_MACOS ? "\uEBB8A" : "Ctrl+A";
 constexpr const char* copyShortcut = OS_MACOS ? "\uEBB8C" : "Ctrl+C";
 
 // Formatter used for creating timestamp strings
-static const auto formatter = [] {
+const auto formatter = [] {
     UErrorCode status = U_ZERO_ERROR; // Isolated from global scope
     return icu::SimpleDateFormat{ icu::UnicodeString{ "hh:mm:ss.SSS > " }, status };
 }();
 
-static icu::UnicodeString getTimestamp() {
+icu::UnicodeString getTimestamp() {
     UDate current = icu::Calendar::getNow();
     icu::UnicodeString dateReturned;
     formatter.format(current, dateReturned);

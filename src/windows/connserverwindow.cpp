@@ -1,19 +1,19 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "connserverwindow.hpp"
-
+module;
+#include <coroutine>
 #include <format>
 
 #include <imgui.h>
 #include <magic_enum.hpp>
 
-#include "connwindow.hpp"
-
-#include "delegates/delegates.hpp"
-#include "gui/imguiext.hpp"
-#include "net/enums.hpp"
-#include "os/error.hpp"
+module windows.connserverwindow;
+import gui.imguiext;
+import net.enums;
+import os.error;
+import sockets.delegates.delegates;
+import windows.connwindow;
 
 Task<> ConnServerWindow::accept() try {
     if (!socket || pendingAccept) co_return;

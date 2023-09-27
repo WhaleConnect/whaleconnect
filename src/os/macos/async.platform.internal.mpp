@@ -1,0 +1,41 @@
+// Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+module;
+#if OS_MACOS
+#include <cstdint>
+#include <optional>
+#include <queue>
+#include <unordered_map>
+#include <vector>
+
+export module os.async.platform.internal;
+import os.async;
+import os.async.platform;
+
+export namespace Async::Internal {
+    // User event idenfitiers (combined with socket file descriptors)
+    constexpr auto ASYNC_CANCEL = 1UL << 33; // Cancel all operations
+    constexpr auto ASYNC_ADD = 1UL << 34;    // Add socket to queue
+
+    // kqueue file descriptors for each worker thread
+    // Communication from the main thread to the worker threads should be done through kqueue user events.
+    std::vector<int> kqs;
+
+    using CompletionQueue = std::queue<Async::CompletionResult*>;
+    using OptCompletionResult = std::optional<Async::CompletionResult*>;
+
+    struct SocketQueue {
+        CompletionQueue pendingReads;
+        CompletionQueue pendingWrites;
+    };
+
+    using SocketQueueMap = std::unordered_map<uint64_t, SocketQueue>;
+
+    // Adds a pending operation.
+    void addPending(uint64_t id, SocketQueueMap& map, Async::IOType ioType, Async::CompletionResult& result);
+
+    // Pops and returns a pending operation.
+    OptCompletionResult popPending(uint64_t id, SocketQueueMap& map, Async::IOType ioType);
+}
+#endif

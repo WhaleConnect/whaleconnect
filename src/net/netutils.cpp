@@ -1,16 +1,26 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "netutils.hpp"
-
+module;
 #include <bit>
-#include <stdexcept>
+#include <string>
 
-#include "enums.hpp"
+#if OS_WINDOWS
+#include <WinSock2.h>
+#include <WS2tcpip.h>
+#else
+#include <netdb.h>
+#endif
 
-#include "os/errcheck.hpp"
-#include "utils/out_ptr_compat.hpp"
-#include "utils/strings.hpp"
+#include <ztd/out_ptr.hpp>
+
+#include "os/fn.hpp"
+
+module net.netutils;
+import net.enums;
+import os.errcheck;
+import os.error;
+import utils.strings;
 
 #if !OS_WINDOWS
 constexpr auto GetAddrInfo = getaddrinfo;
@@ -32,8 +42,8 @@ AddrInfoHandle NetUtils::resolveAddr(const Device& device, bool useDNS) {
 
     // Resolve the IP
     AddrInfoHandle ret;
-    call(FN(GetAddrInfo, addrWide.c_str(), portWide.c_str(), &hints, std2::out_ptr(ret)), checkZero, useReturnCode,
-         System::ErrorType::AddrInfo);
+    call(FN(GetAddrInfo, addrWide.c_str(), portWide.c_str(), &hints, ztd::out_ptr::out_ptr(ret)), checkZero,
+         useReturnCode, System::ErrorType::AddrInfo);
 
     return ret;
 }

@@ -1,3 +1,14 @@
+Diagnostics:
+  Suppress:
+    - module_odr_violation_mismatch_decl_unknown
+    - module_odr_violation_record
+    - module_odr_violation_template_parameter
+    - module_odr_violation_missing_decl
+    - module_unimported_use_header
+    - typecheck_nonviable_condition
+CompileFlags:
+  Add: [-ferror-limit=0]
+---
 # *.h files are Objective-C++ headers
 # Set the language and C++ revision
 If:

@@ -1,8 +1,7 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "app.hpp"
-
+module;
 #include <array>
 #include <cmath>
 #include <string>
@@ -16,16 +15,16 @@
 #include <SDL3/SDL_opengl.h>
 #include <SDL3/SDL_video.h>
 
-#include "settings.hpp"
+module app.app;
+import app.settings;
+import gui.notifications;
+import utils.handleptr;
 
-#include "gui/notifications.hpp"
-#include "utils/handleptr.hpp"
-
-static SDL_Window* window;      // The main application window
-static SDL_GLContext glContext; // The OpenGL context
+SDL_Window* window;      // The main application window
+SDL_GLContext glContext; // The OpenGL context
 
 // Scales the app and fonts to the screen's DPI.
-static void scaleToDPI() {
+void scaleToDPI() {
     // https://github.com/ocornut/imgui/issues/5301
     // https://github.com/ocornut/imgui/issues/6485
     // https://github.com/ocornut/imgui/blob/master/docs/FAQ.md#q-how-should-i-handle-dpi-in-my-application
@@ -85,7 +84,7 @@ static void scaleToDPI() {
 }
 
 // Sets Dear ImGui's configuration for use by the application.
-static void configImGui() {
+void configImGui() {
     using namespace Settings;
 
     ImGuiIO& io = ImGui::GetIO();

@@ -1,9 +1,8 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+module;
 #define IMGUI_DEFINE_MATH_OPERATORS
-
-#include "notifications.hpp"
 
 #include <format>
 #include <string>
@@ -12,9 +11,11 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#include "imguiext.hpp"
+module gui.notifications;
 
-static constexpr const char* notificationsWindowTitle = "Notifications";
+import gui.imguiext;
+
+constexpr const char* notificationsWindowTitle = "Notifications";
 
 // Class to contain information about a notification.
 class Notification {
@@ -64,7 +65,7 @@ public:
     }
 };
 
-static std::vector<Notification> notifications; // Currently active notifications
+std::vector<Notification> notifications; // Currently active notifications
 
 // Draws a single notification in the notification area.
 float Notification::update(const ImVec2& pos, bool showInCorner) {
@@ -169,7 +170,7 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
 }
 
 // Draws all notifications that have not been explicitly closed as part of an enclosing window.
-static void drawNotificationContents(bool* open) {
+void drawNotificationContents(bool* open) {
     bool clearAll = false;
 
     if (notifications.empty()) ImGui::Text("No Notifications");

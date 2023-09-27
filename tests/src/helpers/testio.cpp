@@ -1,11 +1,14 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "testio.hpp"
+module;
+#include <coroutine>
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "helpers.hpp"
+module helpers.testio;
+import helpers.helpers;
+import utils.task;
 
 void testIO(const Socket& socket, bool useRunLoop) {
     // Check the socket is valid

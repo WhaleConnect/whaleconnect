@@ -1,6 +1,7 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+module;
 #include <format>
 
 #if OS_WINDOWS
@@ -19,7 +20,7 @@
 
 #include <magic_enum.hpp>
 
-#include "error.hpp"
+module os.error;
 
 template <>
 constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(System::ErrorType value) noexcept {
@@ -38,7 +39,7 @@ System::ErrorCode System::getLastError() {
 bool System::isFatal(ErrorCode code) {
     // Check if the code is actually an error
     // Platform-specific "pending" codes indicate an async operation has not yet finished and not a fatal error.
-    if (code == NO_ERROR) return false;
+    if (code == 0) return false;
 
 #if OS_WINDOWS
     // Pending I/O for overlapped sockets

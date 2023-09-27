@@ -6,7 +6,7 @@
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 
-#include "os/async.hpp"
+import os.async;
 
 // Listener to initialize OS APIs when tests are run.
 class InitListener : public Catch::EventListenerBase {

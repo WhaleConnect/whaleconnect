@@ -1,31 +1,33 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "delegates/server.hpp"
-#include "net/enums.hpp"
-#include "delegates/traits.hpp"
 #ifdef SDL_MAIN_HANDLED
 #undef SDL_MAIN_HANDLED
 #endif
 
 #include <cstdlib> // EXIT_FAILURE, EXIT_SUCCESS
 #include <optional>
+#include <memory>
 #include <system_error>
 
 #include <imgui.h>
 #include <SDL3/SDL_main.h>
 
-#include "app/app.hpp"
-#include "app/settings.hpp"
-#include "gui/imguiext.hpp"
-#include "gui/newconnbt.hpp"
-#include "gui/newconnip.hpp"
-#include "gui/notifications.hpp"
-#include "net/btutils.hpp"
-#include "os/async.hpp"
-#include "windows/windowlist.hpp"
-#include "sockets/serversocket.hpp"
-#include "windows/connserverwindow.hpp"
+import app.app;
+import app.settings;
+import gui.imguiext;
+import gui.newconnbt;
+import gui.newconnip;
+import gui.notifications;
+import net.btutils;
+import net.enums;
+import os.async;
+import os.error;
+import sockets.delegates.server;
+import sockets.delegates.traits;
+import sockets.serversocket;
+import windows.connserverwindow;
+import windows.windowlist;
 
 // Draws the new connection window.
 void drawNewConnectionWindow(bool& open, WindowList& connections, WindowList& sdpWindows) {

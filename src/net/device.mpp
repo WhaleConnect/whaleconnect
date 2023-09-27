@@ -1,0 +1,20 @@
+// Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+module;
+#include <cstdint>
+#include <string>
+#include <vector>
+
+export module net.device;
+import net.enums;
+
+// A remote device's metadata.
+export struct Device {
+    ConnectionType type = ConnectionType::None; // Connection protocol
+    std::string name;                           // Device name for display
+    std::string address;                        // Address (IP address for TCP / UDP, MAC address for Bluetooth)
+    uint16_t port = 0;                          // Port (or PSM for L2CAP, channel for RFCOMM)
+};
+
+export using DeviceList = std::vector<Device>;

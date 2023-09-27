@@ -1,0 +1,17 @@
+// Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+export module utils.overload;
+
+export {
+    // Applies the overload pattern to std::visit.
+    template <class... Ts>
+    struct Overload : Ts... {
+        using Ts::operator()...;
+    };
+
+    #ifdef __clang__
+    template <class... Ts>
+    Overload(Ts...) -> Overload<Ts...>;
+    #endif
+}

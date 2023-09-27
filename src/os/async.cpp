@@ -1,17 +1,13 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "async.hpp"
-
-#include "async_internal.hpp"
-
-#include <algorithm> // std::max()
-#include <exception>
-#include <system_error>
+module;
+#include <algorithm>
 #include <thread>
 #include <vector>
 
-#include "os/error.hpp"
+module os.async;
+import os.async.internal;
 
 Async::Instance::Instance(unsigned int numThreads, unsigned int queueEntries) :
     workerThreadPool((numThreads == 0) ? std::max(std::thread::hardware_concurrency(), 1U) : numThreads) {

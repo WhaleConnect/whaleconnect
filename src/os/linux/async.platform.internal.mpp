@@ -1,0 +1,15 @@
+// Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+module;
+#if OS_LINUX
+#include <vector>
+
+#include <liburing.h>
+
+export module os.async.platform.internal;
+
+export namespace Async::Internal {
+    std::vector<io_uring> rings;
+}
+#endif
