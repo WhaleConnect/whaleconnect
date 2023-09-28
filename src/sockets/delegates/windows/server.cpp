@@ -22,6 +22,7 @@ import os.async;
 import os.async.platform;
 import os.errcheck;
 import sockets.incomingsocket;
+import sockets.socket; // Prevents "LNK1227: conflicting weak extern definition" (MSVC)
 import utils.strings;
 import utils.task;
 
