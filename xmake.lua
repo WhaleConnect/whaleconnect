@@ -44,11 +44,30 @@ add_includedirs("src")
 if is_plat("windows") then
     add_syslinks("Ws2_32", "Bthprops")
 elseif is_plat("macosx") then
-    add_frameworks("Foundation", "IOBluetooth")
-    set_values("objc++.build.arc", true)
+    local swiftBuildDir = path.join("$(scriptdir)", "swift", ".build", is_mode("debug") and "debug" or "release")
+    local swiftLibDir = "/Library/Developer/CommandLineTools/usr/lib/swift"
+
+    add_includedirs(path.join(swiftBuildDir, "BluetoothMacOS.build"), swiftLibDir)
+    add_linkdirs(swiftBuildDir, path.join(swiftLibDir, "macosx"))
+    add_links("BluetoothMacOS")
 elseif is_plat("linux") then
     add_packages("liburing", "dbus", "bluez")
 end
+
+target("swift")
+    set_kind("phony")
+
+    on_build(function(target)
+        if is_plat("macosx") then
+            os.cd(path.join("$(scriptdir)", "swift"))
+
+            if is_mode("debug") then
+                os.exec("swift build")
+            else
+                os.exec("swift build -c release")
+            end
+        end
+    end)
 
 target("terminal-core")
     -- Project files
@@ -65,7 +84,8 @@ target("terminal-core")
                   "src/os/windows/*.cpp", "src/os/windows/*.mpp",
                   "src/sockets/delegates/windows/*.cpp")
     elseif is_plat("macosx") then
-        add_files("src/objc/*.mm", "src/objc/*.cpp",
+        add_deps("swift")
+        add_files("swift/bridge/cpp_bridge.cpp",
                   "src/net/macos/*.cpp",
                   "src/os/macos/*.cpp", "src/os/macos/*.mpp",
                   "src/sockets/delegates/macos/*.cpp")

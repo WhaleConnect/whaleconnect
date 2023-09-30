@@ -3,7 +3,6 @@
 
 module;
 #if OS_MACOS
-#include <cstdint>
 #include <optional>
 #include <queue>
 #include <unordered_map>
@@ -30,12 +29,12 @@ export namespace Async::Internal {
         CompletionQueue pendingWrites;
     };
 
-    using SocketQueueMap = std::unordered_map<uint64_t, SocketQueue>;
+    using SocketQueueMap = std::unordered_map<SwiftID, SocketQueue>;
 
     // Adds a pending operation.
-    void addPending(uint64_t id, SocketQueueMap& map, Async::IOType ioType, Async::CompletionResult& result);
+    void addPending(SwiftID id, SocketQueueMap& map, Async::IOType ioType, Async::CompletionResult& result);
 
     // Pops and returns a pending operation.
-    OptCompletionResult popPending(uint64_t id, SocketQueueMap& map, Async::IOType ioType);
+    OptCompletionResult popPending(SwiftID id, SocketQueueMap& map, Async::IOType ioType);
 }
 #endif

@@ -3,16 +3,18 @@
 
 module;
 #if OS_MACOS
-#include <cstdint>
 #include <optional>
 #include <string>
 
 #include <IOKit/IOReturn.h>
+#include <swiftToCxx/_SwiftCxxInteroperability.h>
 
 export module os.async.platform;
 import os.async;
 
 export namespace Async {
+    using SwiftID = swift::UInt;
+
     // The type of a Bluetooth I/O operation.
     enum class IOType { Send, Receive };
 
@@ -26,24 +28,24 @@ export namespace Async {
     void cancelPending(int fd);
 
     // Creates a pending operation for a Bluetooth channel.
-    void submitIOBluetooth(uint64_t id, IOType ioType, CompletionResult& result);
+    void submitIOBluetooth(SwiftID id, IOType ioType, CompletionResult& result);
 
     // Signals completion of a Bluetooth operation.
-    bool bluetoothComplete(uint64_t id, IOType ioType, IOReturn status);
+    bool bluetoothComplete(SwiftID id, IOType ioType, IOReturn status);
 
     // Signals completion of a Bluetooth read operation.
-    void bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen);
+    void bluetoothReadComplete(SwiftID id, const char* data, size_t dataLen);
 
     // Signals closure of a Bluetooth channel.
-    void bluetoothClosed(uint64_t id);
+    void bluetoothClosed(SwiftID id);
 
     // Gets the first queued result of a Bluetooth read operation.
-    std::optional<std::string> getBluetoothReadResult(uint64_t id);
+    std::optional<std::string> getBluetoothReadResult(SwiftID id);
 
     // Removes results from previous receive operations on a Bluetooth channel.
-    void clearBluetoothDataQueue(uint64_t id);
+    void clearBluetoothDataQueue(SwiftID id);
 
     // Cancels all pending operations on a Bluetooth channel.
-    void bluetoothCancel(uint64_t id);
+    void bluetoothCancel(SwiftID id);
 }
 #endif

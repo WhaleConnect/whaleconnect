@@ -28,7 +28,7 @@ int currentKqueueIdx = 0;
 Async::Internal::SocketQueueMap btSockets;
 
 // Bluetooth read results
-std::unordered_map<uint64_t, std::queue<std::optional<std::string>>> btReads;
+std::unordered_map<Async::SwiftID, std::queue<std::optional<std::string>>> btReads;
 
 void Async::prepSocket(int s) {
     int flags = call(FN(fcntl, s, F_GETFL, 0));
@@ -74,11 +74,11 @@ void Async::cancelPending(int fd) {
     }
 }
 
-void Async::submitIOBluetooth(uint64_t id, IOType ioType, CompletionResult& result) {
+void Async::submitIOBluetooth(SwiftID id, IOType ioType, CompletionResult& result) {
     Internal::addPending(id, btSockets, ioType, result);
 }
 
-bool Async::bluetoothComplete(uint64_t id, IOType ioType, IOReturn status) {
+bool Async::bluetoothComplete(SwiftID id, IOType ioType, IOReturn status) {
     auto pending = Internal::popPending(id, btSockets, ioType);
     if (!pending) return false;
 
@@ -90,30 +90,30 @@ bool Async::bluetoothComplete(uint64_t id, IOType ioType, IOReturn status) {
     return true;
 }
 
-void Async::bluetoothReadComplete(uint64_t id, const char* data, size_t dataLen) {
+void Async::bluetoothReadComplete(SwiftID id, const char* data, size_t dataLen) {
     btReads[id].emplace(std::in_place, data, dataLen);
 
     bluetoothComplete(id, IOType::Receive, kIOReturnSuccess);
 }
 
-void Async::bluetoothClosed(uint64_t id) {
+void Async::bluetoothClosed(SwiftID id) {
     btReads[id].emplace();
 
     // Close events are determined by the receive result, resume the first read operation in the queue
     bluetoothComplete(id, IOType::Receive, kIOReturnSuccess);
 }
 
-std::optional<std::string> Async::getBluetoothReadResult(uint64_t id) {
+std::optional<std::string> Async::getBluetoothReadResult(SwiftID id) {
     auto data = btReads[id].front();
     btReads[id].pop();
     return data;
 }
 
-void Async::clearBluetoothDataQueue(uint64_t id) {
+void Async::clearBluetoothDataQueue(SwiftID id) {
     btReads.erase(id);
 }
 
-void Async::bluetoothCancel(uint64_t id) {
+void Async::bluetoothCancel(SwiftID id) {
     // Loop through all pending events and send the "aborted" signal
 
     // clang-format doesn't recognize semicolons after loops

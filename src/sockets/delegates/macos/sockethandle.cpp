@@ -7,8 +7,6 @@ module;
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "objc/cpp_objc_bridge.hpp"
-
 module sockets.delegates.sockethandle;
 import os.async.platform;
 import net.enums;
@@ -26,11 +24,11 @@ void Delegates::SocketHandle<SocketTag::IP>::cancelIO() {
 
 template <>
 void Delegates::SocketHandle<SocketTag::BT>::closeImpl() {
-    CppObjCBridge::Bluetooth::close(handle);
+    handle->close();
 }
 
 template <>
 void Delegates::SocketHandle<SocketTag::BT>::cancelIO() {
-    Async::bluetoothCancel(CppObjCBridge::getBTHandleHash(handle));
+    Async::bluetoothCancel(handle->getHash());
 }
 #endif

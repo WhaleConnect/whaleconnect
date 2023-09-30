@@ -6,10 +6,11 @@ module;
 #include <coroutine>
 #include <functional>
 
+#include <BluetoothMacOS-Swift.h>
+#include <IOKit/IOReturn.h>
 #include <sys/event.h>
 #include <sys/socket.h>
 
-#include "objc/cpp_objc_bridge.hpp"
 #include "os/fn.hpp"
 
 module sockets.delegates.client;
@@ -53,10 +54,16 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     }
 
     // Init channel
-    handle.reset(CppObjCBridge::Bluetooth::connect(device.address, device.port, isL2CAP));
+    auto newHandle
+        = call(
+              FN(BluetoothMacOS::makeBTHandle, device.address, device.port, isL2CAP),
+              [](const BluetoothMacOS::BTHandleResult& result) { return result.getResult() == kIOReturnSuccess; },
+              [](const BluetoothMacOS::BTHandleResult& result) { return result.getResult(); },
+              System::ErrorType::IOReturn)
+              .getHandle()[0];
 
-    co_await Async::run(
-        std::bind_front(Async::submitIOBluetooth, CppObjCBridge::getBTHandleHash(*handle), Async::IOType::Send),
-        System::ErrorType::IOReturn);
+    handle.reset(newHandle);
+    co_await Async::run(std::bind_front(Async::submitIOBluetooth, (*handle)->getHash(), Async::IOType::Send),
+                        System::ErrorType::IOReturn);
 }
 #endif

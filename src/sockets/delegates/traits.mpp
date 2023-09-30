@@ -5,7 +5,9 @@ module;
 #if OS_WINDOWS
 #include <WinSock2.h>
 #elif OS_MACOS
-#include "objc/bthandle.h"
+#include <optional>
+
+#include <BluetoothMacOS-Swift.h>
 #endif
 
 export module sockets.delegates.traits;
@@ -32,8 +34,8 @@ export namespace Traits {
 
     template <>
     struct SocketHandle<SocketTag::BT> {
-        using HandleType = BTHandle*;
-        static constexpr auto invalidHandle = nullptr;
+        using HandleType = std::optional<BluetoothMacOS::BTHandle>;
+        static constexpr auto invalidHandle = std::nullopt;
     };
 #else
     template <auto Tag>

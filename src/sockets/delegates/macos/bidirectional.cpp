@@ -10,7 +10,6 @@ module;
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "objc/cpp_objc_bridge.hpp"
 #include "os/fn.hpp"
 
 module sockets.delegates.bidirectional;
@@ -43,18 +42,16 @@ Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv(size_t size) {
 
 template <>
 Task<> Delegates::Bidirectional<SocketTag::BT>::send(std::string data) {
-    CppObjCBridge::Bluetooth::write(*handle, data);
-    co_await Async::run(
-        std::bind_front(Async::submitIOBluetooth, CppObjCBridge::getBTHandleHash(*handle), Async::IOType::Send),
-        System::ErrorType::IOReturn);
+    call(FN((*handle)->write, data), checkZero, useReturnCode, System::ErrorType::IOReturn);
+    co_await Async::run(std::bind_front(Async::submitIOBluetooth, (*handle)->getHash(), Async::IOType::Send),
+                        System::ErrorType::IOReturn);
 }
 
 template <>
 Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv(size_t) {
-    co_await Async::run(
-        std::bind_front(Async::submitIOBluetooth, CppObjCBridge::getBTHandleHash(*handle), Async::IOType::Receive),
-        System::ErrorType::IOReturn);
+    co_await Async::run(std::bind_front(Async::submitIOBluetooth, (*handle)->getHash(), Async::IOType::Receive),
+                        System::ErrorType::IOReturn);
 
-    co_return Async::getBluetoothReadResult(CppObjCBridge::getBTHandleHash(*handle));
+    co_return Async::getBluetoothReadResult((*handle)->getHash());
 }
 #endif
