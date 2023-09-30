@@ -10,7 +10,7 @@ import os.async.platform;
 import net.enums;
 
 template <auto Tag>
-void Delegates::SocketHandle<Tag>::closeImpl() const {
+void Delegates::SocketHandle<Tag>::closeImpl() {
     io_uring_prep_shutdown(Async::getUringSQE(), handle, SHUT_RDWR);
     io_uring_prep_close(Async::getUringSQE(), handle);
     Async::submitRing();
@@ -21,9 +21,9 @@ void Delegates::SocketHandle<Tag>::cancelIO() {
     Async::cancelPending(handle);
 }
 
-template void Delegates::SocketHandle<SocketTag::IP>::closeImpl() const;
+template void Delegates::SocketHandle<SocketTag::IP>::closeImpl();
 template void Delegates::SocketHandle<SocketTag::IP>::cancelIO();
 
-template void Delegates::SocketHandle<SocketTag::BT>::closeImpl() const;
+template void Delegates::SocketHandle<SocketTag::BT>::closeImpl();
 template void Delegates::SocketHandle<SocketTag::BT>::cancelIO();
 #endif

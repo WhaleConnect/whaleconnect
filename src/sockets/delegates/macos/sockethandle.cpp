@@ -14,7 +14,7 @@ import os.async.platform;
 import net.enums;
 
 template <>
-void Delegates::SocketHandle<SocketTag::IP>::closeImpl() const {
+void Delegates::SocketHandle<SocketTag::IP>::closeImpl() {
     shutdown(handle, SHUT_RDWR);
     ::close(handle);
 }
@@ -25,7 +25,7 @@ void Delegates::SocketHandle<SocketTag::IP>::cancelIO() {
 }
 
 template <>
-void Delegates::SocketHandle<SocketTag::BT>::closeImpl() const {
+void Delegates::SocketHandle<SocketTag::BT>::closeImpl() {
     CppObjCBridge::Bluetooth::close(handle);
 }
 

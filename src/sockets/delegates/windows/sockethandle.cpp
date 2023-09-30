@@ -11,7 +11,7 @@ module sockets.delegates.sockethandle;
 import net.enums;
 
 template <auto Tag>
-void Delegates::SocketHandle<Tag>::closeImpl() const {
+void Delegates::SocketHandle<Tag>::closeImpl() {
     shutdown(handle, SD_BOTH);
     closesocket(handle);
 }
@@ -21,9 +21,9 @@ void Delegates::SocketHandle<Tag>::cancelIO() {
     CancelIoEx(std::bit_cast<HANDLE>(handle), nullptr);
 }
 
-template void Delegates::SocketHandle<SocketTag::IP>::closeImpl() const;
+template void Delegates::SocketHandle<SocketTag::IP>::closeImpl();
 template void Delegates::SocketHandle<SocketTag::IP>::cancelIO();
 
-template void Delegates::SocketHandle<SocketTag::BT>::closeImpl() const;
+template void Delegates::SocketHandle<SocketTag::BT>::closeImpl();
 template void Delegates::SocketHandle<SocketTag::BT>::cancelIO();
 #endif

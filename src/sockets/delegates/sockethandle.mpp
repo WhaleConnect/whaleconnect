@@ -18,7 +18,7 @@ export namespace Delegates {
         Handle handle;
         bool closed = false;
 
-        void closeImpl() const;
+        void closeImpl();
 
     public:
         SocketHandle() : SocketHandle(invalidHandle) {}
@@ -69,6 +69,10 @@ export namespace Delegates {
 
         // Accesses the handle.
         const Handle& operator*() const {
+            return handle;
+        }
+
+        Handle& operator*() {
             return handle;
         }
     };
