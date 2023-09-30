@@ -12,7 +12,6 @@ module;
 #include <imgui_internal.h>
 
 module gui.notifications;
-
 import gui.imguiext;
 
 constexpr const char* notificationsWindowTitle = "Notifications";
