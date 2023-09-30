@@ -1,0 +1,4 @@
+--maxwidth 120
+--indent 4
+--indentcase true
+--wrapparameters after-first

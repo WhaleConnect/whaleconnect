@@ -8,17 +8,3 @@ Diagnostics:
     - typecheck_nonviable_condition
 CompileFlags:
   Add: [-ferror-limit=0]
----
-# *.h files are Objective-C++ headers
-# Set the language and C++ revision
-If:
-  PathMatch: [.*\.h]
-CompileFlags:
-  Add: [-x, objective-c++-header, -std=c++20]
----
-# *.hpp files are C++ headers
-# They are explicitly set to be C++ files in case clangd infers compilation options from Objective-C++ files.
-If:
-  PathMatch: [.*\.hpp]
-CompileFlags:
-  Add: [-x, c++-header, -std=c++20]
