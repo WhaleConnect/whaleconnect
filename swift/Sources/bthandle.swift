@@ -75,11 +75,10 @@ public class BTHandle {
     }
 
     public func getHash() -> UInt {
-        let t = switch channel {
+        return switch channel {
             case let .l2cap(l2capChannel): getID(obj: l2capChannel)
             case let .rfcomm(rfcommChannel): getID(obj: rfcommChannel)
         }
-        return t
     }
 
     public func close() {
