@@ -1,17 +1,14 @@
-## Top-most EditorConfig file
+# Top-most EditorConfig file
 root = true
 
-## All files
+# All files
 [*]
 charset = utf-8
 indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
-
-## Source files
-[{src,tests}/**]
 indent_size = 4
 
-## Config and manifest files
+# Config and manifest files
 [*.{manifest,plist,clang-format,clangd}]
 indent_size = 2
