@@ -19,7 +19,7 @@ void newData(unsigned long channelHash, const char* data, size_t dataLen) {
 }
 
 void outgoingComplete(unsigned long channelHash, IOReturn status) {
-    Async::bluetoothComplete(channelHash, ::Async::IOType::Send, status);
+    Async::bluetoothComplete(channelHash, Async::IOType::Send, status);
 }
 
 void closed(unsigned long channelHash) {
