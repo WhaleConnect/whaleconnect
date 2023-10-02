@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <string>
+#include <string_view>
 
 export module os.errcheck;
 import os.error;
@@ -21,25 +21,12 @@ export {
 
     // clang-format on
 
-    // Structure to contain a function's textual name and return code.
-    template <class T>
-    struct FnResult {
-        T rc{};           // Return code
-        std::string name; // Function name
-    };
-
-#ifdef __clang__
-    template <class T>
-    FnResult(T, std::string) -> FnResult<T>;
-#endif
-
     // Calls a system function, and throws an exception if its return code does not match a success value.
     // The success condition and thrown error code can be changed with predicate and projection functions.
     template <class T, class Pred = CheckNonError, class Proj = UseLastError>
-    T call(const FnResult<T>& fn, Pred checkFn = {}, Proj transformFn = {}, System::ErrorType type = System::ErrorType::System) {
-        T rc = fn.rc;
+    T check(const T& rc, std::string_view name, Pred checkFn = {}, Proj transformFn = {}, System::ErrorType type = System::ErrorType::System) {
         System::ErrorCode error = transformFn(rc);
 
-        return (checkFn(rc) || !System::isFatal(error)) ? rc : throw System::SystemError{ error, type, fn.name };
+        return (checkFn(rc) || !System::isFatal(error)) ? rc : throw System::SystemError{ error, type, name };
     }
 }

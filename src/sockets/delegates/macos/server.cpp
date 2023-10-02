@@ -11,7 +11,7 @@ module;
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "os/fn.hpp"
+#include "os/check.hpp"
 
 module sockets.delegates.server;
 import net.netutils;
@@ -37,7 +37,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     auto clientAddr = std::bit_cast<sockaddr*>(&client);
     socklen_t clientLen = sizeof(client);
 
-    SocketHandle<SocketTag::IP> fd{ call(FN(::accept, *handle, clientAddr, &clientLen)) };
+    SocketHandle<SocketTag::IP> fd{ CHECK(::accept(*handle, clientAddr, &clientLen)) };
     Device device = NetUtils::fromAddr(clientAddr, clientLen, ConnectionType::TCP);
 
     Async::prepSocket(*fd);
@@ -53,7 +53,7 @@ Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
     co_await Async::run(std::bind_front(Async::submitKqueue, *handle, Async::IOType::Receive));
 
     std::string data(size, 0);
-    ssize_t recvLen = call(FN(recvfrom, *handle, data.data(), data.size(), 0, fromAddr, &addrSize));
+    ssize_t recvLen = CHECK(recvfrom(*handle, data.data(), data.size(), 0, fromAddr, &addrSize));
     data.resize(recvLen);
 
     co_return { NetUtils::fromAddr(fromAddr, addrSize, ConnectionType::UDP), data };
@@ -65,7 +65,7 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
 
     co_await NetUtils::loopWithAddr(addr.get(), [this, &data](const AddrInfoType* resolveRes) -> Task<> {
         co_await Async::run(std::bind_front(Async::submitKqueue, *handle, Async::IOType::Send));
-        call(FN(sendto, *handle, data.data(), data.size(), 0, resolveRes->ai_addr, resolveRes->ai_addrlen));
+        CHECK(sendto(*handle, data.data(), data.size(), 0, resolveRes->ai_addr, resolveRes->ai_addrlen));
     });
 }
 #endif

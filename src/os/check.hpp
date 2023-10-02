@@ -2,5 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
+#include <nameof.hpp>
 
-#define FN(f, ...) FnResult(f(__VA_ARGS__), #f)
+#define CHECK(f, ...) check(f, NAMEOF(f) __VA_OPT__(,) __VA_ARGS__)

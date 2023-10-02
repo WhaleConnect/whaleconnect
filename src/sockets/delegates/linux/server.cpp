@@ -12,7 +12,7 @@ module;
 #include <netdb.h>
 #include <netinet/in.h>
 
-#include "os/fn.hpp"
+#include "os/check.hpp"
 
 module sockets.delegates.server;
 import net.netutils;

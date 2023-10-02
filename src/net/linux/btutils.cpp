@@ -14,7 +14,7 @@ module;
 #include <dbus/dbus.h>
 #include <ztd/out_ptr.hpp>
 
-#include "os/fn.hpp"
+#include "os/check.hpp"
 
 module net.btutils;
 import net.device;
@@ -110,7 +110,7 @@ BTUtils::UUID128 getUUID(uuid_t* uuid) {
 
 BTUtils::Instance::Instance() {
     // Connect to the system D-Bus
-    conn = call(FN(dbus_bus_get, DBUS_BUS_SYSTEM, nullptr), checkTrue);
+    conn = CHECK(dbus_bus_get(DBUS_BUS_SYSTEM, nullptr), checkTrue);
 
     // The process will exit when a connection with dbus_bus_get closes.
     // The function below will undo this behavior:
@@ -131,12 +131,12 @@ DeviceList BTUtils::getPaired() {
     // Set up the method call
     using MsgPtr = HandlePtr<DBusMessage, dbus_message_unref>;
 
-    MsgPtr msg{ call(
-        FN(dbus_message_new_method_call, "org.bluez", "/", "org.freedesktop.DBus.ObjectManager", "GetManagedObjects"),
+    MsgPtr msg{ CHECK(
+        dbus_message_new_method_call("org.bluez", "/", "org.freedesktop.DBus.ObjectManager", "GetManagedObjects"),
         checkTrue) };
 
-    MsgPtr response{ call(
-        FN(dbus_connection_send_with_reply_and_block, conn, msg.get(), DBUS_TIMEOUT_USE_DEFAULT, nullptr), checkTrue) };
+    MsgPtr response{ CHECK(
+        dbus_connection_send_with_reply_and_block(conn, msg.get(), DBUS_TIMEOUT_USE_DEFAULT, nullptr), checkTrue) };
 
     DBusMessageIter responseIter;
     dbus_message_iter_init(response.get(), &responseIter);
@@ -210,8 +210,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     // Initialize SDP session
     // We can't directly pass BDADDR_ANY to sdp_connect() because a "taking the address of an rvalue" error is thrown.
     bdaddr_t addrAny{};
-    HandlePtr<sdp_session_t, sdp_close> session{ call(FN(sdp_connect, &addrAny, &bdAddr, SDP_RETRY_IF_BUSY),
-                                                      checkTrue) };
+    HandlePtr<sdp_session_t, sdp_close> session{ CHECK(sdp_connect(&addrAny, &bdAddr, SDP_RETRY_IF_BUSY), checkTrue) };
 
     uuid_t serviceUUID;
     sdp_uuid128_create(&serviceUUID, uuid.data());
@@ -223,8 +222,8 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     uint32_t range = 0x0000FFFF;
     SDPListPtr attridList{ sdp_list_append(nullptr, &range) };
 
-    call(FN(sdp_service_search_attr_req, session.get(), searchList.get(), SDP_ATTR_REQ_RANGE, attridList.get(),
-            ztd::out_ptr::out_ptr(responseList)));
+    CHECK(sdp_service_search_attr_req(session.get(), searchList.get(), SDP_ATTR_REQ_RANGE, attridList.get(),
+                                      ztd::out_ptr::out_ptr(responseList)));
 
     // Iterate through each of the service records
     for (sdp_list_t* r = responseList.get(); r; r = r->next) {

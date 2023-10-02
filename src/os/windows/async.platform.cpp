@@ -7,13 +7,13 @@ module;
 
 #include <WinSock2.h>
 
-#include "os/fn.hpp"
+#include "os/check.hpp"
 
 module os.async.platform;
 import os.async.platform.internal;
 import os.errcheck;
 
 void Async::add(SOCKET sockfd) {
-    call(FN(CreateIoCompletionPort, std::bit_cast<HANDLE>(sockfd), Internal::completionPort, 0, 0), checkTrue);
+    CHECK(CreateIoCompletionPort(std::bit_cast<HANDLE>(sockfd), Internal::completionPort, 0, 0), checkTrue);
 }
 #endif

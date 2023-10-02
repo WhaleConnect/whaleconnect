@@ -14,7 +14,7 @@ module;
 #include <ws2ipdef.h>
 #include <WS2tcpip.h>
 
-#include "os/fn.hpp"
+#include "os/check.hpp"
 
 module sockets.delegates.server;
 import net.netutils;
@@ -37,16 +37,16 @@ Task<std::pair<sockaddr*, int>> startAccept(SOCKET s, AcceptExBuf& buf, SOCKET c
         // Load the AcceptEx() function
         GUID guid = WSAID_ACCEPTEX;
         DWORD numBytes = 0;
-        call(FN(WSAIoctl, s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &acceptExPtr, sizeof(acceptExPtr),
-                &numBytes, nullptr, nullptr));
+        CHECK(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &acceptExPtr, sizeof(acceptExPtr),
+                       &numBytes, nullptr, nullptr));
     }
 
     // Accept and update context on the client socket
     co_await Async::run([s, clientSocket, &buf](Async::CompletionResult& result) {
-        call(FN(acceptExPtr, s, clientSocket, buf.data(), 0, addrSize, addrSize, nullptr, &result), checkTrue);
+        CHECK(acceptExPtr(s, clientSocket, buf.data(), 0, addrSize, addrSize, nullptr, &result), checkTrue);
     });
 
-    call(FN(setsockopt, clientSocket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, std::bit_cast<char*>(&s), sizeof(s)));
+    CHECK(setsockopt(clientSocket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, std::bit_cast<char*>(&s), sizeof(s)));
     Async::add(clientSocket);
 
     static LPFN_GETACCEPTEXSOCKADDRS getAcceptExSockaddrsPtr = nullptr;
@@ -55,8 +55,8 @@ Task<std::pair<sockaddr*, int>> startAccept(SOCKET s, AcceptExBuf& buf, SOCKET c
         // Load the GetAcceptExSockaddrs() function
         GUID guid = WSAID_GETACCEPTEXSOCKADDRS;
         DWORD numBytes = 0;
-        call(FN(WSAIoctl, s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &getAcceptExSockaddrsPtr,
-                sizeof(getAcceptExSockaddrsPtr), &numBytes, nullptr, nullptr));
+        CHECK(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &getAcceptExSockaddrsPtr,
+                       sizeof(getAcceptExSockaddrsPtr), &numBytes, nullptr, nullptr));
     }
 
     sockaddr* localAddrPtr;
@@ -86,7 +86,7 @@ template <>
 Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     // Socket which is associated to the client upon accept
     int af = (traits.ip == IPType::IPv4) ? AF_INET : AF_INET6;
-    SocketHandle<SocketTag::IP> fd{ call(FN(socket, af, SOCK_STREAM, 0)) };
+    SocketHandle<SocketTag::IP> fd{ CHECK(socket(af, SOCK_STREAM, 0)) };
 
     std::vector<BYTE> buf(addrSize * 2);
     auto [remoteAddrPtr, remoteAddrLen] = co_await startAccept(*handle, buf, *fd);
@@ -105,7 +105,7 @@ Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
     auto recvResult = co_await Async::run([this, &data, fromPtr, &fromLen](Async::CompletionResult& result) {
         DWORD flags = 0;
         WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-        call(FN(WSARecvFrom, *handle, &buf, 1, nullptr, &flags, fromPtr, &fromLen, &result, nullptr));
+        CHECK(WSARecvFrom(*handle, &buf, 1, nullptr, &flags, fromPtr, &fromLen, &result, nullptr));
     });
 
     data.resize(recvResult.res);
@@ -120,8 +120,8 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
     co_await NetUtils::loopWithAddr(addr.get(), [this, &data](const AddrInfoType* resolveRes) -> Task<> {
         co_await Async::run([this, resolveRes, &data](Async::CompletionResult& result) {
             WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-            call(FN(WSASendTo, *handle, &buf, 1, nullptr, 0, resolveRes->ai_addr,
-                    static_cast<int>(resolveRes->ai_addrlen), &result, nullptr));
+            CHECK(WSASendTo(*handle, &buf, 1, nullptr, 0, resolveRes->ai_addr, static_cast<int>(resolveRes->ai_addrlen),
+                            &result, nullptr));
         });
     });
 }

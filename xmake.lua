@@ -10,7 +10,7 @@ add_requireconfs("*|opengl", { system = false })
 
 add_requires("imgui-with-sdl3 v20230807-docking", { configs = { sdl3_no_renderer = true, opengl3 = true, freetype = true } })
 add_requires("libsdl3", { configs = { use_sdlmain = true } })
-add_requires("catch2", "icu4c", "magic_enum", "nlohmann_json", "opengl", "out_ptr")
+add_requires("catch2", "icu4c", "magic_enum", "nameof", "nlohmann_json", "opengl", "out_ptr")
 
 if is_plat("linux") then
     add_requires("liburing", "bluez")
@@ -22,9 +22,10 @@ set_exceptions("cxx")
 set_warnings("allextra")
 set_defaultmode("debug")
 
-add_packages("icu4c", "magic_enum", "out_ptr")
+add_packages("icu4c", "magic_enum", "nameof", "out_ptr")
 
 add_cxxflags("-Wno-missing-field-initializers", "-pthread", { tools = { "clang", "clangxx" } })
+add_cxxflags("cl::/Zc:preprocessor", { force = true })
 
 -- Use MSVC Unicode character set and prevent clashing macros
 add_defines("UNICODE", "_UNICODE", "NOMINMAX")

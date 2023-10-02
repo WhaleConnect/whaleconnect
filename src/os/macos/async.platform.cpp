@@ -14,7 +14,7 @@ module;
 #include <sys/event.h>
 #include <sys/fcntl.h>
 
-#include "os/fn.hpp"
+#include "os/check.hpp"
 
 module os.async.platform;
 import os.async;
@@ -31,8 +31,8 @@ Async::Internal::SocketQueueMap btSockets;
 std::unordered_map<Async::SwiftID, std::queue<std::optional<std::string>>> btReads;
 
 void Async::prepSocket(int s) {
-    int flags = call(FN(fcntl, s, F_GETFL, 0));
-    call(FN(fcntl, s, F_SETFL, flags | O_NONBLOCK));
+    int flags = CHECK(fcntl(s, F_GETFL, 0));
+    CHECK(fcntl(s, F_SETFL, flags | O_NONBLOCK));
 }
 
 void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
@@ -58,7 +58,7 @@ void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
     // Enable the I/O filter once the pending queue has been modified
     EV_SET(&events[2], ident, filt, EV_ENABLE | EV_ONESHOT, 0, 0, typeData);
 
-    call(FN(kevent, Internal::kqs[currentKqueueIdx], events.data(), events.size(), nullptr, 0, nullptr));
+    CHECK(kevent(Internal::kqs[currentKqueueIdx], events.data(), events.size(), nullptr, 0, nullptr));
 
     // Cycle through all worker threads
     currentKqueueIdx = (currentKqueueIdx + 1) % Internal::kqs.size();
@@ -70,7 +70,7 @@ void Async::cancelPending(int fd) {
 
         // The file descriptor is used in "ident" so events can remain unique
         EV_SET(&event, Internal::ASYNC_CANCEL | fd, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER, 0, nullptr);
-        call(FN(kevent, kq, &event, 1, nullptr, 0, nullptr));
+        CHECK(kevent(kq, &event, 1, nullptr, 0, nullptr));
     }
 }
 

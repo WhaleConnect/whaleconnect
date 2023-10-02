@@ -13,7 +13,7 @@ module;
 #include <sys/event.h>
 #include <sys/fcntl.h>
 
-#include "os/fn.hpp"
+#include "os/check.hpp"
 
 module os.async.internal;
 import os.async;
@@ -52,7 +52,7 @@ void Async::Internal::init(unsigned int numThreads, unsigned int) {
     // Populate the vector of kqueues
     kqs.reserve(numThreads);
 
-    for (unsigned int i = 0; i < numThreads; i++) kqs.push_back(call(FN(kqueue)));
+    for (unsigned int i = 0; i < numThreads; i++) kqs.push_back(CHECK(kqueue()));
 }
 
 void Async::Internal::stopThreads(unsigned int) {
