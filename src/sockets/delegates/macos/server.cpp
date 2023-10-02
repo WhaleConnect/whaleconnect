@@ -6,7 +6,6 @@ module;
 #include <bit>
 #include <coroutine>
 #include <functional>
-#include <optional>
 
 #include <netdb.h>
 #include <netinet/in.h>
