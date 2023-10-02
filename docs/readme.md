@@ -35,6 +35,7 @@ NST and its build scripts are licensed under the [GPL v3+ license](../COPYING).
 - [libdbus](https://www.freedesktop.org/wiki/Software/dbus) (GNU GPL v2+ License)
 - [liburing](https://github.com/axboe/liburing) (GNU LGPL v2.1 and MIT Licenses)
 - [Magic Enum](https://github.com/Neargye/magic_enum) (MIT License)
+- [Nameof](https://github.com/Neargye/nameof) (MIT License)
 - [SDL](https://www.libsdl.org/) (Zlib License)
 - [ztd.out_ptr](https://github.com/soasis/out_ptr) (Apache-2.0 License)
 

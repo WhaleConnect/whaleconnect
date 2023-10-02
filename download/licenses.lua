@@ -18,6 +18,7 @@ function download_licenses(installdir)
             "https://raw.githubusercontent.com/axboe/liburing/master/COPYING.GPL"
         },
         ["magic_enum"] = { "https://raw.githubusercontent.com/Neargye/magic_enum/master/LICENSE" },
+        ["nameof"] = { "https://raw.githubusercontent.com/Neargye/nameof/master/LICENSE" },
         ["sdl"] = { "https://raw.githubusercontent.com/libsdl-org/SDL/main/LICENSE.txt" },
         ["ztd.out_ptr"] = { "https://raw.githubusercontent.com/soasis/out_ptr/main/LICENSE" },
 
