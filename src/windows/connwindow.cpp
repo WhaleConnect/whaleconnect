@@ -18,7 +18,7 @@ import utils.strings;
 // Formats a Device instance into a string for use in a ConnWindow title.
 std::string formatDevice(const Device& device, std::string_view extraInfo) {
     // Type of the connection
-    bool isIP = (device.type == ConnectionType::TCP || device.type == ConnectionType::UDP);
+    bool isIP = device.type == ConnectionType::TCP || device.type == ConnectionType::UDP;
     auto typeString = magic_enum::enum_name(device.type);
 
     // Bluetooth-based connections are described using the device's name (e.g. "MyESP32"),
