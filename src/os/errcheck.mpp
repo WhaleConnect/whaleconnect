@@ -15,9 +15,9 @@ export {
     struct CheckNonError { bool operator()(auto rc) { return rc != -1; } } checkNonError;
 
     // Projection functors to turn return codes into numeric error codes
-    struct UseLastError { int operator()(auto) { return System::getLastError(); } } useLastError;
-    struct UseReturnCode { int operator()(auto rc) { return rc; } } useReturnCode;
-    struct UseReturnCodeNeg { int operator()(auto rc) { return -rc; } } useReturnCodeNeg;
+    struct UseLastError { System::ErrorCode operator()(auto) { return System::getLastError(); } } useLastError;
+    struct UseReturnCode { System::ErrorCode operator()(auto rc) { return rc; } } useReturnCode;
+    struct UseReturnCodeNeg { System::ErrorCode operator()(auto rc) { return -rc; } } useReturnCodeNeg;
 
     // clang-format on
 
