@@ -55,12 +55,12 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept();
 // There are no connectionless operations on Bluetooth sockets
 
 template <>
-inline Task<DgramRecvResult> Delegates::Server<SocketTag::BT>::recvFrom(size_t) {
+Task<DgramRecvResult> Delegates::Server<SocketTag::BT>::recvFrom(size_t) {
     throwUnsupported();
 }
 
 template <>
-inline Task<> Delegates::Server<SocketTag::BT>::sendTo(Device, std::string) {
+Task<> Delegates::Server<SocketTag::BT>::sendTo(Device, std::string) {
     co_await std::suspend_never{}; // Indicate this is a coroutine and strings should be passed by value
     throwUnsupported();
 }

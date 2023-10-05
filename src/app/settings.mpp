@@ -4,9 +4,9 @@
 export module app.settings;
 
 export namespace Settings {
-    inline unsigned char fontSize = 15;     // Application font height in pixels
-    inline bool roundedCorners = false;     // If corners in the UI are rounded
-    inline bool windowTransparency = false; // If application windows have a transparent effect
-    inline unsigned char numThreads = 0;    // Number of worker threads (0 to auto-detect)
-    inline unsigned int queueEntries = 128; // Number of entries in io_uring instances
+    unsigned char fontSize = 15;     // Application font height in pixels
+    bool roundedCorners = false;     // If corners in the UI are rounded
+    bool windowTransparency = false; // If application windows have a transparent effect
+    unsigned char numThreads = 0;    // Number of worker threads (0 to auto-detect)
+    unsigned int queueEntries = 128; // Number of entries in io_uring instances
 }

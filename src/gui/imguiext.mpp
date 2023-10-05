@@ -38,20 +38,20 @@ export namespace ImGui {
 
     namespace Literals {
         // Multiplies the given value by the font height. For use with calculating item sizes.
-        inline Dimension operator""_fh(long double s) {
+        Dimension operator""_fh(long double s) {
             return Dimension{ s };
         }
 
-        inline Dimension operator""_fh(unsigned long long int s) {
+        Dimension operator""_fh(unsigned long long int s) {
             return Dimension{ s };
         }
 
         // Multiplies the given value by DeltaTime. For use with consistent transitions and movement.
-        inline float operator""_dt(long double s) {
+        float operator""_dt(long double s) {
             return static_cast<float>(s) * GetIO().DeltaTime;
         }
 
-        inline float operator""_dt(unsigned long long s) {
+        float operator""_dt(unsigned long long s) {
             return static_cast<float>(s) * GetIO().DeltaTime;
         }
     }
@@ -59,7 +59,7 @@ export namespace ImGui {
     constexpr float FILL = -FLT_MIN; // Makes a widget fill a dimension. Use with ImVec2.
 
     // A wrapper for TextUnformatted() to allow a string_view parameter.
-    inline void TextUnformatted(std::string_view s) {
+    void TextUnformatted(std::string_view s) {
         TextUnformatted(s.data());
     }
 
@@ -70,7 +70,7 @@ export namespace ImGui {
     }
 
     // Gets the width of a rendered string added with the item inner spacing specified in the Dear ImGui style.
-    inline float CalcTextWidthWithSpacing(std::string_view text) {
+    float CalcTextWidthWithSpacing(std::string_view text) {
         return GetStyle().ItemInnerSpacing.x + CalcTextSize(text.data()).x;
     }
 
@@ -103,7 +103,7 @@ export namespace ImGui {
     void Spinner();
 
     // Displays a menu item that focuses on a window when clicked.
-    inline void WindowMenuItem(std::string_view name) {
+    void WindowMenuItem(std::string_view name) {
         if (MenuItem(name.data())) SetWindowFocus(name.data());
     }
 }

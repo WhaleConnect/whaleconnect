@@ -29,7 +29,7 @@ export namespace Strings {
     // Converts an integer or decimal value to a system string.
     template <class T>
     requires std::integral<T> || std::floating_point<T>
-    inline SysStr toSys(T from) {
+    SysStr toSys(T from) {
         if constexpr (OS_WINDOWS) return std::to_wstring(from);
         else return std::to_string(from);
     }
