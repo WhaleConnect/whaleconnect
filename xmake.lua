@@ -66,7 +66,7 @@ target("swift")
 
 target("terminal-core")
     -- Project files
-    set_kind("object")
+    set_kind("static")
 
     add_files("src/net/*.cpp", "src/net/*.mpp",
               "src/os/*.cpp", "src/os/*.mpp",
