@@ -58,16 +58,9 @@ end
 target("swift")
     set_kind("phony")
 
-    on_build(function(target)
-        if is_plat("macosx") then
-            os.cd(path.join("$(scriptdir)", "swift"))
-
-            if is_mode("debug") then
-                os.exec("swift build")
-            else
-                os.exec("swift build -c release")
-            end
-        end
+    on_build("macosx", function(target)
+        os.cd(path.join("$(scriptdir)", "swift"))
+        os.exec(format("swift build -c %s", is_mode("release") and "release" or "debug"))
     end)
 
 target("terminal-core")
