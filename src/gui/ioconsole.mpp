@@ -3,16 +3,18 @@
 
 module;
 #include <mutex>
+#include <optional>
 #include <string>
-#include <string_view>
 
-export module windows.consolewindow;
+export module gui.ioconsole;
 import gui.console;
 import os.error;
-import windows.window;
 
-// Manages a textbox and console in a window.
-export class ConsoleWindow : public Window {
+// UI element with a textbox and mutex-protected console.
+export class IOConsole {
+    Console console;
+    std::mutex consoleMutex;
+
     // State
     bool focusOnTextbox = false; // If keyboard focus is applied to the textbox
     std::string textBuf;         // Send textbox buffer
@@ -23,37 +25,22 @@ export class ConsoleWindow : public Window {
     bool clearTextboxOnSubmit = true; // If the textbox is cleared when the submit callback is called
     bool addFinalLineEnding = false;  // If a final line ending is added to the callback input string
 
-    Console output; // Console output
-    std::mutex outputMutex;
-
-    // Draws the controls under the console output.
     void drawControls();
 
-    // Draws additional options.
-    virtual void drawOptions() {
-        // May be overridden optionally
-    }
-
-    // Called when Enter is hit in the textbox.
-    virtual void sendHandler(std::string_view s) = 0;
-
-protected:
-    // Draws the window contents.
-    void updateConsole(int numLines = 0);
+public:
+    // Draws the window contents and returns text entered into the textbox when Enter is pressed.
+    std::optional<std::string> update(int numLines = 0);
 
     // Prints the details of a thrown exception.
     void errorHandler(const System::SystemError& error);
 
     void addInfo(std::string_view s) {
-        std::scoped_lock g{ outputMutex };
-        output.addInfo(s);
+        std::scoped_lock g{ consoleMutex };
+        console.addInfo(s);
     }
 
     void addText(std::string_view s) {
-        std::scoped_lock g{ outputMutex };
-        output.addText(s);
+        std::scoped_lock g{ consoleMutex };
+        console.addText(s);
     }
-
-public:
-    using Window::Window;
 };

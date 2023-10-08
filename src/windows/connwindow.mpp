@@ -8,16 +8,18 @@ module;
 #include <string_view>
 
 export module windows.connwindow;
+import gui.ioconsole;
 import net.device;
 import sockets.socket;
 import utils.task;
-import windows.consolewindow;
+import windows.window;
 
 // Handles a socket connection in a GUI window.
-export class ConnWindow : public ConsoleWindow {
+export class ConnWindow : public Window {
     friend class ConnServerWindow;
 
     std::unique_ptr<Socket> socket; // Internal socket
+    IOConsole console;
     Device device;
     std::atomic_bool connected = false;
     std::atomic_bool pendingRecv = false;
@@ -27,29 +29,20 @@ export class ConnWindow : public ConsoleWindow {
     Task<> connect();
 
     // Sends a string through the socket.
-    Task<> sendHandlerAsync(std::string s);
+    Task<> sendHandler(std::string s);
 
     // Receives a string from the socket and displays it in the console output.
     // The receive size is passed as a parameter to avoid concurrent access.
     Task<> readHandler(unsigned int size);
 
-    // Connects to the target server.
     void onInit() override {
         connect();
     }
 
-    void sendHandler(std::string_view s) override {
-        sendHandlerAsync(std::string{ s });
-    }
-
-    void drawOptions() override;
-
     // Handles incoming I/O.
     void onBeforeUpdate() override;
 
-    void onUpdate() override {
-        updateConsole();
-    }
+    void onUpdate() override;
 
 public:
     // Sets the window information (title and remote host).

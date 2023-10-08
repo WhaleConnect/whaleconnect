@@ -21,19 +21,19 @@ Task<> ConnServerWindow::accept() try {
     pendingAccept = true;
 
     AcceptResult result = co_await socket->accept();
-    addInfo(std::format("Accepted connection from {} on port {}", result.device.address, result.device.port));
+    console.addInfo(std::format("Accepted connection from {} on port {}", result.device.address, result.device.port));
     unopenedSockets.push_back(std::move(result));
 
     pendingAccept = false;
 } catch (const System::SystemError& error) {
-    errorHandler(error);
+    console.errorHandler(error);
     pendingAccept = false;
 }
 
 void ConnServerWindow::onInit() {
     auto [port, ip] = socket->startServer({ ConnectionType::TCP, "", "127.0.0.1", 0 });
-    if (ip == IPType::None) addInfo(std::format("Server is active on port {}", port));
-    else addInfo(std::format("Server is active on port {} ({})", port, magic_enum::enum_name(ip)));
+    if (ip == IPType::None) console.addInfo(std::format("Server is active on port {}", port));
+    else console.addInfo(std::format("Server is active on port {} ({})", port, magic_enum::enum_name(ip)));
 }
 
 void ConnServerWindow::onBeforeUpdate() {
@@ -46,7 +46,11 @@ void ConnServerWindow::onBeforeUpdate() {
 }
 
 void ConnServerWindow::onUpdate() {
-    updateConsole(1);
+    // Send data to all clients
+    if (auto s = console.update(1))
+        for (const auto& window : connWindows)
+            if (auto connWindow = dynamic_cast<ConnWindow*>(window.get())) connWindow->sendHandler(*s);
+
     ImGui::Text("%zu unopened clients", unopenedSockets.size());
     ImGui::SameLine();
 
@@ -57,9 +61,4 @@ void ConnServerWindow::onUpdate() {
 
         unopenedSockets.clear();
     }
-}
-
-void ConnServerWindow::sendHandler(std::string_view s) {
-    for (const auto& window : connWindows)
-        if (auto connWindow = dynamic_cast<ConnWindow*>(window.get())) connWindow->sendHandler(s);
 }

@@ -8,6 +8,7 @@ desktop.ini
 .xmake/
 build/
 dist/
+vsxmake*/
 
 # IDE directories
 .vs/

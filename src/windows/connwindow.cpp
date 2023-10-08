@@ -43,23 +43,23 @@ std::string formatDevice(const Device& device, std::string_view extraInfo) {
 }
 
 ConnWindow::ConnWindow(std::unique_ptr<Socket>&& socket, const Device& device, std::string_view extraInfo) :
-    ConsoleWindow(formatDevice(device, extraInfo)), socket(std::move(socket)), device(device) {}
+    Window(formatDevice(device, extraInfo)), socket(std::move(socket)), device(device) {}
 
 Task<> ConnWindow::connect() try {
     // Connect the socket
-    addInfo("Connecting...");
+    console.addInfo("Connecting...");
     co_await socket->connect(device);
 
-    addInfo("Connected.");
+    console.addInfo("Connected.");
     connected = true;
 } catch (const System::SystemError& error) {
-    errorHandler(error);
+    console.errorHandler(error);
 }
 
-Task<> ConnWindow::sendHandlerAsync(std::string s) try {
+Task<> ConnWindow::sendHandler(std::string s) try {
     co_await socket->send(s);
 } catch (const System::SystemError& error) {
-    errorHandler(error);
+    console.errorHandler(error);
 }
 
 Task<> ConnWindow::readHandler(unsigned int size) try {
@@ -70,24 +70,16 @@ Task<> ConnWindow::readHandler(unsigned int size) try {
     pendingRecv = false;
 
     if (recvRet) {
-        addText(*recvRet);
+        console.addText(*recvRet);
     } else {
         // Peer closed connection
-        addInfo("Remote host closed connection.");
+        console.addInfo("Remote host closed connection.");
         socket->close();
         connected = false;
     }
 } catch (const System::SystemError& error) {
-    errorHandler(error);
+    console.errorHandler(error);
     pendingRecv = false;
-}
-
-void ConnWindow::drawOptions() {
-    using namespace ImGui::Literals;
-
-    ImGui::Separator();
-    ImGui::SetNextItemWidth(4_fh);
-    ImGui::InputScalar("Receive size", recvSize);
 }
 
 void ConnWindow::onBeforeUpdate() {
@@ -95,4 +87,17 @@ void ConnWindow::onBeforeUpdate() {
 
     ImGui::SetNextWindowSize(35_fh * 20_fh, ImGuiCond_Appearing);
     readHandler(recvSize);
+}
+
+void ConnWindow::onUpdate() {
+    if (auto sendString = console.update()) sendHandler(*sendString);
+
+    if (ImGui::BeginPopup("options")) {
+        using namespace ImGui::Literals;
+
+        ImGui::Separator();
+        ImGui::SetNextItemWidth(4_fh);
+        ImGui::InputScalar("Receive size", recvSize);
+        ImGui::EndPopup();
+    }
 }

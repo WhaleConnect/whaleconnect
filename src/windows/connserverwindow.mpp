@@ -7,18 +7,20 @@ module;
 #include <vector>
 
 export module windows.connserverwindow;
+import gui.ioconsole;
 import sockets.delegates.delegates;
 import sockets.socket;
 import utils.task;
 import windows.windowlist;
-import windows.consolewindow;
+import windows.window;
 
-export class ConnServerWindow : public ConsoleWindow {
+export class ConnServerWindow : public Window {
     SocketPtr socket;
     bool pendingAccept = false;
 
     std::vector<AcceptResult> unopenedSockets;
 
+    IOConsole console;
     WindowList connWindows;
 
     Task<> accept();
@@ -29,11 +31,8 @@ export class ConnServerWindow : public ConsoleWindow {
 
     void onUpdate() override;
 
-    // Sends data to all connected clients.
-    void sendHandler(std::string_view s) override;
-
 public:
-    explicit ConnServerWindow(std::unique_ptr<Socket>&& socket) : ConsoleWindow("asdsa"), socket(std::move(socket)) {}
+    explicit ConnServerWindow(std::unique_ptr<Socket>&& socket) : Window("asdsa"), socket(std::move(socket)) {}
 
     ~ConnServerWindow() override {
         socket->cancelIO();

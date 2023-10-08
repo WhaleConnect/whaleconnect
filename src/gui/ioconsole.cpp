@@ -3,16 +3,50 @@
 
 module;
 #include <array>
-#include <string>
 #include <mutex>
+#include <string>
 
 #include <imgui.h>
 
-module windows.consolewindow;
+module gui.ioconsole;
 import gui.imguiext;
 import utils.strings;
 
-void ConsoleWindow::updateConsole(int numLines) {
+void IOConsole::drawControls() {
+    // "Clear output" button
+    if (ImGui::Button("Clear output")) console.clear();
+
+    // "Options" button
+    ImGui::SameLine();
+    if (ImGui::Button("Options...")) ImGui::OpenPopup("options");
+
+    // Popup for more options
+    if (ImGui::BeginPopup("options")) {
+        console.drawOptions();
+
+        // Options for the input textbox
+        ImGui::Separator();
+        ImGui::MenuItem("Send echoing", nullptr, &sendEchoing);
+        ImGui::MenuItem("Clear texbox on send", nullptr, &clearTextboxOnSubmit);
+        ImGui::MenuItem("Add final line ending", nullptr, &addFinalLineEnding);
+        ImGui::EndPopup();
+    }
+
+    // Line ending combobox
+    // The code used to calculate where to put the combobox is derived from
+    // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
+    using namespace ImGui::Literals;
+
+    float comboWidth = 10_fh;
+    ImGui::SameLine();
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
+    ImGui::SetNextItemWidth(comboWidth);
+    ImGui::Combo("##lineEnding", &currentLE, "Newline\0Carriage return\0Both\0");
+}
+
+std::optional<std::string> IOConsole::update(int numLines) {
+    std::optional<std::string> ret;
+
     // Apply foxus to textbox
     // An InputTextMultiline is an InputText contained within a child window so focus must be set before rendering it to
     // apply focus to the InputText.
@@ -42,9 +76,9 @@ void ConsoleWindow::updateConsole(int numLines) {
 
         // Invoke the callback function if the string is not empty
         if (!sendString.empty()) {
-            if (sendEchoing) output.addMessage(sendString, "SENT ", { 0.28f, 0.67f, 0.68f, 1 });
+            if (sendEchoing) console.addMessage(sendString, "SENT ", { 0.28f, 0.67f, 0.68f, 1 });
 
-            sendHandler(sendString);
+            ret = sendString;
         }
 
         // Blank out input textbox
@@ -55,49 +89,17 @@ void ConsoleWindow::updateConsole(int numLines) {
 
     // Reserve space at bottom
     float y = -static_cast<float>(numLines + 1) * ImGui::GetFrameHeightWithSpacing();
-    output.update("console", ImVec2{ ImGui::FILL, y });
+    console.update("console", ImVec2{ ImGui::FILL, y });
     drawControls();
+
+    return ret;
 }
 
-void ConsoleWindow::drawControls() {
-    // "Clear output" button
-    if (ImGui::Button("Clear output")) output.clear();
-
-    // "Options" button
-    ImGui::SameLine();
-    if (ImGui::Button("Options...")) ImGui::OpenPopup("options");
-
-    // Popup for more options
-    if (ImGui::BeginPopup("options")) {
-        output.drawOptions();
-
-        // Options for the input textbox
-        ImGui::Separator();
-        ImGui::MenuItem("Send echoing", nullptr, &sendEchoing);
-        ImGui::MenuItem("Clear texbox on send", nullptr, &clearTextboxOnSubmit);
-        ImGui::MenuItem("Add final line ending", nullptr, &addFinalLineEnding);
-
-        drawOptions();
-        ImGui::EndPopup();
-    }
-
-    // Line ending combobox
-    // The code used to calculate where to put the combobox is derived from
-    // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
-    using namespace ImGui::Literals;
-
-    float comboWidth = 10_fh;
-    ImGui::SameLine();
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (ImGui::GetContentRegionAvail().x - comboWidth));
-    ImGui::SetNextItemWidth(comboWidth);
-    ImGui::Combo("##lineEnding", &currentLE, "Newline\0Carriage return\0Both\0");
-}
-
-void ConsoleWindow::errorHandler(const System::SystemError& error) {
+void IOConsole::errorHandler(const System::SystemError& error) {
     // Check for non-fatal errors, then add error line to console
     // Don't handle errors caused by I/O cancellation
     if (error && !error.isCanceled()) {
-        std::scoped_lock g{ outputMutex };
-        output.addError(error.what());
+        std::scoped_lock g{ consoleMutex };
+        console.addError(error.what());
     }
 }
