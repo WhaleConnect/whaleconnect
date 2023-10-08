@@ -42,10 +42,11 @@ add_defines("OS_WINDOWS=" .. tostring(is_plat("windows") or false),
 add_includedirs("src")
 
 -- Platform-specific links/compile options
+local swiftBuildMode = is_mode("release") and "release" or "debug"
 if is_plat("windows") then
     add_syslinks("Ws2_32", "Bthprops")
 elseif is_plat("macosx") then
-    local swiftBuildDir = path.join("$(scriptdir)", "swift", ".build", is_mode("debug") and "debug" or "release")
+    local swiftBuildDir = format("$(scriptdir)/swift/.build/%s", swiftBuildMode)
     local swiftLibDir = "/Library/Developer/CommandLineTools/usr/lib/swift"
 
     add_includedirs(path.join(swiftBuildDir, "BluetoothMacOS.build"), swiftLibDir)
@@ -59,8 +60,8 @@ target("swift")
     set_kind("phony")
 
     on_build("macosx", function(target)
-        os.cd(path.join("$(scriptdir)", "swift"))
-        os.exec(format("swift build -c %s", is_mode("release") and "release" or "debug"))
+        os.cd("$(scriptdir)/swift")
+        os.exec("swift build -c %s", swiftBuildMode)
     end)
 
 target("terminal-core")
