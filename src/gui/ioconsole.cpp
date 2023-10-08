@@ -4,6 +4,7 @@
 module;
 #include <array>
 #include <mutex>
+#include <optional>
 #include <string>
 
 #include <imgui.h>
