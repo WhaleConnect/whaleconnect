@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <coroutine>
+#include <coroutine> // IWYU pragma: keep
 
 #include <catch2/catch_test_macros.hpp>
 

@@ -3,7 +3,7 @@
 
 module;
 #if OS_WINDOWS
-#include <coroutine>
+#include <coroutine> // IWYU pragma: keep
 #include <optional>
 #include <string>
 

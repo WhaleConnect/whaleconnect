@@ -1,7 +1,7 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <coroutine>
+#include <coroutine> // IWYU pragma: keep
 #include <thread>
 
 #include <catch2/catch_test_macros.hpp>

@@ -3,7 +3,7 @@
 
 module;
 #if OS_MACOS
-#include <coroutine>
+#include <coroutine> // IWYU pragma: keep
 #include <functional>
 
 #include <BluetoothMacOS-Swift.h>

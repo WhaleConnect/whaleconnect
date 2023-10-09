@@ -4,7 +4,7 @@
 module;
 #if OS_WINDOWS
 #include <bit>
-#include <coroutine>
+#include <coroutine> // IWYU pragma: keep
 #include <exception>
 #include <functional>
 #include <stdexcept>
