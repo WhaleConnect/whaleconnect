@@ -13,9 +13,9 @@ module;
 export module components.console;
 import components.textselect;
 
-// A class to represent a text panel output.
+// Text panel output with colors and other information.
 export class Console {
-    // A structure representing an item in a console output.
+    // Represents an item in a console output.
     // Text is stored as UnicodeString for easier interfacing with ICU.
     struct ConsoleItem {
         bool canUseHex;               // If the item gets displayed as hexadecimal when the option is set

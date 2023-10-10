@@ -8,7 +8,7 @@ module;
 
 export module utils.task;
 
-// A class to use as an asynchronous coroutine's return object.
+// An asynchronous coroutine's return object.
 // T: the datatype of the value(s) produced by the coroutine
 export template <class T = void>
 class Task {

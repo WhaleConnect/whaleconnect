@@ -16,7 +16,7 @@ import gui.imguiext;
 
 constexpr const char* notificationsWindowTitle = "Notifications";
 
-// Class to contain information about a notification.
+// Contains information about a notification.
 class Notification {
     // Visibility of the notification.
     enum Visibility {

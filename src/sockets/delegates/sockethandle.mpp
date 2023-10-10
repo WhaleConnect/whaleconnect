@@ -9,7 +9,7 @@ import sockets.delegates.delegates;
 import sockets.delegates.traits;
 
 export namespace Delegates {
-    // Manages close operations on a socket.
+    // Manages close operations on sockets.
     template <auto Tag>
     class SocketHandle : public HandleDelegate {
         using Handle = Traits::SocketHandleType<Tag>;

@@ -9,7 +9,7 @@ module;
 
 export module components.window;
 
-// A class to represent a Dear ImGui window.
+// Represents a Dear ImGui window.
 export class Window {
     std::string title;     // Window title
     bool open = true;      // If this window is open

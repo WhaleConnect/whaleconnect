@@ -35,7 +35,7 @@ export namespace System {
     // Formats a system error into a readable string.
     std::string formatSystemError(ErrorCode code, ErrorType type, std::string_view fnName);
 
-    // An exception structure containing details of an error.
+    // Exception structure containing details of an error.
     struct SystemError : std::runtime_error {
         ErrorCode code = 0;          // The platform-specific error code
         ErrorType type = ErrorType::System; // The type of the error

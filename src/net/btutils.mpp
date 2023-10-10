@@ -19,7 +19,7 @@ import net.device;
 import net.enums;
 
 export namespace BTUtils {
-    // A 128-bit UUID represented in a platform-independent way.
+    // 128-bit UUID represented in a platform-independent way.
     using UUID128 = std::array<uint8_t, 16>;
 
     struct Instance {
@@ -30,14 +30,14 @@ export namespace BTUtils {
         ~Instance();
     };
 
-    // A Bluetooth profile descriptor.
+    // Bluetooth profile descriptor.
     struct ProfileDesc {
         uint16_t uuid = 0;        // 16-bit UUID
         uint8_t versionMajor = 0; // Major version number
         uint8_t versionMinor = 0; // Minor version number
     };
 
-    // A single service result returned from an SDP inquiry.
+    // Service result returned from an SDP inquiry.
     struct SDPResult {
         std::vector<uint16_t> protoUUIDs;      // 16-bit protocol UUIDs
         std::vector<UUID128> serviceUUIDs;     // 128-bit service class UUIDs
@@ -66,7 +66,6 @@ export namespace BTUtils {
     }
 
     // Gets the Bluetooth devices that are paired to this computer.
-    //
     // The Device instances returned have no type set because the communication protocol to use with them is
     // indeterminate (the function doesn't know if L2CAP or RFCOMM should be used with each).
     DeviceList getPaired();

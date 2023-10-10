@@ -14,11 +14,12 @@ import sockets.delegates.delegates;
 import sockets.socket;
 import utils.task;
 
+// Handles a connection-oriented server socket in a GUI window.
 export class ConnServerWindow : public Window {
     SocketPtr socket;
     bool pendingAccept = false;
 
-    std::vector<AcceptResult> unopenedSockets;
+    std::vector<AcceptResult> unopenedSockets; // Clients that have been accepted but not yet opened in the GUI
 
     IOConsole console;
     WindowList connWindows;

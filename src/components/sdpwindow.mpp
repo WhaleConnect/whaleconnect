@@ -18,7 +18,7 @@ import net.device;
 import net.enums;
 import os.error;
 
-// A class to handle an SDP inquiry in a GUI window.
+// Handles an SDP inquiry in a GUI window.
 export class SDPWindow : public Window {
     using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>;          // Results of an SDP search
     using UUIDMap = std::map<std::string, BTUtils::UUID128, std::less<>>; // List of UUIDs used for SDP filtering
@@ -42,9 +42,9 @@ export class SDPWindow : public Window {
     // The value this variant currently holds contains data about the SDP inquiry.
     // The type of the value represents the inquiry's state.
     std::variant<std::monostate,        // Default value when no inquiries have been run yet
-                 AsyncSDPInquiry,       // A future object corresponding to an in-progress inquiry
-                 std::system_error,     // An error when the asynchronous thread couldn't be created
-                 System::SystemError,   // An error that occurred during an in-progress inquiry
+                 AsyncSDPInquiry,       // Future object corresponding to an in-progress inquiry
+                 std::system_error,     // Error when the asynchronous thread couldn't be created
+                 System::SystemError,   // Error that occurred during an in-progress inquiry
                  BTUtils::SDPResultList // The results of the inquiry when it has completed
                  >
         sdpInquiry;

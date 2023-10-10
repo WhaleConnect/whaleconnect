@@ -9,7 +9,7 @@ import net.device;
 import sockets.delegates.delegates;
 import utils.task;
 
-// Represents a socket of any type.
+// Socket of any type.
 export class Socket {
     Delegates::HandleDelegate* handle;
     Delegates::IODelegate* io;
@@ -17,7 +17,6 @@ export class Socket {
     Delegates::ServerDelegate* server;
 
 public:
-    // Constructs an object with delegates.
     Socket(Delegates::HandleDelegate& handle, Delegates::IODelegate& io, Delegates::ClientDelegate& client,
            Delegates::ServerDelegate& server) :
         handle(&handle),

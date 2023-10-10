@@ -7,6 +7,7 @@ import sockets.delegates.server;
 import sockets.delegates.sockethandle;
 import sockets.socket;
 
+// A server that accepts incoming connections.
 export template <auto Tag>
 class ServerSocket : public Socket {
     Delegates::SocketHandle<Tag> handle;

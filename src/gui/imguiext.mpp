@@ -14,7 +14,7 @@ module;
 export module gui.imguiext;
 
 export namespace ImGuiExt {
-    // A dimension expressed in terms of font size, for DPI-aware size calculations.
+    // Dimension expressed in terms of font size, for DPI-aware size calculations.
     struct Dimension {
         float s; // Size
 
@@ -56,7 +56,7 @@ export namespace ImGuiExt {
 
     constexpr float FILL = -FLT_MIN; // Makes a widget fill a dimension. Use with ImVec2.
 
-    // A wrapper for TextUnformatted() to allow a string_view parameter.
+    // Wrapper for TextUnformatted() to allow a string_view parameter.
     void textUnformatted(std::string_view s) {
         ImGui::TextUnformatted(s.data());
     }

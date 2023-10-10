@@ -10,7 +10,7 @@ import sockets.delegates.sockethandle;
 import sockets.socket;
 import utils.task;
 
-// A socket representing an outgoing connection.
+// An outgoing connection.
 export template <auto Tag>
 class ClientSocket : public Socket {
     Delegates::SocketHandle<Tag> handle;

@@ -24,6 +24,7 @@ import sockets.delegates.sockethandle;
 import utils.task;
 
 export namespace Delegates {
+    // Manages operations on server sockets.
     template <auto Tag>
     class Server : public ServerDelegate {
         SocketHandle<Tag>& handle;

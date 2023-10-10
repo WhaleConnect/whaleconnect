@@ -15,7 +15,6 @@ import net.enums;
 
 export namespace Traits {
     // Platform-specific traits for socket handles.
-
 #if OS_WINDOWS
     template <auto Tag>
     struct SocketHandle {

@@ -9,7 +9,7 @@ module;
 export module net.device;
 import net.enums;
 
-// A remote device's metadata.
+// Remote device metadata.
 export struct Device {
     ConnectionType type = ConnectionType::None; // Connection protocol
     std::string name;                           // Device name for display

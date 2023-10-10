@@ -11,6 +11,7 @@ module;
 export module components.windowlist;
 import components.window;
 
+// Manages and updates Window objects.
 export class WindowList {
     std::vector<std::unique_ptr<Window>> windows; // List of window pointers
 

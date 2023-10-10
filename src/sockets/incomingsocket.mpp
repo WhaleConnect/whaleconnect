@@ -11,6 +11,7 @@ import sockets.delegates.sockethandle;
 import sockets.delegates.traits;
 import sockets.socket;
 
+// An incoming connection (one accepted from a server).
 export template <auto Tag>
 class IncomingSocket : public Socket {
     Delegates::SocketHandle<Tag> handle;

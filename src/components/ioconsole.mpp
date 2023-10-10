@@ -10,7 +10,7 @@ export module components.ioconsole;
 import components.console;
 import os.error;
 
-// UI element with a textbox and mutex-protected console.
+// Manages a textbox and mutex-protected console with config options.
 export class IOConsole {
     Console console;
     std::mutex consoleMutex;
