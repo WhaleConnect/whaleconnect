@@ -9,16 +9,16 @@ export module gui.notifications;
 // Icons to display in notifications.
 export enum class NotificationType { Error, Warning, Info, Success };
 
-export namespace ImGui {
+export namespace ImGuiExt {
     // Adds a notification with text, icon, and an optional automatic close timeout.
-    void AddNotification(std::string_view s, NotificationType type, float timeout = 10);
+    void addNotification(std::string_view s, NotificationType type, float timeout = 10);
 
     // Draws the notifications in the bottom-right corner of the window.
-    void DrawNotifications();
+    void drawNotifications();
 
     // Draws a window containing the notifications.
-    void DrawNotificationsWindow(bool& open);
+    void drawNotificationsWindow(bool& open);
 
     // Draws a menu containing the notifications.
-    void DrawNotificationsMenu(bool& notificationsOpen);
+    void drawNotificationsMenu(bool& notificationsOpen);
 }

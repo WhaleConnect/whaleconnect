@@ -83,7 +83,7 @@ Task<> ConnWindow::readHandler(unsigned int size) try {
 }
 
 void ConnWindow::onBeforeUpdate() {
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
 
     ImGui::SetNextWindowSize(35_fh * 20_fh, ImGuiCond_Appearing);
     readHandler(recvSize);
@@ -93,11 +93,11 @@ void ConnWindow::onUpdate() {
     if (auto sendString = console.update()) sendHandler(*sendString);
 
     if (ImGui::BeginPopup("options")) {
-        using namespace ImGui::Literals;
+        using namespace ImGuiExt::Literals;
 
         ImGui::Separator();
         ImGui::SetNextItemWidth(4_fh);
-        ImGui::InputScalar("Receive size", recvSize);
+        ImGuiExt::inputScalar("Receive size", recvSize);
         ImGui::EndPopup();
     }
 }

@@ -73,7 +73,7 @@ void Console::drawOptions() {
 }
 
 void Console::update(std::string_view id, const ImVec2& size) {
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
 
     ImGui::BeginChild(id.data(), size, true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoMove);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 1, std::round(0.05_fh) }); // Tighten line spacing
@@ -93,7 +93,7 @@ void Console::update(std::string_view id, const ImVec2& size) {
 
             std::string line;
             getLineAtIdx(i).toUTF8String(line);
-            ImGui::TextUnformatted(line);
+            ImGuiExt::textUnformatted(line);
 
             if (hasColor) ImGui::PopStyleColor();
         }

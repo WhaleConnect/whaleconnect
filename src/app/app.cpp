@@ -173,7 +173,7 @@ bool App::newFrame() {
     // Dockspace
     ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-    ImGui::DrawNotifications();
+    ImGuiExt::drawNotifications();
 
 #ifndef NDEBUG
     // The demo and metrics window are enabled in debug builds, provide a window to show them
@@ -193,10 +193,10 @@ bool App::newFrame() {
 
     // Buttons to add notifications with different timeouts and icons
     if (ImGui::Button("Test Notification (3s)"))
-        ImGui::AddNotification("Test Notification (3s)", NotificationType::Info, 3);
+        ImGuiExt::addNotification("Test Notification (3s)", NotificationType::Info, 3);
 
     if (ImGui::Button("Test Notification (5s)"))
-        ImGui::AddNotification("Test Notification (5s)", NotificationType::Success, 5);
+        ImGuiExt::addNotification("Test Notification (5s)", NotificationType::Success, 5);
 
     ImGui::End();
 #endif

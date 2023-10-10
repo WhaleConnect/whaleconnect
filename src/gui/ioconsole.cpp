@@ -36,7 +36,7 @@ void IOConsole::drawControls() {
     // Line ending combobox
     // The code used to calculate where to put the combobox is derived from
     // https://github.com/ocornut/imgui/issues/4157#issuecomment-843197490
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
 
     float comboWidth = 10_fh;
     ImGui::SameLine();
@@ -57,14 +57,14 @@ std::optional<std::string> IOConsole::update(int numLines) {
     }
 
     // Textbox
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
 
     float textboxHeight = 4_fh; // Number of lines that can be displayed
-    ImVec2 size{ ImGui::FILL, textboxHeight };
+    ImVec2 size{ ImGuiExt::FILL, textboxHeight };
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
                               | ImGuiInputTextFlags_AllowTabInput;
 
-    if (ImGui::InputTextMultiline("##input", textBuf, size, flags)) {
+    if (ImGuiExt::inputTextMultiline("##input", textBuf, size, flags)) {
         // Line ending
         std::array endings{ "\n", "\r", "\r\n" };
         auto selectedEnding = endings[currentLE];
@@ -90,7 +90,7 @@ std::optional<std::string> IOConsole::update(int numLines) {
 
     // Reserve space at bottom
     float y = -static_cast<float>(numLines + 1) * ImGui::GetFrameHeightWithSpacing();
-    console.update("console", ImVec2{ ImGui::FILL, y });
+    console.update("console", ImVec2{ ImGuiExt::FILL, y });
     drawControls();
 
     return ret;

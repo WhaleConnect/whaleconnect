@@ -68,7 +68,7 @@ std::vector<Notification> notifications; // Currently active notifications
 
 // Draws a single notification in the notification area.
 float Notification::update(const ImVec2& pos, bool showInCorner) {
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
 
     // Get position of the notification's bottom-right corner relative to the viewport
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -197,11 +197,11 @@ void drawNotificationContents(bool* open) {
     ImGui::EndChild();
 }
 
-void ImGui::AddNotification(std::string_view s, NotificationType type, float timeout) {
+void ImGuiExt::addNotification(std::string_view s, NotificationType type, float timeout) {
     notifications.emplace_back(s, type, timeout);
 }
 
-void ImGui::DrawNotifications() {
+void ImGuiExt::drawNotifications() {
     static const float notificationSpacing = 10;
     float yPos = notificationSpacing;
 
@@ -230,17 +230,17 @@ void ImGui::DrawNotifications() {
         for (auto i = notifications.begin(); i < overflowIter; i++) i->setFadeOut(false);
 }
 
-void ImGui::DrawNotificationsWindow(bool& open) {
+void ImGuiExt::drawNotificationsWindow(bool& open) {
     if (!open) return;
 
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
     ImGui::SetNextWindowSize(22_fh * 30_fh, ImGuiCond_Appearing);
 
     if (ImGui::Begin(notificationsWindowTitle, &open)) drawNotificationContents(nullptr);
     ImGui::End();
 }
 
-void ImGui::DrawNotificationsMenu(bool& notificationsOpen) {
+void ImGuiExt::drawNotificationsMenu(bool& notificationsOpen) {
     std::string content;
 
     // Get the display number for the menu
@@ -250,14 +250,14 @@ void ImGui::DrawNotificationsMenu(bool& notificationsOpen) {
     }
 
     // Draw menu
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
     ImGui::SetNextWindowSize(20_fh * 20_fh);
-    if (BeginMenu(std::format("\uef93 {}###Notifications", content).c_str())) {
+    if (ImGui::BeginMenu(std::format("\uef93 {}###Notifications", content).c_str())) {
         drawNotificationContents(&notificationsOpen);
-        EndMenu();
+        ImGui::EndMenu();
     }
 
     // Position cursor to draw next menu
-    using namespace ImGui::Literals;
-    SetCursorPosX(GetCursorStartPos().x + 3_fh);
+    using namespace ImGuiExt::Literals;
+    ImGui::SetCursorPosX(ImGui::GetCursorStartPos().x + 3_fh);
 }

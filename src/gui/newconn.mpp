@@ -19,5 +19,5 @@ void addConnWindow(WindowList& list, const Device& device, std::string_view extr
     bool isNew = list.add<ConnWindow>(std::move(socket), device, extraInfo);
 
     // If the connection exists, show a message
-    if (!isNew) ImGui::AddNotification("This connection is already open.", NotificationType::Warning);
+    if (!isNew) ImGuiExt::addNotification("This connection is already open.", NotificationType::Warning);
 }

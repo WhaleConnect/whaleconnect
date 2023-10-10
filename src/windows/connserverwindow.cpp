@@ -39,7 +39,7 @@ void ConnServerWindow::onInit() {
 void ConnServerWindow::onBeforeUpdate() {
     connWindows.update();
 
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
 
     ImGui::SetNextWindowSize(35_fh * 20_fh, ImGuiCond_Appearing);
     accept();

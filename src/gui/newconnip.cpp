@@ -3,6 +3,7 @@
 
 module;
 #include <string>
+#include <string_view>
 
 #include <imgui.h>
 
@@ -11,6 +12,11 @@ import gui.imguiext;
 import gui.newconn;
 import net.enums;
 import windows.windowlist;
+
+// Gets the width of a rendered string added with the item inner spacing specified in the Dear ImGui style.
+float calcTextWidthWithSpacing(std::string_view text) {
+    return ImGui::GetStyle().ItemInnerSpacing.x + ImGui::CalcTextSize(text.data()).x;
+}
 
 void drawIPConnectionTab(WindowList& connections) {
     if (!ImGui::BeginTabItem("Internet Protocol")) return;
@@ -23,7 +29,7 @@ void drawIPConnectionTab(WindowList& connections) {
     static ConnectionType type = TCP; // Type of connection to create
 
     // Widgets
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
 
     static const char* portLabel = "Port";
     static const char* addressLabel = "Address";
@@ -31,25 +37,25 @@ void drawIPConnectionTab(WindowList& connections) {
     static const float minAddressWidth = 10_fh; // Address input min width
 
     // The horizontal space available in the window
-    float spaceAvailable = ImGui::GetContentRegionAvail().x              // Child window width without scrollbars
-                         - ImGui::CalcTextWidthWithSpacing(addressLabel) // Address input label width
-                         - ImGui::GetStyle().ItemSpacing.x               // Space between address and port inputs
-                         - ImGui::CalcTextWidthWithSpacing(portLabel)    // Port input label width
-                         - portWidth;                                    // Port input width
+    float emptySpace = ImGui::GetContentRegionAvail().x       // Child window width without scrollbars
+                     - calcTextWidthWithSpacing(addressLabel) // Address input label width
+                     - ImGui::GetStyle().ItemSpacing.x        // Space between address and port inputs
+                     - calcTextWidthWithSpacing(portLabel)    // Port input label width
+                     - portWidth;                             // Port input width
 
     // Server address, set the textbox width to the space not taken up by everything else
     // Use std::max to set a minimum size for the texbox; it will not resize past a certain min bound.
-    ImGui::SetNextItemWidth(std::max(spaceAvailable, minAddressWidth));
-    ImGui::InputText(addressLabel, addr);
+    ImGui::SetNextItemWidth(std::max(emptySpace, minAddressWidth));
+    ImGuiExt::inputText(addressLabel, addr);
 
     // Server port, keep it on the same line as the textbox if there's enough space
-    if (spaceAvailable > minAddressWidth) ImGui::SameLine();
+    if (emptySpace > minAddressWidth) ImGui::SameLine();
     ImGui::SetNextItemWidth(portWidth);
-    ImGui::InputScalar(portLabel, port, 1, 10);
+    ImGuiExt::inputScalar(portLabel, port, 1, 10);
 
     // Connection type selection
-    ImGui::RadioButton("TCP", type, TCP);
-    ImGui::RadioButton("UDP", type, UDP);
+    ImGuiExt::radioButton("TCP", type, TCP);
+    ImGuiExt::radioButton("UDP", type, UDP);
 
     // Connect button
     ImGui::Spacing();

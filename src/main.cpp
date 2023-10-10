@@ -33,7 +33,7 @@ import windows.windowlist;
 void drawNewConnectionWindow(bool& open, WindowList& connections, WindowList& sdpWindows) {
     if (!open) return;
 
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
     ImGui::SetNextWindowSize(40_fh * 11_fh, ImGuiCond_Appearing);
 
     if (ImGui::Begin("New Connection", &open) && ImGui::BeginTabBar("ConnectionTypes")) {
@@ -48,7 +48,7 @@ void drawNewConnectionWindow(bool& open, WindowList& connections, WindowList& sd
 void drawMenuBar(bool& newConnOpen, bool& notificationsOpen, WindowList& connections) {
     if (!ImGui::BeginMainMenuBar()) return;
 
-    ImGui::DrawNotificationsMenu(notificationsOpen);
+    ImGuiExt::drawNotificationsMenu(notificationsOpen);
 
     if (ImGui::BeginMenu("View")) {
         ImGui::MenuItem("New Connection", nullptr, &newConnOpen);
@@ -60,7 +60,7 @@ void drawMenuBar(bool& newConnOpen, bool& notificationsOpen, WindowList& connect
     if (ImGui::BeginMenu("Connections")) {
         if (connections.empty()) ImGui::TextDisabled("No Open Connections");
         else
-            for (const auto& i : connections) ImGui::WindowMenuItem(i->getTitle());
+            for (const auto& i : connections) ImGuiExt::windowMenuItem(i->getTitle());
 
         ImGui::EndMenu();
     }
@@ -87,7 +87,7 @@ void mainLoop() {
 
         // Application windows
         drawNewConnectionWindow(newConnOpen, connections, sdpWindows);
-        ImGui::DrawNotificationsWindow(notificationsOpen);
+        ImGuiExt::drawNotificationsWindow(notificationsOpen);
 
         connections.update();
         sdpWindows.update();
@@ -110,9 +110,9 @@ int main(int, char**) {
         asyncInstance.emplace(Settings::numThreads, Settings::queueEntries);
         btutilsInstance.emplace();
     } catch (const System::SystemError& error) {
-        ImGui::AddNotification("Initialization error "s + error.what(), NotificationType::Error, 0);
+        ImGuiExt::addNotification("Initialization error "s + error.what(), NotificationType::Error, 0);
     } catch (const std::system_error&) {
-        ImGui::AddNotification("Initialization error: Could not initialize thread pool", NotificationType::Error, 0);
+        ImGuiExt::addNotification("Initialization error: Could not initialize thread pool", NotificationType::Error, 0);
     }
 
     // Run app

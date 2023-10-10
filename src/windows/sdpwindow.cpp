@@ -75,8 +75,8 @@ void SDPWindow::drawConnOptions(std::string_view info) {
     using enum ConnectionType;
 
     // Connection type selection
-    ImGui::RadioButton("RFCOMM", connType, RFCOMM);
-    ImGui::RadioButton("L2CAP", connType, L2CAP);
+    ImGuiExt::radioButton("RFCOMM", connType, RFCOMM);
+    ImGuiExt::radioButton("L2CAP", connType, L2CAP);
 
     // Connect button
     ImGui::Spacing();
@@ -93,7 +93,7 @@ void SDPWindow::checkInquiryStatus() {
                 // Running, display a spinner
                 ImGui::TextUnformatted("Running SDP inquiry");
                 ImGui::SameLine();
-                ImGui::Spinner();
+                ImGuiExt::spinner();
                 return;
             }
 
@@ -132,7 +132,7 @@ void SDPWindow::drawSDPTab() {
     ImGui::BeginDisabled(std::holds_alternative<AsyncSDPInquiry>(sdpInquiry));
 
     // UUID selection combobox
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
 
     ImGui::SetNextItemWidth(10_fh);
     if (ImGui::BeginCombo("Protocol/Service UUID", selectedUUID.c_str())) {
@@ -145,7 +145,7 @@ void SDPWindow::drawSDPTab() {
         // Flush cache option (Windows/macOS only)
         ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x * 4);
         ImGui::Checkbox("Flush cache", &flushCache);
-        ImGui::HelpMarker("Ignore previous cached advertising data on this inquiry.");
+        ImGuiExt::helpMarker("Ignore previous cached advertising data on this inquiry.");
     }
 
     // Run button
@@ -167,16 +167,16 @@ void SDPWindow::drawSDPTab() {
 void SDPWindow::drawManualTab() {
     if (!ImGui::BeginTabItem("Connect Manually")) return;
 
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
     ImGui::SetNextItemWidth(7_fh);
-    ImGui::InputScalar("Port", port, 1, 10);
+    ImGuiExt::inputScalar("Port", port, 1, 10);
 
     drawConnOptions(std::format("Port {}", port));
     ImGui::EndTabItem();
 }
 
 void SDPWindow::onBeforeUpdate() {
-    using namespace ImGui::Literals;
+    using namespace ImGuiExt::Literals;
 
     ImGui::SetNextWindowSize(30_fh * 18_fh, ImGuiCond_Appearing);
     setClosable(!std::holds_alternative<AsyncSDPInquiry>(sdpInquiry));
