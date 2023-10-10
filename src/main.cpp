@@ -13,12 +13,14 @@
 #include <imgui.h>
 #include <SDL3/SDL_main.h>
 
-import app.app;
-import app.settings;
+import components.connserverwindow;
+import components.windowlist;
+import gui.appcore;
 import gui.imguiext;
 import gui.newconnbt;
 import gui.newconnip;
 import gui.notifications;
+import gui.settings;
 import net.btutils;
 import net.enums;
 import os.async;
@@ -26,8 +28,6 @@ import os.error;
 import sockets.delegates.server;
 import sockets.delegates.traits;
 import sockets.serversocket;
-import windows.connserverwindow;
-import windows.windowlist;
 
 // Draws the new connection window.
 void drawNewConnectionWindow(bool& open, WindowList& connections, WindowList& sdpWindows) {
@@ -78,7 +78,7 @@ void mainLoop() {
     auto t = std::make_unique<ServerSocket<SocketTag::IP>>();
     connections.add<ConnServerWindow>(std::move(t));
 
-    while (App::newFrame()) {
+    while (AppCore::newFrame()) {
         static bool newConnOpen = true;
         static bool notificationsOpen = false;
 
@@ -91,13 +91,13 @@ void mainLoop() {
 
         connections.update();
         sdpWindows.update();
-        App::render();
+        AppCore::render();
     }
 }
 
 int main(int, char**) {
     // Create a main application window
-    if (!App::init()) return EXIT_FAILURE;
+    if (!AppCore::init()) return EXIT_FAILURE;
 
     // OS API resource instances
     std::optional<Async::Instance> asyncInstance;
@@ -118,6 +118,6 @@ int main(int, char**) {
     // Run app
     mainLoop();
 
-    App::cleanup();
+    AppCore::cleanup();
     return EXIT_SUCCESS;
 }

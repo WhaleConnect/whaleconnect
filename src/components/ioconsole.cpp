@@ -9,7 +9,7 @@ module;
 
 #include <imgui.h>
 
-module gui.ioconsole;
+module components.ioconsole;
 import gui.imguiext;
 import utils.strings;
 

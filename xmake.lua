@@ -95,9 +95,8 @@ target("terminal")
     add_deps("terminal-core")
 
     -- GUI code and main entry point
-    add_files("src/app/*.cpp", "src/app/*.mpp",
+    add_files("src/components/*.cpp", "src/components/*.mpp",
               "src/gui/*.cpp", "src/gui/*.mpp",
-              "src/windows/*.cpp", "src/windows/*.mpp",
               "src/main.cpp")
 
     -- Add platform rules

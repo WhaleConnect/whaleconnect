@@ -1,9 +1,9 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-export module app.app;
+export module gui.appcore;
 
-export namespace App {
+export namespace AppCore {
     // Sets up backends/context, configures Dear ImGui, and creates a main application window.
     bool init();
 

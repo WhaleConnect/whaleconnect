@@ -8,8 +8,8 @@ module;
 #include <string_view>
 #include <vector>
 
-export module windows.windowlist;
-import windows.window;
+export module components.windowlist;
+import components.window;
 
 export class WindowList {
     std::vector<std::unique_ptr<Window>> windows; // List of window pointers

@@ -6,13 +6,13 @@ module;
 #include <string_view>
 #include <vector>
 
-export module windows.connserverwindow;
-import gui.ioconsole;
+export module components.connserverwindow;
+import components.ioconsole;
+import components.windowlist;
+import components.window;
 import sockets.delegates.delegates;
 import sockets.socket;
 import utils.task;
-import windows.windowlist;
-import windows.window;
 
 export class ConnServerWindow : public Window {
     SocketPtr socket;

@@ -6,11 +6,11 @@ module;
 #include <string_view>
 
 export module gui.newconn;
+import components.connwindow;
+import components.windowlist;
 import gui.notifications;
 import net.device;
 import sockets.clientsocket;
-import windows.connwindow;
-import windows.windowlist;
 
 // Adds a ConnWindow to a window list and handles errors during socket creation.
 export template <auto Tag>

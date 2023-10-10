@@ -10,13 +10,13 @@ module;
 #include <system_error>
 #include <variant>
 
-export module windows.sdpwindow;
+export module components.sdpwindow;
+import components.window;
+import components.windowlist;
 import net.btutils;
 import net.device;
 import net.enums;
 import os.error;
-import windows.window;
-import windows.windowlist;
 
 // A class to handle an SDP inquiry in a GUI window.
 export class SDPWindow : public Window {

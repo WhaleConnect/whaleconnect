@@ -10,8 +10,8 @@ module;
 #include <imgui.h>
 #include <unicode/unistr.h>
 
-export module gui.console;
-import gui.textselect;
+export module components.console;
+import components.textselect;
 
 // A class to represent a text panel output.
 export class Console {

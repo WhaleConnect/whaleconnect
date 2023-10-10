@@ -8,12 +8,12 @@ module;
 #include <imgui.h>
 #include <magic_enum.hpp>
 
-module windows.connserverwindow;
+module components.connserverwindow;
+import components.connwindow;
 import gui.imguiext;
 import net.enums;
 import os.error;
 import sockets.delegates.delegates;
-import windows.connwindow;
 
 Task<> ConnServerWindow::accept() try {
     if (!socket || pendingAccept) co_return;

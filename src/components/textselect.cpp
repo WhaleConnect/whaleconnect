@@ -15,7 +15,7 @@ module;
 #include <unicode/unistr.h>
 #include <unicode/utypes.h>
 
-module gui.textselect;
+module components.textselect;
 import gui.imguiext;
 
 // Word break iterator for double-click selection, created inside an IIFE to avoid leaking symbols to the global scope

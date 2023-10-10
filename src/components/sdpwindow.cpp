@@ -8,7 +8,7 @@ module;
 
 #include <imgui.h>
 
-module windows.sdpwindow;
+module components.sdpwindow;
 import gui.imguiext;
 import gui.newconn;
 import net.btutils;

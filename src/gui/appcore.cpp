@@ -15,8 +15,8 @@ module;
 #include <SDL3/SDL_opengl.h>
 #include <SDL3/SDL_video.h>
 
-module app.app;
-import app.settings;
+module gui.appcore;
+import gui.settings;
 import gui.notifications;
 import utils.handleptr;
 
@@ -116,7 +116,7 @@ void configImGui() {
     scaleToDPI();
 }
 
-bool App::init() {
+bool AppCore::init() {
     // Set up SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "SDL Initialization Error", SDL_GetError(), nullptr);
@@ -150,7 +150,7 @@ bool App::init() {
     return true;
 }
 
-bool App::newFrame() {
+bool AppCore::newFrame() {
     // Poll for events
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -204,7 +204,7 @@ bool App::newFrame() {
     return true;
 }
 
-void App::render() {
+void AppCore::render() {
     // Render the main application window
     const ImVec2& displaySize = ImGui::GetIO().DisplaySize;
 
@@ -221,7 +221,7 @@ void App::render() {
     SDL_GL_SwapWindow(window);
 }
 
-void App::cleanup() {
+void AppCore::cleanup() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();

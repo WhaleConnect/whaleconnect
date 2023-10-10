@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 export module gui.newconnip;
-import windows.windowlist;
+import components.windowlist;
 
 // Renders the tab in the "New Connection" window for Internet-based connections.
 export void drawIPConnectionTab(WindowList& connections);

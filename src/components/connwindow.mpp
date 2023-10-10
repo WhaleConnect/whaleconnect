@@ -7,12 +7,12 @@ module;
 #include <string>
 #include <string_view>
 
-export module windows.connwindow;
-import gui.ioconsole;
+export module components.connwindow;
+import components.ioconsole;
+import components.window;
 import net.device;
 import sockets.socket;
 import utils.task;
-import windows.window;
 
 // Handles a socket connection in a GUI window.
 export class ConnWindow : public Window {

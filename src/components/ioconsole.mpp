@@ -6,8 +6,8 @@ module;
 #include <optional>
 #include <string>
 
-export module gui.ioconsole;
-import gui.console;
+export module components.ioconsole;
+import components.console;
 import os.error;
 
 // UI element with a textbox and mutex-protected console.

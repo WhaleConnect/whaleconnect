@@ -13,7 +13,7 @@ module;
 #include <unicode/unistr.h>
 #include <unicode/utypes.h>
 
-module gui.console;
+module components.console;
 import gui.imguiext;
 import utils.strings;
 

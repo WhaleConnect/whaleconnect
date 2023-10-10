@@ -15,12 +15,12 @@ module;
 #include <imgui_internal.h>
 
 module gui.newconnbt;
+import components.sdpwindow;
+import components.windowlist;
 import net.btutils;
 import net.device;
 import os.error;
 import utils.overload;
-import windows.sdpwindow;
-import windows.windowlist;
 
 void sortTable(DeviceList& devices) {
     // A sort is only needed for 2 or more entries

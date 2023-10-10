@@ -7,7 +7,7 @@ module;
 
 #include <imgui.h>
 
-export module windows.window;
+export module components.window;
 
 // A class to represent a Dear ImGui window.
 export class Window {

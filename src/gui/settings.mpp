@@ -1,7 +1,7 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-export module app.settings;
+export module gui.settings;
 
 export namespace Settings {
     unsigned char fontSize = 15;     // Application font height in pixels

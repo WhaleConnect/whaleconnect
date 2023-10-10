@@ -8,7 +8,7 @@ module;
 #include <imgui.h>
 #include <magic_enum.hpp>
 
-module windows.connwindow;
+module components.connwindow;
 import gui.imguiext;
 import net.device;
 import net.enums;

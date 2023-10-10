@@ -8,10 +8,10 @@ module;
 #include <imgui.h>
 
 module gui.newconnip;
+import components.windowlist;
 import gui.imguiext;
 import gui.newconn;
 import net.enums;
-import windows.windowlist;
 
 // Gets the width of a rendered string added with the item inner spacing specified in the Dear ImGui style.
 float calcTextWidthWithSpacing(std::string_view text) {
