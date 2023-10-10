@@ -78,8 +78,7 @@ float getScrollDelta(float v, float min, float max) {
 
 TextSelect::Selection TextSelect::getSelection() const {
     // Start and end may be out of order (ordering is based on Y position)
-    bool startBeforeEnd
-        = (selectStart.y < selectEnd.y) || ((selectStart.y == selectEnd.y) && (selectStart.x < selectEnd.x));
+    bool startBeforeEnd = selectStart.y < selectEnd.y || (selectStart.y == selectEnd.y && selectStart.x < selectEnd.x);
 
     // Reorder X points if necessary
     int startX = startBeforeEnd ? selectStart.x : selectEnd.x;
@@ -142,13 +141,13 @@ void TextSelect::handleScrolling() const {
     ImGuiID scrollXID = ImGui::GetWindowScrollbarID(currentWindow, ImGuiAxis_X);
     ImGuiID scrollYID = ImGui::GetWindowScrollbarID(currentWindow, ImGuiAxis_Y);
     ImGuiID activeID = ImGui::GetActiveID();
-    bool scrollbarsActive = (activeID == scrollXID) || (activeID == scrollYID);
+    bool scrollbarsActive = activeID == scrollXID || activeID == scrollYID;
 
     // Do not handle scrolling if:
     // - There is no active window
     // - The current window is not active
     // - The user is scrolling via the scrollbars
-    if ((activeWindow == nullptr) || (activeWindow->ID != currentWindow->ID) || scrollbarsActive) return;
+    if (activeWindow == nullptr || activeWindow->ID != currentWindow->ID || scrollbarsActive) return;
 
     // Get scroll deltas from mouse position
     ImVec2 mousePos = ImGui::GetMousePos();
@@ -177,8 +176,8 @@ void TextSelect::drawSelection(const ImVec2& cursorPosStart) const {
 
         // The first and last rectangles should only extend to the selection boundaries
         // The middle rectangles (if any) enclose the entire line + some extra width for the newline.
-        float minX = (i == startY) ? substringSizeX(line, 0, startX) : 0;
-        float maxX = (i == endY) ? substringSizeX(line, 0, endX) : substringSizeX(line, 0) + newlineWidth;
+        float minX = i == startY ? substringSizeX(line, 0, startX) : 0;
+        float maxX = i == endY ? substringSizeX(line, 0, endX) : substringSizeX(line, 0) + newlineWidth;
 
         // Rectangle height equals text height
         float minY = static_cast<float>(i) * textHeight;
@@ -204,8 +203,8 @@ void TextSelect::copy() const {
 
     for (int i = startY; i <= endY; i++) {
         // Similar logic to drawing selections
-        int32_t subStart = (i == startY) ? startX : 0;
-        int32_t subEnd = (i == endY) ? endX : INT32_MAX;
+        int32_t subStart = i == startY ? startX : 0;
+        int32_t subEnd = i == endY ? endX : INT32_MAX;
 
         icu::UnicodeString line = getLineAtIdx(i);
         selectedText += line.tempSubStringBetween(subStart, subEnd);

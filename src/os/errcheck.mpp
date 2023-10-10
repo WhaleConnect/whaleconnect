@@ -27,6 +27,6 @@ export {
     T check(const T& rc, std::string_view name, Pred checkFn = {}, Proj transformFn = {}, System::ErrorType type = System::ErrorType::System) {
         System::ErrorCode error = transformFn(rc);
 
-        return (checkFn(rc) || !System::isFatal(error)) ? rc : throw System::SystemError{ error, type, name };
+        return checkFn(rc) || !System::isFatal(error) ? rc : throw System::SystemError{ error, type, name };
     }
 }

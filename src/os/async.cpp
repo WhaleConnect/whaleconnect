@@ -10,7 +10,7 @@ module os.async;
 import os.async.internal;
 
 Async::Instance::Instance(unsigned int numThreads, unsigned int queueEntries) :
-    workerThreadPool((numThreads == 0) ? std::max(std::thread::hardware_concurrency(), 1U) : numThreads) {
+    workerThreadPool(numThreads == 0 ? std::max(std::thread::hardware_concurrency(), 1U) : numThreads) {
     // If 0 threads are specified, the number is chosen with hardware_concurrency.
     // If the number of supported threads cannot be determined, 1 is created.
     Internal::init(static_cast<unsigned int>(workerThreadPool.size()), queueEntries);

@@ -95,14 +95,14 @@ std::string System::formatSystemError(ErrorCode code, ErrorType type, std::strin
 
 bool System::SystemError::isCanceled() const {
 #if OS_WINDOWS
-    if ((type == System::ErrorType::System) && (code == WSA_OPERATION_ABORTED)) return true;
+    if (type == System::ErrorType::System && code == WSA_OPERATION_ABORTED) return true;
 #else
-    if ((type == System::ErrorType::System) && (code == ECANCELED)) return true;
+    if (type == System::ErrorType::System && code == ECANCELED) return true;
 #endif
 
 #if OS_MACOS
     // IOBluetooth-specific error
-    if ((type == System::ErrorType::IOReturn) && (code == kIOReturnAborted)) return true;
+    if (type == System::ErrorType::IOReturn && code == kIOReturnAborted) return true;
 #endif
 
     return false;

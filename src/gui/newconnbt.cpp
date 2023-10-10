@@ -33,7 +33,7 @@ void sortTable(DeviceList& devices) {
 
     // Get sort data
     auto spec = sortSpecs->Specs[0];
-    auto proj = (spec.ColumnIndex == 0) ? &Device::name : &Device::address;
+    auto proj = spec.ColumnIndex == 0 ? &Device::name : &Device::address;
 
     // Sort according to user specified direction
     if (spec.SortDirection == ImGuiSortDirection_Ascending) std::ranges::stable_sort(devices, std::less{}, proj);
@@ -96,7 +96,7 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
     bool needsSort = false;
 
     // Get paired devices if the button is clicked or if the variant currently holds nothing
-    if (ImGui::Button("Refresh List") || (pairedDevices.index() == 0)) {
+    if (ImGui::Button("Refresh List") || pairedDevices.index() == 0) {
         try {
             pairedDevices = BTUtils::getPaired();
             needsSort = true;

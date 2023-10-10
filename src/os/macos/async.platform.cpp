@@ -43,7 +43,7 @@ void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
 
     // Pass I/O type as user data pointer
     auto typeData = std::bit_cast<void*>(static_cast<uint64_t>(ioTypeInt));
-    int filt = (ioType == IOType::Send) ? EVFILT_WRITE : EVFILT_READ;
+    int filt = ioType == IOType::Send ? EVFILT_WRITE : EVFILT_READ;
 
     // Add and disable the I/O filter
     // If there's a problem with the file descriptor, kevent will exit early.

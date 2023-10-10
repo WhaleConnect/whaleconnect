@@ -62,7 +62,7 @@ void Console::drawContextMenu() {
 
 icu::UnicodeString Console::getLineAtIdx(size_t i) const {
     ConsoleItem item = items[i];
-    const icu::UnicodeString& lineBase = (showHex && item.canUseHex) ? item.textHex : item.text;
+    const icu::UnicodeString& lineBase = showHex && item.canUseHex ? item.textHex : item.text;
     return showTimestamps ? item.timestamp + lineBase : lineBase;
 }
 

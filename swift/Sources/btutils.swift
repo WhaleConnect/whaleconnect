@@ -80,7 +80,7 @@ func checkProtocolAttributes(p: IOBluetoothSDPDataElement, protoUUIDs: inout [UI
                 // Get port - make sure size matches the protocol
                 // RFCOMM channel is stored in an 8-bit integer (1 byte)
                 // L2CAP channel is stored in a 16-bit integer (2 bytes)
-                if ((size == 1) && isRFCOMM) || ((size == 2) && isL2CAP) {
+                if (size == 1 && isRFCOMM) || (size == 2 && isL2CAP) {
                     port = UInt16(data.getNumberValue().intValue)
                 }
             default:

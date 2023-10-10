@@ -14,7 +14,7 @@ Async::Internal::CompletionQueue& getPendingQueue(Async::SwiftID id, Async::Inte
                                                   Async::IOType ioType) {
     auto& queue = map[id];
 
-    return (ioType == Async::IOType::Send) ? queue.pendingWrites : queue.pendingReads;
+    return ioType == Async::IOType::Send ? queue.pendingWrites : queue.pendingReads;
 }
 
 void Async::Internal::addPending(SwiftID id, SocketQueueMap& map, Async::IOType ioType,

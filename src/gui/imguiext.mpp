@@ -82,8 +82,8 @@ export namespace ImGui {
     template <class T>
     void InputScalar(std::string_view label, T& data, int step = 0, int stepFast = 0) {
         // Any negative step value is considered invalid and nullptr is passed to disable the step buttons
-        int* stepPtr = (step > 0) ? &step : nullptr;
-        int* stepFastPtr = ((step > 0) && (stepFast > 0)) ? &stepFast : nullptr;
+        int* stepPtr = step > 0 ? &step : nullptr;
+        int* stepFastPtr = step > 0 && stepFast > 0 ? &stepFast : nullptr;
 
         InputScalar(label.data(), GetDataType(data), &data, stepPtr, stepFastPtr);
     }

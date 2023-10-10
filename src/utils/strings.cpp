@@ -57,7 +57,7 @@ std::string Strings::replaceAll(std::string str, std::string_view from, std::str
     // 1. Nothing to replace in an empty string
     // 2. Can't replace an empty string
     // 3. If from and to are equal the function call becomes pointless
-    if (str.empty() || from.empty() || (from == to)) return str;
+    if (str.empty() || from.empty() || from == to) return str;
 
     size_t start = 0;
     while ((start = str.find(from, start)) != std::string::npos) {

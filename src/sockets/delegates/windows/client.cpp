@@ -33,7 +33,7 @@ void startConnect(SOCKET s, sockaddr* addr, size_t len, Async::CompletionResult&
     // the size parameter to be the size of a Bluetooth address structure. Unlike Internet-based sockets, it will not
     // accept a sockaddr_storage size.
     // This means the size must be spoofed with Bluetooth sockets.
-    int addrSize = (addr->sa_family == AF_BTH) ? sizeof(SOCKADDR_BTH) : sizeof(sockaddr_storage);
+    int addrSize = addr->sa_family == AF_BTH ? sizeof(SOCKADDR_BTH) : sizeof(sockaddr_storage);
 
     // Bind the socket
     CHECK(bind(s, reinterpret_cast<sockaddr*>(&addrBind), addrSize));

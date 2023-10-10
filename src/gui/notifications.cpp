@@ -145,7 +145,7 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
     if (showInCorner) {
         ImVec2 windowSize = ImGui::GetWindowSize();
 
-        if ((visibility == Visible) && (timeout > 0.0f)) {
+        if (visibility == Visible && timeout > 0.0f) {
             // If the timeout is 0, skip the countdown
             // Calculate the percent of time since the notification was created
             auto timePercent = static_cast<float>((ImGui::GetTime() - timeAdded) / timeout);
