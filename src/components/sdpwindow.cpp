@@ -108,7 +108,7 @@ void SDPWindow::checkInquiryStatus() {
         [](const System::SystemError& error) { ImGui::TextWrapped("Error %s", error.what()); },
         [this](const BTUtils::SDPResultList& resultList) {
             // Done, print results
-            if (list.empty()) {
+            if (resultList.empty()) {
                 ImGui::Text("No SDP results found for \"%s\".", target.name.c_str());
                 return;
             }
