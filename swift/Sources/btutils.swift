@@ -146,13 +146,13 @@ public func sdpLookup(addr: String, uuid: UnsafeRawPointer, flushCache: Bool) ->
         var protoUUIDs: [UInt16] = []
         var port: UInt16 = 0
 
-        rec.getAttributeDataElement(SDP_ATTR_PROTOCOLS).getArrayValue()?.forEach {
+        rec.getAttributeDataElement(SDP_ATTR_PROTOCOLS)?.getArrayValue()?.forEach {
             checkProtocolAttributes(p: $0 as! IOBluetoothSDPDataElement, protoUUIDs: &protoUUIDs, port: &port)
         }
 
         // Service class UUIDs
         var serviceUUIDs: [UnsafeMutableRawPointer] = []
-        rec.getAttributeDataElement(SDP_ATTR_SERVICES).getArrayValue()?.forEach {
+        rec.getAttributeDataElement(SDP_ATTR_SERVICES)?.getArrayValue()?.forEach {
             let data = $0 as! IOBluetoothSDPDataElement
             let uuid128 = UnsafeMutablePointer<UInt8>.allocate(capacity: 16)
 
@@ -162,7 +162,7 @@ public func sdpLookup(addr: String, uuid: UnsafeRawPointer, flushCache: Bool) ->
 
         // Profile descriptors
         var profileDescs: [ProfileDesc] = []
-        rec.getAttributeDataElement(SDP_ATTR_PROFILES).getArrayValue()?.forEach {
+        rec.getAttributeDataElement(SDP_ATTR_PROFILES)?.getArrayValue()?.forEach {
             // Data is stored in an array: [0] = UUID, [1] = version
             let profile = $0 as! IOBluetoothSDPDataElement
             let profileData = profile.getArrayValue() as! [IOBluetoothSDPDataElement]
