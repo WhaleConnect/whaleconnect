@@ -24,7 +24,9 @@ set_defaultmode("debug")
 
 add_packages("icu4c", "magic_enum", "nameof", "out_ptr")
 
-add_cxxflags("-Wno-missing-field-initializers", "-pthread", { tools = { "clang", "clangxx" } })
+add_cxxflags("-Wno-missing-field-initializers",
+             "-Wno-read-modules-implicitly",
+             "-pthread", { tools = { "clang", "clangxx" } })
 add_cxxflags("cl::/Zc:preprocessor", { force = true })
 
 -- Use MSVC Unicode character set and prevent clashing macros
