@@ -19,7 +19,6 @@ class ClientSocket : public Socket {
     Delegates::NoopServer server;
 
 public:
-    // Constructs an object with a target device.
     ClientSocket() : Socket(handle, io, client, server), client(handle) {}
 };
 
