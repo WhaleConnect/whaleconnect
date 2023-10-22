@@ -18,8 +18,8 @@ module components.console;
 import gui.imguiext;
 import utils.strings;
 
-constexpr const char* selectAllShortcut = OS_MACOS ? "\uEBB8A" : "Ctrl+A";
-constexpr const char* copyShortcut = OS_MACOS ? "\uEBB8C" : "Ctrl+C";
+constexpr const char* selectAllShortcut = OS_MACOS ? "\uebb8A" : "Ctrl+A";
+constexpr const char* copyShortcut = OS_MACOS ? "\uebb8C" : "Ctrl+C";
 
 // Formatter used for creating timestamp strings
 const auto formatter = [] {
