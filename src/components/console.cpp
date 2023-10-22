@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <ctime>
 #include <cmath>
+#include <ctime>
 #include <format>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -33,15 +34,16 @@ icu::UnicodeString getTimestamp() {
     return dateReturned;
 }
 
-void Console::add(std::string_view s, const ImVec4& color, bool canUseHex) {
+void Console::add(std::string_view s, const ImVec4& color, bool canUseHex, std::string_view hoverText) {
     // Avoid empty strings
     if (s.empty()) return;
 
     icu::UnicodeString newText = icu::UnicodeString::fromUTF8(s);
+    auto hoverTextOpt = hoverText.empty() ? std::nullopt : std::optional<std::string>{ hoverText };
 
     // Text goes on its own line if there are no items or the last line ends with a newline
     if (items.empty() || items.back().text.endsWith('\n'))
-        items.emplace_back(canUseHex, newText, "", color, getTimestamp());
+        items.emplace_back(canUseHex, newText, "", color, getTimestamp(), hoverTextOpt);
     else items.back().text += newText;
 
     // Computing the string's hex representation here removes the need to recompute it every application frame.
@@ -96,6 +98,12 @@ void Console::update(std::string_view id, const ImVec2& size) {
             ImGuiExt::textUnformatted(line);
 
             if (hasColor) ImGui::PopStyleColor();
+
+            if (ImGui::IsItemHovered() && item.hoverText) {
+                ImGui::BeginTooltip();
+                ImGuiExt::textUnformatted((*item.hoverText).c_str());
+                ImGui::EndTooltip();
+            }
         }
     }
     clipper.End();
@@ -118,13 +126,14 @@ void Console::update(std::string_view id, const ImVec2& size) {
     ImGui::EndChild();
 }
 
-void Console::addText(std::string_view s, std::string_view pre, const ImVec4& color, bool canUseHex) {
+void Console::addText(std::string_view s, std::string_view pre, const ImVec4& color, bool canUseHex,
+                      std::string_view hoverText) {
     // Split the string by newlines to get each line, then add each line
     for (auto start = s.begin(), end = start; end != s.end(); start = end) {
         end = std::find(start, s.end(), '\n'); // Find the next newline
 
         // Get substring
         if (end != s.end()) end++; // Increment end to include the newline in the substring
-        add(std::string{ pre } + std::string{ start, end }, color, canUseHex);
+        add(std::string{ pre } + std::string{ start, end }, color, canUseHex, hoverText);
     }
 }
