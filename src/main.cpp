@@ -13,7 +13,7 @@
 #include <imgui.h>
 #include <SDL3/SDL_main.h>
 
-import components.connserverwindow;
+import components.serverwindow;
 import components.windowlist;
 import gui.appcore;
 import gui.imguiext;
@@ -76,11 +76,16 @@ void mainLoop() {
     WindowList sdpWindows;  // List of windows for creating Bluetooth connections
 
     auto t = std::make_unique<ServerSocket<SocketTag::IP>>();
-    connections.add<ConnServerWindow>(std::move(t));
+    bool g = false;
 
     while (AppCore::newFrame()) {
         static bool newConnOpen = true;
         static bool notificationsOpen = false;
+
+        if (!g) {
+            connections.add<ServerWindow>(std::move(t));
+            g = true;
+        }
 
         // Main menu bar
         drawMenuBar(newConnOpen, notificationsOpen, connections);
