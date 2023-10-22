@@ -65,8 +65,8 @@ Task<> ServerWindow::accept() try {
     pendingAccept = false;
 }
 
-void ServerWindow::a() {
-    if (!ImGui::Begin("asdasd")) {
+void ServerWindow::drawClientsWindow() {
+    if (!ImGui::Begin("Clients")) {
         ImGui::End();
         return;
     }
@@ -113,13 +113,13 @@ void ServerWindow::onInit() {
     ImGuiID dock1 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Left, 0.7f, nullptr, &id);
     ImGuiID dock2 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Right, 0.3f, nullptr, &id);
 
-    ImGui::DockBuilderDockWindow("asdsa", dock1);
-    ImGui::DockBuilderDockWindow("asdasd", dock2);
+    ImGui::DockBuilderDockWindow("Server", dock1);
+    ImGui::DockBuilderDockWindow("Clients", dock2);
     ImGui::DockBuilderFinish(id);
 }
 
 void ServerWindow::onBeforeUpdate() {
-    a();
+    drawClientsWindow();
 
     for (auto& [key, client] : clients) {
         using namespace ImGuiExt::Literals;

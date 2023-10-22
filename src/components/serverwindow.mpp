@@ -42,7 +42,7 @@ export class ServerWindow : public Window {
 
     Task<> accept();
 
-    void a();
+    void drawClientsWindow();
 
     void onInit() override;
 
@@ -51,7 +51,7 @@ export class ServerWindow : public Window {
     void onUpdate() override;
 
 public:
-    explicit ServerWindow(std::unique_ptr<Socket>&& socket) : Window("asdsa"), socket(std::move(socket)) {}
+    explicit ServerWindow(std::unique_ptr<Socket>&& socket) : Window("Server"), socket(std::move(socket)) {}
 
     ~ServerWindow() override {
         for (const auto& [_, client] : clients) client.socket->cancelIO();
