@@ -42,7 +42,7 @@ std::string formatDevice(const Device& device, std::string_view extraInfo) {
     return extraInfo.empty() ? title : std::format("({}) {}", extraInfo, title);
 }
 
-ConnWindow::ConnWindow(std::unique_ptr<Socket>&& socket, const Device& device, std::string_view extraInfo) :
+ConnWindow::ConnWindow(SocketPtr&& socket, const Device& device, std::string_view extraInfo) :
     Window(formatDevice(device, extraInfo)), socket(std::move(socket)), device(device) {}
 
 Task<> ConnWindow::connect() try {

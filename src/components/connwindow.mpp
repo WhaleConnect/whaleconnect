@@ -12,13 +12,12 @@ import components.ioconsole;
 import components.window;
 import net.device;
 import sockets.socket;
+import sockets.delegates.delegates;
 import utils.task;
 
 // Handles a socket connection in a GUI window.
 export class ConnWindow : public Window {
-    friend class ConnServerWindow;
-
-    std::unique_ptr<Socket> socket; // Internal socket
+    SocketPtr socket; // Internal socket
     IOConsole console;
     Device device;
     std::atomic_bool connected = false;
@@ -46,7 +45,7 @@ export class ConnWindow : public Window {
 
 public:
     // Sets the window information (title and remote host).
-    ConnWindow(std::unique_ptr<Socket>&& socket, const Device& device, std::string_view extraInfo);
+    ConnWindow(SocketPtr&& socket, const Device& device, std::string_view extraInfo);
 
     // Cancels pending socket I/O.
     ~ConnWindow() override {
