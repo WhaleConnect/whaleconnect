@@ -31,6 +31,10 @@ export class ServerWindow : public Window {
 
         Client(SocketPtr&& socket, int colorIndex) : socket(std::move(socket)), colorIndex(colorIndex) {}
 
+        ~Client() {
+            socket->cancelIO();
+        }
+
         Task<> recv(IOConsole& serverConsole, std::string addr, unsigned int size);
     };
 
