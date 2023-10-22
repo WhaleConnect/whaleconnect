@@ -93,7 +93,7 @@ void ServerWindow::drawClientsWindow() {
 }
 
 void ServerWindow::onInit() {
-    auto [port, ip] = socket->startServer({ ConnectionType::TCP, "", "127.0.0.1", 3000 });
+    auto [port, ip] = socket->startServer({ ConnectionType::TCP, "", "127.0.0.1", 0 });
     if (ip == IPType::None) console.addInfo(std::format("Server is active on port {}.", port));
     else console.addInfo(std::format("Server is active on port {} ({}).", port, magic_enum::enum_name(ip)));
 
