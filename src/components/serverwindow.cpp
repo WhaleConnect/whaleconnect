@@ -38,12 +38,12 @@ Task<> ServerWindow::Client::recv(IOConsole& serverConsole, std::string addr, un
         console.addText(*recvRet);
     } else {
         serverConsole.addInfo(std::format("{} closed connection.", addr));
-        console.addInfo("Remote host closed connection.");
+        console.addInfo("Client closed connection.");
         socket->close();
         connected = selected = false;
     }
 } catch (const System::SystemError& error) {
-    if (error && !error.isCanceled()) console.addError(error.what());
+    serverConsole.errorHandler(error);
     pendingRecv = false;
 }
 
@@ -93,7 +93,7 @@ void ServerWindow::a() {
 }
 
 void ServerWindow::onInit() {
-    auto [port, ip] = socket->startServer({ ConnectionType::TCP, "", "127.0.0.1", 0 });
+    auto [port, ip] = socket->startServer({ ConnectionType::TCP, "", "127.0.0.1", 3000 });
     if (ip == IPType::None) console.addInfo(std::format("Server is active on port {}.", port));
     else console.addInfo(std::format("Server is active on port {} ({}).", port, magic_enum::enum_name(ip)));
 
