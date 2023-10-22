@@ -56,6 +56,9 @@ export class Console {
     // Draws the contents of the right-click context menu.
     void drawContextMenu();
 
+    // Draws widgets for each option for use in a menu.
+    void drawOptions();
+
     // Gets the line at an index.
     icu::UnicodeString getLineAtIdx(size_t i) const;
 
@@ -65,9 +68,6 @@ export class Console {
     }
 
 public:
-    // Draws widgets for each option for use in a menu.
-    void drawOptions();
-
     // Draws the output pane.
     void update(std::string_view id);
 

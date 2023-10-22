@@ -62,12 +62,6 @@ void Console::drawContextMenu() {
     if (ImGui::MenuItem("Select all", selectAllShortcut)) textSelect.selectAll();
 }
 
-icu::UnicodeString Console::getLineAtIdx(size_t i) const {
-    ConsoleItem item = items[i];
-    const icu::UnicodeString& lineBase = showHex && item.canUseHex ? item.textHex : item.text;
-    return showTimestamps ? item.timestamp + lineBase : lineBase;
-}
-
 void Console::drawOptions() {
     // "Clear output" button
     if (ImGui::Button("Clear output")) clear();
@@ -84,6 +78,12 @@ void Console::drawOptions() {
 
         ImGui::EndPopup();
     }
+}
+
+icu::UnicodeString Console::getLineAtIdx(size_t i) const {
+    ConsoleItem item = items[i];
+    const icu::UnicodeString& lineBase = showHex && item.canUseHex ? item.textHex : item.text;
+    return showTimestamps ? item.timestamp + lineBase : lineBase;
 }
 
 void Console::update(std::string_view id) {
