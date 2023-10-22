@@ -69,14 +69,27 @@ icu::UnicodeString Console::getLineAtIdx(size_t i) const {
 }
 
 void Console::drawOptions() {
-    ImGui::MenuItem("Autoscroll", nullptr, &autoscroll);
-    ImGui::MenuItem("Show timestamps", nullptr, &showTimestamps);
-    ImGui::MenuItem("Show hexadecimal", nullptr, &showHex);
+    // "Clear output" button
+    if (ImGui::Button("Clear output")) clear();
+
+    // "Options" button
+    ImGui::SameLine();
+    if (ImGui::Button("Options...")) ImGui::OpenPopup("options");
+
+    // Popup for more options
+    if (ImGui::BeginPopup("options")) {
+        ImGui::MenuItem("Autoscroll", nullptr, &autoscroll);
+        ImGui::MenuItem("Show timestamps", nullptr, &showTimestamps);
+        ImGui::MenuItem("Show hexadecimal", nullptr, &showHex);
+
+        ImGui::EndPopup();
+    }
 }
 
-void Console::update(std::string_view id, const ImVec2& size) {
+void Console::update(std::string_view id) {
     using namespace ImGuiExt::Literals;
 
+    ImVec2 size{ ImGuiExt::FILL, -ImGui::GetFrameHeightWithSpacing() };
     ImGui::BeginChild(id.data(), size, true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoMove);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 1, std::round(0.05_fh) }); // Tighten line spacing
 
@@ -124,6 +137,8 @@ void Console::update(std::string_view id, const ImVec2& size) {
 
     ImGui::PopStyleVar();
     ImGui::EndChild();
+
+    drawOptions();
 }
 
 void Console::addText(std::string_view s, std::string_view pre, const ImVec4& color, bool canUseHex,

@@ -14,17 +14,8 @@ import gui.imguiext;
 import utils.strings;
 
 void IOConsole::drawControls() {
-    // "Clear output" button
-    if (ImGui::Button("Clear output")) console.clear();
-
-    // "Options" button
-    ImGui::SameLine();
-    if (ImGui::Button("Options...")) ImGui::OpenPopup("options");
-
     // Popup for more options
     if (ImGui::BeginPopup("options")) {
-        console.drawOptions();
-
         // Options for the input textbox
         ImGui::Separator();
         ImGui::MenuItem("Send echoing", nullptr, &sendEchoing);
@@ -95,9 +86,7 @@ std::optional<std::string> IOConsole::update() {
         focusOnTextbox = true;
     }
 
-    // Reserve space at bottom
-    float y = -ImGui::GetFrameHeightWithSpacing();
-    console.update("console", ImVec2{ ImGuiExt::FILL, y });
+    console.update("console");
     drawControls();
 
     return ret;

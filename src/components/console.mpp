@@ -69,7 +69,7 @@ public:
     void drawOptions();
 
     // Draws the output pane.
-    void update(std::string_view id, const ImVec2& size);
+    void update(std::string_view id);
 
     // Adds text to the console. Accepts multiline strings.
     // The color of the text can be set, as well as an optional string to show before each line.
