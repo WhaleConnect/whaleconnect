@@ -22,7 +22,6 @@ export class ConnWindow : public Window {
     Device device;
     std::atomic_bool connected = false;
     std::atomic_bool pendingRecv = false;
-    unsigned int recvSize = 1024; // Unsigned int to work with ImGuiDataType
 
     // Connects to the server.
     Task<> connect();
@@ -31,8 +30,7 @@ export class ConnWindow : public Window {
     Task<> sendHandler(std::string s);
 
     // Receives a string from the socket and displays it in the console output.
-    // The receive size is passed as a parameter to avoid concurrent access.
-    Task<> readHandler(unsigned int size);
+    Task<> readHandler();
 
     void onInit() override {
         connect();

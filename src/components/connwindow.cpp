@@ -62,11 +62,11 @@ Task<> ConnWindow::sendHandler(std::string s) try {
     console.errorHandler(error);
 }
 
-Task<> ConnWindow::readHandler(unsigned int size) try {
+Task<> ConnWindow::readHandler() try {
     if (!connected || pendingRecv) co_return;
 
     pendingRecv = true;
-    auto recvRet = co_await socket->recv(size);
+    auto recvRet = co_await socket->recv(console.getRecvSize());
     pendingRecv = false;
 
     if (recvRet) {
@@ -86,18 +86,9 @@ void ConnWindow::onBeforeUpdate() {
     using namespace ImGuiExt::Literals;
 
     ImGui::SetNextWindowSize(35_fh * 20_fh, ImGuiCond_Appearing);
-    readHandler(recvSize);
+    readHandler();
 }
 
 void ConnWindow::onUpdate() {
     if (auto sendString = console.update()) sendHandler(*sendString);
-
-    if (ImGui::BeginPopup("options")) {
-        using namespace ImGuiExt::Literals;
-
-        ImGui::Separator();
-        ImGui::SetNextItemWidth(4_fh);
-        ImGuiExt::inputScalar("Receive size", recvSize);
-        ImGui::EndPopup();
-    }
 }

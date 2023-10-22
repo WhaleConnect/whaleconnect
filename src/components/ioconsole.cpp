@@ -30,6 +30,13 @@ void IOConsole::drawControls() {
         ImGui::MenuItem("Send echoing", nullptr, &sendEchoing);
         ImGui::MenuItem("Clear texbox on send", nullptr, &clearTextboxOnSubmit);
         ImGui::MenuItem("Add final line ending", nullptr, &addFinalLineEnding);
+
+        using namespace ImGuiExt::Literals;
+
+        ImGui::Separator();
+        ImGui::SetNextItemWidth(4_fh);
+        ImGuiExt::inputScalar("Receive size", recvSize);
+
         ImGui::EndPopup();
     }
 
@@ -45,7 +52,7 @@ void IOConsole::drawControls() {
     ImGui::Combo("##lineEnding", &currentLE, "Newline\0Carriage return\0Both\0");
 }
 
-std::optional<std::string> IOConsole::update(int numLines) {
+std::optional<std::string> IOConsole::update() {
     std::optional<std::string> ret;
 
     // Apply foxus to textbox
@@ -89,7 +96,7 @@ std::optional<std::string> IOConsole::update(int numLines) {
     }
 
     // Reserve space at bottom
-    float y = -static_cast<float>(numLines + 1) * ImGui::GetFrameHeightWithSpacing();
+    float y = -ImGui::GetFrameHeightWithSpacing();
     console.update("console", ImVec2{ ImGuiExt::FILL, y });
     drawControls();
 
