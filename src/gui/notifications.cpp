@@ -178,7 +178,7 @@ void drawNotificationContents(bool* open) {
     // Display "pop out" button if applicable
     if (open) {
         ImGui::SameLine();
-        if (ImGui::Button("\uf0f4")) {
+        if (ImGui::Button("\uecaf")) {
             *open = true;
             ImGui::SetWindowFocus(notificationsWindowTitle);
         }
