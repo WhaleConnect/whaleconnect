@@ -18,15 +18,20 @@ import net.enums;
 import os.error;
 import sockets.delegates.delegates;
 
+// Colors to display each client in
 const std::array colors{
-    ImVec4{ 0.13f, 0.55f, 0.13f, 1 },
-    ImVec4{ 0, 0.5f, 1, 1 },
-    ImVec4{ 0.69f, 0.15f, 1, 1 },
-    ImVec4{ 1, 0.27f, 0, 1 },
-    ImVec4{ 1, 0.41f, 0.71f, 1 },
+    ImVec4{ 0.13f, 0.55f, 0.13f, 1 }, // Green
+    ImVec4{ 0, 0.5f, 1, 1 },          // Blue
+    ImVec4{ 0.69f, 0.15f, 1, 1 },     // Purple
+    ImVec4{ 1, 0.27f, 0, 1 },         // Orange
+    ImVec4{ 1, 0.41f, 0.71f, 1 }      // Pink
 };
 
-Task<> ServerWindow::Client::recv(IOConsole& serverConsole, std::string addr, unsigned int size) try {
+std::string formatDevice(const Device& device) {
+    return std::format("{}|{}", device.name.empty() ? device.address : device.name, device.port);
+}
+
+Task<> ServerWindow::Client::recv(IOConsole& serverConsole, const Device& device, unsigned int size) try {
     if (!connected || pendingRecv) co_return;
 
     pendingRecv = true;
@@ -34,10 +39,10 @@ Task<> ServerWindow::Client::recv(IOConsole& serverConsole, std::string addr, un
     pendingRecv = false;
 
     if (recvRet) {
-        serverConsole.addText(*recvRet, "", colors[colorIndex], true, addr);
+        serverConsole.addText(*recvRet, "", colors[colorIndex], true, formatDevice(device));
         console.addText(*recvRet);
     } else {
-        serverConsole.addInfo(std::format("{} closed connection.", addr));
+        serverConsole.addInfo(std::format("{} closed connection.", formatDevice(device)));
         console.addInfo("Client closed connection.");
         socket->close();
         connected = selected = false;
@@ -47,61 +52,18 @@ Task<> ServerWindow::Client::recv(IOConsole& serverConsole, std::string addr, un
     pendingRecv = false;
 }
 
-Task<> ServerWindow::accept() try {
-    if (!socket || pendingAccept) co_return;
-
-    pendingAccept = true;
-
-    auto [device, clientSocket] = co_await socket->accept();
-    console.addInfo(std::format("Accepted connection from {} on port {}.", device.address, device.port));
-
-    std::string key = std::format("{}|{}", device.address, device.port);
-    clients.try_emplace(key, std::move(clientSocket), colorIndex);
-
-    pendingAccept = false;
-    colorIndex = (colorIndex + 1) % colors.size();
-} catch (const System::SystemError& error) {
-    console.errorHandler(error);
-    pendingAccept = false;
-}
-
-void ServerWindow::drawClientsWindow() {
-    if (!ImGui::Begin("Clients")) {
-        ImGui::End();
-        return;
-    }
-
-    ImGui::TextWrapped("Select clients to send data to");
-
-    for (auto& [key, client] : clients) {
-        ImGui::PushStyleColor(ImGuiCol_Text, colors[client.colorIndex]);
-        ImGui::BeginDisabled(!client.connected);
-        ImGui::Checkbox(key.c_str(), &client.selected);
-        ImGui::EndDisabled();
-        ImGui::PopStyleColor();
-        ImGui::SameLine();
-
-        ImGui::PushID(key.c_str());
-        if (ImGui::Button("\uecaf")) client.opened = true;
-
-        ImGui::SameLine();
-        if (ImGui::Button("\ueb99")) client.remove = true;
-        ImGui::PopID();
-    }
-
-    ImGui::End();
-}
-
-void ServerWindow::onInit() {
-    auto [port, ip] = socket->startServer({ ConnectionType::TCP, "", "127.0.0.1", 0 });
-    if (ip == IPType::None) console.addInfo(std::format("Server is active on port {}.", port));
-    else console.addInfo(std::format("Server is active on port {} ({}).", port, magic_enum::enum_name(ip)));
+ServerWindow::ServerWindow(std::string_view title, SocketPtr&& socket, const Device& serverInfo) :
+    Window(title), socket(std::move(socket)), isDgram(serverInfo.type == ConnectionType::UDP) {
+    startServer(serverInfo);
+    clientsWindowTitle = std::format("Clients: {}", getTitle());
 
     using namespace ImGuiExt::Literals;
 
+    // Combined size of server and clients windows
     ImVec2 size{ 45_fh * 20_fh };
 
-    ImGuiID id = ImGui::GetID("MainWindowGroup");
+    // Build docking layout
+    ImGuiID id = ImGui::GetID(getTitle().data());
     ImGui::DockBuilderRemoveNode(id);
     ImGui::DockBuilderAddNode(id);
     ImGui::DockBuilderSetNodeSize(id, size);
@@ -113,33 +75,132 @@ void ServerWindow::onInit() {
     ImGuiID dock1 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Left, 0.7f, nullptr, &id);
     ImGuiID dock2 = ImGui::DockBuilderSplitNode(id, ImGuiDir_Right, 0.3f, nullptr, &id);
 
-    ImGui::DockBuilderDockWindow("Server", dock1);
-    ImGui::DockBuilderDockWindow("Clients", dock2);
+    ImGui::DockBuilderDockWindow(getTitle().data(), dock1);
+    ImGui::DockBuilderDockWindow(clientsWindowTitle.c_str(), dock2);
     ImGui::DockBuilderFinish(id);
 }
 
-void ServerWindow::onBeforeUpdate() {
-    drawClientsWindow();
+void ServerWindow::startServer(const Device& serverInfo) try {
+    auto [port, ip] = socket->startServer(serverInfo);
+    std::string_view ipType = magic_enum::enum_name(ip);
+    std::string_view type = magic_enum::enum_name(serverInfo.type);
 
-    for (auto& [key, client] : clients) {
-        using namespace ImGuiExt::Literals;
-        ImGui::SetNextWindowSize(35_fh * 20_fh, ImGuiCond_Appearing);
+    // Format title and status messages
+    if (ip == IPType::None) {
+        setTitle(std::format("{} Server - port {}##{}", type, port, serverInfo.address));
+        console.addInfo(std::format("Server is active on port {}.", port));
+    } else {
+        setTitle(std::format("{} ({}) Server - port {}##{}", type, ipType, port, serverInfo.address));
+        console.addInfo(std::format("Server is active on port {} ({}).", port, ipType));
+    }
+} catch (const System::SystemError& error) {
+    console.errorHandler(error);
+}
 
-        if (client.opened && ImGui::Begin(key.c_str(), &client.opened)) client.console.update("asd");
+Task<> ServerWindow::accept() try {
+    if (!socket->isValid() || pendingIO) co_return;
+
+    pendingIO = true;
+    auto [device, clientSocket] = co_await socket->accept();
+    pendingIO = false;
+
+    console.addInfo(std::format("Accepted connection from {} on port {}.", device.address, device.port));
+    clients.try_emplace(device, std::move(clientSocket), colorIndex);
+    nextColor();
+} catch (const System::SystemError& error) {
+    console.errorHandler(error);
+    pendingIO = false;
+}
+
+Task<> ServerWindow::recvDgram() try {
+    if (!socket->isValid() || pendingIO) co_return;
+
+    pendingIO = true;
+    auto [device, recvRet] = co_await socket->recvFrom(console.getRecvSize());
+    pendingIO = false;
+
+    auto [it, didEmplace] = clients.try_emplace(device, nullptr, colorIndex);
+    if (didEmplace) nextColor(); // Advance colors if there is data received from a new client
+
+    if (recvRet) {
+        console.addText(*recvRet, "", colors[it->second.colorIndex], true, formatDevice(device));
+        it->second.console.addText(*recvRet);
+    }
+} catch (const System::SystemError& error) {
+    console.errorHandler(error);
+    pendingIO = false;
+}
+
+void ServerWindow::nextColor() {
+    colorIndex = (colorIndex + 1) % colors.size();
+}
+
+void ServerWindow::drawClientsWindow() {
+    if (!ImGui::Begin(clientsWindowTitle.c_str())) {
         ImGui::End();
+        return;
     }
 
-    accept();
+    ImGui::TextWrapped("Select clients to send data to");
+
+    for (auto& [key, client] : clients) {
+        std::string formatted = formatDevice(key);
+
+        // Checkbox for sending
+        ImGui::PushStyleColor(ImGuiCol_Text, colors[client.colorIndex]);
+        ImGui::BeginDisabled(!client.connected);
+        ImGui::Checkbox(formatted.c_str(), &client.selected);
+        ImGui::EndDisabled();
+        ImGui::PopStyleColor();
+        ImGui::SameLine();
+
+        // Button to open received data
+        ImGui::PushID(formatted.c_str());
+        if (ImGui::Button("\uecaf")) client.opened = true;
+
+        // Button to close client
+        ImGui::SameLine();
+        if (ImGui::Button("\ueb99")) client.remove = true;
+        ImGui::PopID();
+    }
+
+    ImGui::End();
+}
+
+void ServerWindow::onBeforeUpdate() {
+    // Redraw all active clients
+    std::erase_if(clients, [](const auto& client) { return client.second.remove; });
+    drawClientsWindow();
+
+    // Perform I/O on clients
+    if (isDgram) {
+        recvDgram();
+    } else {
+        accept();
+        for (auto& client : clients) client.second.recv(console, client.first, console.getRecvSize());
+    }
+
+    // Draw opened client windows
+    for (auto& [key, client] : clients) {
+        if (client.opened) {
+            using namespace ImGuiExt::Literals;
+            ImGui::SetNextWindowSize(35_fh * 20_fh, ImGuiCond_Appearing);
+
+            std::string clientTitle = std::format("{}: {}", formatDevice(key).c_str(), getTitle().data());
+            if (ImGui::Begin(clientTitle.c_str(), &client.opened)) client.console.update("output");
+            ImGui::End();
+        }
+    }
 }
 
 void ServerWindow::onUpdate() {
-    for (auto& client : clients)
-        client.second.recv(console, client.first, console.getRecvSize());
-
-    std::erase_if(clients, [](const auto& client) { return client.second.remove; });
-
     // Send data to all clients
-    if (auto s = console.update())
-        for (const auto& client : clients)
-            if (client.second.selected && client.second.connected) client.second.socket->send(*s);
+    if (auto s = console.update()) {
+        for (const auto& [key, client] : clients) {
+            if (client.selected) {
+                if (isDgram) socket->sendTo(key, *s);
+                else if (client.connected) client.socket->send(*s);
+            }
+        }
+    }
 }

@@ -13,12 +13,14 @@ export module components.serverwindow;
 import components.console;
 import components.ioconsole;
 import components.window;
+import net.device;
 import sockets.delegates.delegates;
 import sockets.socket;
 import utils.task;
 
-// Handles a connection-oriented server socket in a GUI window.
+// Handles a server socket in a GUI window.
 export class ServerWindow : public Window {
+    // Connection-oriented client.
     struct Client {
         SocketPtr socket;
         Console console;
@@ -32,34 +34,44 @@ export class ServerWindow : public Window {
         Client(SocketPtr&& socket, int colorIndex) : socket(std::move(socket)), colorIndex(colorIndex) {}
 
         ~Client() {
-            socket->cancelIO();
+            if (socket) socket->cancelIO();
         }
 
-        Task<> recv(IOConsole& serverConsole, std::string addr, unsigned int size);
+        Task<> recv(IOConsole& serverConsole, const Device& device, unsigned int size);
     };
 
     SocketPtr socket;
-    bool pendingAccept = false;
-    int colorIndex = 0;
-    std::map<std::string, Client, std::less<>> clients;
-    IOConsole console;
+    std::map<Device, Client, std::less<>> clients;
+    bool isDgram;
 
+    bool pendingIO = false;
+    int colorIndex = 0;
+
+    IOConsole console;
+    std::string clientsWindowTitle;
+
+    void startServer(const Device& serverInfo);
+
+    // Accepts connection-oriented clients.
     Task<> accept();
 
-    void drawClientsWindow();
+    // Receives from datagram-oriented clients.
+    Task<> recvDgram();
 
-    void onInit() override;
+    // Selects the next color to display clients in.
+    void nextColor();
+
+    // Draws the window containing the list of clients.
+    void drawClientsWindow();
 
     void onBeforeUpdate() override;
 
     void onUpdate() override;
 
 public:
-    explicit ServerWindow(std::unique_ptr<Socket>&& socket) : Window("Server"), socket(std::move(socket)) {}
+    explicit ServerWindow(std::string_view title, SocketPtr&& socket, const Device& serverInfo);
 
     ~ServerWindow() override {
-        for (const auto& [_, client] : clients) client.socket->cancelIO();
-
-        socket->cancelIO();
+        if (socket) socket->cancelIO();
     }
 };
