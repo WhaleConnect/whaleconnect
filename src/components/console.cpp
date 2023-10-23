@@ -151,7 +151,7 @@ void Console::update(std::string_view id) {
 }
 
 void Console::addText(std::string_view s, std::string_view pre, const ImVec4& color, bool canUseHex,
-                      std::string_view hoverText) {
+    std::string_view hoverText) {
     // Split the string by newlines to get each line, then add each line
     for (auto start = s.begin(), end = start; end != s.end(); start = end) {
         end = std::find(start, s.end(), '\n'); // Find the next newline

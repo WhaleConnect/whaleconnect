@@ -4,4 +4,4 @@
 #pragma once
 #include <nameof.hpp>
 
-#define CHECK(f, ...) check(f, NAMEOF(f) __VA_OPT__(,) __VA_ARGS__)
+#define CHECK(f, ...) check(f, NAMEOF(f) __VA_OPT__(, ) __VA_ARGS__)

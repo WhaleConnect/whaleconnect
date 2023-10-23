@@ -30,9 +30,9 @@ std::string formatDevice(const Device& device, std::string_view extraInfo) {
     // Format the values into a string as the title
     // The address is always part of the id hash.
     // The port is not visible for a Bluetooth connection, instead, it is part of the id hash.
-    std::string title
-        = isIP ? std::format("{} Connection - {} port {}##{}", typeString, deviceString, device.port, device.address)
-               : std::format("{} Connection - {}##{} port {}", typeString, deviceString, device.address, device.port);
+    std::string title = isIP
+        ? std::format("{} Connection - {} port {}##{}", typeString, deviceString, device.port, device.address)
+        : std::format("{} Connection - {}##{} port {}", typeString, deviceString, device.address, device.port);
 
     // If there's extra info, it is formatted before the window title.
     // If it were to be put after the title, it would be part of the invisible id hash (after the "##").

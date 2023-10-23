@@ -27,7 +27,7 @@ constexpr auto SOCKET_ID_MASK = 0xFFFFFFFFUL;
 
 // Pops and cancels a pending operation.
 Async::Internal::OptCompletionResult cancelOne(uint64_t id, Async::Internal::SocketQueueMap& map,
-                                               Async::IOType ioType) {
+    Async::IOType ioType) {
     // Completion result pointing to suspended coroutine
     auto pending = popPending(id, map, ioType);
     if (!pending) return std::nullopt;

@@ -45,7 +45,7 @@ void startConnect(SOCKET s, sockaddr* addr, size_t len, Async::CompletionResult&
         GUID guid = WSAID_CONNECTEX;
         DWORD numBytes = 0;
         CHECK(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &connectExPtr, sizeof(connectExPtr),
-                       &numBytes, nullptr, nullptr));
+            &numBytes, nullptr, nullptr));
     }
 
     CHECK(connectExPtr(s, addr, static_cast<int>(len), nullptr, 0, nullptr, &result), checkTrue);

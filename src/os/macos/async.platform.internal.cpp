@@ -11,14 +11,14 @@ import os.async.platform;
 
 // Gets the queue of pending operations for a socket/Bluetooth channel.
 Async::Internal::CompletionQueue& getPendingQueue(Async::SwiftID id, Async::Internal::SocketQueueMap& map,
-                                                  Async::IOType ioType) {
+    Async::IOType ioType) {
     auto& queue = map[id];
 
     return ioType == Async::IOType::Send ? queue.pendingWrites : queue.pendingReads;
 }
 
 void Async::Internal::addPending(SwiftID id, SocketQueueMap& map, Async::IOType ioType,
-                                 Async::CompletionResult& result) {
+    Async::CompletionResult& result) {
     getPendingQueue(id, map, ioType).push(&result);
 }
 

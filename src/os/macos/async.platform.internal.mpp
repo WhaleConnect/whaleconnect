@@ -15,7 +15,7 @@ import os.async.platform;
 export namespace Async::Internal {
     // User event idenfitiers (combined with socket file descriptors)
     constexpr auto ASYNC_CANCEL = 1UL << 33; // Cancel all operations
-    constexpr auto ASYNC_ADD = 1UL << 34;    // Add socket to queue
+    constexpr auto ASYNC_ADD = 1UL << 34; // Add socket to queue
 
     // kqueue file descriptors for each worker thread
     // Communication from the main thread to the worker threads should be done through kqueue user events.

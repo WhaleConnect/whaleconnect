@@ -3,7 +3,7 @@
 
 module;
 #if OS_LINUX
-#include <coroutine>  // IWYU pragma: keep
+#include <coroutine> // IWYU pragma: keep
 #include <functional>
 
 #include <bluetooth/bluetooth.h>

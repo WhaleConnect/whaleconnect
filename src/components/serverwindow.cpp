@@ -21,10 +21,10 @@ import sockets.delegates.delegates;
 // Colors to display each client in
 const std::array colors{
     ImVec4{ 0.13f, 0.55f, 0.13f, 1 }, // Green
-    ImVec4{ 0, 0.5f, 1, 1 },          // Blue
-    ImVec4{ 0.69f, 0.15f, 1, 1 },     // Purple
-    ImVec4{ 1, 0.27f, 0, 1 },         // Orange
-    ImVec4{ 1, 0.41f, 0.71f, 1 }      // Pink
+    ImVec4{ 0, 0.5f, 1, 1 }, // Blue
+    ImVec4{ 0.69f, 0.15f, 1, 1 }, // Purple
+    ImVec4{ 1, 0.27f, 0, 1 }, // Orange
+    ImVec4{ 1, 0.41f, 0.71f, 1 } // Pink
 };
 
 std::string formatDevice(const Device& device) {

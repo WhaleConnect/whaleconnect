@@ -17,7 +17,7 @@ import utils.overload;
 void printUUID(BTUtils::UUID128 uuid) {
     const uint8_t* u = uuid.data();
     ImGui::BulletText("%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X", u[0], u[1], u[2], u[3],
-                      u[4], u[5], u[6], u[7], u[8], u[9], u[10], u[11], u[12], u[13], u[14], u[15]);
+        u[4], u[5], u[6], u[7], u[8], u[9], u[10], u[11], u[12], u[13], u[14], u[15]);
 }
 
 // Prints the details of a SDP result.
@@ -51,7 +51,7 @@ bool SDPWindow::drawSDPList(const BTUtils::SDPResultList& resultList) {
     int id = 0;
     for (const auto& result : resultList) {
         ImGui::PushID(id); // Push the ID, then increment it
-        id++;              // TODO: Use views::enumerate() in C++23
+        id++; // TODO: Use views::enumerate() in C++23
 
         if (const char* name = result.name.empty() ? "Unnamed service" : result.name.c_str(); ImGui::TreeNode(name)) {
             drawServiceDetails(result);
@@ -153,7 +153,7 @@ void SDPWindow::drawSDPTab() {
         try {
             // Start the inquiry
             sdpInquiry = std::async(std::launch::async, BTUtils::sdpLookup, target.address, uuids.at(selectedUUID),
-                                    flushCache);
+                flushCache);
         } catch (const std::system_error& error) {
             sdpInquiry = error;
         }

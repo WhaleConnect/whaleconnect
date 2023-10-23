@@ -38,7 +38,7 @@ Task<std::pair<sockaddr*, int>> startAccept(SOCKET s, AcceptExBuf& buf, SOCKET c
         GUID guid = WSAID_ACCEPTEX;
         DWORD numBytes = 0;
         CHECK(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &acceptExPtr, sizeof(acceptExPtr),
-                       &numBytes, nullptr, nullptr));
+            &numBytes, nullptr, nullptr));
     }
 
     // Accept and update context on the client socket
@@ -56,7 +56,7 @@ Task<std::pair<sockaddr*, int>> startAccept(SOCKET s, AcceptExBuf& buf, SOCKET c
         GUID guid = WSAID_GETACCEPTEXSOCKADDRS;
         DWORD numBytes = 0;
         CHECK(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &getAcceptExSockaddrsPtr,
-                       sizeof(getAcceptExSockaddrsPtr), &numBytes, nullptr, nullptr));
+            sizeof(getAcceptExSockaddrsPtr), &numBytes, nullptr, nullptr));
     }
 
     sockaddr* localAddrPtr;
@@ -67,7 +67,7 @@ Task<std::pair<sockaddr*, int>> startAccept(SOCKET s, AcceptExBuf& buf, SOCKET c
     // Get sockaddr pointers
     // Since the buffer is passed as a reference, the pointers will not become dangling when returned.
     getAcceptExSockaddrsPtr(buf.data(), 0, addrSize, addrSize, &localAddrPtr, &localAddrLen, &remoteAddrPtr,
-                            &remoteAddrLen);
+        &remoteAddrLen);
 
     co_return { remoteAddrPtr, remoteAddrLen };
 }
@@ -121,7 +121,7 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
         co_await Async::run([this, resolveRes, &data](Async::CompletionResult& result) {
             WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
             CHECK(WSASendTo(*handle, &buf, 1, nullptr, 0, resolveRes->ai_addr, static_cast<int>(resolveRes->ai_addrlen),
-                            &result, nullptr));
+                &result, nullptr));
         });
     });
 }

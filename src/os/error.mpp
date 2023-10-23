@@ -21,9 +21,9 @@ export namespace System {
 
     // Where an error came from.
     enum class ErrorType {
-        System,   // From socket functions or other OS APIs
+        System, // From socket functions or other OS APIs
         AddrInfo, // From a call to getaddrinfo
-        IOReturn  // From a call to a macOS kernel function
+        IOReturn // From a call to a macOS kernel function
     };
 
     // Gets the last error code. This is platform-specific.
@@ -37,9 +37,9 @@ export namespace System {
 
     // Exception structure containing details of an error.
     struct SystemError : std::runtime_error {
-        ErrorCode code = 0;          // The platform-specific error code
+        ErrorCode code = 0; // The platform-specific error code
         ErrorType type = ErrorType::System; // The type of the error
-        std::string fnName;                 // The name of the function that caused the error
+        std::string fnName; // The name of the function that caused the error
 
         // Constructs an object representing a specific error.
         SystemError(ErrorCode code, ErrorType type, std::string_view fnName) :

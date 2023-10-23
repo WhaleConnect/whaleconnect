@@ -32,19 +32,19 @@ export namespace BTUtils {
 
     // Bluetooth profile descriptor.
     struct ProfileDesc {
-        uint16_t uuid = 0;        // 16-bit UUID
+        uint16_t uuid = 0; // 16-bit UUID
         uint8_t versionMajor = 0; // Major version number
         uint8_t versionMinor = 0; // Minor version number
     };
 
     // Service result returned from an SDP inquiry.
     struct SDPResult {
-        std::vector<uint16_t> protoUUIDs;      // 16-bit protocol UUIDs
-        std::vector<UUID128> serviceUUIDs;     // 128-bit service class UUIDs
+        std::vector<uint16_t> protoUUIDs; // 16-bit protocol UUIDs
+        std::vector<UUID128> serviceUUIDs; // 128-bit service class UUIDs
         std::vector<ProfileDesc> profileDescs; // Profile descriptors
-        uint16_t port = 0;                     // Port advertised (PSM for L2CAP, channel for RFCOMM)
-        std::string name;                      // Service name
-        std::string desc;                      // Service description (if any)
+        uint16_t port = 0; // Port advertised (PSM for L2CAP, channel for RFCOMM)
+        std::string name; // Service name
+        std::string desc; // Service description (if any)
     };
 
     using SDPResultList = std::vector<SDPResult>;

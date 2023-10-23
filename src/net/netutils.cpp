@@ -43,7 +43,7 @@ AddrInfoHandle NetUtils::resolveAddr(const Device& device, bool useDNS) {
     // Resolve the IP
     AddrInfoHandle ret;
     CHECK(GetAddrInfo(addrWide.c_str(), portWide.c_str(), &hints, ztd::out_ptr::out_ptr(ret)), checkZero, useReturnCode,
-          System::ErrorType::AddrInfo);
+        System::ErrorType::AddrInfo);
 
     return ret;
 }
@@ -58,7 +58,7 @@ Device NetUtils::fromAddr(const sockaddr* addr, socklen_t addrLen, ConnectionTyp
     auto portLen = static_cast<socklen_t>(portStr.size());
 
     CHECK(GetNameInfo(addr, addrLen, ipStr.data(), ipLen, portStr.data(), portLen, NI_NUMERICHOST | NI_NUMERICSERV),
-          checkZero, useReturnCode, System::ErrorType::AddrInfo);
+        checkZero, useReturnCode, System::ErrorType::AddrInfo);
 
     // Process returned strings
     Strings::stripNull(ipStr);

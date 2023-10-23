@@ -223,7 +223,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     SDPListPtr attridList{ sdp_list_append(nullptr, &range) };
 
     CHECK(sdp_service_search_attr_req(session.get(), searchList.get(), SDP_ATTR_REQ_RANGE, attridList.get(),
-                                      ztd::out_ptr::out_ptr(responseList)));
+        ztd::out_ptr::out_ptr(responseList)));
 
     // Iterate through each of the service records
     for (sdp_list_t* r = responseList.get(); r; r = r->next) {

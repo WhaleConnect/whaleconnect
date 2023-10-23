@@ -18,9 +18,7 @@ export class Socket {
 
 public:
     Socket(Delegates::HandleDelegate& handle, Delegates::IODelegate& io, Delegates::ClientDelegate& client,
-           Delegates::ServerDelegate& server) :
-        handle(&handle),
-        io(&io), client(&client), server(&server) {}
+        Delegates::ServerDelegate& server) : handle(&handle), io(&io), client(&client), server(&server) {}
 
     virtual ~Socket() = default;
 

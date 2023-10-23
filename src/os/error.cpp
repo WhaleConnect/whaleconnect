@@ -7,10 +7,10 @@ module;
 #if OS_WINDOWS
 #include <WinSock2.h>
 #else
-#include <cerrno>  // errno
-#include <cstring> // std::strerror()
+#include <cerrno>
+#include <cstring>
 
-#include <netdb.h> // gai_strerror()
+#include <netdb.h>
 #endif
 
 #if OS_MACOS
@@ -69,7 +69,7 @@ std::string System::formatSystemError(ErrorCode code, ErrorType type, std::strin
             // Get the message text
             auto flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK;
             DWORD length = FormatMessageA(flags, nullptr, code, LocaleNameToLCID(L"en-US", 0), msg.data(),
-                                          static_cast<DWORD>(msg.size()), nullptr);
+                static_cast<DWORD>(msg.size()), nullptr);
 
             msg.resize(length);
             break;

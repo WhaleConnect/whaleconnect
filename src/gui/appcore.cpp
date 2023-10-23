@@ -20,7 +20,7 @@ import gui.settings;
 import gui.notifications;
 import utils.handleptr;
 
-SDL_Window* window;      // The main application window
+SDL_Window* window; // The main application window
 SDL_GLContext glContext; // The OpenGL context
 
 // Scales the app and fonts to the screen's DPI.
@@ -58,7 +58,7 @@ void scaleToDPI() {
         ImFontGlyphRangesBuilder builder;
 
         builder.AddRanges(fonts.GetGlyphRangesDefault()); // First 2 Unicode blocks
-        builder.AddChar(0xFFFD);                          // Substitution character
+        builder.AddChar(0xFFFD); // Substitution character
 
         builder.BuildRanges(&rangesOut);
         return rangesOut;
@@ -88,9 +88,9 @@ void configImGui() {
     using namespace Settings;
 
     ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;     // Enable Docking
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;   // Enable Multi-Viewport / Platform Windows
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard // Enable Keyboard Controls
+        | ImGuiConfigFlags_DockingEnable // Enable Docking
+        | ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
 
     // Disable imgui.ini
     // It can easily get plastered all over the filesystem and grow in size rapidly over time.
@@ -104,14 +104,8 @@ void configImGui() {
     // Set corner rounding
     style.WindowRounding = roundedCorners ? 8.0f : 0.0f;
 
-    // clang-format off
-    style.ChildRounding = style.FrameRounding
-                        = style.PopupRounding
-                        = style.ScrollbarRounding
-                        = style.GrabRounding
-                        = style.TabRounding
-                        = roundedCorners ? 4.0f : 0.0f;
-    // clang-format on
+    style.ChildRounding = style.FrameRounding = style.PopupRounding = style.ScrollbarRounding = style.GrabRounding
+        = style.TabRounding = roundedCorners ? 4.0f : 0.0f;
 
     scaleToDPI();
 }
@@ -133,7 +127,7 @@ bool AppCore::init() {
 
     // Create window
     window = SDL_CreateWindow("Network Socket Terminal", 1280, 720,
-                              SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
     // Create context
     glContext = SDL_GL_CreateContext(window);

@@ -44,13 +44,13 @@ template <>
 Task<> Delegates::Bidirectional<SocketTag::BT>::send(std::string data) {
     CHECK((*handle)->write(data), checkZero, useReturnCode, System::ErrorType::IOReturn);
     co_await Async::run(std::bind_front(Async::submitIOBluetooth, (*handle)->getHash(), Async::IOType::Send),
-                        System::ErrorType::IOReturn);
+        System::ErrorType::IOReturn);
 }
 
 template <>
 Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv(size_t) {
     co_await Async::run(std::bind_front(Async::submitIOBluetooth, (*handle)->getHash(), Async::IOType::Receive),
-                        System::ErrorType::IOReturn);
+        System::ErrorType::IOReturn);
 
     co_return Async::getBluetoothReadResult((*handle)->getHash());
 }

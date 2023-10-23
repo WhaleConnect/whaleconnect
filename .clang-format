@@ -11,10 +11,8 @@ ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
 AccessModifierOffset: -4
 UseTab: Never
-
 LambdaBodyIndentation: Signature
 NamespaceIndentation: All
-
 IndentAccessModifiers: false
 IndentCaseBlocks: false
 IndentCaseLabels: true
@@ -48,12 +46,10 @@ SpaceBeforeParensOptions:
   AfterControlStatements: true
   AfterRequiresInClause: true
   AfterRequiresInExpression: true
-
 SpacesBeforeTrailingComments: 1
 SpacesInLineCommentPrefix:
   Minimum: 1
   Maximum: -1
-
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: true
 SpaceBeforeCaseColon: false
@@ -68,13 +64,10 @@ SpacesInConditionalStatement: false
 SpacesInSquareBrackets: false
 
 # Alignment
-AlignAfterOpenBracket: Align
-AlignEscapedNewlines: Left
-AlignOperands: AlignAfterOperator
+AlignAfterOpenBracket: DontAlign
+AlignOperands: DontAlign
 AlignTrailingComments:
-  Kind: Always
-  OverEmptyLines: 0
-
+  Kind: Never
 PointerAlignment: Left
 ReferenceAlignment: Left
 
@@ -84,6 +77,8 @@ BinPackParameters: true
 PackConstructorInitializers: BinPack
 
 # Line breaks
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
 AlwaysBreakTemplateDeclarations: Yes
 BreakBeforeBinaryOperators: All
 BreakBeforeBraces: Attach
@@ -92,22 +87,7 @@ BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: AfterColon
 RequiresClausePosition: OwnLine
 
-# Sorting
-SortUsingDeclarations: true
-SortIncludes: CaseInsensitive
-IncludeBlocks: Regroup
-IncludeCategories:
-  - Regex: '<[a-z_]+>' # C++ standard headers
-    Priority: 1
-  - Regex: '<WinSock2\.h>' # Winsock main header (included before others)
-    Priority: 2
-    SortPriority: 2
-  - Regex: '<.+\..+>' # Library headers
-    Priority: 2
-    SortPriority: 3
-  - Regex: '".+"' # Project headers
-    Priority: 4
-
 # Other
 Standard: Latest
 FixNamespaceComments: false
+SortIncludes: Never

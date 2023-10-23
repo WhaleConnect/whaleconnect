@@ -19,11 +19,11 @@ export class Console {
     // Represents an item in a console output.
     // Text is stored as UnicodeString for easier interfacing with ICU.
     struct ConsoleItem {
-        bool canUseHex;                       // If the item gets displayed as hexadecimal when the option is set
-        icu::UnicodeString text;              // Text string
-        icu::UnicodeString textHex;           // Text in hexadecimal format
-        ImVec4 color;                         // Color
-        icu::UnicodeString timestamp;         // Time added
+        bool canUseHex; // If the item gets displayed as hexadecimal when the option is set
+        icu::UnicodeString text; // Text string
+        icu::UnicodeString textHex; // Text in hexadecimal format
+        ImVec4 color; // Color
+        icu::UnicodeString timestamp; // Time added
         std::optional<std::string> hoverText; // Tooltip text
     };
 
@@ -31,15 +31,15 @@ export class Console {
     bool scrollToEnd = false; // If the console is force-scrolled to the end
 
     // Options
-    bool autoscroll = true;      // If console autoscrolls when new data is put
+    bool autoscroll = true; // If console autoscrolls when new data is put
     bool showTimestamps = false; // If timestamps are shown in the output
-    bool showHex = false;        // If items are shown in hexadecimal
+    bool showHex = false; // If items are shown in hexadecimal
 
     std::vector<ConsoleItem> items; // Items in console output
 
     // Text selection manager
     TextSelect textSelect{ std::bind_front(&Console::getLineAtIdx, this),
-                           std::bind_front(&Console::getNumLines, this) };
+        std::bind_front(&Console::getNumLines, this) };
 
     // Forces subsequent text to go on a new line.
     void forceNextLine() {
@@ -75,7 +75,7 @@ public:
     // The color of the text can be set, as well as an optional string to show before each line.
     // If canUseHex is set to false, the text will never be displayed as hexadecimal.
     void addText(std::string_view s, std::string_view pre = "", const ImVec4& color = {}, bool canUseHex = true,
-                 std::string_view hoverText = "");
+        std::string_view hoverText = "");
 
     // Adds a message with a given color and description.
     void addMessage(std::string_view s, std::string_view desc, const ImVec4& color) {

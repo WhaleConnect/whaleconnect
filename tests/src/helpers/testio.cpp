@@ -29,10 +29,8 @@ void testIO(const Socket& socket, bool useRunLoop) {
         useRunLoop);
 }
 
-void testIOClient(const Socket& socket, const Device &device, bool useRunLoop) {
-    runSync([&socket, &device]() -> Task<> {
-        co_await socket.connect(device);
-    });
+void testIOClient(const Socket& socket, const Device& device, bool useRunLoop) {
+    runSync([&socket, &device]() -> Task<> { co_await socket.connect(device); });
 
     testIO(socket, useRunLoop);
 }

@@ -53,7 +53,7 @@ void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
     // Early exiting of kevent will prevent dangling entries in the thread's queue if the socket's I/O filter didn't
     // make it into the kqueue.
     EV_SET(&events[1], Internal::ASYNC_ADD | ident, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER | ioTypeInt, 0,
-           &result);
+        &result);
 
     // Enable the I/O filter once the pending queue has been modified
     EV_SET(&events[2], ident, filt, EV_ENABLE | EV_ONESHOT, 0, 0, typeData);

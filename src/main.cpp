@@ -6,8 +6,8 @@
 #endif
 
 #include <cstdlib> // EXIT_FAILURE, EXIT_SUCCESS
-#include <optional>
 #include <memory>
+#include <optional>
 #include <system_error>
 
 #include <imgui.h>
@@ -74,7 +74,7 @@ void mainLoop() {
     // These variables must be in a separate scope from the resource instances, so these can be destructed before
     // cleanup
     WindowList connections; // List of open windows
-    WindowList sdpWindows;  // List of windows for creating Bluetooth connections
+    WindowList sdpWindows; // List of windows for creating Bluetooth connections
 
     auto t = std::make_unique<ServerSocket<SocketTag::IP>>();
     auto y = std::make_unique<ServerSocket<SocketTag::IP>>();

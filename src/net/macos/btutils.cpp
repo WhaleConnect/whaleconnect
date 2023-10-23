@@ -32,10 +32,9 @@ DeviceList BTUtils::getPaired() {
 BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, bool flushCache) {
     IOReturn result = kIOReturnSuccess;
     auto list = CHECK(
-                    BluetoothMacOS::sdpLookup(addr.data(), uuid.data(), flushCache),
-                    [](const BluetoothMacOS::LookupResult& result) { return result.getResult() == kIOReturnSuccess; },
-                    [](const BluetoothMacOS::LookupResult& result) { return result.getResult(); },
-                    System::ErrorType::IOReturn)
+        BluetoothMacOS::sdpLookup(addr.data(), uuid.data(), flushCache),
+        [](const BluetoothMacOS::LookupResult& result) { return result.getResult() == kIOReturnSuccess; },
+        [](const BluetoothMacOS::LookupResult& result) { return result.getResult(); }, System::ErrorType::IOReturn)
                     .getList();
 
     if (result != kIOReturnSuccess) throw System::SystemError{ result, System::ErrorType::IOReturn, "sdpLookup" };

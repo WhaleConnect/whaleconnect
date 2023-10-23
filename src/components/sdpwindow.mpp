@@ -19,20 +19,20 @@ import os.error;
 
 // Handles an SDP inquiry in a GUI window.
 export class SDPWindow : public Window {
-    using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>;          // Results of an SDP search
+    using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>; // Results of an SDP search
     using UUIDMap = std::map<std::string, BTUtils::UUID128, std::less<>>; // List of UUIDs used for SDP filtering
 
     Device target; // Target to perform SDP inquiries on and connect to
 
     // Fields for SDP connections
-    const UUIDMap& uuids;     // Available UUIDs used for SDP inquiries
+    const UUIDMap& uuids; // Available UUIDs used for SDP inquiries
     std::string selectedUUID; // UUID selected for an inquiry
-    bool flushCache = false;  // If data should be flushed on the next inquiry
-    std::string serviceName;  // Service name of the selected SDP result, displayed in the connection window title
+    bool flushCache = false; // If data should be flushed on the next inquiry
+    std::string serviceName; // Service name of the selected SDP result, displayed in the connection window title
 
     // Fields for SDP and manual connection state
     ConnectionType connType = ConnectionType::RFCOMM; // Selected connection type
-    uint16_t port = 0;                                // Port to connect to
+    uint16_t port = 0; // Port to connect to
 
     // Fields for connection management
     WindowList& list; // List of connection window objects to add to when making a new connection
@@ -40,12 +40,12 @@ export class SDPWindow : public Window {
     // SDP inquiry data
     // The value this variant currently holds contains data about the SDP inquiry.
     // The type of the value represents the inquiry's state.
-    std::variant<std::monostate,        // Default value when no inquiries have been run yet
-                 AsyncSDPInquiry,       // Future object corresponding to an in-progress inquiry
-                 std::system_error,     // Error when the asynchronous thread couldn't be created
-                 System::SystemError,   // Error that occurred during an in-progress inquiry
-                 BTUtils::SDPResultList // The results of the inquiry when it has completed
-                 >
+    std::variant<std::monostate, // Default value when no inquiries have been run yet
+        AsyncSDPInquiry, // Future object corresponding to an in-progress inquiry
+        std::system_error, // Error when the asynchronous thread couldn't be created
+        System::SystemError, // Error that occurred during an in-progress inquiry
+        BTUtils::SDPResultList // The results of the inquiry when it has completed
+        >
         sdpInquiry;
 
     // Draws the entries from an SDP lookup with buttons to connect to each in a tree format.

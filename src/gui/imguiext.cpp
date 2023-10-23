@@ -25,7 +25,8 @@ bool ImGuiExt::inputText(std::string_view label, std::string& s, ImGuiInputTextF
     return ImGui::InputText(label.data(), s.data(), s.capacity() + 1, flags, stringCallback, &s);
 }
 
-bool ImGuiExt::inputTextMultiline(std::string_view label, std::string& s, const ImVec2& size, ImGuiInputTextFlags flags) {
+bool ImGuiExt::inputTextMultiline(std::string_view label, std::string& s, const ImVec2& size,
+    ImGuiInputTextFlags flags) {
     flags |= ImGuiInputTextFlags_CallbackResize;
     return ImGui::InputTextMultiline(label.data(), s.data(), s.capacity() + 1, size, flags, stringCallback, &s);
 }

@@ -24,8 +24,8 @@ void drawIPConnectionTab(WindowList& connections) {
 
     using enum ConnectionType;
 
-    static std::string addr;          // Server address
-    static uint16_t port = 0;         // Server port
+    static std::string addr; // Server address
+    static uint16_t port = 0; // Server port
     static ConnectionType type = TCP; // Type of connection to create
 
     // Widgets
@@ -33,15 +33,15 @@ void drawIPConnectionTab(WindowList& connections) {
 
     static const char* portLabel = "Port";
     static const char* addressLabel = "Address";
-    static const float portWidth = 7_fh;        // Port input width (hardcoded)
+    static const float portWidth = 7_fh; // Port input width (hardcoded)
     static const float minAddressWidth = 10_fh; // Address input min width
 
     // The horizontal space available in the window
-    float emptySpace = ImGui::GetContentRegionAvail().x       // Child window width without scrollbars
-                     - calcTextWidthWithSpacing(addressLabel) // Address input label width
-                     - ImGui::GetStyle().ItemSpacing.x        // Space between address and port inputs
-                     - calcTextWidthWithSpacing(portLabel)    // Port input label width
-                     - portWidth;                             // Port input width
+    float emptySpace = ImGui::GetContentRegionAvail().x // Child window width without scrollbars
+        - calcTextWidthWithSpacing(addressLabel) // Address input label width
+        - ImGui::GetStyle().ItemSpacing.x // Space between address and port inputs
+        - calcTextWidthWithSpacing(portLabel) // Port input label width
+        - portWidth; // Port input width
 
     // Server address, set the textbox width to the space not taken up by everything else
     // Use std::max to set a minimum size for the texbox; it will not resize past a certain min bound.

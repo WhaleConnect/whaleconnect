@@ -11,8 +11,8 @@ export module components.window;
 
 // Represents a Dear ImGui window.
 export class Window {
-    std::string title;     // Window title
-    bool open = true;      // If this window is open
+    std::string title; // Window title
+    bool open = true; // If this window is open
     bool* openPtr = &open; // Pointer passed to ImGui::Begin
 
     // Always runs on every frame, before onUpdate is called.

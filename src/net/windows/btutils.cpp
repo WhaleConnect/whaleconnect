@@ -167,7 +167,7 @@ DeviceList BTUtils::getPaired() {
         // Format address byte array into MAC address
         const BYTE* addr = deviceInfo.Address.rgBytes;
         std::string mac = std::format("{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}", addr[5], addr[4], addr[3], addr[2],
-                                      addr[1], addr[0]);
+            addr[1], addr[0]);
 
         // Get the name of the device
         std::string name = Strings::fromSys(deviceInfo.szName);

@@ -21,9 +21,9 @@ class Notification {
     // Visibility of the notification.
     enum Visibility {
         Visible = 1 << 0, // Displayed in corner and notifications list
-        Hidden = 1 << 1,  // Displayed in notifications list only
-        Erased = 1 << 2,  // Not displayed
-        Fading = 1 << 3   // Fading out (or-ed with another value)
+        Hidden = 1 << 1, // Displayed in notifications list only
+        Erased = 1 << 2, // Not displayed
+        Fading = 1 << 3 // Fading out (or-ed with another value)
     };
 
     static inline int numNotifications = 0; // Total number of notifications
@@ -32,11 +32,11 @@ class Notification {
 
     double timeAdded = ImGui::GetTime(); // When this notification was added
 
-    std::string text;         // Text shown
-    NotificationType type;    // Icon type
+    std::string text; // Text shown
+    NotificationType type; // Icon type
     int visibility = Visible; // How this notification is displayed
-    float timeout;            // Number of seconds before automatically closing this notification
-    float opacity = 1.0f;     // Opacity of the notification
+    float timeout; // Number of seconds before automatically closing this notification
+    float opacity = 1.0f; // Opacity of the notification
 
 public:
     // Sets the information to draw the notification.
@@ -92,7 +92,7 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
         // Begin the containing window for the notification
         // The Tooltip flag is added to make it stay above other windows.
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNav
-                               | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_Tooltip;
+            | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_Tooltip;
         ImGui::Begin(id.c_str(), nullptr, flags);
     }
 

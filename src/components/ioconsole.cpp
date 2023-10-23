@@ -60,7 +60,7 @@ std::optional<std::string> IOConsole::update() {
     float textboxHeight = 4_fh; // Number of lines that can be displayed
     ImVec2 size{ ImGuiExt::FILL, textboxHeight };
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue
-                              | ImGuiInputTextFlags_AllowTabInput;
+        | ImGuiInputTextFlags_AllowTabInput;
 
     if (ImGuiExt::inputTextMultiline("##input", textBuf, size, flags)) {
         // Line ending
