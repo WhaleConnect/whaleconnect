@@ -27,14 +27,12 @@ public:
     // Adds a new window to the list.
     template <class T, class... Args>
     requires std::derived_from<T, Window>
-    auto add(Args&&... args) {
-        // Create the pointer
-        auto ptr = std::make_unique<T>(std::forward<Args>(args)...);
-        if (!validateDuplicate(ptr->getTitle())) return false;
+          && std::constructible_from<T, std::string_view, Args...>
+    auto add(std::string_view title, Args&&... args) {
+        if (!validateDuplicate(title)) return false;
 
-        // Add it to the list
-        ptr->init();
-        windows.push_back(std::move(ptr));
+        // Create the pointer and add it to the list
+        windows.push_back(std::make_unique<T>(title, std::forward<Args>(args)...));
         return true;
     }
 

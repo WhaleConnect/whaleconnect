@@ -3,6 +3,7 @@
 
 module;
 #include <algorithm>
+#include <format>
 #include <map>
 #include <variant>
 
@@ -118,8 +119,10 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
             ImGui::Spacing();
 
             // There are devices, display them
-            auto device = drawPairedDevices(deviceList, needsSort);
-            if (device) sdpWindows.add<SDPWindow>(*device, uuidList, connections);
+            if (auto device = drawPairedDevices(deviceList, needsSort)) {
+                std::string title = std::format("Connect To {}##{}", device->name, device->address);
+                sdpWindows.add<SDPWindow>(title, *device, uuidList, connections);
+            }
         },
         [](const System::SystemError& error) {
             // Error occurred

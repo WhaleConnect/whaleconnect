@@ -12,11 +12,14 @@ import gui.notifications;
 import net.device;
 import sockets.clientsocket;
 
+// Formats a Device instance into a string for use in a ConnWindow title.
+std::string formatDevice(const Device& device, std::string_view extraInfo);
+
 // Adds a ConnWindow to a window list and handles errors during socket creation.
 export template <auto Tag>
 void addConnWindow(WindowList& list, const Device& device, std::string_view extraInfo) {
     auto socket = std::make_unique<ClientSocket<Tag>>();
-    bool isNew = list.add<ConnWindow>(std::move(socket), device, extraInfo);
+    bool isNew = list.add<ConnWindow>(formatDevice(device, extraInfo), std::move(socket), device, extraInfo);
 
     // If the connection exists, show a message
     if (!isNew) ImGuiExt::addNotification("This connection is already open.", NotificationType::Warning);

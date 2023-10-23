@@ -19,22 +19,17 @@ import utils.task;
 export class ConnWindow : public Window {
     SocketPtr socket; // Internal socket
     IOConsole console;
-    Device device;
     std::atomic_bool connected = false;
     std::atomic_bool pendingRecv = false;
 
     // Connects to the server.
-    Task<> connect();
+    Task<> connect(Device device);
 
     // Sends a string through the socket.
     Task<> sendHandler(std::string s);
 
     // Receives a string from the socket and displays it in the console output.
     Task<> readHandler();
-
-    void onInit() override {
-        connect();
-    }
 
     // Handles incoming I/O.
     void onBeforeUpdate() override;
@@ -43,7 +38,7 @@ export class ConnWindow : public Window {
 
 public:
     // Sets the window information (title and remote host).
-    ConnWindow(SocketPtr&& socket, const Device& device, std::string_view extraInfo);
+    ConnWindow(std::string_view title, SocketPtr&& socket, const Device& device, std::string_view);
 
     // Cancels pending socket I/O.
     ~ConnWindow() override {

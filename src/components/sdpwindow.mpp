@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <format>
 #include <future>
 #include <map>
 #include <string>
@@ -72,7 +71,6 @@ export class SDPWindow : public Window {
 
 public:
     // Sets the information needed to create connections.
-    SDPWindow(const Device& target, const UUIDMap& uuids, WindowList& list) :
-        Window(std::format("Connect To {}##{}", target.name, target.address)), target(target), uuids(uuids),
-        selectedUUID(uuids.begin()->first), list(list) {}
+    SDPWindow(std::string_view title, const Device& target, const UUIDMap& uuids, WindowList& list) :
+        Window(title), target(target), uuids(uuids), selectedUUID(uuids.begin()->first), list(list) {}
 };

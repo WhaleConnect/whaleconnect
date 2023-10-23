@@ -15,13 +15,6 @@ export class Window {
     bool open = true;      // If this window is open
     bool* openPtr = &open; // Pointer passed to ImGui::Begin
 
-    bool initialized = false; // If the initialize function has been called
-
-    // Performs initialization required by a window object.
-    virtual void onInit() {
-        // May be overridden optionally
-    }
-
     // Always runs on every frame, before onUpdate is called.
     virtual void onBeforeUpdate() {
         // May be overridden optionally
@@ -34,6 +27,10 @@ protected:
     // Enables or disables the window's close button.
     void setClosable(bool closable) {
         openPtr = closable ? &open : nullptr;
+    }
+
+    void setTitle(std::string_view newTitle) {
+        title = newTitle;
     }
 
 public:
@@ -51,14 +48,6 @@ public:
     // Gets the window's open/closed state.
     [[nodiscard]] bool isOpen() const {
         return open;
-    }
-
-    // Performs any extra required initialization. This may be called once; subsequent calls will do nothing.
-    void init() {
-        if (initialized) return;
-
-        onInit();
-        initialized = true;
     }
 
     // Updates the window and its contents.
