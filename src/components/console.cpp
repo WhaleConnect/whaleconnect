@@ -5,6 +5,7 @@ module;
 #include <cmath>
 #include <ctime>
 #include <format>
+#include <limits>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -27,6 +28,14 @@ const auto formatter = [] {
     return icu::SimpleDateFormat{ icu::UnicodeString{ "hh:mm:ss.SSS > " }, status };
 }();
 
+bool floatsEqual(float a, float b) {
+    return std::abs(a - b) <= std::numeric_limits<float>::epsilon();
+}
+
+bool colorsEqual(const ImVec4& a, const ImVec4& b) {
+    return floatsEqual(a.x, b.x) && floatsEqual(a.y, b.y) && floatsEqual(a.z, b.z) && floatsEqual(a.w, b.w);
+}
+
 icu::UnicodeString getTimestamp() {
     UDate current = icu::Calendar::getNow();
     icu::UnicodeString dateReturned;
@@ -41,12 +50,12 @@ void Console::add(std::string_view s, const ImVec4& color, bool canUseHex, std::
     icu::UnicodeString newText = icu::UnicodeString::fromUTF8(s);
     auto hoverTextOpt = hoverText.empty() ? std::nullopt : std::optional<std::string>{ hoverText };
 
-    // Text goes on its own line if there are no items or the last line ends with a newline
-    if (items.empty() || items.back().text.endsWith('\n'))
+    // Determine if text goes on a new line
+    if (items.empty() || items.back().text.endsWith('\n') || !colorsEqual(items.back().color, color))
         items.emplace_back(canUseHex, newText, "", color, getTimestamp(), hoverTextOpt);
     else items.back().text += newText;
 
-    // Computing the string's hex representation here removes the need to recompute it every application frame.
+    // Computing the string's hex representation here removes the need to do so every application frame.
     if (canUseHex)
         for (unsigned char c : s)
             items.back().textHex += icu::UnicodeString::fromUTF8(std::format("{:02X} ", static_cast<int>(c)));
