@@ -97,6 +97,7 @@ void TextSelect::handleMouseDown(const ImVec2& cursorPosStart) {
 
     // Get Y position of mouse cursor, in terms of line number (capped to the index of the last line)
     int y = std::min(static_cast<int>(std::floor(mousePos.y / textHeight)), static_cast<int>(getNumLines() - 1));
+    if (y < 0) return;
 
     icu::UnicodeString currentLine = getLineAtIdx(y);
     int x = getCharIndex(currentLine, mousePos.x);
