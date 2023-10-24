@@ -4,16 +4,19 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 
 #include <IOKit/IOReturn.h>
 
 // Wrappers for C++ async functions.
-// The hash of the channel is passed to C++ code for identification of each channel.
+// The hash of the Bluetooth handle is passed to C++ code for identification.
 
-void clearDataQueue(unsigned long channelHash);
+void clearDataQueue(unsigned long id);
 
-void newData(unsigned long channelHash, const char* data, size_t dataLen);
+void newData(unsigned long id, const char* data, size_t dataLen);
 
-void outgoingComplete(unsigned long channelHash, IOReturn status);
+void outgoingComplete(unsigned long id, IOReturn status);
 
-void closed(unsigned long channelHash);
+void acceptComplete(unsigned long id, bool isL2CAP, const std::string& name, const std::string& addr, uint16_t port);
+
+void closed(unsigned long id);

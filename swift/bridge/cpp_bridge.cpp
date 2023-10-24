@@ -5,24 +5,28 @@
 #include "cpp_bridge.hpp"
 
 import os.async.platform;
+import net.device;
+import net.enums;
 import os.error;
 
-// Wrappers for C++ async functions.
-// The hash of the channel is passed to C++ code for identification of each channel.
-
-void clearDataQueue(unsigned long channelHash) {
-    Async::clearBluetoothDataQueue(channelHash);
+void clearDataQueue(unsigned long id) {
+    Async::clearBluetoothDataQueue(id);
 }
 
-void newData(unsigned long channelHash, const char* data, size_t dataLen) {
-    Async::bluetoothReadComplete(channelHash, data, dataLen);
+void newData(unsigned long id, const char* data, size_t dataLen) {
+    Async::bluetoothReadComplete(id, data, dataLen);
 }
 
-void outgoingComplete(unsigned long channelHash, IOReturn status) {
-    Async::bluetoothComplete(channelHash, Async::IOType::Send, status);
+void outgoingComplete(unsigned long id, IOReturn status) {
+    Async::bluetoothComplete(id, Async::IOType::Send, status);
 }
 
-void closed(unsigned long channelHash) {
-    Async::bluetoothClosed(channelHash);
+void acceptComplete(unsigned long id, bool isL2CAP, const std::string& name, const std::string& addr, uint16_t port) {
+    using enum ConnectionType;
+    Async::bluetoothAcceptComplete(id, { isL2CAP ? L2CAP : RFCOMM, name, addr, port });
+}
+
+void closed(unsigned long id) {
+    Async::bluetoothClosed(id);
 }
 #endif

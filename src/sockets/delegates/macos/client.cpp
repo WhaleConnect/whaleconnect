@@ -53,7 +53,7 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
             throw System::SystemError{ kIOReturnUnsupported, System::ErrorType::IOReturn, "connect" };
     }
 
-    // Init channel
+    // Init handle
     auto newHandle = CHECK(
         BluetoothMacOS::makeBTHandle(device.address, device.port, isL2CAP),
         [](const BluetoothMacOS::BTHandleResult& result) { return result.getResult() == kIOReturnSuccess; },
