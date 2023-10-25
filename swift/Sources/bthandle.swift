@@ -7,7 +7,7 @@ import IOBluetooth
 enum Channel {
     case l2cap(IOBluetoothL2CAPChannel)
     case rfcomm(IOBluetoothRFCOMMChannel)
-    case none
+    case server(IOBluetoothUserNotification?)
 }
 
 // Using an array as an optional because swift::Optional does not work in C++
@@ -71,12 +71,25 @@ class BTHandleDelegate: IOBluetoothL2CAPChannelDelegate, IOBluetoothRFCOMMChanne
     }
 }
 
-public class BTHandle {
-    let channel: Channel
-    let delegate = BTHandleDelegate()
+func acceptL2CAPComplete(id: UInt, newChannel: IOBluetoothL2CAPChannel) {
+    let (name, addr) = unpackDevice(device: newChannel.device)
+    let newHandle = BTHandle(channel: .l2cap(newChannel))
+    withUnsafePointer(to: newHandle) {
+        CppBridge.acceptComplete(id, true, $0, name, addr, newChannel.psm)
+    }
+}
 
-    var notification: IOBluetoothUserNotification?
-    var clients: [BTHandle] = []
+func acceptRFCOMMComplete(id: UInt, newChannel: IOBluetoothRFCOMMChannel) {
+    let (name, addr) = unpackDevice(device: newChannel.getDevice())
+    let newHandle = BTHandle(channel: .rfcomm(newChannel))
+    withUnsafePointer(to: newHandle) {
+        CppBridge.acceptComplete(id, false, $0, name, addr, UInt16(newChannel.getID()))
+    }
+}
+
+public class BTHandle {
+    var channel: Channel
+    let delegate = BTHandleDelegate()
 
     init(channel: Channel) {
         self.channel = channel
@@ -86,20 +99,16 @@ public class BTHandle {
         switch channel {
             case let .l2cap(l2capChannel): l2capChannel.setDelegate(delegate)
             case let .rfcomm(rfcommChannel): rfcommChannel.setDelegate(delegate)
-            case .none: break
+            case .server: break
         }
     }
 
     @objc func acceptL2CAP(_: IOBluetoothUserNotification, channel newChannel: IOBluetoothL2CAPChannel) {
-        clients.append(BTHandle(channel: .l2cap(newChannel)))
-        let (name, addr) = unpackDevice(device: newChannel.device)
-        CppBridge.acceptComplete(getHash(), true, name, addr, newChannel.psm)
+        acceptL2CAPComplete(id: getHash(), newChannel: newChannel)
     }
 
     @objc func acceptRFCOMM(_: IOBluetoothUserNotification, channel newChannel: IOBluetoothRFCOMMChannel) {
-        clients.append(BTHandle(channel: .rfcomm(newChannel)))
-        let (name, addr) = unpackDevice(device: newChannel.getDevice())
-        CppBridge.acceptComplete(getHash(), false, name, addr, UInt16(newChannel.getID()))
+        acceptRFCOMMComplete(id: getHash(), newChannel: newChannel)
     }
 
     public func getHash() -> UInt {
@@ -107,15 +116,10 @@ public class BTHandle {
     }
 
     public func close() {
-        notification?.unregister()
         switch channel {
             case let .l2cap(l2capChannel): l2capChannel.close()
             case let .rfcomm(rfcommChannel): rfcommChannel.close()
-            case .none: break
-        }
-
-        for client in clients {
-            client.close()
+            case let .server(notification): notification?.unregister()
         }
     }
 
@@ -126,38 +130,26 @@ public class BTHandle {
         return switch channel {
             case let .l2cap(l2capChannel): l2capChannel.writeAsync(bytes, length: length, refcon: nil)
             case let .rfcomm(rfcommChannel): rfcommChannel.writeAsync(bytes, length: length, refcon: nil)
-            case .none: kIOReturnNotOpen
+            case .server: kIOReturnNotOpen
         }
     }
 
-    public func startServer(port: UInt16) {
+    public func startServer(isL2CAP: Bool, port: UInt16) {
         let dir = kIOBluetoothUserNotificationChannelDirectionIncoming
-
-        notification = switch channel {
-            case .l2cap:
-                IOBluetoothL2CAPChannel.register(
-                    forChannelOpenNotifications: self,
-                    selector: #selector(acceptL2CAP),
-                    withPSM: port,
-                    direction: dir
-                )
-            case .rfcomm:
-                IOBluetoothRFCOMMChannel.register(
-                    forChannelOpenNotifications: self,
-                    selector: #selector(acceptRFCOMM),
-                    withChannelID: UInt8(port),
-                    direction: dir
-                )
-            case .none: nil
-        }
-    }
-
-    public func getLastClient() -> [BTHandle] {
-        if let last = clients.last {
-            return [last]
-        } else {
-            return []
-        }
+        let notification = isL2CAP
+            ? IOBluetoothL2CAPChannel.register(
+                forChannelOpenNotifications: self,
+                selector: #selector(acceptL2CAP),
+                withPSM: port,
+                direction: dir
+            )
+            : IOBluetoothRFCOMMChannel.register(
+                forChannelOpenNotifications: self,
+                selector: #selector(acceptRFCOMM),
+                withChannelID: UInt8(port),
+                direction: dir
+            )
+        channel = .server(notification)
     }
 }
 
@@ -189,4 +181,8 @@ public func makeBTHandle(address: String, port: UInt16, isL2CAP: Bool) -> BTHand
             return BTHandleResult(result: initResult, handle: [])
         }
     }
+}
+
+public func makeBTServerHandle() -> BTHandle {
+    return BTHandle(channel: .server(nil))
 }

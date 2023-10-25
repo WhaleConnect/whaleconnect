@@ -9,6 +9,7 @@ module;
 #include <unordered_map>
 #include <vector>
 
+#include <BluetoothMacOS-Swift.h>
 #include <IOKit/IOReturn.h>
 #include <magic_enum.hpp>
 #include <sys/event.h>
@@ -17,6 +18,7 @@ module;
 #include "os/check.hpp"
 
 module os.async.platform;
+import net.device;
 import os.async;
 import os.async.platform.internal;
 import os.errcheck;
@@ -27,8 +29,8 @@ int currentKqueueIdx = 0;
 // Queue for Bluetooth sockets
 Async::Internal::SocketQueueMap btSockets;
 
-// Bluetooth read results
 std::unordered_map<Async::SwiftID, std::queue<std::optional<std::string>>> btReads;
+std::unordered_map<Async::SwiftID, std::queue<Async::BTAccept>> btAccepts;
 
 void Async::prepSocket(int s) {
     int flags = CHECK(fcntl(s, F_GETFL, 0));
@@ -96,6 +98,12 @@ void Async::bluetoothReadComplete(SwiftID id, const char* data, size_t dataLen) 
     bluetoothComplete(id, IOType::Receive, kIOReturnSuccess);
 }
 
+void Async::bluetoothAcceptComplete(SwiftID id, const BluetoothMacOS::BTHandle& handle, const Device& device) {
+    btAccepts[id].emplace(device, handle);
+
+    bluetoothComplete(id, IOType::Receive, kIOReturnSuccess);
+}
+
 void Async::bluetoothClosed(SwiftID id) {
     btReads[id].emplace();
 
@@ -109,8 +117,15 @@ std::optional<std::string> Async::getBluetoothReadResult(SwiftID id) {
     return data;
 }
 
+Async::BTAccept Async::getBluetoothAcceptResult(SwiftID id) {
+    auto client = btAccepts[id].front();
+    btAccepts[id].pop();
+    return client;
+}
+
 void Async::clearBluetoothDataQueue(SwiftID id) {
     btReads.erase(id);
+    btAccepts.erase(id);
 }
 
 void Async::bluetoothCancel(SwiftID id) {

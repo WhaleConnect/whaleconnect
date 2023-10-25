@@ -6,14 +6,21 @@ module;
 #include <optional>
 #include <string>
 
+#include <BluetoothMacOS-Swift.h>
 #include <IOKit/IOReturn.h>
 #include <swiftToCxx/_SwiftCxxInteroperability.h>
 
 export module os.async.platform;
+import net.device;
 import os.async;
 
 export namespace Async {
     using SwiftID = swift::UInt;
+
+    struct BTAccept {
+        Device from;
+        BluetoothMacOS::BTHandle handle;
+    };
 
     // The type of a Bluetooth I/O operation.
     enum class IOType { Send, Receive };
@@ -36,13 +43,19 @@ export namespace Async {
     // Signals completion of a Bluetooth read operation.
     void bluetoothReadComplete(SwiftID id, const char* data, size_t dataLen);
 
+    // Signals completion of a Bluetooth accept operation.
+    void bluetoothAcceptComplete(SwiftID id, const BluetoothMacOS::BTHandle& handle, const Device& device);
+
     // Signals closure of a Bluetooth channel.
     void bluetoothClosed(SwiftID id);
 
     // Gets the first queued result of a Bluetooth read operation.
     std::optional<std::string> getBluetoothReadResult(SwiftID id);
 
-    // Removes results from previous receive operations on a Bluetooth channel.
+    // Gets the first queued result of a Bluetooth accept operation.
+    BTAccept getBluetoothAcceptResult(SwiftID id);
+
+    // Removes results from previous receive/accept operations on a Bluetooth channel.
     void clearBluetoothDataQueue(SwiftID id);
 
     // Cancels all pending operations on a Bluetooth channel.

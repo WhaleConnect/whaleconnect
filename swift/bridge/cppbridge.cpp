@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #if OS_MACOS
-#include "cpp_bridge.hpp"
+#include <bit>
+
+#include <BluetoothMacOS-Swift.h>
+
+#include "cppbridge.hpp"
 
 import os.async.platform;
 import net.device;
@@ -21,9 +25,11 @@ void outgoingComplete(unsigned long id, IOReturn status) {
     Async::bluetoothComplete(id, Async::IOType::Send, status);
 }
 
-void acceptComplete(unsigned long id, bool isL2CAP, const std::string& name, const std::string& addr, uint16_t port) {
+void acceptComplete(unsigned long id, bool isL2CAP, const void* channel, const std::string& name,
+    const std::string& addr, uint16_t port) {
     using enum ConnectionType;
-    Async::bluetoothAcceptComplete(id, { isL2CAP ? L2CAP : RFCOMM, name, addr, port });
+    Async::bluetoothAcceptComplete(id, *std::bit_cast<BluetoothMacOS::BTHandle*>(channel),
+        { isL2CAP ? L2CAP : RFCOMM, name, addr, port });
 }
 
 void closed(unsigned long id) {

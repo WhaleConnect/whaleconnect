@@ -7,6 +7,7 @@ module;
 #include <coroutine> // IWYU pragma: keep
 #include <functional>
 
+#include <BluetoothMacOS-Swift.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -18,6 +19,7 @@ import net.netutils;
 import os.async;
 import os.async.platform;
 import os.errcheck;
+import os.error;
 import sockets.incomingsocket;
 import utils.task;
 
@@ -67,5 +69,23 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
         co_await Async::run(std::bind_front(Async::submitKqueue, *handle, Async::IOType::Send));
         CHECK(sendto(*handle, data.data(), data.size(), 0, resolveRes->ai_addr, resolveRes->ai_addrlen));
     });
+}
+
+template <>
+ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& serverInfo) {
+    handle.reset(BluetoothMacOS::makeBTServerHandle());
+    (*handle)->startServer(serverInfo.type == ConnectionType::L2CAP, serverInfo.port);
+    return { serverInfo.port };
+}
+
+template <>
+Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
+    co_await Async::run(std::bind_front(Async::submitIOBluetooth, (*handle)->getHash(), Async::IOType::Receive),
+        System::ErrorType::IOReturn);
+
+    auto [device, newHandle] = Async::getBluetoothAcceptResult((*handle)->getHash());
+    SocketHandle<SocketTag::BT> fd{ std::move(newHandle) };
+
+    co_return { device, std::make_unique<IncomingSocket<SocketTag::BT>>(std::move(fd)) };
 }
 #endif

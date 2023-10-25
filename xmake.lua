@@ -82,7 +82,7 @@ target("terminal-core")
                   "src/sockets/delegates/windows/*.cpp")
     elseif is_plat("macosx") then
         add_deps("swift")
-        add_files("swift/bridge/cpp_bridge.cpp",
+        add_files("swift/bridge/cppbridge.cpp",
                   "src/net/macos/*.cpp",
                   "src/os/macos/*.cpp", "src/os/macos/*.mpp",
                   "src/sockets/delegates/macos/*.cpp")

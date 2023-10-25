@@ -1,4 +1,4 @@
 module CppBridge {
-    header "cpp_bridge.hpp"
+    header "cppbridge.hpp"
     export *
 }
