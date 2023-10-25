@@ -82,6 +82,7 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     if (device.type != ConnectionType::RFCOMM) throw std::invalid_argument{ "Socket type not supported" };
 
     handle.reset(CHECK(socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM)));
+    Async::add(*handle);
 
     // Convert the MAC address from string form into integer form
     // This is done by removing all colons in the address string, then parsing the resultant string as an
