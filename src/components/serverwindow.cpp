@@ -104,7 +104,11 @@ Task<> ServerWindow::accept() try {
     auto [device, clientSocket] = co_await socket->accept();
     pendingIO = false;
 
-    console.addInfo(std::format("Accepted connection from {} on port {}.", device.address, device.port));
+    std::string message = device.name.empty()
+        ? std::format("Accepted connection from {} on port {}.", device.address, device.port)
+        : std::format("Accepted connection from {} ({}) on port {}.", device.name, device.address, device.port);
+
+    console.addInfo(message);
     clients.try_emplace(device, std::move(clientSocket), colorIndex);
     nextColor();
 } catch (const System::SystemError& error) {
