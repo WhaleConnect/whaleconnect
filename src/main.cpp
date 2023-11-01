@@ -76,8 +76,8 @@ void mainLoop() {
     WindowList connections; // List of open windows
     WindowList sdpWindows; // List of windows for creating Bluetooth connections
 
-    auto t = std::make_unique<ServerSocket<SocketTag::IP>>();
-    auto y = std::make_unique<ServerSocket<SocketTag::IP>>();
+    //auto t = std::make_unique<ServerSocket<SocketTag::IP>>();
+    auto y = std::make_unique<ServerSocket<SocketTag::BT>>();
     bool g = false;
 
     while (AppCore::newFrame()) {
@@ -85,8 +85,8 @@ void mainLoop() {
         static bool notificationsOpen = false;
 
         if (!g) {
-            connections.add<ServerWindow>("", std::move(t), Device{ ConnectionType::TCP, "", "127.0.0.1", 0 });
-            connections.add<ServerWindow>("", std::move(y), Device{ ConnectionType::UDP, "", "::1", 0 });
+            //connections.add<ServerWindow>("", std::move(t), Device{ ConnectionType::TCP, "", "127.0.0.1", 0 });
+            connections.add<ServerWindow>("", std::move(y), Device{ ConnectionType::RFCOMM, "", "::1", 0 });
             g = true;
         }
 

@@ -7,12 +7,16 @@ module;
 #include <coroutine> // IWYU pragma: keep
 #include <functional>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include <WinSock2.h>
+#include <bluetoothapis.h>
 #include <MSWSock.h>
+#include <ws2bth.h>
 #include <ws2ipdef.h>
 #include <WS2tcpip.h>
+#include <ztd/out_ptr.hpp>
 
 #include "os/check.hpp"
 
@@ -23,6 +27,7 @@ import os.async.platform;
 import os.errcheck;
 import sockets.incomingsocket;
 import sockets.socket; // Prevents "LNK1227: conflicting weak extern definition" (MSVC)
+import utils.handleptr;
 import utils.strings;
 import utils.task;
 
@@ -127,14 +132,47 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
 }
 
 template <>
-ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device&) {
-    // TODO
-    return {};
+ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& serverInfo) {
+    handle.reset(CHECK(socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM)));
+
+    ULONG port = serverInfo.port == 0 ? BT_PORT_ANY : serverInfo.port;
+    SOCKADDR_BTH addr{ .addressFamily = AF_BTH, .btAddr = 0, .port = port };
+    CHECK(bind(*handle, std::bit_cast<sockaddr*>(&addr), sizeof(addr)));
+    CHECK(listen(*handle, SOMAXCONN));
+
+    SOCKADDR_BTH serverAddr;
+    int serverAddrLen = sizeof(serverAddr);
+    CHECK(getsockname(*handle, std::bit_cast<sockaddr*>(&serverAddr), &serverAddrLen));
+
+    Async::add(*handle);
+    return { static_cast<uint16_t>(serverAddr.port), IPType::None };
 }
 
 template <>
 Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
-    // TODO
-    co_return {};
+    SocketHandle<SocketTag::BT> fd{ CHECK(socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM)) };
+
+    std::vector<BYTE> buf(addrSize * 2);
+    auto [remoteAddrPtr, remoteAddrLen] = co_await startAccept(*handle, buf, *fd);
+
+    //   | The WSAAddressToString function currently returns WSAEFAULT for Bluetooth Device Addresses unless the buffer
+    //   | and the specified lpdwAddressStringLength value are set to a character length of 40.
+    // https://learn.microsoft.com/en-us/windows/win32/bluetooth/bluetooth-and-wsaaddresstostring
+    auto clientPtr = std::bit_cast<SOCKADDR_BTH*>(remoteAddrPtr);
+    std::wstring clientAddrW(40, L'\0');
+    auto addrLen = static_cast<DWORD>(clientAddrW.size());
+    CHECK(WSAAddressToString(remoteAddrPtr, remoteAddrLen, nullptr, clientAddrW.data(), &addrLen));
+
+    std::string clientAddr = Strings::fromSys(clientAddrW).substr(1, 17);
+
+    BLUETOOTH_DEVICE_INFO deviceInfo{
+        .dwSize = sizeof(BLUETOOTH_DEVICE_INFO),
+        .Address = std::stoull(Strings::replaceAll(clientAddr, ":", ""), nullptr, 16)
+    };
+
+    CHECK(BluetoothGetDeviceInfo(nullptr, &deviceInfo), checkZero, useReturnCode);
+
+    Device device{ ConnectionType::RFCOMM, Strings::fromSys(deviceInfo.szName), clientAddr, static_cast<uint16_t>(clientPtr->port) };
+    co_return { device, std::make_unique<IncomingSocket<SocketTag::BT>>(std::move(fd)) };
 }
 #endif
