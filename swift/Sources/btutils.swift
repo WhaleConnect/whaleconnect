@@ -29,26 +29,61 @@ public struct LookupResult {
 }
 
 class InquiryHandler: IOBluetoothDeviceAsyncCallbacks {
-    var finished = false
-    var result = kIOReturnSuccess
-    var cond = NSCondition()
+    private var finished = true
+    private var result = kIOReturnSuccess
+    private var cond = NSCondition()
+    private var timeout: DispatchWorkItem?
+
+    // Timeout for creating baseband connections (seconds)
+    private static let timeoutDuration = 10.0
 
     func remoteNameRequestComplete(_: IOBluetoothDevice!, status _: IOReturn) {}
 
-    func connectionComplete(_: IOBluetoothDevice!, status _: IOReturn) {}
+    func connectionComplete(_ device: IOBluetoothDevice!, status: IOReturn) {
+        // Deactivate timeout
+        timeout?.cancel()
+
+        if status == kIOReturnSuccess {
+            // Perform query if connection succeeded
+            let queryResult = device.performSDPQuery(self)
+            if queryResult != kIOReturnSuccess {
+                finishWait(newStatus: queryResult)
+            }
+        } else {
+            finishWait(newStatus: status)
+        }
+    }
 
     func sdpQueryComplete(_: IOBluetoothDevice!, status: IOReturn) {
+        finishWait(newStatus: status)
+    }
+
+    private func timeoutFn() {
+        if !finished {
+            finishWait(newStatus: kIOReturnTimeout)
+        }
+    }
+
+    private func finishWait(newStatus: IOReturn) {
         cond.lock()
         finished = true
-        result = status
+        result = newStatus
         cond.signal()
         cond.unlock()
     }
 
-    func wait() -> IOReturn {
+    func startQuery(device: IOBluetoothDevice) {
+        // Since Monterey, performSDPQuery does not open a baseband connection, so this must be done before querying
+        device.openConnection(self)
         cond.lock()
         finished = false
 
+        // Activate timeout for connecting
+        timeout = DispatchWorkItem(block: timeoutFn)
+        DispatchQueue.main.asyncAfter(deadline: .now() + InquiryHandler.timeoutDuration, execute: timeout!)
+    }
+
+    func wait() -> IOReturn {
         while !finished {
             cond.wait()
         }
@@ -59,12 +94,13 @@ class InquiryHandler: IOBluetoothDeviceAsyncCallbacks {
 }
 
 func getUUIDInt(data: IOBluetoothSDPDataElement) -> UInt16 {
-    var ret: UInt16 = 0
-    data.getUUIDValue().getBytes(&ret, length: MemoryLayout.size(ofValue: ret))
-    return UInt16(bigEndian: ret)
+    let uuid = data.getUUIDValue()!
+    return UInt16(bigEndian: UInt16(uuid[2]) | (UInt16(uuid[3]) << 8))
 }
 
-func checkProtocolAttributes(p: IOBluetoothSDPDataElement, protoUUIDs: inout [UInt16], port: inout UInt16) {
+func checkProtocolAttributes(p: IOBluetoothSDPDataElement, protoUUIDs: inout [UInt16],
+                             port: inout UInt16) -> IOBluetoothSDPUUID
+{
     var proto: UInt16 = 0
 
     for case let data as IOBluetoothSDPDataElement in p.getArrayValue() {
@@ -73,34 +109,39 @@ func checkProtocolAttributes(p: IOBluetoothSDPDataElement, protoUUIDs: inout [UI
                 proto = getUUIDInt(data: data)
                 protoUUIDs.append(proto)
             case kBluetoothSDPDataElementTypeUnsignedInt:
-                let size = data.getSize()
+                let val = data.getNumberValue().intValue
                 let isRFCOMM = proto == kBluetoothSDPUUID16RFCOMM
                 let isL2CAP = proto == kBluetoothSDPUUID16L2CAP
 
                 // Get port - make sure size matches the protocol
                 // RFCOMM channel is stored in an 8-bit integer (1 byte)
                 // L2CAP channel is stored in a 16-bit integer (2 bytes)
-                if (size == 1 && isRFCOMM) || (size == 2 && isL2CAP) {
+                if (val <= 0xFF && isRFCOMM) || (val < 0xFFFF && isL2CAP) {
                     port = UInt16(data.getNumberValue().intValue)
                 }
             default:
                 break
         }
     }
+
+    // For comparing and filtering protocol UUIDs
+    return IOBluetoothSDPUUID(uuid16: proto)
 }
 
 public func getPairedDevices() -> [PairedDevice] {
-    let pairedDevices = IOBluetoothDevice.pairedDevices()
-    if pairedDevices == nil {
+    guard let pairedDevices = IOBluetoothDevice.pairedDevices() else {
         return []
     }
 
     var ret: [PairedDevice] = []
-    for case let device as IOBluetoothDevice in pairedDevices! {
-        ret.append(PairedDevice(
-            name: device.name,
-            address: device.addressString.replacingOccurrences(of: "-", with: ":")
-        ))
+    for case let device as IOBluetoothDevice in pairedDevices {
+        let address = device.addressString.replacingOccurrences(of: "-", with: ":")
+
+        // pairedDevices may return duplicates if a device is not removed but paired again
+        // Uniqueness filter is based on address.
+        if !ret.contains(where: { $0.address == address }) {
+            ret.append(PairedDevice(name: device.name, address: address))
+        }
     }
 
     return ret
@@ -114,61 +155,99 @@ public func sdpLookup(addr: String, uuid: UnsafeRawPointer, flushCache: Bool) ->
     // Issue new query if requested
     if flushCache {
         let handler = InquiryHandler()
-        let uuids = [IOBluetoothSDPUUID(bytes: uuid, length: 16)]
-        let res = device.performSDPQuery(handler, uuids: uuids)
+        handler.startQuery(device: device)
 
-        // Check result of starting the query
+        // Wait for the query to end and check if it failed asynchronously
+        let res = handler.wait()
+        if device.isConnected() {
+            device.closeConnection()
+        }
+
         if res != kIOReturnSuccess {
             return LookupResult(result: res, list: [])
         }
-
-        // Wait for the query to end and check if it failed asynchronously
-        let waitRes = handler.wait()
-        if waitRes != kIOReturnSuccess {
-            return LookupResult(result: waitRes, list: [])
-        }
     }
 
-    // SDP attribute IDs (not defined in IOBluetooth headers)
-    let SDP_ATTR_NAME: UInt16 = 256 // Name
-    let SDP_ATTR_DESC: UInt16 = 257 // Description
-    let SDP_ATTR_PROTOCOLS: UInt16 = 4 // Protocol descriptor list
-    let SDP_ATTR_SERVICES: UInt16 = 1 // Service class UUID list
-    let SDP_ATTR_PROFILES: UInt16 = 9 // Profile descriptor list
+    let offset: UInt32 = 256 // "language base offset" mentioned in header
+    let nameKey = UInt16(kBluetoothSDPAttributeIdentifierServiceName.rawValue + offset)
+    let descKey = UInt16(kBluetoothSDPAttributeIdentifierServiceDescription.rawValue + offset)
+    let protosKey = UInt16(kBluetoothSDPAttributeIdentifierProtocolDescriptorList.rawValue)
+    let servicesKey = UInt16(kBluetoothSDPAttributeIdentifierServiceClassIDList.rawValue)
+    let profilesKey = UInt16(kBluetoothSDPAttributeIdentifierBluetoothProfileDescriptorList.rawValue)
+
+    // Filtering UUIDs manually:
+    //   - performSDPQuery(_:uuids:) does nothing since Monterey so performSDPQuery(_:) must be used which returns all
+    //     services on the target.
+    //   - Using cached SDP data without performing a query also returns everything.
+    // SDP results are filtered on both protocol and service UUIDs.
+    let filterUUID = IOBluetoothSDPUUID(bytes: uuid, length: 16)
 
     var ret: [SDPResult] = []
     for case let rec as IOBluetoothSDPServiceRecord in device.services {
         // Name and description (may be null if not set)
-        let name = rec.getAttributeDataElement(SDP_ATTR_NAME)?.getStringValue() ?? ""
-        let desc = rec.getAttributeDataElement(SDP_ATTR_DESC)?.getStringValue() ?? ""
+        let name = rec.getAttributeDataElement(nameKey)?.getStringValue() ?? ""
+        let desc = rec.getAttributeDataElement(descKey)?.getStringValue() ?? ""
 
         // Protocol descriptors
         var protoUUIDs: [UInt16] = []
         var port: UInt16 = 0
 
-        rec.getAttributeDataElement(SDP_ATTR_PROTOCOLS)?.getArrayValue()?.forEach {
-            checkProtocolAttributes(p: $0 as! IOBluetoothSDPDataElement, protoUUIDs: &protoUUIDs, port: &port)
+        var filter = false
+
+        rec.getAttributeDataElement(protosKey)?.getArrayValue().forEach {
+            let protoUUID = checkProtocolAttributes(
+                p: $0 as! IOBluetoothSDPDataElement,
+                protoUUIDs: &protoUUIDs,
+                port: &port
+            )
+
+            if protoUUID.isEqual(to: filterUUID) {
+                filter = true
+            }
         }
 
         // Service class UUIDs
         var serviceUUIDs: [UnsafeMutableRawPointer] = []
-        rec.getAttributeDataElement(SDP_ATTR_SERVICES)?.getArrayValue()?.forEach {
-            let data = $0 as! IOBluetoothSDPDataElement
+        let getUUID = { (data: IOBluetoothSDPDataElement) in
+            // 128-bit UUID = 16 bytes of memory
             let uuid128 = UnsafeMutablePointer<UInt8>.allocate(capacity: 16)
 
-            data.getUUIDValue().getWithLength(16).getBytes(uuid128, length: 16)
-            serviceUUIDs.append(uuid128)
+            if let currentUUID = data.getUUIDValue().getWithLength(16) {
+                currentUUID.getBytes(uuid128, length: 16)
+                if currentUUID.isEqual(to: filterUUID) {
+                    filter = true
+                    serviceUUIDs.append(uuid128)
+                }
+            }
+        }
+
+        // Services may be reported as a list of elements, or a single element
+        if let services = rec.getAttributeDataElement(servicesKey) {
+            switch Int(services.getTypeDescriptor()) {
+                case kBluetoothSDPDataElementTypeUUID:
+                    getUUID(services)
+                case kBluetoothSDPDataElementTypeDataElementSequence:
+                    services.getArrayValue()!.map { $0 as! IOBluetoothSDPDataElement }.forEach(getUUID)
+                default:
+                    break
+            }
+        }
+
+        // Skip results that did not pass the filter
+        if !filter {
+            continue
         }
 
         // Profile descriptors
         var profileDescs: [ProfileDesc] = []
-        rec.getAttributeDataElement(SDP_ATTR_PROFILES)?.getArrayValue()?.forEach {
+        rec.getAttributeDataElement(profilesKey)?.getArrayValue().forEach {
             // Data is stored in an array: [0] = UUID, [1] = version
             let profile = $0 as! IOBluetoothSDPDataElement
             let profileData = profile.getArrayValue() as! [IOBluetoothSDPDataElement]
             let version = UInt16(truncating: profileData[1].getNumberValue())
-
             let uuid = getUUIDInt(data: profileData[0])
+
+            // Return raw version number (will be processed in C++)
             profileDescs.append(ProfileDesc(uuid: uuid, version: version))
         }
 

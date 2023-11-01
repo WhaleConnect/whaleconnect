@@ -30,19 +30,20 @@ DeviceList BTUtils::getPaired() {
 }
 
 BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, bool flushCache) {
-    IOReturn result = kIOReturnSuccess;
     auto list = CHECK(
         BluetoothMacOS::sdpLookup(addr.data(), uuid.data(), flushCache),
         [](const BluetoothMacOS::LookupResult& result) { return result.getResult() == kIOReturnSuccess; },
         [](const BluetoothMacOS::LookupResult& result) { return result.getResult(); }, System::ErrorType::IOReturn)
                     .getList();
 
-    if (result != kIOReturnSuccess) throw System::SystemError{ result, System::ErrorType::IOReturn, "sdpLookup" };
-
     SDPResultList ret;
 
     for (const auto& i : list) {
-        SDPResult result;
+        SDPResult result{
+            .port = i.getPort(),
+            .name = i.getName(),
+            .desc = i.getDesc(),
+        };
 
         for (const auto& proto : i.getProtoUUIDs()) result.protoUUIDs.push_back(proto);
 
@@ -54,13 +55,11 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
 
         for (const auto& profile : i.getProfileDescs()) {
             ProfileDesc desc;
+            desc.uuid = profile.getUuid();
             Internal::extractVersionNums(profile.getVersion(), desc);
             result.profileDescs.push_back(desc);
         }
 
-        result.port = i.getPort();
-        result.name = i.getName();
-        result.desc = i.getDesc();
         ret.push_back(result);
     }
 

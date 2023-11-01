@@ -17,12 +17,6 @@ public struct BTHandleResult {
     public var handle: [BTHandle]
 }
 
-func unpackDevice(device: IOBluetoothDevice?) -> (std.string, std.string) {
-    let name = std.string(device?.name ?? "")
-    let addr = std.string(device?.addressString.replacingOccurrences(of: "-", with: ":") ?? "")
-    return (name, addr)
-}
-
 class BTHandleDelegate: IOBluetoothL2CAPChannelDelegate, IOBluetoothRFCOMMChannelDelegate {
     var hash: UInt = 0
 
@@ -71,25 +65,9 @@ class BTHandleDelegate: IOBluetoothL2CAPChannelDelegate, IOBluetoothRFCOMMChanne
     }
 }
 
-func acceptL2CAPComplete(id: UInt, newChannel: IOBluetoothL2CAPChannel) {
-    let (name, addr) = unpackDevice(device: newChannel.device)
-    let newHandle = BTHandle(channel: .l2cap(newChannel))
-    withUnsafePointer(to: newHandle) {
-        CppBridge.acceptComplete(id, true, $0, name, addr, newChannel.psm)
-    }
-}
-
-func acceptRFCOMMComplete(id: UInt, newChannel: IOBluetoothRFCOMMChannel) {
-    let (name, addr) = unpackDevice(device: newChannel.getDevice())
-    let newHandle = BTHandle(channel: .rfcomm(newChannel))
-    withUnsafePointer(to: newHandle) {
-        CppBridge.acceptComplete(id, false, $0, name, addr, UInt16(newChannel.getID()))
-    }
-}
-
 public class BTHandle {
-    var channel: Channel
-    let delegate = BTHandleDelegate()
+    private var channel: Channel
+    private let delegate = BTHandleDelegate()
 
     init(channel: Channel) {
         self.channel = channel
@@ -103,12 +81,26 @@ public class BTHandle {
         }
     }
 
-    @objc func acceptL2CAP(_: IOBluetoothUserNotification, channel newChannel: IOBluetoothL2CAPChannel) {
-        acceptL2CAPComplete(id: getHash(), newChannel: newChannel)
+    private func acceptComplete(device: IOBluetoothDevice?, newChannel: Channel, port: UInt16) {
+        let name = std.string(device?.name ?? "")
+        let addr = std.string(device?.addressString.replacingOccurrences(of: "-", with: ":") ?? "")
+        let newHandle = BTHandle(channel: newChannel)
+
+        withUnsafePointer(to: newHandle) {
+            CppBridge.acceptComplete(getHash(), true, $0, name, addr, port)
+        }
     }
 
-    @objc func acceptRFCOMM(_: IOBluetoothUserNotification, channel newChannel: IOBluetoothRFCOMMChannel) {
-        acceptRFCOMMComplete(id: getHash(), newChannel: newChannel)
+    @objc private func acceptL2CAP(_: IOBluetoothUserNotification, channel newChannel: IOBluetoothL2CAPChannel) {
+        acceptComplete(device: newChannel.device, newChannel: .l2cap(newChannel), port: newChannel.psm)
+    }
+
+    @objc private func acceptRFCOMM(_: IOBluetoothUserNotification, channel newChannel: IOBluetoothRFCOMMChannel) {
+        acceptComplete(
+            device: newChannel.getDevice(),
+            newChannel: .rfcomm(newChannel),
+            port: UInt16(newChannel.getID())
+        )
     }
 
     public func getHash() -> UInt {
