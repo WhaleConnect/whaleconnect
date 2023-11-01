@@ -21,6 +21,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Fixed text selection in connection windows with lots of lines.
 - Fixed copying text in connection windows if a selection was made on one line dragging right to left.
 - Fixed a regression in v0.2.0 where events on Bluetooth client sockets on Windows would not complete.
+- Fixed a handle leak occurring after listing paired Bluetooth devices on Windows.
 
 ### Removals
 
