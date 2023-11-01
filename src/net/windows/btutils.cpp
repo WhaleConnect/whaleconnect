@@ -136,7 +136,7 @@ BTUtils::Instance::Instance() = default;
 
 BTUtils::Instance::~Instance() = default;
 
-DeviceList BTUtils::getPaired() {
+DeviceList BTUtils::getPaired() try {
     DeviceList deviceList;
 
     // Bluetooth search criteria - only return remembered (paired) devices, and don't start a new inquiry search
@@ -152,15 +152,8 @@ DeviceList BTUtils::getPaired() {
 
     // Find the first device
     BLUETOOTH_DEVICE_INFO_STRUCT deviceInfo{ .dwSize = sizeof(BLUETOOTH_DEVICE_INFO_STRUCT) };
-    HBLUETOOTH_DEVICE_FIND foundDevice;
-
-    try {
-        foundDevice = CHECK(BluetoothFindFirstDevice(&searchCriteria, &deviceInfo), checkTrue);
-    } catch (const System::SystemError& error) {
-        if (error.code == ERROR_NO_MORE_ITEMS) return {}; // No paired devices
-
-        throw;
-    }
+    HandlePtr<void, BluetoothFindDeviceClose> foundDevice{ CHECK(BluetoothFindFirstDevice(&searchCriteria, &deviceInfo),
+        checkTrue) };
 
     // Loop through each found device
     do {
@@ -174,9 +167,13 @@ DeviceList BTUtils::getPaired() {
 
         // Add to results
         deviceList.emplace_back(ConnectionType::None, name, mac, uint16_t{ 0 });
-    } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
+    } while (BluetoothFindNextDevice(foundDevice.get(), &deviceInfo));
 
     return deviceList;
+} catch (const System::SystemError& error) {
+    if (error.code == ERROR_NO_MORE_ITEMS) return {}; // No paired devices
+
+    throw;
 }
 
 BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, bool flushCache) {
