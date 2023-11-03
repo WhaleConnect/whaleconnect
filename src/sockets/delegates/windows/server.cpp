@@ -135,6 +135,7 @@ template <>
 ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& serverInfo) {
     handle.reset(CHECK(socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM)));
 
+    // Treat port 0 as "any port" (uses its own separate constant)
     ULONG port = serverInfo.port == 0 ? BT_PORT_ANY : serverInfo.port;
     SOCKADDR_BTH addr{ .addressFamily = AF_BTH, .btAddr = 0, .port = port };
     CHECK(bind(*handle, std::bit_cast<sockaddr*>(&addr), sizeof(addr)));
@@ -165,6 +166,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
 
     std::string clientAddr = Strings::fromSys(clientAddrW).substr(1, 17);
 
+    // Get device name
     BLUETOOTH_DEVICE_INFO deviceInfo{
         .dwSize = sizeof(BLUETOOTH_DEVICE_INFO),
         .Address = std::stoull(Strings::replaceAll(clientAddr, ":", ""), nullptr, 16)

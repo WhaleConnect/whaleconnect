@@ -12,6 +12,7 @@ import net.enums;
 import net.device;
 import utils.task;
 
+// MSVC and Clang currently handle forward declarations in modules differently
 #ifdef _MSC_VER
 export class Socket;
 #else
