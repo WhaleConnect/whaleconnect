@@ -44,7 +44,7 @@ export class ServerWindow : public Window {
     std::map<Device, Client, std::less<>> clients;
     bool isDgram;
 
-    bool pendingIO = false;
+    std::atomic_bool pendingIO = false;
     int colorIndex = 0;
 
     IOConsole console;
