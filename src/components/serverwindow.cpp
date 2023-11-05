@@ -109,8 +109,14 @@ Task<> ServerWindow::accept() try {
         : std::format("Accepted connection from {} ({}) on port {}.", device.name, device.address, device.port);
 
     console.addInfo(message);
-    clients.try_emplace(device, std::move(clientSocket), colorIndex);
-    nextColor();
+
+    auto [it, didEmplace] = clients.try_emplace(device, std::move(clientSocket), colorIndex);
+    if (didEmplace) {
+        nextColor();
+    } else {
+        it->second.socket = std::move(clientSocket);
+        it->second.connected = it->second.selected = true;
+    }
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
     pendingIO = false;
