@@ -8,6 +8,7 @@ module;
 #include <functional>
 
 #include <BluetoothMacOS-Swift.h>
+#include <IOKit/IOReturn.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -74,7 +75,10 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
 template <>
 ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& serverInfo) {
     handle.reset(BluetoothMacOS::makeBTServerHandle());
-    (*handle)->startServer(serverInfo.type == ConnectionType::L2CAP, serverInfo.port);
+
+    bool isL2CAP = serverInfo.type == ConnectionType::L2CAP;
+    CHECK((*handle)->startServer(isL2CAP, serverInfo.port), checkTrue, [](bool) { return kIOReturnError; },
+        System::ErrorType::IOReturn);
     return { serverInfo.port };
 }
 

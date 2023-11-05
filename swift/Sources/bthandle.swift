@@ -126,7 +126,7 @@ public class BTHandle {
         }
     }
 
-    public func startServer(isL2CAP: Bool, port: UInt16) {
+    public func startServer(isL2CAP: Bool, port: UInt16) -> Bool {
         let dir = kIOBluetoothUserNotificationChannelDirectionIncoming
         let notification = isL2CAP
             ? IOBluetoothL2CAPChannel.register(
@@ -142,6 +142,7 @@ public class BTHandle {
                 direction: dir
             )
         channel = .server(notification)
+        return notification != nil
     }
 }
 
