@@ -61,7 +61,7 @@ void drawIPConnectionTab(WindowList& connections) {
     ImGui::Spacing();
     ImGui::BeginDisabled(addr.empty());
 
-    if (ImGui::Button("Connect")) addConnWindow<SocketTag::IP>(connections, { type, "", addr, port }, "");
+    if (ImGui::Button("Connect")) addConnWindow(connections, { type, "", addr, port }, "");
 
     ImGui::EndDisabled();
 

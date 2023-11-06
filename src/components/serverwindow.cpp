@@ -17,6 +17,7 @@ import gui.imguiext;
 import net.enums;
 import os.error;
 import sockets.delegates.delegates;
+import sockets.serversocket;
 
 // Colors to display each client in
 const std::array colors{
@@ -26,6 +27,14 @@ const std::array colors{
     ImVec4{ 1, 0.27f, 0, 1 }, // Orange
     ImVec4{ 1, 0.41f, 0.71f, 1 } // Pink
 };
+
+SocketPtr makeSocket(ConnectionType type) {
+    using enum ConnectionType;
+
+    if (type == None) throw std::invalid_argument{ "Invalid socket type" };
+    if (type == TCP || type == UDP) return std::make_unique<ServerSocket<SocketTag::IP>>();
+    return std::make_unique<ServerSocket<SocketTag::BT>>();
+}
 
 std::string formatDevice(const Device& device) {
     return std::format("{}|{}", device.name.empty() ? device.address : device.name, device.port);
@@ -52,8 +61,8 @@ Task<> ServerWindow::Client::recv(IOConsole& serverConsole, const Device& device
     pendingRecv = false;
 }
 
-ServerWindow::ServerWindow(std::string_view title, SocketPtr&& socket, const Device& serverInfo) :
-    Window(title), socket(std::move(socket)), isDgram(serverInfo.type == ConnectionType::UDP) {
+ServerWindow::ServerWindow(std::string_view title, const Device& serverInfo) :
+    Window(title), socket(makeSocket(serverInfo.type)), isDgram(serverInfo.type == ConnectionType::UDP) {
     startServer(serverInfo);
     clientsWindowTitle = std::format("Clients: {}", getTitle());
 

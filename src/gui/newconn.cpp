@@ -9,10 +9,13 @@ module;
 #include <magic_enum.hpp>
 
 module gui.newconn;
+import components.connwindow;
+import gui.notifications;
 import net.device;
 import net.enums;
 import utils.strings;
 
+// Formats a Device instance into a string for use in a ConnWindow title.
 std::string formatDevice(const Device& device, std::string_view extraInfo) {
     // Type of the connection
     bool isIP = device.type == ConnectionType::TCP || device.type == ConnectionType::UDP;
@@ -37,4 +40,11 @@ std::string formatDevice(const Device& device, std::string_view extraInfo) {
     // If there's extra info, it is formatted before the window title.
     // If it were to be put after the title, it would be part of the invisible id hash (after the "##").
     return extraInfo.empty() ? title : std::format("({}) {}", extraInfo, title);
+}
+
+void addConnWindow(WindowList& list, const Device& device, std::string_view extraInfo) {
+    bool isNew = list.add<ConnWindow>(formatDevice(device, extraInfo), device, extraInfo);
+
+    // If the connection exists, show a message
+    if (!isNew) ImGuiExt::addNotification("This connection is already open.", NotificationType::Warning);
 }

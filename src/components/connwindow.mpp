@@ -38,7 +38,7 @@ export class ConnWindow : public Window {
 
 public:
     // Sets the window information (title and remote host).
-    ConnWindow(std::string_view title, SocketPtr&& socket, const Device& device, std::string_view);
+    ConnWindow(std::string_view title, const Device& device, std::string_view);
 
     // Cancels pending socket I/O.
     ~ConnWindow() override {

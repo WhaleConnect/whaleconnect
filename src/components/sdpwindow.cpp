@@ -80,8 +80,7 @@ void SDPWindow::drawConnOptions(std::string_view info) {
 
     // Connect button
     ImGui::Spacing();
-    if (ImGui::Button("Connect"))
-        addConnWindow<SocketTag::BT>(list, { connType, target.name, target.address, port }, info);
+    if (ImGui::Button("Connect")) addConnWindow(list, { connType, target.name, target.address, port }, info);
 }
 
 void SDPWindow::checkInquiryStatus() {

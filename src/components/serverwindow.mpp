@@ -69,7 +69,7 @@ export class ServerWindow : public Window {
     void onUpdate() override;
 
 public:
-    explicit ServerWindow(std::string_view title, SocketPtr&& socket, const Device& serverInfo);
+    explicit ServerWindow(std::string_view title, const Device& serverInfo);
 
     ~ServerWindow() override {
         if (socket) socket->cancelIO();

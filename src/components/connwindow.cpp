@@ -3,6 +3,7 @@
 
 module;
 #include <coroutine> // IWYU pragma: keep
+#include <stdexcept>
 
 #include <imgui.h>
 #include <magic_enum.hpp>
@@ -12,10 +13,20 @@ import gui.imguiext;
 import net.device;
 import net.enums;
 import os.error;
+import sockets.clientsocket;
+import sockets.delegates.delegates;
 import utils.strings;
 
-ConnWindow::ConnWindow(std::string_view title, SocketPtr&& socket, const Device& device, std::string_view) :
-    Window(title), socket(std::move(socket)) {
+SocketPtr makeSocket(ConnectionType type) {
+    using enum ConnectionType;
+
+    if (type == None) throw std::invalid_argument{ "Invalid socket type" };
+    if (type == TCP || type == UDP) return std::make_unique<ClientSocket<SocketTag::IP>>();
+    return std::make_unique<ClientSocket<SocketTag::BT>>();
+}
+
+ConnWindow::ConnWindow(std::string_view title, const Device& device, std::string_view) :
+    Window(title), socket(makeSocket(device.type)) {
     connect(device);
 }
 
