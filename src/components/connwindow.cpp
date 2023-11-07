@@ -52,7 +52,6 @@ Task<> ConnWindow::readHandler() try {
 
     pendingRecv = true;
     auto recvRet = co_await socket->recv(console.getRecvSize());
-    pendingRecv = false;
 
     if (recvRet) {
         console.addText(*recvRet);
@@ -62,6 +61,7 @@ Task<> ConnWindow::readHandler() try {
         socket->close();
         connected = false;
     }
+    pendingRecv = false;
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
     pendingRecv = false;

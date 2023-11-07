@@ -45,7 +45,6 @@ Task<> ServerWindow::Client::recv(IOConsole& serverConsole, const Device& device
 
     pendingRecv = true;
     auto recvRet = co_await socket->recv(size);
-    pendingRecv = false;
 
     if (recvRet) {
         serverConsole.addText(*recvRet, "", colors[colorIndex], true, formatDevice(device));
@@ -56,6 +55,7 @@ Task<> ServerWindow::Client::recv(IOConsole& serverConsole, const Device& device
         socket->close();
         connected = selected = false;
     }
+    pendingRecv = false;
 } catch (const System::SystemError& error) {
     serverConsole.errorHandler(error);
     pendingRecv = false;
@@ -111,7 +111,6 @@ Task<> ServerWindow::accept() try {
 
     pendingIO = true;
     auto [device, clientSocket] = co_await socket->accept();
-    pendingIO = false;
 
     std::string message = device.name.empty()
         ? std::format("Accepted connection from {} on port {}.", device.address, device.port)
@@ -126,6 +125,7 @@ Task<> ServerWindow::accept() try {
         it->second.socket = std::move(clientSocket);
         it->second.connected = it->second.selected = true;
     }
+    pendingIO = false;
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
     pendingIO = false;
@@ -136,7 +136,6 @@ Task<> ServerWindow::recvDgram() try {
 
     pendingIO = true;
     auto [device, recvRet] = co_await socket->recvFrom(console.getRecvSize());
-    pendingIO = false;
 
     auto [it, didEmplace] = clients.try_emplace(device, nullptr, colorIndex);
     if (didEmplace) nextColor(); // Advance colors if there is data received from a new client
@@ -145,6 +144,7 @@ Task<> ServerWindow::recvDgram() try {
         console.addText(*recvRet, "", colors[it->second.colorIndex], true, formatDevice(device));
         it->second.console.addText(*recvRet);
     }
+    pendingIO = false;
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
     pendingIO = false;
