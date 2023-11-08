@@ -6,19 +6,21 @@
 #endif
 
 #include <cstdlib> // EXIT_FAILURE, EXIT_SUCCESS
+#include <format>
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <system_error>
 
 #include <imgui.h>
 #include <SDL3/SDL_main.h>
 
-import components.serverwindow;
 import components.windowlist;
 import gui.appcore;
 import gui.imguiext;
 import gui.newconnbt;
 import gui.newconnip;
+import gui.newserver;
 import gui.notifications;
 import gui.settings;
 import net.btutils;
@@ -42,26 +44,33 @@ void drawNewConnectionWindow(bool& open, WindowList& connections, WindowList& sd
     ImGui::End();
 }
 
+void windowMenu(WindowList& list, std::string_view desc) {
+    if (!ImGui::BeginMenu(desc.data())) return;
+
+    if (list.empty()) ImGui::TextDisabled("%s", std::format("No {}", desc).c_str());
+    else
+        for (const auto& i : list) ImGuiExt::windowMenuItem(i->getTitle());
+
+    ImGui::EndMenu();
+}
+
 // Draws the main menu bar.
-void drawMenuBar(bool& newConnOpen, bool& notificationsOpen, WindowList& connections) {
+void drawMenuBar(bool& newConnOpen, bool& notificationsOpen, bool& newServerOpen, WindowList& connections,
+    WindowList& servers) {
     if (!ImGui::BeginMainMenuBar()) return;
 
     ImGuiExt::drawNotificationsMenu(notificationsOpen);
 
     if (ImGui::BeginMenu("View")) {
         ImGui::MenuItem("New Connection", nullptr, &newConnOpen);
+        ImGui::MenuItem("New Server", nullptr, &newServerOpen);
         ImGui::MenuItem("Notifications", nullptr, &notificationsOpen);
         ImGui::EndMenu();
     }
 
-    // List all open connection windows
-    if (ImGui::BeginMenu("Connections")) {
-        if (connections.empty()) ImGui::TextDisabled("No Open Connections");
-        else
-            for (const auto& i : connections) ImGuiExt::windowMenuItem(i->getTitle());
-
-        ImGui::EndMenu();
-    }
+    // List all open connections and servers
+    windowMenu(connections, "Connections");
+    windowMenu(servers, "Servers");
 
     ImGui::EndMainMenuBar();
 }
@@ -72,26 +81,23 @@ void mainLoop() {
     // cleanup
     WindowList connections; // List of open windows
     WindowList sdpWindows; // List of windows for creating Bluetooth connections
-
-    bool g = false;
+    WindowList servers; // List of servers
 
     while (AppCore::newFrame()) {
         static bool newConnOpen = true;
+        static bool newServerOpen = false;
         static bool notificationsOpen = false;
 
-        if (!g) {
-            connections.add<ServerWindow>("", Device{ ConnectionType::RFCOMM, "", "", 2 });
-            g = true;
-        }
-
         // Main menu bar
-        drawMenuBar(newConnOpen, notificationsOpen, connections);
+        drawMenuBar(newConnOpen, notificationsOpen, newServerOpen, connections, servers);
 
         // Application windows
         drawNewConnectionWindow(newConnOpen, connections, sdpWindows);
+        drawNewServerWindow(servers, newServerOpen);
         ImGuiExt::drawNotificationsWindow(notificationsOpen);
 
         connections.update();
+        servers.update();
         sdpWindows.update();
         AppCore::render();
     }
