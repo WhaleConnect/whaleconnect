@@ -3,6 +3,7 @@
 
 module;
 #include <coroutine> // IWYU pragma: keep
+#include <memory>
 #include <stdexcept>
 
 #include <imgui.h>
@@ -17,7 +18,7 @@ import sockets.clientsocket;
 import sockets.delegates.delegates;
 import utils.strings;
 
-SocketPtr makeSocket(ConnectionType type) {
+SocketPtr makeClientSocket(ConnectionType type) {
     using enum ConnectionType;
 
     if (type == None) throw std::invalid_argument{ "Invalid socket type" };
@@ -26,7 +27,7 @@ SocketPtr makeSocket(ConnectionType type) {
 }
 
 ConnWindow::ConnWindow(std::string_view title, const Device& device, std::string_view) :
-    Window(title), socket(makeSocket(device.type)) {
+    Window(title), socket(makeClientSocket(device.type)) {
     connect(device);
 }
 

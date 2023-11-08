@@ -28,7 +28,7 @@ const std::array colors{
     ImVec4{ 1, 0.41f, 0.71f, 1 } // Pink
 };
 
-SocketPtr makeSocket(ConnectionType type) {
+SocketPtr makeServerSocket(ConnectionType type) {
     using enum ConnectionType;
 
     if (type == None) throw std::invalid_argument{ "Invalid socket type" };
@@ -62,7 +62,7 @@ Task<> ServerWindow::Client::recv(IOConsole& serverConsole, const Device& device
 }
 
 ServerWindow::ServerWindow(std::string_view title, const Device& serverInfo) :
-    Window(title), socket(makeSocket(serverInfo.type)), isDgram(serverInfo.type == ConnectionType::UDP) {
+    Window(title), socket(makeServerSocket(serverInfo.type)), isDgram(serverInfo.type == ConnectionType::UDP) {
     startServer(serverInfo);
     clientsWindowTitle = std::format("Clients: {}", getTitle());
 

@@ -35,6 +35,23 @@ class Task {
     // This class inherits from either the "void" base or the "value" base depending on if T is void. This inheritance
     // will give the class the appropriate return function for each template instantiation.
     struct PromiseType : std::conditional_t<isVoid, PromiseTypeVoid, PromiseTypeValue<T>> {
+        struct FinalSuspendAwaiter {
+            [[nodiscard]] bool await_ready() const noexcept {
+                return false;
+            }
+
+            std::coroutine_handle<> await_suspend(std::coroutine_handle<PromiseType> current) const noexcept {
+                // Get the caller coroutine's handle
+                auto promiseContinuation = current.promise().continuation;
+
+                // Return the handle, or a no-op handle if there is no caller coroutine
+                // Returning the caller's handle allows it to be resumed.
+                return promiseContinuation ? promiseContinuation : std::noop_coroutine();
+            }
+
+            void await_resume() const noexcept {}
+        };
+
         // In the case of another coroutine calling this one, keep track of the caller. This allows us to resume the
         // caller when this one exits.
         std::coroutine_handle<> continuation;
@@ -58,25 +75,8 @@ class Task {
         }
 
         // Called when a coroutine is about to complete.
-        auto final_suspend() const noexcept {
-            struct Awaiter {
-                [[nodiscard]] bool await_ready() const noexcept {
-                    return false;
-                }
-
-                std::coroutine_handle<> await_suspend(std::coroutine_handle<promise_type> current) const noexcept {
-                    // Get the caller coroutine's handle
-                    auto promiseContinuation = current.promise().continuation;
-
-                    // Return the handle, or a no-op handle if there is no caller coroutine
-                    // Returning the caller's handle allows it to be resumed.
-                    return promiseContinuation ? promiseContinuation : std::noop_coroutine();
-                }
-
-                void await_resume() const noexcept {}
-            };
-
-            return Awaiter{};
+        FinalSuspendAwaiter final_suspend() const noexcept {
+            return {};
         }
     };
 
