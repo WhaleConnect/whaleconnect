@@ -41,7 +41,7 @@ void drawNewServerWindow(WindowList& servers, bool& open) {
     }
 
     ImGui::SetNextItemWidth(7_fh);
-    ImGuiExt::inputScalar("Port", serverInfo.port);
+    ImGuiExt::inputScalar("Port", serverInfo.port, 1, 10);
 
     ImGuiExt::radioButton("TCP", serverInfo.type, TCP);
     ImGuiExt::radioButton("UDP", serverInfo.type, UDP);
