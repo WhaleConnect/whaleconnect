@@ -96,7 +96,7 @@ void IOConsole::errorHandler(const System::SystemError& error) {
     // Check for non-fatal errors, then add error line to console
     // Don't handle errors caused by I/O cancellation
     if (error && !error.isCanceled()) {
-        std::scoped_lock g{ consoleMutex };
+        std::scoped_lock lock{ consoleMutex };
         console.addError(error.what());
     }
 }
