@@ -22,8 +22,8 @@ import os.async.platform.internal;
 import os.errcheck;
 import os.error;
 
-// Bitmask to extract file descriptors from the above idenfifiers
-constexpr auto SOCKET_ID_MASK = 0xFFFFFFFFUL;
+// Bitmask to extract file descriptors from the ASYNC_* idenfifiers
+constexpr auto socketIDMask = 0xFFFFFFFFUL;
 
 // Pops and cancels a pending operation.
 Async::Internal::OptCompletionResult cancelOne(uint64_t id, Async::Internal::SocketQueueMap& map,
@@ -87,7 +87,7 @@ void Async::Internal::worker(unsigned int threadNum) {
 
             if (ident & ASYNC_ADD) {
                 // Add completion result to queue
-                auto id = ident & SOCKET_ID_MASK;
+                auto id = ident & socketIDMask;
                 auto ioType = magic_enum::enum_cast<IOType>(event.fflags & NOTE_FFLAGSMASK).value();
                 auto& result = *std::bit_cast<CompletionResult*>(event.udata);
 
@@ -97,7 +97,7 @@ void Async::Internal::worker(unsigned int threadNum) {
                 using enum Async::IOType;
 
                 // Extract file descriptor from identifier and remove kqueue events
-                int id = event.ident & SOCKET_ID_MASK;
+                int id = event.ident & socketIDMask;
                 deleteKqueueEvents(kq, id);
 
                 // Cancel receive and send operations in order
