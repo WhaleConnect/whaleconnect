@@ -3,6 +3,7 @@
 
 module;
 #if OS_LINUX
+#include <mutex>
 #include <vector>
 
 #include <liburing.h>
@@ -11,12 +12,14 @@ module os.async.platform;
 import os.async.platform.internal;
 
 int currentRingIdx = 0;
+std::mutex idxMutex;
 
 io_uring_sqe* Async::getUringSQE() {
     return io_uring_get_sqe(&Internal::rings[currentRingIdx]);
 }
 
 void Async::submitRing() {
+    std::scoped_lock lock{ idxMutex };
     io_uring_submit(&Internal::rings[currentRingIdx]);
 
     currentRingIdx = (currentRingIdx + 1) % Internal::rings.size();

@@ -4,6 +4,7 @@
 module;
 #if OS_LINUX
 #include <bit>
+#include <mutex>
 #include <vector>
 
 #include <liburing.h>
@@ -43,6 +44,7 @@ void Async::Internal::cleanup() {
 }
 
 void Async::Internal::worker(unsigned int threadNum) {
+    static std::mutex completionMutex;
     io_uring* ring = &rings[threadNum];
 
     while (true) {
@@ -68,6 +70,7 @@ void Async::Internal::worker(unsigned int threadNum) {
         if (cqe->res < 0) result.error = -cqe->res;
         else result.res = cqe->res;
 
+        std::scoped_lock lock{ completionMutex };
         result.coroHandle();
     }
 }

@@ -6,6 +6,7 @@
 module;
 #if OS_MACOS
 #include <array>
+#include <mutex>
 #include <vector>
 
 #include <IOKit/IOReturn.h>
@@ -70,6 +71,7 @@ void Async::Internal::cleanup() {
 }
 
 void Async::Internal::worker(unsigned int threadNum) {
+    static std::mutex completionMutex;
     SocketQueueMap sockets;
 
     const int kq = kqs[threadNum];
@@ -123,6 +125,8 @@ void Async::Internal::worker(unsigned int threadNum) {
         if (event.flags & EV_EOF) result.error = static_cast<System::ErrorCode>(event.fflags);
         else result.res = static_cast<int>(event.data);
 
+        // Resume coroutine (synchronized between threads)
+        std::scoped_lock lock{ completionMutex };
         result.coroHandle();
     }
 }
