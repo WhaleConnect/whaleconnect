@@ -3,7 +3,6 @@
 
 module;
 #include <array>
-#include <mutex>
 #include <optional>
 #include <string>
 
@@ -43,7 +42,7 @@ void IOConsole::drawControls() {
     ImGui::Combo("##lineEnding", &currentLE, "Newline\0Carriage return\0Both\0");
 }
 
-std::optional<std::string> IOConsole::update() {
+std::optional<std::string> IOConsole::updateWithTextbox() {
     std::optional<std::string> ret;
 
     // Apply foxus to textbox
@@ -75,7 +74,7 @@ std::optional<std::string> IOConsole::update() {
 
         // Invoke the callback function if the string is not empty
         if (!sendString.empty()) {
-            if (sendEchoing) console.addMessage(sendString, "SENT ", { 0.28f, 0.67f, 0.68f, 1 });
+            if (sendEchoing) addMessage(sendString, "SENT ", { 0.28f, 0.67f, 0.68f, 1 });
 
             ret = sendString;
         }
@@ -86,7 +85,7 @@ std::optional<std::string> IOConsole::update() {
         focusOnTextbox = true;
     }
 
-    console.update("console");
+    update("console");
     drawControls();
 
     return ret;
@@ -95,8 +94,5 @@ std::optional<std::string> IOConsole::update() {
 void IOConsole::errorHandler(const System::SystemError& error) {
     // Check for non-fatal errors, then add error line to console
     // Don't handle errors caused by I/O cancellation
-    if (error && !error.isCanceled()) {
-        std::scoped_lock lock{ consoleMutex };
-        console.addError(error.what());
-    }
+    if (error && !error.isCanceled()) addError(error.what());
 }

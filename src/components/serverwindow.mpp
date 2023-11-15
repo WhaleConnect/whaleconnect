@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <atomic>
 #include <functional>
 #include <map>
 #include <memory>
@@ -28,8 +27,8 @@ export class ServerWindow : public Window {
         bool selected = true;
         bool opened = false;
         bool remove = false;
-        std::atomic_bool pendingRecv = false;
-        std::atomic_bool connected = true;
+        bool pendingRecv = false;
+        bool connected = true;
 
         Client(SocketPtr&& socket, int colorIndex) : socket(std::move(socket)), colorIndex(colorIndex) {}
 
@@ -44,7 +43,7 @@ export class ServerWindow : public Window {
     std::map<Device, Client, std::less<>> clients;
     bool isDgram;
 
-    std::atomic_bool pendingIO = false;
+    bool pendingIO = false;
     int colorIndex = 0;
 
     IOConsole console;

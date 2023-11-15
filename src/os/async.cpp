@@ -3,11 +3,17 @@
 
 module;
 #include <algorithm>
+#include <coroutine>
+#include <mutex>
+#include <queue>
 #include <thread>
 #include <vector>
 
 module os.async;
 import os.async.internal;
+
+std::queue<std::coroutine_handle<>> queuedHandles;
+std::mutex queueMutex;
 
 Async::Instance::Instance(unsigned int numThreads, unsigned int queueEntries) :
     workerThreadPool(numThreads == 0 ? std::max(std::thread::hardware_concurrency(), 1U) : numThreads) {
@@ -18,7 +24,7 @@ Async::Instance::Instance(unsigned int numThreads, unsigned int queueEntries) :
     // Populate thread pool
     // TODO: Use views::enumerate() in C++23
     for (unsigned int i = 0; i < workerThreadPool.size(); i++)
-        workerThreadPool[i] = std::thread{ Async::Internal::worker, i };
+        workerThreadPool[i] = std::thread{ Internal::worker, i };
 }
 
 Async::Instance::~Instance() {
@@ -31,4 +37,17 @@ Async::Instance::~Instance() {
         if (i.joinable()) i.join();
 
     Internal::cleanup();
+}
+
+void Async::handleEvents() {
+    std::scoped_lock lock{ queueMutex };
+    while (!queuedHandles.empty()) {
+        queuedHandles.front()();
+        queuedHandles.pop();
+    }
+}
+
+void Async::queueForCompletion(const Async::CompletionResult& result) {
+    std::scoped_lock lock{ queueMutex };
+    queuedHandles.push(result.coroHandle);
 }

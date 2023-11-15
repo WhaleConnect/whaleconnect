@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <atomic>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -19,8 +18,8 @@ import utils.task;
 export class ConnWindow : public Window {
     SocketPtr socket; // Internal socket
     IOConsole console;
-    std::atomic_bool connected = false;
-    std::atomic_bool pendingRecv = false;
+    bool connected = false;
+    bool pendingRecv = false;
 
     // Connects to the server.
     Task<> connect(Device device);

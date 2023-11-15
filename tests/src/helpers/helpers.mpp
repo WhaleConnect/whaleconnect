@@ -14,6 +14,7 @@ module;
 #include <nlohmann/json.hpp>
 
 export module helpers.helpers;
+import os.async;
 import os.error;
 import utils.task;
 
@@ -51,7 +52,6 @@ export void runSync(const Awaitable auto& fn, bool useRunLoop = false) {
 #endif
         } else {
             completed = true;
-            completed.notify_one();
         }
     }();
 
@@ -61,7 +61,7 @@ export void runSync(const Awaitable auto& fn, bool useRunLoop = false) {
         CFRunLoopRun();
 #endif
     } else {
-        completed.wait(false);
+        while (!completed) Async::handleEvents();
     }
 
     // Rethrow any exceptions

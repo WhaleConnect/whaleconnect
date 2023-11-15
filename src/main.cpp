@@ -84,6 +84,8 @@ void mainLoop() {
     WindowList servers; // List of servers
 
     while (AppCore::newFrame()) {
+        Async::handleEvents();
+
         static bool newConnOpen = true;
         static bool newServerOpen = false;
         static bool notificationsOpen = false;

@@ -80,4 +80,10 @@ export namespace Async {
 
         co_return result;
     }
+
+    // Finishes async events that have been queued for completion.
+    void handleEvents();
+
+    // Queues an async event for completion.
+    void queueForCompletion(const CompletionResult& result);
 }

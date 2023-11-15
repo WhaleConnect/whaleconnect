@@ -3,7 +3,6 @@
 
 module;
 #if OS_MACOS
-#include <mutex>
 #include <optional>
 #include <queue>
 #include <string>
@@ -26,7 +25,6 @@ import os.errcheck;
 import os.error;
 
 int currentKqueueIdx = 0;
-std::mutex idxMutex;
 
 // Queue for Bluetooth sockets
 Async::Internal::SocketQueueMap btSockets;
@@ -62,7 +60,6 @@ void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
     // Enable the I/O filter once the pending queue has been modified
     EV_SET(&events[2], ident, filt, EV_ENABLE | EV_ONESHOT, 0, 0, typeData);
 
-    std::scoped_lock lock{ idxMutex };
     CHECK(kevent(Internal::kqs[currentKqueueIdx], events.data(), events.size(), nullptr, 0, nullptr));
 
     // Cycle through all worker threads

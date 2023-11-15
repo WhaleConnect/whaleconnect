@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <mutex>
 #include <optional>
 #include <string>
 
@@ -12,11 +11,8 @@ export module components.ioconsole;
 import components.console;
 import os.error;
 
-// Manages a textbox and mutex-protected console with config options.
-export class IOConsole {
-    Console console;
-    std::mutex consoleMutex;
-
+// Manages a textbox and console with config options.
+export class IOConsole : public Console {
     // State
     bool focusOnTextbox = false; // If keyboard focus is applied to the textbox
     std::string textBuf; // Send textbox buffer
@@ -32,7 +28,7 @@ export class IOConsole {
 
 public:
     // Draws the window contents and returns text entered into the textbox when Enter is pressed.
-    std::optional<std::string> update();
+    std::optional<std::string> updateWithTextbox();
 
     unsigned int getRecvSize() {
         return recvSize;
@@ -40,15 +36,4 @@ public:
 
     // Prints the details of a thrown exception.
     void errorHandler(const System::SystemError& error);
-
-    void addInfo(std::string_view s) {
-        std::scoped_lock g{ consoleMutex };
-        console.addInfo(s);
-    }
-
-    void addText(std::string_view s, std::string_view pre = "", const ImVec4& color = {}, bool canUseHex = true,
-        std::string_view hoverText = "") {
-        std::scoped_lock g{ consoleMutex };
-        console.addText(s, pre, color, canUseHex, hoverText);
-    }
 };

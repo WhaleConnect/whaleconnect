@@ -214,7 +214,7 @@ void ServerWindow::onBeforeUpdate() {
 
 void ServerWindow::onUpdate() {
     // Send data to all clients
-    if (auto s = console.update()) {
+    if (auto s = console.updateWithTextbox()) {
         for (const auto& [key, client] : clients) {
             if (client.selected) {
                 if (isDgram) socket->sendTo(key, *s);

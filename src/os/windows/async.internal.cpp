@@ -3,8 +3,6 @@
 
 module;
 #if OS_WINDOWS
-#include <mutex>
-
 #include <WinSock2.h>
 
 #include "os/check.hpp"
@@ -35,8 +33,6 @@ void Async::Internal::cleanup() {
 }
 
 void Async::Internal::worker(unsigned int) {
-    static std::mutex completionMutex;
-
     while (true) {
         DWORD numBytes;
         ULONG_PTR completionKey;
@@ -57,8 +53,7 @@ void Async::Internal::worker(unsigned int) {
         // Pass any failure back to the calling coroutine
         if (!ret) result.error = System::getLastError();
 
-        std::scoped_lock lock{ completionMutex };
-        result.coroHandle();
+        queueForCompletion(result);
     }
 }
 #endif

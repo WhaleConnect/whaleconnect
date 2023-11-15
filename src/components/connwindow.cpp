@@ -76,5 +76,5 @@ void ConnWindow::onBeforeUpdate() {
 }
 
 void ConnWindow::onUpdate() {
-    if (auto sendString = console.update()) sendHandler(*sendString);
+    if (auto sendString = console.updateWithTextbox()) sendHandler(*sendString);
 }
