@@ -13,7 +13,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 - Prevented multiple close calls on invalid or already closed sockets.
 - If the app receives multiple IP addresses for a host, it now tries connecting to each to increase the chance of a successful connection.
-- Improved thread safety in connection windows.
+- Improved thread safety. This fixes intermittent data loss in receive operations.
 
 ### Bug Fixes
 
@@ -22,6 +22,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Fixed copying text in connection windows if a selection was made on one line dragging right to left.
 - Fixed a regression in v0.2.0 where events on Bluetooth client sockets on Windows would not complete.
 - Fixed a handle leak occurring after listing paired Bluetooth devices on Windows.
+- Fixed SDP queries on macOS 12 (Monterey) and later.
 
 ### Removals
 
