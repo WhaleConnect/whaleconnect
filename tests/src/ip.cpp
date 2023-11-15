@@ -12,15 +12,15 @@ import os.async;
 import os.error;
 import sockets.clientsocket;
 
-const auto settings = loadSettings();
-const auto ipSettings = settings["ip"];
-
-const auto v4Addr = ipSettings["v4"].get<std::string>();
-const auto v6Addr = ipSettings["v4"].get<std::string>();
-const auto tcpPort = ipSettings["tcpPort"].get<uint16_t>();
-const auto udpPort = ipSettings["udpPort"].get<uint16_t>();
-
 TEST_CASE("I/O (Internet Protocol)") {
+    const auto settings = loadSettings();
+    const auto ipSettings = settings["ip"];
+
+    const auto v4Addr = ipSettings["v4"].get<std::string>();
+    const auto v6Addr = ipSettings["v4"].get<std::string>();
+    const auto tcpPort = ipSettings["tcpPort"].get<uint16_t>();
+    const auto udpPort = ipSettings["udpPort"].get<uint16_t>();
+
     using enum ConnectionType;
 
     SECTION("TCP") {

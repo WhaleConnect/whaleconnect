@@ -15,12 +15,6 @@ import os.error;
 import sockets.clientsocket;
 import utils.task;
 
-const auto settings = loadSettings();
-const auto ipSettings = settings["ip"];
-
-const auto v4Addr = ipSettings["v4"].get<std::string>();
-const auto tcpPort = ipSettings["tcpPort"].get<uint16_t>();
-
 // Matcher to check if a SystemError corresponds to a cancellation error.
 struct CancellationMatcher : Catch::Matchers::MatcherGenericBase {
     bool match(const System::SystemError& e) const {
@@ -33,11 +27,17 @@ struct CancellationMatcher : Catch::Matchers::MatcherGenericBase {
 };
 
 TEST_CASE("Cancellation") {
+    const auto settings = loadSettings();
+    const auto ipSettings = settings["ip"];
+
+    const auto v4Addr = ipSettings["v4"].get<std::string>();
+    const auto tcpPort = ipSettings["tcpPort"].get<uint16_t>();
+
     // Create IPv4 TCP socket
     ClientSocketIP sock;
 
     // Connect
-    runSync([&sock]() -> Task<> { co_await sock.connect({ ConnectionType::TCP, "", v4Addr, tcpPort }); });
+    runSync([&]() -> Task<> { co_await sock.connect({ ConnectionType::TCP, "", v4Addr, tcpPort }); });
 
     // Create a separate thread to briefly wait, then cancel I/O while recv() is pending
     std::thread cancelThread{ [&sock] {
