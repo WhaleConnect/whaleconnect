@@ -12,8 +12,6 @@ module;
 #include <netdb.h>
 #include <netinet/in.h>
 
-#include "os/check.hpp"
-
 module sockets.delegates.server;
 import net.netutils;
 import os.async;
@@ -49,15 +47,55 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
 }
 
 template <>
-Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t) {
-    // TODO
-    co_return {};
+Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
+    // io_uring currently does not support recvfrom so recvmsg must be used instead:
+    // https://github.com/axboe/liburing/issues/397
+    // https://github.com/axboe/liburing/discussions/581
+
+    sockaddr_storage from;
+    auto fromAddr = std::bit_cast<sockaddr*>(&from);
+    socklen_t len = sizeof(from);
+    std::string data(size, 0);
+
+    iovec iov{
+        .iov_base = data.data(),
+        .iov_len = data.size(),
+    };
+
+    msghdr msg{
+        .msg_name = &from,
+        .msg_namelen = len,
+        .msg_iov = &iov,
+        .msg_iovlen = 1,
+        .msg_control = nullptr,
+        .msg_controllen = 0,
+        .msg_flags = 0,
+    };
+
+    auto recvResult = co_await Async::run([this, &msg](Async::CompletionResult& result) {
+        io_uring_sqe* sqe = Async::getUringSQE();
+        io_uring_prep_recvmsg(sqe, *handle, &msg, MSG_NOSIGNAL);
+        io_uring_sqe_set_data(sqe, &result);
+        Async::submitRing();
+    });
+
+    data.resize(recvResult.res);
+    co_return { NetUtils::fromAddr(fromAddr, len, ConnectionType::UDP), data };
 }
 
 template <>
-Task<> Delegates::Server<SocketTag::IP>::sendTo(Device, std::string) {
-    // TODO
-    co_return;
+Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data) {
+    auto addr = NetUtils::resolveAddr(device, false);
+
+    co_await NetUtils::loopWithAddr(addr.get(), [this, &data](const AddrInfoType* resolveRes) -> Task<> {
+        co_await Async::run([this, &data, &resolveRes](Async::CompletionResult& result) {
+            io_uring_sqe* sqe = Async::getUringSQE();
+            io_uring_prep_sendto(sqe, *handle, data.data(), data.size(), MSG_NOSIGNAL, resolveRes->ai_addr,
+                resolveRes->ai_addrlen);
+            io_uring_sqe_set_data(sqe, &result);
+            Async::submitRing();
+        });
+    });
 }
 
 template <>
