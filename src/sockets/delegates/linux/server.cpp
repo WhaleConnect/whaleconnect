@@ -8,16 +8,25 @@ module;
 #include <functional>
 #include <memory>
 
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/l2cap.h>
+#include <bluetooth/rfcomm.h>
+#include <bluetooth/hci.h>
+#include <bluetooth/hci_lib.h>
 #include <liburing.h>
 #include <netdb.h>
 #include <netinet/in.h>
 
+#include "os/check.hpp"
+
 module sockets.delegates.server;
+import net.enums;
 import net.netutils;
 import os.async;
 import os.async.platform;
 import os.errcheck;
 import sockets.incomingsocket;
+import utils.strings;
 import utils.task;
 
 void startAccept(int s, sockaddr* clientAddr, socklen_t& clientLen, Async::CompletionResult& result) {
@@ -99,14 +108,83 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
 }
 
 template <>
-Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
-    // TODO
-    co_return {};
+ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& serverInfo) {
+    bdaddr_t addrAny{};
+    bool isRFCOMM = serverInfo.type == ConnectionType::RFCOMM;
+
+    if (isRFCOMM) {
+        handle.reset(CHECK(socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)));
+
+        sockaddr_rc addr{ AF_BLUETOOTH, addrAny, static_cast<uint8_t>(serverInfo.port) };
+        CHECK(bind(*handle, std::bit_cast<sockaddr*>(&addr), sizeof(addr)));
+    } else {
+        handle.reset(CHECK(socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)));
+
+        sockaddr_l2 addr{ AF_BLUETOOTH, htobs(serverInfo.port), addrAny, 0, 0 };
+        CHECK(bind(*handle, std::bit_cast<sockaddr*>(&addr), sizeof(addr)));
+    }
+
+    sockaddr_storage serverAddr;
+    socklen_t serverAddrLen = sizeof(serverAddr);
+
+    CHECK(listen(*handle, SOMAXCONN));
+    CHECK(getsockname(*handle, std::bit_cast<sockaddr*>(&serverAddr), &serverAddrLen));
+
+    uint16_t port = isRFCOMM ? std::bit_cast<sockaddr_rc*>(&serverAddr)->rc_channel
+                             : std::bit_cast<sockaddr_l2*>(&serverAddr)->l2_psm;
+
+    return { btohs(port), IPType::None };
 }
 
 template <>
-ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device&) {
-    // TODO
-    return {};
+Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
+    int sockType;
+    socklen_t sockTypeLen = sizeof(sockType);
+
+    // Check if socket is RFCOMM or L2CAP
+    CHECK(getsockopt(*handle, SOL_SOCKET, SO_TYPE, &sockType, &sockTypeLen));
+
+    Device device;
+    bdaddr_t clientbdAddr;
+    SocketHandle<SocketTag::BT> fd;
+    if (sockType == SOCK_STREAM) {
+        // RFCOMM socket (stream type)
+        sockaddr_rc client;
+        auto clientAddr = std::bit_cast<sockaddr*>(&client);
+        socklen_t clientLen = sizeof(client);
+
+        auto acceptResult = co_await Async::run(std::bind_front(startAccept, *handle, clientAddr, clientLen));
+
+        device = { ConnectionType::RFCOMM, "", "", client.rc_channel };
+        clientbdAddr = client.rc_bdaddr;
+        fd.reset(acceptResult.res);
+    } else {
+        // L2CAP socket (sequential packet type)
+        sockaddr_l2 client;
+        auto clientAddr = std::bit_cast<sockaddr*>(&client);
+        socklen_t clientLen = sizeof(client);
+
+        auto acceptResult = co_await Async::run(std::bind_front(startAccept, *handle, clientAddr, clientLen));
+
+        device = { ConnectionType::L2CAP, "", "", btohs(client.l2_psm) };
+        clientbdAddr = client.l2_bdaddr;
+        fd.reset(acceptResult.res);
+    }
+
+    // Get MAC address (textual length is 17 chars)
+    device.address.resize(17);
+    ba2str(&clientbdAddr, device.address.data());
+
+    // Get device name
+    device.name.resize(1024);
+    int devID = CHECK(hci_get_route(nullptr));
+
+    // HCI socket uses same close call as a standard socket
+    SocketHandle<SocketTag::BT> hciSock{ CHECK(hci_open_dev(devID)) };
+
+    CHECK(hci_read_remote_name(*hciSock, &clientbdAddr, device.name.size(), device.name.data(), 0));
+    Strings::stripNull(device.name);
+
+    co_return { device, std::make_unique<IncomingSocket<SocketTag::BT>>(std::move(fd)) };
 }
 #endif
