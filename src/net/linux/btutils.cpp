@@ -4,7 +4,6 @@
 module;
 #if OS_LINUX
 #include <array>
-#include <bit>
 #include <functional>
 #include <stdexcept>
 #include <string_view>
