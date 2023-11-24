@@ -45,27 +45,17 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     bdaddr_t bdaddr;
     str2ba(device.address.c_str(), &bdaddr);
 
-    // The structure used depends on the protocol
-    union {
-        sockaddr_l2 addrL2;
-        sockaddr_rc addrRC;
-    } sAddrBT;
-
-    socklen_t addrSize;
-
     // Set the appropriate sockaddr struct based on the protocol
     if (device.type == ConnectionType::RFCOMM) {
+        sockaddr_rc addr{ AF_BLUETOOTH, bdaddr, static_cast<uint8_t>(device.port) };
         handle.reset(CHECK(socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)));
 
-        sAddrBT.addrRC = { AF_BLUETOOTH, bdaddr, static_cast<uint8_t>(device.port) };
-        addrSize = sizeof(sAddrBT.addrRC);
+        co_await Async::run(std::bind_front(startConnect, *handle, std::bit_cast<sockaddr*>(&addr), sizeof(addr)));
     } else {
+        sockaddr_l2 addr{ AF_BLUETOOTH, htobs(device.port), bdaddr, 0, 0 };
         handle.reset(CHECK(socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)));
 
-        sAddrBT.addrL2 = { AF_BLUETOOTH, htobs(device.port), bdaddr, 0, 0 };
-        addrSize = sizeof(sAddrBT.addrL2);
+        co_await Async::run(std::bind_front(startConnect, *handle, std::bit_cast<sockaddr*>(&addr), sizeof(addr)));
     }
-
-    co_await Async::run(std::bind_front(startConnect, *handle, std::bit_cast<sockaddr*>(&sAddrBT), addrSize));
 }
 #endif
