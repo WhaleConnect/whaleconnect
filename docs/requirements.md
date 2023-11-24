@@ -27,7 +27,3 @@ Additional features require:
 
 - The Linux kernel 5.19 is required because of `io_uring_prep_cancel_fd` and `IORING_ASYNC_CANCEL_ALL` usage. The distribution does not matter.
 - NST has not been tested on older versions of Windows and macOS than those above. While they may work, compatibility is not guaranteed.
-- There are issues in the macOS Bluetooth stack affecting Monterey (12) and later. If you plan to use Bluetooth on macOS, use Big Sur. Issues in NST include:
-  - New SDP queries hanging indefinitely
-  - Cached SDP queries returning null values
-  - L2CAP connections failing to complete

@@ -6,6 +6,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 ### Additions
 
+- Added server functionality for Internet and Bluetooth sockets.
 - Added a setting to change the number of entries in io_uring instances.
 - Added a connection window option to change the receive buffer length.
 
@@ -23,6 +24,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Fixed a regression in v0.2.0 where events on Bluetooth client sockets on Windows would not complete.
 - Fixed a handle leak occurring after listing paired Bluetooth devices on Windows.
 - Fixed SDP queries on macOS 12 (Monterey) and later.
+- Fixed duplicate entries in the macOS paired devices list resulting from a device being paired multiple times.
 
 ### Removals
 

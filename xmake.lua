@@ -21,6 +21,7 @@ set_languages("c++20")
 set_exceptions("cxx")
 set_warnings("allextra")
 set_defaultmode("debug")
+set_license("GPL-3.0-or-later")
 
 add_packages("icu4c", "magic_enum", "nameof", "out_ptr")
 
