@@ -214,9 +214,9 @@ public func sdpLookup(addr: String, uuid: UnsafeRawPointer, flushCache: Bool) ->
 
             if let currentUUID = data.getUUIDValue().getWithLength(16) {
                 currentUUID.getBytes(uuid128, length: 16)
+                serviceUUIDs.append(uuid128)
                 if currentUUID.isEqual(to: filterUUID) {
                     filter = true
-                    serviceUUIDs.append(uuid128)
                 }
             }
         }
