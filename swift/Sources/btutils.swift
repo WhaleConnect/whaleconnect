@@ -135,7 +135,7 @@ public func getPairedDevices() -> [PairedDevice] {
 
     var ret: [PairedDevice] = []
     for case let device as IOBluetoothDevice in pairedDevices {
-        let address = device.addressString.replacingOccurrences(of: "-", with: ":")
+        let address = device.addressString.replacingOccurrences(of: "-", with: ":").uppercased()
 
         // pairedDevices may return duplicates if a device is not removed but paired again
         // Uniqueness filter is based on address.

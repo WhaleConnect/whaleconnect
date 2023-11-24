@@ -83,7 +83,7 @@ public class BTHandle {
 
     private func acceptComplete(device: IOBluetoothDevice?, newChannel: Channel, port: UInt16) {
         let name = std.string(device?.name ?? "")
-        let addr = std.string(device?.addressString.replacingOccurrences(of: "-", with: ":") ?? "")
+        let addr = std.string(device?.addressString.replacingOccurrences(of: "-", with: ":").uppercased() ?? "")
         let newHandle = BTHandle(channel: newChannel)
 
         withUnsafePointer(to: newHandle) {
