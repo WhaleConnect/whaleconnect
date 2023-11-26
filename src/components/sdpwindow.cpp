@@ -20,28 +20,6 @@ void printUUID(BTUtils::UUID128 uuid) {
         u[4], u[5], u[6], u[7], u[8], u[9], u[10], u[11], u[12], u[13], u[14], u[15]);
 }
 
-// Prints the details of a SDP result.
-void drawServiceDetails(const BTUtils::SDPResult& result) {
-    // Print the description (if there is one)
-    ImGui::Text("Description: %s", result.desc.empty() ? "(none)" : result.desc.c_str());
-
-    // Print UUIDs
-    if (!result.protoUUIDs.empty()) ImGui::Text("Protocol UUIDs:");
-    for (auto i : result.protoUUIDs) ImGui::BulletText("0x%04X", i);
-
-    // Print service class UUIDs
-    if (!result.serviceUUIDs.empty()) ImGui::Text("Service class UUIDs:");
-    for (const auto& i : result.serviceUUIDs) printUUID(i);
-
-    // Print profile descriptors
-    if (!result.profileDescs.empty()) ImGui::Text("Profile descriptors:");
-    for (const auto& [uuid, verMajor, verMinor] : result.profileDescs)
-        ImGui::BulletText("0x%04X (version %d.%d)", uuid, verMajor, verMinor);
-
-    // Print the port
-    ImGui::Text("Port: %d", result.port);
-}
-
 bool SDPWindow::drawSDPList(const BTUtils::SDPResultList& resultList) {
     // Begin a scrollable child window to contain the list
     ImGui::BeginChild("sdpList", {}, true);
@@ -49,17 +27,35 @@ bool SDPWindow::drawSDPList(const BTUtils::SDPResultList& resultList) {
 
     // ID to use in case multiple services have the same name
     int id = 0;
-    for (const auto& result : resultList) {
+    for (const auto& [protoUUIDs, serviceUUIDs, profileDescs, port, name, desc] : resultList) {
         ImGui::PushID(id); // Push the ID, then increment it
         id++; // TODO: Use views::enumerate() in C++23
 
-        if (const char* name = result.name.empty() ? "Unnamed service" : result.name.c_str(); ImGui::TreeNode(name)) {
-            drawServiceDetails(result);
+        const char* treeName = name.empty() ? "Unnamed service" : name.c_str();
+        if (ImGui::TreeNode(treeName)) {
+            // Print the description (if there is one)
+            ImGui::Text("Description: %s", desc.empty() ? "(none)" : desc.c_str());
+
+            // Print UUIDs
+            if (!protoUUIDs.empty()) ImGui::Text("Protocol UUIDs:");
+            for (auto i : protoUUIDs) ImGui::BulletText("0x%04X", i);
+
+            // Print service class UUIDs
+            if (!serviceUUIDs.empty()) ImGui::Text("Service class UUIDs:");
+            for (const auto& i : serviceUUIDs) printUUID(i);
+
+            // Print profile descriptors
+            if (!profileDescs.empty()) ImGui::Text("Profile descriptors:");
+            for (const auto& [uuid, verMajor, verMinor] : profileDescs)
+                ImGui::BulletText("0x%04X (version %d.%d)", uuid, verMajor, verMinor);
+
+            // Print the port
+            ImGui::Text("Port: %d", port);
 
             // Connection options
             if (ImGui::Button("Connect...")) {
-                serviceName = name;
-                port = result.port;
+                serviceName = treeName;
+                connPort = port;
                 ret = true;
             }
             ImGui::TreePop();
@@ -80,7 +76,7 @@ void SDPWindow::drawConnOptions(std::string_view info) {
 
     // Connect button
     ImGui::Spacing();
-    if (ImGui::Button("Connect")) addConnWindow(list, { connType, target.name, target.address, port }, info);
+    if (ImGui::Button("Connect")) addConnWindow(list, { connType, target.name, target.address, connPort }, info);
 }
 
 void SDPWindow::checkInquiryStatus() {
@@ -168,9 +164,9 @@ void SDPWindow::drawManualTab() {
 
     using namespace ImGuiExt::Literals;
     ImGui::SetNextItemWidth(7_fh);
-    ImGuiExt::inputScalar("Port", port, 1, 10);
+    ImGuiExt::inputScalar("Port", connPort, 1, 10);
 
-    drawConnOptions(std::format("Port {}", port));
+    drawConnOptions(std::format("Port {}", connPort));
     ImGui::EndTabItem();
 }
 

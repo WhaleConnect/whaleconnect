@@ -32,7 +32,7 @@ export class SDPWindow : public Window {
 
     // Fields for SDP and manual connection state
     ConnectionType connType = ConnectionType::RFCOMM; // Selected connection type
-    uint16_t port = 0; // Port to connect to
+    uint16_t connPort = 0; // Port to connect to
 
     // Fields for connection management
     WindowList& list; // List of connection window objects to add to when making a new connection
