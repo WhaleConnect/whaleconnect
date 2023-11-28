@@ -15,11 +15,11 @@ export template <auto Tag>
 class ClientSocket : public Socket {
     Delegates::SocketHandle<Tag> handle;
     Delegates::Bidirectional<Tag> io{ handle };
-    Delegates::Client<Tag> client;
+    Delegates::Client<Tag> client{ handle };
     Delegates::NoopServer server;
 
 public:
-    ClientSocket() : Socket(handle, io, client, server), client(handle) {}
+    ClientSocket() : Socket(handle, io, client, server) {}
 };
 
 export using ClientSocketIP = ClientSocket<SocketTag::IP>;
