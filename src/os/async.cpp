@@ -42,8 +42,9 @@ Async::Instance::~Instance() {
 void Async::handleEvents() {
     std::scoped_lock lock{ queueMutex };
     while (!queuedHandles.empty()) {
-        queuedHandles.front()();
+        auto handle = queuedHandles.front();
         queuedHandles.pop();
+        handle();
     }
 }
 
