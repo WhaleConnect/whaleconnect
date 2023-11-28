@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <coroutine>
 #include <stdexcept>
 
 #if OS_WINDOWS
@@ -62,6 +61,5 @@ Task<DgramRecvResult> Delegates::Server<SocketTag::BT>::recvFrom(size_t) {
 
 template <>
 Task<> Delegates::Server<SocketTag::BT>::sendTo(Device, std::string) {
-    co_await std::suspend_never{}; // Indicate this is a coroutine and strings should be passed by value
     throwUnsupported();
 }
