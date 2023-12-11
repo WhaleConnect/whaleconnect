@@ -9,8 +9,7 @@
 import os.async;
 
 // Listener to initialize OS APIs when tests are run.
-class InitListener : public Catch::EventListenerBase {
-public:
+struct InitListener : Catch::EventListenerBase {
     using Catch::EventListenerBase::EventListenerBase;
 
     void testRunStarting(const Catch::TestRunInfo&) override {
