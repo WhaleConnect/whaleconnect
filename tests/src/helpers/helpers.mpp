@@ -15,7 +15,6 @@ module;
 
 export module helpers.helpers;
 import os.async;
-import os.error;
 import utils.task;
 
 // Concept to ensure a function type is an awaitable coroutine.
@@ -40,7 +39,7 @@ export void runSync(const Awaitable auto& fn, bool useRunLoop = false) {
         try {
             // Await the given coroutine
             co_await fn();
-        } catch (const System::SystemError&) {
+        } catch (const std::exception&) {
             // Store thrown exceptions
             ptr = std::current_exception();
         }
