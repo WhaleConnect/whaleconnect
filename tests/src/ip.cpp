@@ -6,10 +6,7 @@
 
 import helpers.helpers;
 import helpers.testio;
-import net.device;
 import net.enums;
-import os.async;
-import os.error;
 import sockets.clientsocket;
 
 TEST_CASE("I/O (Internet Protocol)") {
