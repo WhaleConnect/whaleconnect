@@ -30,7 +30,7 @@ export {
 
     struct DgramRecvResult {
         Device from;
-        RecvResult data;
+        std::string data;
     };
 
     struct ServerAddress {

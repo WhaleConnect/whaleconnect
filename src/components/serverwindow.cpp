@@ -135,15 +135,14 @@ Task<> ServerWindow::recvDgram() try {
     if (!socket->isValid() || pendingIO) co_return;
 
     pendingIO = true;
-    auto [device, recvRet] = co_await socket->recvFrom(console.getRecvSize());
+    auto [device, data] = co_await socket->recvFrom(console.getRecvSize());
 
     auto [it, didEmplace] = clients.try_emplace(device, nullptr, colorIndex);
     if (didEmplace) nextColor(); // Advance colors if there is data received from a new client
 
-    if (recvRet) {
-        console.addText(*recvRet, "", colors[it->second.colorIndex], true, formatDevice(device));
-        it->second.console.addText(*recvRet);
-    }
+    console.addText(data, "", colors[it->second.colorIndex], true, formatDevice(device));
+    it->second.console.addText(data);
+
     pendingIO = false;
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
