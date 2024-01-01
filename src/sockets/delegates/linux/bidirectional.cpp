@@ -36,10 +36,10 @@ Task<RecvResult> Delegates::Bidirectional<Tag>::recv(size_t size) {
         Async::submitRing();
     });
 
-    if (recvResult.res == 0) co_return std::nullopt;
+    if (recvResult.res == 0) co_return { true, true, "", std::nullopt };
 
     data.resize(recvResult.res);
-    co_return data;
+    co_return { true, false, data, std::nullopt };
 }
 
 template Task<> Delegates::Bidirectional<SocketTag::IP>::send(std::string);

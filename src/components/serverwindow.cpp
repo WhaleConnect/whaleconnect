@@ -44,16 +44,16 @@ Task<> ServerWindow::Client::recv(IOConsole& serverConsole, const Device& device
     if (!connected || pendingRecv) co_return;
 
     pendingRecv = true;
-    auto recvRet = co_await socket->recv(size);
+    auto recvResult = co_await socket->recv(size);
 
-    if (recvRet) {
-        serverConsole.addText(*recvRet, "", colors[colorIndex], true, formatDevice(device));
-        console.addText(*recvRet);
-    } else {
+    if (recvResult.closed) {
         serverConsole.addInfo(std::format("{} closed connection.", formatDevice(device)));
         console.addInfo("Client closed connection.");
         socket->close();
         connected = selected = false;
+    } else {
+        serverConsole.addText(recvResult.data, "", colors[colorIndex], true, formatDevice(device));
+        console.addText(recvResult.data);
     }
     pendingRecv = false;
 } catch (const System::SystemError& error) {

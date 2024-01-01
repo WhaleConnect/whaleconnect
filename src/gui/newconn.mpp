@@ -9,4 +9,4 @@ import components.windowlist;
 import net.device;
 
 // Adds a ConnWindow to a window list and handles errors during socket creation.
-export void addConnWindow(WindowList& list, const Device& device, std::string_view extraInfo);
+export void addConnWindow(WindowList& list, bool useTLS, const Device& device, std::string_view extraInfo);

@@ -21,7 +21,20 @@ class Socket;
 
 export {
     using SocketPtr = std::unique_ptr<Socket>;
-    using RecvResult = std::optional<std::string>;
+
+    // TLS alert - using custom type instead of Botan::TLS::Alert because including Botan headers in multiple modules
+    // currently results in errors in Clang
+    struct TLSAlert {
+        std::string desc;
+        bool isFatal;
+    };
+
+    struct RecvResult {
+        bool complete;
+        bool closed;
+        std::string data;
+        std::optional<TLSAlert> alert;
+    };
 
     struct AcceptResult {
         Device device;

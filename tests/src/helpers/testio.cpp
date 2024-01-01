@@ -24,7 +24,7 @@ void testIO(const Socket& socket, bool useRunLoop) {
             // Receive data and check if the string matches
             // The co_await is outside the CHECK() macro to prevent it from being expanded and evaluated multiple times.
             auto recvResult = co_await socket.recv(1024);
-            CHECK(recvResult == echoString);
+            CHECK(recvResult.data == echoString);
         },
         useRunLoop);
 }

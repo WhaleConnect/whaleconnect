@@ -3,9 +3,11 @@
 
 module;
 #include <coroutine> // IWYU pragma: keep
+#include <format>
 #include <memory>
 #include <stdexcept>
 
+#include <botan/tls_exceptn.h>
 #include <imgui.h>
 #include <magic_enum.hpp>
 
@@ -15,19 +17,29 @@ import net.device;
 import net.enums;
 import os.error;
 import sockets.clientsocket;
+import sockets.clientsockettls;
 import sockets.delegates.delegates;
 import utils.strings;
 
-SocketPtr makeClientSocket(ConnectionType type) {
+SocketPtr makeClientSocket(bool useTLS, ConnectionType type) {
     using enum ConnectionType;
 
-    if (type == None) throw std::invalid_argument{ "Invalid socket type" };
-    if (type == TCP || type == UDP) return std::make_unique<ClientSocket<SocketTag::IP>>();
-    return std::make_unique<ClientSocket<SocketTag::BT>>();
+    switch (type) {
+        case TCP:
+            if (useTLS) return std::make_unique<ClientSocketTLS>();
+            [[fallthrough]];
+        case UDP:
+            return std::make_unique<ClientSocketIP>();
+        case L2CAP:
+        case RFCOMM:
+            return std::make_unique<ClientSocketBT>();
+        default:
+            throw std::invalid_argument{ "Invalid socket type" };
+    }
 }
 
-ConnWindow::ConnWindow(std::string_view title, const Device& device, std::string_view) :
-    Window(title), socket(makeClientSocket(device.type)) {
+ConnWindow::ConnWindow(std::string_view title, bool useTLS, const Device& device, std::string_view) :
+    Window(title), socket(makeClientSocket(useTLS, device.type)) {
     connect(device);
 }
 
@@ -40,32 +52,52 @@ Task<> ConnWindow::connect(Device device) try {
     connected = true;
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
+} catch (const Botan::TLS::TLS_Exception& error) {
+    console.addError(error.what());
 }
 
 Task<> ConnWindow::sendHandler(std::string s) try {
     co_await socket->send(s);
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
+} catch (const Botan::TLS::TLS_Exception& error) {
+    console.addError(error.what());
 }
 
 Task<> ConnWindow::readHandler() try {
     if (!connected || pendingRecv) co_return;
 
     pendingRecv = true;
-    auto recvRet = co_await socket->recv(console.getRecvSize());
+    auto [complete, closed, data, alert] = co_await socket->recv(console.getRecvSize());
 
-    if (recvRet) {
-        console.addText(*recvRet);
-    } else {
-        // Peer closed connection
-        console.addInfo("Remote host closed connection.");
-        socket->close();
-        connected = false;
+    if (complete) {
+        if (closed) {
+            // Peer closed connection
+            console.addInfo("Remote host closed connection.");
+            socket->close();
+            connected = false;
+        } else {
+            console.addText(data);
+        }
     }
+
+    if (alert) {
+        std::string desc = "ALERT";
+        ImVec4 color{ 0, 0.6, 0, 1 };
+        if (alert->isFatal) {
+            console.addMessage(std::format("FATAL: {}", alert->desc), desc, color);
+            connected = false;
+        } else {
+            console.addMessage(alert->desc, desc, color);
+        }
+    }
+
     pendingRecv = false;
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
     pendingRecv = false;
+} catch (const Botan::TLS::TLS_Exception& error) {
+    console.addError(error.what());
 }
 
 void ConnWindow::onBeforeUpdate() {

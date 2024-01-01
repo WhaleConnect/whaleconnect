@@ -76,7 +76,7 @@ void SDPWindow::drawConnOptions(std::string_view info) {
 
     // Connect button
     ImGui::Spacing();
-    if (ImGui::Button("Connect")) addConnWindow(list, { connType, target.name, target.address, connPort }, info);
+    if (ImGui::Button("Connect")) addConnWindow(list, false, { connType, target.name, target.address, connPort }, info);
 }
 
 void SDPWindow::checkInquiryStatus() {

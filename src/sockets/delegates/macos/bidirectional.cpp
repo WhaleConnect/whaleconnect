@@ -5,6 +5,7 @@ module;
 #if OS_MACOS
 #include <coroutine> // IWYU pragma: keep
 #include <functional>
+#include <optional>
 
 #include <sys/event.h>
 #include <sys/socket.h>
@@ -34,10 +35,10 @@ Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv(size_t size) {
     std::string data(size, 0);
     ssize_t recvLen = CHECK(::recv(*handle, data.data(), data.size(), 0));
 
-    if (recvLen == 0) co_return std::nullopt;
+    if (recvLen == 0) co_return { true, true, "", std::nullopt };
 
     data.resize(recvLen);
-    co_return data;
+    co_return { true, false, data, std::nullopt };
 }
 
 template <>
@@ -52,6 +53,8 @@ Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv(size_t) {
     co_await Async::run(std::bind_front(Async::submitIOBluetooth, (*handle)->getHash(), Async::IOType::Receive),
         System::ErrorType::IOReturn);
 
-    co_return Async::getBluetoothReadResult((*handle)->getHash());
+    auto readResult = Async::getBluetoothReadResult((*handle)->getHash());
+    co_return readResult ? RecvResult{ true, false, *readResult, std::nullopt }
+                         : RecvResult{ true, true, "", std::nullopt };
 }
 #endif

@@ -16,10 +16,11 @@ import net.enums;
 import utils.strings;
 
 // Formats a Device instance into a string for use in a ConnWindow title.
-std::string formatDevice(const Device& device, std::string_view extraInfo) {
+std::string formatDevice(bool useTLS, const Device& device, std::string_view extraInfo) {
     // Type of the connection
     bool isIP = device.type == ConnectionType::TCP || device.type == ConnectionType::UDP;
-    auto typeString = magic_enum::enum_name(device.type);
+    auto typeName = magic_enum::enum_name(device.type);
+    auto typeString = useTLS ? std::format("{}+TLS", typeName) : std::string{ typeName };
 
     // Bluetooth-based connections are described using the device's name (e.g. "MyESP32"),
     // IP-based connections use the device's IP address (e.g. 192.168.0.178).
@@ -42,8 +43,8 @@ std::string formatDevice(const Device& device, std::string_view extraInfo) {
     return extraInfo.empty() ? title : std::format("({}) {}", extraInfo, title);
 }
 
-void addConnWindow(WindowList& list, const Device& device, std::string_view extraInfo) {
-    bool isNew = list.add<ConnWindow>(formatDevice(device, extraInfo), device, extraInfo);
+void addConnWindow(WindowList& list, bool useTLS, const Device& device, std::string_view extraInfo) {
+    bool isNew = list.add<ConnWindow>(formatDevice(useTLS, device, extraInfo), useTLS, device, extraInfo);
 
     // If the connection exists, show a message
     if (!isNew) ImGuiExt::addNotification("This connection is already open.", NotificationType::Warning);

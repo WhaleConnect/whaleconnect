@@ -36,11 +36,11 @@ Task<RecvResult> Delegates::Bidirectional<Tag>::recv(size_t size) {
     });
 
     // Check for disconnects
-    if (recvResult.res == 0) co_return std::nullopt;
+    if (recvResult.res == 0) co_return { true, true, "", std::nullopt };
 
     // Resize string to received size
     data.resize(recvResult.res);
-    co_return data;
+    co_return { true, false, data, std::nullopt };
 }
 
 template Task<> Delegates::Bidirectional<SocketTag::IP>::send(std::string);

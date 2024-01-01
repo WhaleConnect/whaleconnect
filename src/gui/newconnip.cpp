@@ -27,6 +27,7 @@ void drawIPConnectionTab(WindowList& connections) {
     static std::string addr; // Server address
     static uint16_t port = 0; // Server port
     static ConnectionType type = TCP; // Type of connection to create
+    static bool useTLS = false; // If TLS is used for secure connections
 
     // Widgets
     using namespace ImGuiExt::Literals;
@@ -61,9 +62,15 @@ void drawIPConnectionTab(WindowList& connections) {
     ImGui::Spacing();
     ImGui::BeginDisabled(addr.empty());
 
-    if (ImGui::Button("Connect")) addConnWindow(connections, { type, "", addr, port }, "");
+    if (ImGui::Button("Connect")) addConnWindow(connections, useTLS, { type, "", addr, port }, "");
 
     ImGui::EndDisabled();
+
+    // Option to use TLS (TCP only)
+    if (type == TCP) {
+        ImGui::SameLine();
+        ImGui::Checkbox("Use TLS", &useTLS);
+    }
 
     ImGui::EndChild();
     ImGui::EndTabItem();

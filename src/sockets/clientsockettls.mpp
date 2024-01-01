@@ -1,0 +1,16 @@
+// Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+export module sockets.clientsockettls;
+import sockets.delegates.noops;
+import sockets.delegates.secure.clienttls;
+import sockets.socket;
+
+// An outgoing connection secured by TLS.
+export class ClientSocketTLS : public Socket {
+    Delegates::ClientTLS client;
+    Delegates::NoopServer server;
+
+public:
+    ClientSocketTLS() : Socket(client, client, client, server) {}
+};
