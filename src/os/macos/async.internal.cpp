@@ -1,4 +1,4 @@
-// Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
+// Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // kqueue and IOBluetooth only handle notifications for I/O, so completion queues must be managed manually.
