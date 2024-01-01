@@ -1,16 +1,16 @@
 -- Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
-add_repositories("xrepo-patches https://github.com/NSTerminal/xrepo-patches.git")
+add_repositories("xrepo-patches C:\\Users\\Aidan\\Code\\github\\NSTerminal\\xrepo-patches")
 
 add_rules("mode.debug", "mode.release")
 
 -- Avoid linking to system libraries - prevents dependency mismatches on different platforms and makes package self-contained
 add_requireconfs("*|opengl", { system = false })
 
-add_requires("imgui-with-sdl3 v20230807-docking", { configs = { sdl3_no_renderer = true, opengl3 = true, freetype = true } })
+add_requires("imgui-with-sdl3 v20231231-docking", { configs = { sdl3_no_renderer = true, opengl3 = true, freetype = true } })
 add_requires("libsdl3", { configs = { use_sdlmain = true } })
-add_requires("catch2", "icu4c", "magic_enum", "nameof", "nlohmann_json", "opengl", "out_ptr")
+add_requires("botan", "catch2", "icu4c", "magic_enum", "nameof", "nlohmann_json", "opengl", "out_ptr")
 
 if is_plat("linux") then
     add_requires("liburing", "bluez")
@@ -23,7 +23,7 @@ set_warnings("allextra")
 set_defaultmode("debug")
 set_license("GPL-3.0-or-later")
 
-add_packages("icu4c", "magic_enum", "nameof", "out_ptr")
+add_packages("botan", "icu4c", "magic_enum", "nameof", "out_ptr")
 
 add_cxxflags("-Wno-missing-field-initializers",
              "-Wno-read-modules-implicitly",
