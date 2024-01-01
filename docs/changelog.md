@@ -7,6 +7,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Additions
 
 - Added server functionality for Internet and Bluetooth sockets.
+- Added TLS for TCP client sockets.
 - Added a setting to change the number of entries in io_uring instances.
 - Added a connection window option to change the receive buffer length.
 
