@@ -7,6 +7,7 @@ function download_licenses(installdir)
     local license_files = {
         -- Libraries
         ["bluez"] = { "https://raw.githubusercontent.com/bluez/bluez/master/LICENSES/preferred/GPL-2.0" },
+        ["botan"] = { "https://raw.githubusercontent.com/randombit/botan/master/license.txt" },
         ["catch2"] = { "https://raw.githubusercontent.com/catchorg/Catch2/devel/LICENSE.txt" },
         ["dear_imgui"] = { "https://raw.githubusercontent.com/ocornut/imgui/master/LICENSE.txt" },
         ["icu"] = { "https://raw.githubusercontent.com/unicode-org/icu/main/LICENSE" },
