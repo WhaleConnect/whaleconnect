@@ -10,7 +10,6 @@ function download_licenses(installdir)
         ["botan"] = { "https://raw.githubusercontent.com/randombit/botan/master/license.txt" },
         ["catch2"] = { "https://raw.githubusercontent.com/catchorg/Catch2/devel/LICENSE.txt" },
         ["dear_imgui"] = { "https://raw.githubusercontent.com/ocornut/imgui/master/LICENSE.txt" },
-        ["icu"] = { "https://raw.githubusercontent.com/unicode-org/icu/main/LICENSE" },
         ["json_for_modern_c++"] = { "https://raw.githubusercontent.com/nlohmann/json/develop/LICENSE.MIT" },
         ["libdbus"] = { "https://gitlab.freedesktop.org/dbus/dbus/-/raw/master/COPYING" },
         ["liburing"] = {
@@ -21,6 +20,7 @@ function download_licenses(installdir)
         ["magic_enum"] = { "https://raw.githubusercontent.com/Neargye/magic_enum/master/LICENSE" },
         ["nameof"] = { "https://raw.githubusercontent.com/Neargye/nameof/master/LICENSE" },
         ["sdl"] = { "https://raw.githubusercontent.com/libsdl-org/SDL/main/LICENSE.txt" },
+        ["utfcpp"] = { "https://raw.githubusercontent.com/nemtrif/utfcpp/master/LICENSE" },
         ["ztd.out_ptr"] = { "https://raw.githubusercontent.com/soasis/out_ptr/main/LICENSE" },
 
         -- Fonts

@@ -28,15 +28,16 @@ NST and its build scripts are licensed under the [GPL v3+ license](../COPYING).
 ### Libraries
 
 - [BlueZ](https://github.com/bluez/bluez/tree/master/lib) (GNU GPL v2+ License)
+- [Botan](https://botan.randombit.net/)
 - [Catch2](https://github.com/catchorg/Catch2) (BSL 1.0 License)
 - [Dear ImGui](https://www.github.com/ocornut/imgui) (MIT License)
-- [ICU](https://unicode-org.github.io/icu/) (Unicode License)
 - [JSON for Modern C++](https://github.com/nlohmann/json) (MIT License)
 - [libdbus](https://www.freedesktop.org/wiki/Software/dbus) (GNU GPL v2+ License)
 - [liburing](https://github.com/axboe/liburing) (GNU LGPL v2.1 and MIT Licenses)
 - [Magic Enum](https://github.com/Neargye/magic_enum) (MIT License)
 - [Nameof](https://github.com/Neargye/nameof) (MIT License)
 - [SDL](https://www.libsdl.org/) (Zlib License)
+- [utfcpp](https://github.com/nemtrif/utfcpp) (BSL 1.0)
 - [ztd.out_ptr](https://github.com/soasis/out_ptr) (Apache-2.0 License)
 
 ### Fonts
