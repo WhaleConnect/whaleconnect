@@ -133,7 +133,7 @@ void TextSelect::handleMouseDown(const ImVec2& cursorPosStart) {
             // Initialize start and end iterators to current cursor position
             utf8::unchecked::iterator startIt{ currentLine.data() };
             utf8::unchecked::iterator endIt{ currentLine.data() };
-            for (int i = 0; i < x; i++) {
+            for (size_t i = 0; i < x; i++) {
                 startIt++;
                 endIt++;
             }
