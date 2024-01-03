@@ -10,7 +10,7 @@ add_requireconfs("*|opengl", { system = false })
 
 add_requires("imgui-with-sdl3 v20231231-docking", { configs = { sdl3_no_renderer = true, opengl3 = true, freetype = true } })
 add_requires("libsdl3", { configs = { use_sdlmain = true } })
-add_requires("botan", "catch2", "icu4c", "magic_enum", "nameof", "nlohmann_json", "opengl", "out_ptr")
+add_requires("botan", "catch2", "magic_enum", "nameof", "nlohmann_json", "opengl", "out_ptr", "utfcpp")
 
 if is_plat("linux") then
     add_requires("liburing", "bluez")
@@ -23,7 +23,7 @@ set_warnings("allextra")
 set_defaultmode("debug")
 set_license("GPL-3.0-or-later")
 
-add_packages("botan", "icu4c", "magic_enum", "nameof", "out_ptr")
+add_packages("botan", "magic_enum", "nameof", "out_ptr", "utfcpp")
 
 add_cxxflags("-Wno-missing-field-initializers",
              "-Wno-read-modules-implicitly",

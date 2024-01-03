@@ -4,47 +4,67 @@
 module;
 #define IMGUI_DEFINE_MATH_OPERATORS
 
+#include <algorithm>
+#include <array>
 #include <cmath>
-#include <memory>
 #include <numeric>
+#include <string_view>
 
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <unicode/brkiter.h>
-#include <unicode/locid.h>
-#include <unicode/unistr.h>
-#include <unicode/utypes.h>
+#include <utf8.h>
 
 module components.textselect;
 import gui.imguiext;
 
-// Word break iterator for double-click selection, created inside an IIFE to avoid leaking symbols to the global scope
-const auto bi = [] {
-    using icu::BreakIterator;
+// The Console class corrects invalid UTF-8 automatically so utf8::unchecked functions are used to improve speed.
 
-    UErrorCode status = U_ZERO_ERROR;
-    return std::unique_ptr<BreakIterator>{ BreakIterator::createWordInstance(icu::Locale::getRoot(), status) };
-}();
+// Simple word boundary detection, accounts for Latin Unicode blocks only.
+bool isBoundary(utf8::utfchar32_t c) {
+    using Range = std::pair<utf8::utfchar32_t, utf8::utfchar32_t>;
+    std::array ranges{
+        Range{ 0x20, 0x2F },
+        Range{ 0x3A, 0x40 },
+        Range{ 0x5B, 0x5E },
+        Range{ 0x60, 0x60 },
+        Range{ 0x7B, 0xBF },
+        Range{ 0xD7, 0xF7 },
+    };
 
-// Gets the display width of a substring of a UnicodeString.
-float substringSizeX(const icu::UnicodeString& s, int32_t start, int32_t length = INT32_MAX) {
-    std::string sub;
+    return std::find_if(ranges.begin(), ranges.end(), [c](const Range& r) { return c >= r.first && c <= r.second; })
+        != ranges.end();
+}
 
-    s.tempSubString(start, length).toUTF8String(sub);
-    return ImGui::CalcTextSize(sub.c_str()).x;
+// Gets the number of UTF-8 characters (not bytes) in a string.
+size_t utf8Length(std::string_view s) {
+    return utf8::unchecked::distance(s.begin(), s.end());
+}
+
+// Gets the display width of a substring.
+float substringSizeX(std::string_view s, size_t start, size_t length = std::string_view::npos) {
+    // Convert char-based start and length into byte-based iterators
+    auto stringStart = s.begin();
+    utf8::unchecked::advance(stringStart, start);
+
+    auto stringEnd = stringStart;
+    if (length == std::string_view::npos) stringEnd = s.end();
+    else utf8::unchecked::advance(stringEnd, length);
+
+    // Calculate text size between start and end
+    return ImGui::CalcTextSize(&*stringStart, &*stringEnd).x;
 }
 
 // Gets the index of the character the mouse cursor is over.
-int32_t getCharIndex(const icu::UnicodeString& s, float cursorPosX, int32_t start, int32_t end) {
+size_t getCharIndex(std::string_view s, float cursorPosX, size_t start, size_t end) {
     // Ignore cursor position when it is invalid
     if (cursorPosX < 0) return 0;
 
     // Check for exit conditions
-    if (s.isEmpty()) return 0;
-    if (end < start) return s.length();
+    if (s.empty()) return 0;
+    if (end < start) return utf8Length(s);
 
     // Midpoint of given string range
-    int32_t midIdx = std::midpoint(start, end);
+    size_t midIdx = std::midpoint(start, end);
 
     // Display width of the entire string up to the midpoint, gives the x-position where the (midIdx + 1)th char starts
     float widthToMid = substringSizeX(s, 0, midIdx + 1);
@@ -59,9 +79,9 @@ int32_t getCharIndex(const icu::UnicodeString& s, float cursorPosX, int32_t star
     else return midIdx;
 }
 
-// Wrapper for getCharIndex providing the inditial bounds.
-int32_t getCharIndex(const icu::UnicodeString& s, float cursorPosX) {
-    return getCharIndex(s, cursorPosX, 0, s.length());
+// Wrapper for getCharIndex providing the initial bounds.
+size_t getCharIndex(std::string_view s, float cursorPosX) {
+    return getCharIndex(s, cursorPosX, 0, utf8Length(s));
 }
 
 // Gets the scroll delta for the given cursor position and window bounds.
@@ -81,12 +101,12 @@ TextSelect::Selection TextSelect::getSelection() const {
     bool startBeforeEnd = selectStart.y < selectEnd.y || (selectStart.y == selectEnd.y && selectStart.x < selectEnd.x);
 
     // Reorder X points if necessary
-    int startX = startBeforeEnd ? selectStart.x : selectEnd.x;
-    int endX = startBeforeEnd ? selectEnd.x : selectStart.x;
+    size_t startX = startBeforeEnd ? selectStart.x : selectEnd.x;
+    size_t endX = startBeforeEnd ? selectEnd.x : selectStart.x;
 
     // Get min and max Y positions for start and end
-    int startY = std::min(selectStart.y, selectEnd.y);
-    int endY = std::max(selectStart.y, selectEnd.y);
+    size_t startY = std::min(selectStart.y, selectEnd.y);
+    size_t endY = std::max(selectStart.y, selectEnd.y);
 
     return { startX, startY, endX, endY };
 }
@@ -96,23 +116,44 @@ void TextSelect::handleMouseDown(const ImVec2& cursorPosStart) {
     ImVec2 mousePos = ImGui::GetMousePos() - cursorPosStart;
 
     // Get Y position of mouse cursor, in terms of line number (capped to the index of the last line)
-    int y = std::min(static_cast<int>(std::floor(mousePos.y / textHeight)), static_cast<int>(getNumLines() - 1));
+    size_t y = std::min(static_cast<size_t>(std::floor(mousePos.y / textHeight)), getNumLines() - 1);
     if (y < 0) return;
 
-    icu::UnicodeString currentLine = getLineAtIdx(y);
-    int x = getCharIndex(currentLine, mousePos.x);
+    std::string currentLine = getLineAtIdx(y);
+    size_t x = getCharIndex(currentLine, mousePos.x);
 
     // Get mouse click count and determine action
     if (int mouseClicks = ImGui::GetMouseClickedCount(ImGuiMouseButton_Left); mouseClicks > 0) {
         if (mouseClicks % 3 == 0) {
             // Triple click - select line
             selectStart = { 0, y };
-            selectEnd = { currentLine.length(), y };
+            selectEnd = { utf8Length(currentLine), y };
         } else if (mouseClicks % 2 == 0) {
             // Double click - select word
-            bi->setText(currentLine);
-            selectStart = { bi->preceding(x + 1), y };
-            selectEnd = { bi->next(), y };
+            // Initialize start and end iterators to current cursor position
+            utf8::unchecked::iterator startIt{ currentLine.data() };
+            utf8::unchecked::iterator endIt{ currentLine.data() };
+            for (int i = 0; i < x; i++) {
+                startIt++;
+                endIt++;
+            }
+
+            // Scan to left until a word boundary is reached
+            for (size_t startInv = 0; startInv <= x; startInv++) {
+                if (isBoundary(*startIt)) break;
+                selectStart = { x - startInv, y };
+                startIt--;
+            }
+
+            // Scan to right until a word boundary is reached
+            for (size_t end = x; end <= utf8Length(currentLine); end++) {
+                selectEnd = { end, y };
+                if (isBoundary(*endIt)) break;
+                endIt++;
+            }
+
+            // If a boundary character was double-clicked, select that character
+            if (selectEnd.x == selectStart.x) selectEnd.x++;
         } else if (ImGui::IsKeyDown(ImGuiMod_Shift)) {
             // Single click with shift - select text from start to click
             // The selection starts from the beginning if no start position exists
@@ -122,7 +163,7 @@ void TextSelect::handleMouseDown(const ImVec2& cursorPosStart) {
         } else {
             // Single click - set start position, invalidate end position
             selectStart = { x, y };
-            selectEnd = { -1, -1 };
+            selectEnd = { std::string::npos, std::string::npos };
         }
     } else if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
         // Mouse dragging - set end position
@@ -167,8 +208,8 @@ void TextSelect::drawSelection(const ImVec2& cursorPosStart) const {
     auto [startX, startY, endX, endY] = getSelection();
 
     // Add a rectangle to the draw list for each line contained in the selection
-    for (int i = startY; i <= endY; i++) {
-        icu::UnicodeString line = getLineAtIdx(i);
+    for (size_t i = startY; i <= endY; i++) {
+        std::string line = getLineAtIdx(i);
 
         // Display sizes
         // The width of the space character is used for the width of newlines.
@@ -200,30 +241,33 @@ void TextSelect::copy() const {
     auto [startX, startY, endX, endY] = getSelection();
 
     // Collect selected text in a single string
-    icu::UnicodeString selectedText;
+    std::string selectedText;
 
-    for (int i = startY; i <= endY; i++) {
+    for (size_t i = startY; i <= endY; i++) {
         // Similar logic to drawing selections
-        int32_t subStart = i == startY ? startX : 0;
-        int32_t subEnd = i == endY ? endX : INT32_MAX;
+        size_t subStart = i == startY ? startX : 0;
+        std::string line = getLineAtIdx(i);
 
-        icu::UnicodeString line = getLineAtIdx(i);
-        selectedText += line.tempSubStringBetween(subStart, subEnd);
+        auto stringStart = line.begin();
+        utf8::unchecked::advance(stringStart, subStart);
+
+        auto stringEnd = stringStart;
+        if (i == endY) utf8::unchecked::advance(stringEnd, endX - subStart);
+        else stringEnd = line.end();
+
+        selectedText += line.substr(stringStart - line.begin(), stringEnd - stringStart);
     }
 
-    // Convert the string to UTF-8 for copying
-    std::string clipboardText;
-    selectedText.toUTF8String(clipboardText);
-    ImGui::SetClipboardText(clipboardText.c_str());
+    ImGui::SetClipboardText(selectedText.c_str());
 }
 
 void TextSelect::selectAll() {
     size_t lastLineIdx = getNumLines() - 1;
-    icu::UnicodeString lastLine = getLineAtIdx(lastLineIdx);
+    std::string lastLine = getLineAtIdx(lastLineIdx);
 
     // Set the selection range from the beginning to the end of the last line
     selectStart = { 0, 0 };
-    selectEnd = { lastLine.length(), static_cast<int>(lastLineIdx) };
+    selectEnd = { utf8Length(lastLine), lastLineIdx };
 }
 
 void TextSelect::update() {

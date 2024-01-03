@@ -3,17 +3,17 @@
 
 module;
 #include <cmath>
+#include <chrono>
 #include <ctime>
 #include <format>
+#include <iterator>
 #include <limits>
 #include <optional>
 #include <string>
 #include <string_view>
 
 #include <imgui.h>
-#include <unicode/smpdtfmt.h>
-#include <unicode/unistr.h>
-#include <unicode/utypes.h>
+#include <utf8.h>
 
 module components.console;
 import gui.imguiext;
@@ -21,12 +21,6 @@ import utils.strings;
 
 constexpr const char* selectAllShortcut = OS_MACOS ? "\uebb8A" : "Ctrl+A";
 constexpr const char* copyShortcut = OS_MACOS ? "\uebb8C" : "Ctrl+C";
-
-// Formatter used for creating timestamp strings
-const auto formatter = [] {
-    UErrorCode status = U_ZERO_ERROR; // Isolated from global scope
-    return icu::SimpleDateFormat{ icu::UnicodeString{ "hh:mm:ss.SSS > " }, status };
-}();
 
 bool floatsEqual(float a, float b) {
     return std::abs(a - b) <= std::numeric_limits<float>::epsilon();
@@ -36,29 +30,40 @@ bool colorsEqual(const ImVec4& a, const ImVec4& b) {
     return floatsEqual(a.x, b.x) && floatsEqual(a.y, b.y) && floatsEqual(a.z, b.z) && floatsEqual(a.w, b.w);
 }
 
-icu::UnicodeString getTimestamp() {
-    UDate current = icu::Calendar::getNow();
-    icu::UnicodeString dateReturned;
-    formatter.format(current, dateReturned);
-    return dateReturned;
+std::string getTimestamp() {
+    // Adapted from https://stackoverflow.com/a/35157784
+    using namespace std::chrono;
+
+    auto now = system_clock::now();
+
+    // Get milliseconds (remainder from division into seconds)
+    auto ms = (duration_cast<milliseconds>(now.time_since_epoch()) % 1s).count();
+
+    // Get local time from current time point
+    auto timer = system_clock::to_time_t(now);
+    auto local = *std::localtime(&timer);
+
+    // Return formatted string
+    return std::format("{:02}:{:02}:{:02}.{:03} > ", local.tm_hour, local.tm_min, local.tm_sec, ms);
 }
 
 void Console::add(std::string_view s, const ImVec4& color, bool canUseHex, std::string_view hoverText) {
     // Avoid empty strings
     if (s.empty()) return;
 
-    icu::UnicodeString newText = icu::UnicodeString::fromUTF8(s);
     auto hoverTextOpt = hoverText.empty() ? std::nullopt : std::optional<std::string>{ hoverText };
 
     // Determine if text goes on a new line
-    if (items.empty() || items.back().text.endsWith('\n') || !colorsEqual(items.back().color, color))
-        items.emplace_back(canUseHex, newText, "", color, getTimestamp(), hoverTextOpt);
-    else items.back().text += newText;
+    if (items.empty() || items.back().text.ends_with('\n') || !colorsEqual(items.back().color, color))
+        items.emplace_back(canUseHex, "", "", color, getTimestamp(), hoverTextOpt);
+
+    // Add text, fix invalid UTF-8 if necessary
+    utf8::replace_invalid(s.begin(), s.end(), std::back_inserter(items.back().text));
 
     // Computing the string's hex representation here removes the need to do so every application frame.
     if (canUseHex)
         for (unsigned char c : s)
-            items.back().textHex += icu::UnicodeString::fromUTF8(std::format("{:02X} ", static_cast<int>(c)));
+            items.back().textHex += std::format("{:02X} ", static_cast<int>(c));
 
     scrollToEnd = autoscroll; // Scroll to the end if autoscroll is enabled
 }
@@ -89,9 +94,9 @@ void Console::drawOptions() {
     }
 }
 
-icu::UnicodeString Console::getLineAtIdx(size_t i) const {
+std::string Console::getLineAtIdx(size_t i) const {
     ConsoleItem item = items[i];
-    const icu::UnicodeString& lineBase = showHex && item.canUseHex ? item.textHex : item.text;
+    const std::string& lineBase = showHex && item.canUseHex ? item.textHex : item.text;
     return showTimestamps ? item.timestamp + lineBase : lineBase;
 }
 
@@ -115,9 +120,7 @@ void Console::update(std::string_view id) {
             // Apply color if needed
             if (hasColor) ImGui::PushStyleColor(ImGuiCol_Text, item.color);
 
-            std::string line;
-            getLineAtIdx(i).toUTF8String(line);
-            ImGuiExt::textUnformatted(line);
+            ImGuiExt::textUnformatted(getLineAtIdx(i));
 
             if (hasColor) ImGui::PopStyleColor();
 

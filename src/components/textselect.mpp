@@ -3,9 +3,9 @@
 
 module;
 #include <functional>
+#include <string>
 
 #include <imgui.h>
-#include <unicode/unistr.h>
 
 export module components.textselect;
 
@@ -15,22 +15,22 @@ export module components.textselect;
 export class TextSelect {
     // Cursor position in the window.
     struct CursorPos {
-        int x = -1; // X index of character
-        int y = -1; // Y index of character
+        size_t x = std::string::npos; // X index of character
+        size_t y = std::string::npos; // Y index of character
 
         // Checks if this position is invalid.
         bool isInvalid() const {
-            // Invalid cursor positions are indicated by (-1, -1)
-            return x == -1 || y == -1;
+            // Invalid cursor positions are indicated by std::string::npos
+            return x == std::string::npos || y == std::string::npos;
         }
     };
 
     // Text selection in the window.
     struct Selection {
-        int startX;
-        int startY;
-        int endX;
-        int endY;
+        size_t startX;
+        size_t startY;
+        size_t endX;
+        size_t endY;
     };
 
     // Selection bounds
@@ -41,7 +41,7 @@ export class TextSelect {
 
     // Accessor functions to get line information
     // This class only knows about line numbers so it must be provided with functions that give it text data.
-    std::function<icu::UnicodeString(size_t)> getLineAtIdx; // Gets the string given a line number
+    std::function<std::string(size_t)> getLineAtIdx; // Gets the string given a line number
     std::function<size_t()> getNumLines; // Gets the total number of lines
 
     // Gets the user selection. Start and end are guaranteed to be in order.

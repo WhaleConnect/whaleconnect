@@ -5,11 +5,11 @@ module;
 #include <format>
 #include <functional>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <vector>
 
 #include <imgui.h>
-#include <unicode/unistr.h>
 
 export module components.console;
 import components.textselect;
@@ -20,10 +20,10 @@ export class Console {
     // Text is stored as UnicodeString for easier interfacing with ICU.
     struct ConsoleItem {
         bool canUseHex; // If the item gets displayed as hexadecimal when the option is set
-        icu::UnicodeString text; // Text string
-        icu::UnicodeString textHex; // Text in hexadecimal format
+        std::string text; // Text string
+        std::string textHex; // Text in hexadecimal format
         ImVec4 color; // Color
-        icu::UnicodeString timestamp; // Time added
+        std::string timestamp; // Time added
         std::optional<std::string> hoverText; // Tooltip text
     };
 
@@ -46,8 +46,8 @@ export class Console {
         // If there are no items, new text will have to be on its own line.
         if (items.empty()) return;
 
-        icu::UnicodeString& lastItem = items.back().text;
-        if (!lastItem.endsWith('\n')) lastItem += '\n';
+        std::string& lastItem = items.back().text;
+        if (!lastItem.ends_with('\n')) lastItem += '\n';
     }
 
     // Adds text to the console. Does not make it go on its own line.
@@ -60,7 +60,7 @@ export class Console {
     void drawOptions();
 
     // Gets the line at an index.
-    icu::UnicodeString getLineAtIdx(size_t i) const;
+    std::string getLineAtIdx(size_t i) const;
 
     // Gets the number of lines in the output.
     size_t getNumLines() const {
