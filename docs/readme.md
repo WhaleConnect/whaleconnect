@@ -28,7 +28,7 @@ NST and its build scripts are licensed under the [GPL v3+ license](../COPYING).
 ### Libraries
 
 - [BlueZ](https://github.com/bluez/bluez/tree/master/lib) (GNU GPL v2+ License)
-- [Botan](https://botan.randombit.net/)
+- [Botan](https://botan.randombit.net/) (Simplified BSD License)
 - [Catch2](https://github.com/catchorg/Catch2) (BSL 1.0 License)
 - [Dear ImGui](https://www.github.com/ocornut/imgui) (MIT License)
 - [JSON for Modern C++](https://github.com/nlohmann/json) (MIT License)
