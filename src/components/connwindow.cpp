@@ -83,7 +83,7 @@ Task<> ConnWindow::readHandler() try {
 
     if (alert) {
         std::string desc = "ALERT";
-        ImVec4 color{ 0, 0.6, 0, 1 };
+        ImVec4 color{ 0, 0.6f, 0, 1 };
         if (alert->isFatal) {
             console.addMessage(std::format("FATAL: {}", alert->desc), desc, color);
             connected = false;
