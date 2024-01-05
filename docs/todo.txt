@@ -1,8 +1,5 @@
 This is a list of the tasks to complete before each release.
 
-0.3.0:
-  [ ] Implement the server-side
-
 0.4.0:
   [ ] Make settings configurable
     [ ] Settings UI (like in VSCode)
