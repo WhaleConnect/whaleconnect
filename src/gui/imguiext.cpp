@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <bit>
 #include <numbers>
 #include <string_view>
 
@@ -12,7 +11,7 @@ module gui.imguiext;
 
 int stringCallback(ImGuiInputTextCallbackData* data) {
     // Get user data (assume it's a string pointer)
-    auto& str = *std::bit_cast<std::string*>(data->UserData);
+    auto& str = *reinterpret_cast<std::string*>(data->UserData);
 
     // Resize the string, then set the callback data buffer
     str.resize(data->BufTextLen);

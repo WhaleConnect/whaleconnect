@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <bit>
 #include <string>
 
 #if OS_WINDOWS
@@ -71,10 +70,10 @@ Device NetUtils::fromAddr(const sockaddr* addr, socklen_t addrLen, ConnectionTyp
 uint16_t NetUtils::getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4) {
     sockaddr_storage addr;
     socklen_t localAddrLen = sizeof(addr);
-    CHECK(getsockname(handle, std::bit_cast<sockaddr*>(&addr), &localAddrLen));
+    CHECK(getsockname(handle, reinterpret_cast<sockaddr*>(&addr), &localAddrLen));
 
     uint16_t port
-        = isV4 ? std::bit_cast<sockaddr_in*>(&addr)->sin_port : std::bit_cast<sockaddr_in6*>(&addr)->sin6_port;
+        = isV4 ? reinterpret_cast<sockaddr_in*>(&addr)->sin_port : reinterpret_cast<sockaddr_in6*>(&addr)->sin6_port;
     return ntohs(port);
 }
 

@@ -89,7 +89,7 @@ void Async::Internal::worker(unsigned int threadNum) {
                 // Add completion result to queue
                 auto id = ident & socketIDMask;
                 auto ioType = magic_enum::enum_cast<IOType>(event.fflags & NOTE_FFLAGSMASK).value();
-                auto& result = *std::bit_cast<CompletionResult*>(event.udata);
+                auto& result = *reinterpret_cast<CompletionResult*>(event.udata);
 
                 addPending(id, sockets, ioType, result);
             } else if (ident & ASYNC_CANCEL) {
@@ -110,7 +110,7 @@ void Async::Internal::worker(unsigned int threadNum) {
         }
 
         // Get I/O type from user data pointer
-        auto ioTypeInt = static_cast<int>(std::bit_cast<uint64_t>(event.udata));
+        auto ioTypeInt = static_cast<int>(reinterpret_cast<uint64_t>(event.udata));
         auto ioType = magic_enum::enum_cast<IOType>(ioTypeInt).value();
 
         // Pop an event from the queue and get its completion result

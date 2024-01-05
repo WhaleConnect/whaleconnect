@@ -44,7 +44,7 @@ void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
     int ioTypeInt = magic_enum::enum_integer(ioType);
 
     // Pass I/O type as user data pointer
-    auto typeData = std::bit_cast<void*>(static_cast<uint64_t>(ioTypeInt));
+    auto typeData = reinterpret_cast<void*>(static_cast<uint64_t>(ioTypeInt));
     int filt = ioType == IOType::Send ? EVFILT_WRITE : EVFILT_READ;
 
     // Add and disable the I/O filter

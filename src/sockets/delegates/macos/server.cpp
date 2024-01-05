@@ -3,7 +3,6 @@
 
 module;
 #if OS_MACOS
-#include <bit>
 #include <coroutine> // IWYU pragma: keep
 #include <functional>
 
@@ -37,7 +36,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     co_await Async::run(std::bind_front(Async::submitKqueue, *handle, Async::IOType::Receive));
 
     sockaddr_storage client;
-    auto clientAddr = std::bit_cast<sockaddr*>(&client);
+    auto clientAddr = reinterpret_cast<sockaddr*>(&client);
     socklen_t clientLen = sizeof(client);
 
     SocketHandle<SocketTag::IP> fd{ CHECK(::accept(*handle, clientAddr, &clientLen)) };
@@ -50,7 +49,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
 template <>
 Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
     sockaddr_storage from;
-    auto fromAddr = std::bit_cast<sockaddr*>(&from);
+    auto fromAddr = reinterpret_cast<sockaddr*>(&from);
     socklen_t addrSize = sizeof(from);
 
     co_await Async::run(std::bind_front(Async::submitKqueue, *handle, Async::IOType::Receive));
