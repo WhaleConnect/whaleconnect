@@ -18,7 +18,7 @@ void Delegates::SocketHandle<Tag>::closeImpl() {
 
 template <auto Tag>
 void Delegates::SocketHandle<Tag>::cancelIO() {
-    CancelIoEx(std::bit_cast<HANDLE>(handle), nullptr);
+    CancelIoEx(reinterpret_cast<HANDLE>(handle), nullptr);
 }
 
 template void Delegates::SocketHandle<SocketTag::IP>::closeImpl();

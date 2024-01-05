@@ -3,7 +3,6 @@
 
 module;
 #if OS_WINDOWS
-#include <bit>
 #include <cstring> // std::memcpy()
 #include <format>
 #include <memory>
@@ -209,7 +208,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     // Continue the lookup
     DWORD size = 2048;
     std::vector<BYTE> resultsBuf(size);
-    auto wsaResults = std::bit_cast<LPWSAQUERYSET>(resultsBuf.data());
+    auto wsaResults = reinterpret_cast<LPWSAQUERYSET>(resultsBuf.data());
     wsaResults->dwSize = size;
     wsaResults->dwNameSpace = NS_BTH;
 

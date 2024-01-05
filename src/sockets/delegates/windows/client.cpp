@@ -3,7 +3,6 @@
 
 module;
 #if OS_WINDOWS
-#include <bit>
 #include <coroutine> // IWYU pragma: keep
 #include <exception>
 #include <functional>
@@ -90,7 +89,7 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     BTH_ADDR btAddr = std::stoull(Strings::replaceAll(device.address, ":", ""), nullptr, 16);
     SOCKADDR_BTH sAddrBT{ .addressFamily = AF_BTH, .btAddr = btAddr, .port = device.port };
 
-    co_await Async::run(std::bind_front(startConnect, *handle, std::bit_cast<sockaddr*>(&sAddrBT), sizeof(sAddrBT)));
+    co_await Async::run(std::bind_front(startConnect, *handle, reinterpret_cast<sockaddr*>(&sAddrBT), sizeof(sAddrBT)));
     finalizeConnect(*handle);
 }
 #endif

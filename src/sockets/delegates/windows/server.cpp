@@ -3,7 +3,6 @@
 
 module;
 #if OS_WINDOWS
-#include <bit>
 #include <coroutine> // IWYU pragma: keep
 #include <functional>
 #include <memory>
@@ -51,7 +50,7 @@ Task<std::pair<sockaddr*, int>> startAccept(SOCKET s, AcceptExBuf& buf, SOCKET c
         CHECK(acceptExPtr(s, clientSocket, buf.data(), 0, addrSize, addrSize, nullptr, &result), checkTrue);
     });
 
-    CHECK(setsockopt(clientSocket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, std::bit_cast<char*>(&s), sizeof(s)));
+    CHECK(setsockopt(clientSocket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, reinterpret_cast<char*>(&s), sizeof(s)));
     Async::add(clientSocket);
 
     static LPFN_GETACCEPTEXSOCKADDRS getAcceptExSockaddrsPtr = nullptr;
@@ -103,7 +102,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
 template <>
 Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
     sockaddr_storage from;
-    auto fromPtr = std::bit_cast<sockaddr*>(&from);
+    auto fromPtr = reinterpret_cast<sockaddr*>(&from);
     socklen_t fromLen = sizeof(from);
 
     std::string data(size, 0);
@@ -138,12 +137,12 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
     // Treat port 0 as "any port" (uses its own separate constant)
     ULONG port = serverInfo.port == 0 ? BT_PORT_ANY : serverInfo.port;
     SOCKADDR_BTH addr{ .addressFamily = AF_BTH, .btAddr = 0, .port = port };
-    CHECK(bind(*handle, std::bit_cast<sockaddr*>(&addr), sizeof(addr)));
+    CHECK(bind(*handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
     CHECK(listen(*handle, SOMAXCONN));
 
     SOCKADDR_BTH serverAddr;
     int serverAddrLen = sizeof(serverAddr);
-    CHECK(getsockname(*handle, std::bit_cast<sockaddr*>(&serverAddr), &serverAddrLen));
+    CHECK(getsockname(*handle, reinterpret_cast<sockaddr*>(&serverAddr), &serverAddrLen));
 
     Async::add(*handle);
     return { static_cast<uint16_t>(serverAddr.port), IPType::None };
@@ -159,7 +158,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
     //   | The WSAAddressToString function currently returns WSAEFAULT for Bluetooth Device Addresses unless the buffer
     //   | and the specified lpdwAddressStringLength value are set to a character length of 40.
     // https://learn.microsoft.com/en-us/windows/win32/bluetooth/bluetooth-and-wsaaddresstostring
-    auto clientPtr = std::bit_cast<SOCKADDR_BTH*>(remoteAddrPtr);
+    auto clientPtr = reinterpret_cast<SOCKADDR_BTH*>(remoteAddrPtr);
     std::wstring clientAddrW(40, L'\0');
     auto addrLen = static_cast<DWORD>(clientAddrW.size());
     CHECK(WSAAddressToString(remoteAddrPtr, remoteAddrLen, nullptr, clientAddrW.data(), &addrLen));
