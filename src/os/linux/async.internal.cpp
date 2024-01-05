@@ -3,7 +3,6 @@
 
 module;
 #if OS_LINUX
-#include <bit>
 #include <vector>
 
 #include <liburing.h>
@@ -61,10 +60,10 @@ void Async::Internal::worker(unsigned int threadNum) {
         if (userData == nullptr) continue;
 
         // Check for interrupt
-        if (std::bit_cast<uint64_t>(userData) == ASYNC_INTERRUPT) break;
+        if (reinterpret_cast<uint64_t>(userData) == ASYNC_INTERRUPT) break;
 
         // Fill in completion result information
-        auto& result = *std::bit_cast<CompletionResult*>(userData);
+        auto& result = *reinterpret_cast<CompletionResult*>(userData);
         if (cqe->res < 0) result.error = -cqe->res;
         else result.res = cqe->res;
 

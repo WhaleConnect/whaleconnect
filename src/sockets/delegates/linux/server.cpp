@@ -3,7 +3,6 @@
 
 module;
 #if OS_LINUX
-#include <bit>
 #include <coroutine> // IWYU pragma: keep
 #include <functional>
 #include <memory>
@@ -44,7 +43,7 @@ ServerAddress Delegates::Server<SocketTag::IP>::startServer(const Device& server
 template <>
 Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     sockaddr_storage client;
-    auto clientAddr = std::bit_cast<sockaddr*>(&client);
+    auto clientAddr = reinterpret_cast<sockaddr*>(&client);
     socklen_t clientLen = sizeof(client);
 
     auto acceptResult = co_await Async::run(std::bind_front(startAccept, *handle, clientAddr, clientLen));
@@ -62,7 +61,7 @@ Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
     // https://github.com/axboe/liburing/discussions/581
 
     sockaddr_storage from;
-    auto fromAddr = std::bit_cast<sockaddr*>(&from);
+    auto fromAddr = reinterpret_cast<sockaddr*>(&from);
     socklen_t len = sizeof(from);
     std::string data(size, 0);
 
@@ -116,22 +115,22 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
         handle.reset(CHECK(socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)));
 
         sockaddr_rc addr{ AF_BLUETOOTH, addrAny, static_cast<uint8_t>(serverInfo.port) };
-        CHECK(bind(*handle, std::bit_cast<sockaddr*>(&addr), sizeof(addr)));
+        CHECK(bind(*handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
     } else {
         handle.reset(CHECK(socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)));
 
         sockaddr_l2 addr{ AF_BLUETOOTH, htobs(serverInfo.port), addrAny, 0, 0 };
-        CHECK(bind(*handle, std::bit_cast<sockaddr*>(&addr), sizeof(addr)));
+        CHECK(bind(*handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
     }
 
     sockaddr_storage serverAddr;
     socklen_t serverAddrLen = sizeof(serverAddr);
 
     CHECK(listen(*handle, SOMAXCONN));
-    CHECK(getsockname(*handle, std::bit_cast<sockaddr*>(&serverAddr), &serverAddrLen));
+    CHECK(getsockname(*handle, reinterpret_cast<sockaddr*>(&serverAddr), &serverAddrLen));
 
-    uint16_t port = isRFCOMM ? std::bit_cast<sockaddr_rc*>(&serverAddr)->rc_channel
-                             : std::bit_cast<sockaddr_l2*>(&serverAddr)->l2_psm;
+    uint16_t port = isRFCOMM ? reinterpret_cast<sockaddr_rc*>(&serverAddr)->rc_channel
+                             : reinterpret_cast<sockaddr_l2*>(&serverAddr)->l2_psm;
 
     return { btohs(port), IPType::None };
 }
@@ -150,7 +149,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
     if (sockType == SOCK_STREAM) {
         // RFCOMM socket (stream type)
         sockaddr_rc client;
-        auto clientAddr = std::bit_cast<sockaddr*>(&client);
+        auto clientAddr = reinterpret_cast<sockaddr*>(&client);
         socklen_t clientLen = sizeof(client);
 
         auto acceptResult = co_await Async::run(std::bind_front(startAccept, *handle, clientAddr, clientLen));
@@ -161,7 +160,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
     } else {
         // L2CAP socket (sequential packet type)
         sockaddr_l2 client;
-        auto clientAddr = std::bit_cast<sockaddr*>(&client);
+        auto clientAddr = reinterpret_cast<sockaddr*>(&client);
         socklen_t clientLen = sizeof(client);
 
         auto acceptResult = co_await Async::run(std::bind_front(startAccept, *handle, clientAddr, clientLen));
