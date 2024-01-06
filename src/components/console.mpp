@@ -16,12 +16,11 @@ import components.textselect;
 
 // Text panel output with colors and other information.
 export class Console {
-    // Represents an item in a console output.
-    // Text is stored as UnicodeString for easier interfacing with ICU.
+    // Item in console output.
     struct ConsoleItem {
         bool canUseHex; // If the item gets displayed as hexadecimal when the option is set
         std::string text; // Text string
-        std::string textHex; // Text in hexadecimal format
+        std::string textHex; // Text in hexadecimal format (UTF-8 encoded)
         ImVec4 color; // Color
         std::string timestamp; // Time added
         std::optional<std::string> hoverText; // Tooltip text

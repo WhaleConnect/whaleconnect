@@ -58,7 +58,7 @@ export class TextSelect {
 
 public:
     // Sets the text accessor functions.
-    // getLineAtIdx: Function taking a size_t (line number) and returning the string in that line in a UnicodeString
+    // getLineAtIdx: Function taking a size_t (line number) and returning the string in that line
     // getNumLines: Function returning a size_t (total number of lines of text)
     template <class T, class U>
     TextSelect(const T& getLineAtIdx, const U& getNumLines) : getLineAtIdx(getLineAtIdx), getNumLines(getNumLines) {}
