@@ -62,8 +62,7 @@ void Console::add(std::string_view s, const ImVec4& color, bool canUseHex, std::
 
     // Computing the string's hex representation here removes the need to do so every application frame.
     if (canUseHex)
-        for (unsigned char c : s)
-            items.back().textHex += std::format("{:02X} ", static_cast<int>(c));
+        for (unsigned char c : s) items.back().textHex += std::format("{:02X} ", static_cast<int>(c));
 
     scrollToEnd = autoscroll; // Scroll to the end if autoscroll is enabled
 }
@@ -104,7 +103,8 @@ void Console::update(std::string_view id) {
     using namespace ImGuiExt::Literals;
 
     ImVec2 size{ ImGuiExt::FILL, -ImGui::GetFrameHeightWithSpacing() };
-    ImGui::BeginChild(id.data(), size, true, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoMove);
+    ImGui::BeginChild(id.data(), size, ImGuiChildFlags_Border,
+        ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoMove);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 1, std::round(0.05_fh) }); // Tighten line spacing
 
     // Add each item

@@ -22,7 +22,7 @@ void printUUID(BTUtils::UUID128 uuid) {
 
 bool SDPWindow::drawSDPList(const BTUtils::SDPResultList& resultList) {
     // Begin a scrollable child window to contain the list
-    ImGui::BeginChild("sdpList", {}, true);
+    ImGui::BeginChild("sdpList", {}, ImGuiChildFlags_Border);
     bool ret = false;
 
     // ID to use in case multiple services have the same name

@@ -176,14 +176,14 @@ bool AppCore::newFrame() {
 
     static bool showDemoWindow = false;
     static bool showMetricsWindow = false;
-    static bool showStackToolWindow = false;
+    static bool showIDStackToolWindow = false;
     ImGui::Checkbox("Show Demo Window", &showDemoWindow);
     ImGui::Checkbox("Show Metrics Window", &showMetricsWindow);
-    ImGui::Checkbox("Show Stack Tool Window", &showStackToolWindow);
+    ImGui::Checkbox("Show Stack Tool Window", &showIDStackToolWindow);
 
     if (showDemoWindow) ImGui::ShowDemoWindow(&showDemoWindow);
     if (showMetricsWindow) ImGui::ShowMetricsWindow(&showMetricsWindow);
-    if (showStackToolWindow) ImGui::ShowStackToolWindow(&showStackToolWindow);
+    if (showIDStackToolWindow) ImGui::ShowIDStackToolWindow(&showIDStackToolWindow);
 
     // Buttons to add notifications with different timeouts and icons
     if (ImGui::Button("Test Notification (3s)"))
