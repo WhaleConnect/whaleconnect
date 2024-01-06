@@ -16,7 +16,6 @@ module;
 #include <utf8.h>
 
 module components.textselect;
-import gui.imguiext;
 
 // The Console class corrects invalid UTF-8 automatically so utf8::unchecked functions are used to improve speed.
 
@@ -87,12 +86,11 @@ size_t getCharIndex(std::string_view s, float cursorPosX) {
 
 // Gets the scroll delta for the given cursor position and window bounds.
 float getScrollDelta(float v, float min, float max) {
-    using namespace ImGuiExt::Literals;
+    const float deltaScale = 10.0f * ImGui::GetIO().DeltaTime;
+    const float maxDelta = 100.0f;
 
-    const float scrollDelta = 250_dt;
-
-    if (v < min) return -scrollDelta;
-    else if (v > max) return scrollDelta;
+    if (v < min) return std::max(-(min - v), -maxDelta) * deltaScale;
+    else if (v > max) return std::min(v - max, maxDelta) * deltaScale;
 
     return 0.0f;
 }
