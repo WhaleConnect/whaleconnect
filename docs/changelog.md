@@ -2,6 +2,16 @@
 
 This document tracks the changes between Network Socket Terminal versions. Dates are written in the MM/DD/YYYY format.
 
+## 0.4.0-beta (Unreleased)
+
+### Improvements
+
+- When selecting text, the scrolling speed now changes based on the cursor position.
+
+### Bug Fixes
+
+- Fixed a crash in connection windows if text was highlighted and the output was cleared.
+
 ## 0.3.0-alpha (01/03/2024)
 
 ### Additions
