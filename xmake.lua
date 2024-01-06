@@ -17,7 +17,7 @@ if is_plat("linux") then
     add_requires("dbus", { configs = { system_bus_address = "unix:path=/run/dbus/system_bus_socket" } })
 end
 
-set_languages("c++20")
+set_languages("c++23")
 set_exceptions("cxx")
 set_warnings("allextra")
 set_defaultmode("debug")
