@@ -22,7 +22,6 @@ Async::Instance::Instance(unsigned int numThreads, unsigned int queueEntries) :
     Internal::init(static_cast<unsigned int>(workerThreadPool.size()), queueEntries);
 
     // Populate thread pool
-    // TODO: Use views::enumerate() in C++23
     for (unsigned int i = 0; i < workerThreadPool.size(); i++)
         workerThreadPool[i] = std::thread{ Internal::worker, i };
 }

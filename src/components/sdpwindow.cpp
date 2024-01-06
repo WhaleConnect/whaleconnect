@@ -28,8 +28,7 @@ bool SDPWindow::drawSDPList(const BTUtils::SDPResultList& resultList) {
     // ID to use in case multiple services have the same name
     int id = 0;
     for (const auto& [protoUUIDs, serviceUUIDs, profileDescs, port, name, desc] : resultList) {
-        ImGui::PushID(id); // Push the ID, then increment it
-        id++; // TODO: Use views::enumerate() in C++23
+        ImGui::PushID(id++); // Push the ID, then increment it
 
         const char* treeName = name.empty() ? "Unnamed service" : name.c_str();
         if (ImGui::TreeNode(treeName)) {
