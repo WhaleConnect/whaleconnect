@@ -49,7 +49,7 @@ float substringSizeX(std::string_view s, size_t start, size_t length = std::stri
 
     auto stringEnd = stringStart;
     if (length == std::string_view::npos) stringEnd = s.end();
-    else utf8::unchecked::advance(stringEnd, length);
+    else utf8::unchecked::advance(stringEnd, std::min(utf8Length(s), length));
 
     // Calculate text size between start and end
     return ImGui::CalcTextSize(&*stringStart, &*stringEnd).x;
@@ -207,6 +207,9 @@ void TextSelect::drawSelection(const ImVec2& cursorPosStart) const {
 
     // Start and end positions
     auto [startX, startY, endX, endY] = getSelection();
+
+    size_t numLines = getNumLines();
+    if (startY >= numLines || endY >= numLines) return;
 
     // Add a rectangle to the draw list for each line contained in the selection
     for (size_t i = startY; i <= endY; i++) {
