@@ -79,7 +79,7 @@ target("terminal-core")
 
     -- Platform-specific files
     if is_plat("windows") then
-        add_links("crypt32")
+        add_links("crypt32", "user32")
         add_files("src/net/windows/*.cpp",
                   "src/os/windows/*.cpp", "src/os/windows/*.mpp",
                   "src/sockets/delegates/windows/*.cpp")
