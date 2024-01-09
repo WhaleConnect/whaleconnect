@@ -123,11 +123,6 @@ void Console::drawOptions() {
     }
 }
 
-std::string Console::getLineAtIdx(size_t i) const {
-    ConsoleItem item = items[i];
-    return showHex && item.canUseHex ? item.textHex : item.text;
-}
-
 void Console::update(std::string_view id) {
     using namespace ImGuiExt::Literals;
 

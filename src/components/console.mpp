@@ -63,7 +63,10 @@ export class Console {
     void drawOptions();
 
     // Gets the line at an index.
-    std::string getLineAtIdx(size_t i) const;
+    std::string_view getLineAtIdx(size_t i) const {
+        const ConsoleItem& item = items[i];
+        return showHex && item.canUseHex ? item.textHex : item.text;
+    }
 
     // Gets the number of lines in the output.
     size_t getNumLines() const {
