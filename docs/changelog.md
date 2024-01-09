@@ -7,6 +7,8 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Improvements
 
 - When selecting text, the scrolling speed now changes based on the cursor position.
+- Connection windows now always show the horizontal scrollbar to prevent flickering from hiding/showing it while scrolling.
+- Updated the timestamps display in connection windows to reduce the number of computations per application frame.
 
 ### Bug Fixes
 
