@@ -55,11 +55,17 @@ void windowMenu(WindowList& list, std::string_view desc) {
 }
 
 // Draws the main menu bar.
-void drawMenuBar(bool& newConnOpen, bool& notificationsOpen, bool& newServerOpen, WindowList& connections,
-    WindowList& servers) {
+void drawMenuBar(bool& quit, bool& settingsOpen, bool& newConnOpen, bool& notificationsOpen, bool& newServerOpen,
+    WindowList& connections, WindowList& servers) {
     if (!ImGui::BeginMainMenuBar()) return;
 
     ImGuiExt::drawNotificationsMenu(notificationsOpen);
+
+    if (ImGui::BeginMenu("File")) {
+        ImGui::MenuItem("Settings", nullptr, &settingsOpen);
+        ImGui::MenuItem("Quit", nullptr, &quit);
+        ImGui::EndMenu();
+    }
 
     if (ImGui::BeginMenu("View")) {
         ImGui::MenuItem("New Connection", nullptr, &newConnOpen);
@@ -83,17 +89,20 @@ void mainLoop() {
     WindowList sdpWindows; // List of windows for creating Bluetooth connections
     WindowList servers; // List of servers
 
-    while (AppCore::newFrame()) {
+    bool quit = false;
+    while (!quit && AppCore::newFrame()) {
         Async::handleEvents();
 
+        static bool settingsOpen = false;
         static bool newConnOpen = true;
         static bool newServerOpen = false;
         static bool notificationsOpen = false;
 
         // Main menu bar
-        drawMenuBar(newConnOpen, notificationsOpen, newServerOpen, connections, servers);
+        drawMenuBar(quit, settingsOpen, newConnOpen, notificationsOpen, newServerOpen, connections, servers);
 
         // Application windows
+        Settings::drawSettingsWindow(settingsOpen);
         drawNewConnectionWindow(newConnOpen, connections, sdpWindows);
         drawNewServerWindow(servers, newServerOpen);
         ImGuiExt::drawNotificationsWindow(notificationsOpen);
@@ -117,7 +126,8 @@ int main(int, char**) {
 
     // Initialize APIs for sockets and Bluetooth
     try {
-        asyncInstance.emplace(Settings::numThreads, Settings::queueEntries);
+        asyncInstance.emplace(Settings::getSetting<uint8_t>("os.numThreads"),
+            Settings::getSetting<uint8_t>("os.queueEntries"));
         btutilsInstance.emplace();
     } catch (const System::SystemError& error) {
         ImGuiExt::addNotification("Initialization error "s + error.what(), NotificationType::Error, 0);

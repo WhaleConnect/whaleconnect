@@ -69,7 +69,7 @@ export namespace ImGuiExt {
 
     // Gets the ImGuiDataType of a given variable.
     template <class T>
-    constexpr ImGuiDataType getDataType(T);
+    constexpr ImGuiDataType getDataType();
 
     // Wrapper for InputScalar() with automatic type detection.
     template <class T>
@@ -78,7 +78,7 @@ export namespace ImGuiExt {
         int* stepPtr = step > 0 ? &step : nullptr;
         int* stepFastPtr = step > 0 && stepFast > 0 ? &stepFast : nullptr;
 
-        ImGui::InputScalar(label.data(), getDataType(data), &data, stepPtr, stepFastPtr);
+        ImGui::InputScalar(label.data(), getDataType<T>(), &data, stepPtr, stepFastPtr);
     }
 
     // Wrapper for InputText() to use a std::string buffer.
@@ -102,7 +102,7 @@ export namespace ImGuiExt {
 }
 
 template <class T>
-constexpr ImGuiDataType ImGuiExt::getDataType(T) {
+constexpr ImGuiDataType ImGuiExt::getDataType() {
     if constexpr (std::is_same_v<T, int8_t>) return ImGuiDataType_S8;
     if constexpr (std::is_same_v<T, uint8_t>) return ImGuiDataType_U8;
     if constexpr (std::is_same_v<T, int16_t>) return ImGuiDataType_S16;

@@ -23,6 +23,12 @@ import utils.handleptr;
 SDL_Window* window; // The main application window
 SDL_GLContext glContext; // The OpenGL context
 
+const std::string settingsFilePath = [] {
+    const HandlePtr<char, SDL_free> prefPath{ SDL_GetPrefPath("NSTerminal", "terminal") };
+    const std::string prefPathStr{ prefPath.get() };
+    return prefPathStr + "settings.json";
+}();
+
 // Scales the app and fonts to the screen's DPI.
 void scaleToDPI() {
     // https://github.com/ocornut/imgui/issues/5301
@@ -36,11 +42,12 @@ void scaleToDPI() {
     float scale = SDL_GetWindowPixelDensity(window);
 
     // Font size
+    auto configuredFontSize = Settings::getSetting<uint8_t>("font.size");
     ImFontConfig config;
-    config.SizePixels = Settings::fontSize * scale;
+    config.SizePixels = configuredFontSize * scale;
 
     // The icons are slightly larger than the main font so they are scaled down from the font size
-    float fontSize = std::floor(Settings::fontSize * dpiScale * scale);
+    float fontSize = std::floor(configuredFontSize * dpiScale * scale);
     float iconFontSize = std::floor(fontSize * 0.9f);
 
     ImFontAtlas& fonts = *io.Fonts;
@@ -57,14 +64,17 @@ void scaleToDPI() {
         ImVector<ImWchar> rangesOut;
         ImFontGlyphRangesBuilder builder;
 
-        builder.AddRanges(fonts.GetGlyphRangesDefault()); // First 2 Unicode blocks
+        auto fontRanges = Settings::getSetting<std::vector<ImWchar>>("font.ranges");
+        fontRanges.push_back(0);
+        builder.AddRanges(fontRanges.data());
         builder.AddChar(0xFFFD); // Substitution character
 
         builder.BuildRanges(&rangesOut);
         return rangesOut;
     }();
 
-    static const auto fontFile = basePathStr + "NotoSansMono-Regular.ttf";
+    static const auto configuredFontFile = Settings::getSetting<std::string>("font.file");
+    static const auto fontFile = configuredFontFile.empty() ? basePathStr + "NotoSansMono-Regular.ttf" : configuredFontFile;
     fonts.AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges.Data);
 
     // Load icons
@@ -85,8 +95,6 @@ void scaleToDPI() {
 
 // Sets Dear ImGui's configuration for use by the application.
 void configImGui() {
-    using namespace Settings;
-
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard // Enable Keyboard Controls
         | ImGuiConfigFlags_DockingEnable // Enable Docking
@@ -98,10 +106,11 @@ void configImGui() {
 
     // Set styles
     ImGuiStyle& style = ImGui::GetStyle();
-    style.Colors[ImGuiCol_WindowBg].w = windowTransparency ? 0.92f : 1.0f;
+    style.Colors[ImGuiCol_WindowBg].w = Settings::getSetting<bool>("gui.windowTransparency") ? 0.92f : 1.0f;
     style.Colors[ImGuiCol_Tab].w = 0.0f;
 
     // Set corner rounding
+    auto roundedCorners = Settings::getSetting<bool>("gui.roundedCorners");
     style.WindowRounding = roundedCorners ? 8.0f : 0.0f;
 
     style.ChildRounding = style.FrameRounding = style.PopupRounding = style.ScrollbarRounding = style.GrabRounding
@@ -111,6 +120,8 @@ void configImGui() {
 }
 
 bool AppCore::init() {
+    Settings::load(settingsFilePath);
+
     // Set up SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "SDL Initialization Error", SDL_GetError(), nullptr);
@@ -216,6 +227,7 @@ void AppCore::render() {
 }
 
 void AppCore::cleanup() {
+    Settings::save(settingsFilePath);
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();

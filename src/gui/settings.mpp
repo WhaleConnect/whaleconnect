@@ -1,12 +1,32 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+module;
+#include <string_view>
+
+#include <nlohmann/json.hpp>
+
 export module gui.settings;
 
+namespace Internal {
+    const nlohmann::json& getValue(std::string_view key);
+
+    const nlohmann::json& getDefaultValue(std::string_view key);
+}
+
 export namespace Settings {
-    unsigned char fontSize = 15; // Application font height in pixels
-    bool roundedCorners = false; // If corners in the UI are rounded
-    bool windowTransparency = false; // If application windows have a transparent effect
-    unsigned char numThreads = 0; // Number of worker threads (0 to auto-detect)
-    unsigned int queueEntries = 128; // Number of entries in io_uring instances
+    void load(std::string_view filePath);
+
+    template <class T>
+    T getSetting(std::string_view key) {
+        try {
+            return Internal::getValue(key).get<T>();
+        } catch (const nlohmann::json::type_error& e) {
+            return Internal::getDefaultValue(key).get<T>();
+        }
+    }
+
+    void save(std::string_view filePath);
+
+    void drawSettingsWindow(bool& open);
 }
