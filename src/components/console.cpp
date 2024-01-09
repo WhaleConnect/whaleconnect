@@ -44,7 +44,7 @@ std::string getTimestamp() {
     auto local = *std::localtime(&timer);
 
     // Return formatted string
-    return std::format("{:02}:{:02}:{:02}.{:03} > ", local.tm_hour, local.tm_min, local.tm_sec, ms);
+    return std::format("{:02}:{:02}:{:02}.{:03}", local.tm_hour, local.tm_min, local.tm_sec, ms);
 }
 
 void Console::add(std::string_view s, const ImVec4& color, bool canUseHex, std::string_view hoverText) {
@@ -65,6 +65,36 @@ void Console::add(std::string_view s, const ImVec4& color, bool canUseHex, std::
         for (unsigned char c : s) items.back().textHex += std::format("{:02X} ", static_cast<int>(c));
 
     scrollToEnd = autoscroll; // Scroll to the end if autoscroll is enabled
+}
+
+void Console::drawTimestamps() {
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    // Disable padding in X direction and link scrolling to main content
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, style.WindowPadding.y });
+    ImGui::SetNextWindowScroll({ 0, yScrollPos });
+
+    // The timestamps child window is shorter by ScrollbarSize to align with main content
+    const float height = -ImGui::GetFrameHeightWithSpacing() - style.ScrollbarSize;
+
+    // Calculate the width of the timestamps (always 12 chars) using the width of the "0" character
+    ImVec2 size{ ImGui::CalcTextSize("0").x * 12, height };
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+
+    ImGui::BeginChild("timestamps", size, ImGuiChildFlags_AlwaysUseWindowPadding, flags);
+
+    // Display visible timestamps
+    ImGuiListClipper clipper;
+    clipper.Begin(static_cast<int>(items.size()));
+    while (clipper.Step())
+        for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+            ImGui::TextUnformatted(items[i].timestamp.c_str());
+
+    clipper.End();
+
+    ImGui::EndChild();
+    ImGui::PopStyleVar();
+    ImGui::SameLine();
 }
 
 void Console::drawContextMenu() {
@@ -95,17 +125,21 @@ void Console::drawOptions() {
 
 std::string Console::getLineAtIdx(size_t i) const {
     ConsoleItem item = items[i];
-    const std::string& lineBase = showHex && item.canUseHex ? item.textHex : item.text;
-    return showTimestamps ? item.timestamp + lineBase : lineBase;
+    return showHex && item.canUseHex ? item.textHex : item.text;
 }
 
 void Console::update(std::string_view id) {
     using namespace ImGuiExt::Literals;
 
-    ImVec2 size{ ImGuiExt::FILL, -ImGui::GetFrameHeightWithSpacing() };
-    ImGui::BeginChild(id.data(), size, ImGuiChildFlags_Border,
-        ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoMove);
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 1, std::round(0.05_fh) }); // Tighten line spacing
+
+    if (showTimestamps) drawTimestamps();
+
+    ImVec2 size{ ImGuiExt::FILL, -ImGui::GetFrameHeightWithSpacing() };
+
+    // Always show horizontal scrollbar to maintain a known content height / prevents occasional flickering on scroll
+    ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NoMove;
+    ImGui::BeginChild(id.data(), size, ImGuiChildFlags_Border, flags);
 
     // Add each item
     ImGuiListClipper clipper;
@@ -147,8 +181,9 @@ void Console::update(std::string_view id) {
         ImGui::EndPopup();
     }
 
-    ImGui::PopStyleVar();
+    yScrollPos = ImGui::GetScrollY();
     ImGui::EndChild();
+    ImGui::PopStyleVar();
 
     drawOptions();
 }

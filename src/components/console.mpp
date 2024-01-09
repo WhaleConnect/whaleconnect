@@ -28,6 +28,7 @@ export class Console {
 
     // State
     bool scrollToEnd = false; // If the console is force-scrolled to the end
+    float yScrollPos = 0; // Scroll position in vertical axis
 
     // Options
     bool autoscroll = true; // If console autoscrolls when new data is put
@@ -51,6 +52,9 @@ export class Console {
 
     // Adds text to the console. Does not make it go on its own line.
     void add(std::string_view s, const ImVec4& color, bool canUseHex, std::string_view hoverText);
+
+    // Draws the timestamps to the left of the content.
+    void drawTimestamps();
 
     // Draws the contents of the right-click context menu.
     void drawContextMenu();
