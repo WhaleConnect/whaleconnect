@@ -10,9 +10,9 @@ module;
 #include <vector>
 
 #include <imgui.h>
+#include <textselect.hpp>
 
 export module components.console;
-import components.textselect;
 
 // Text panel output with colors and other information.
 export class Console {

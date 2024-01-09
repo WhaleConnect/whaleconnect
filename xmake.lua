@@ -10,7 +10,7 @@ add_requireconfs("*|opengl", { system = false })
 
 add_requires("imgui-with-sdl3 v20231231-docking", { configs = { sdl3_no_renderer = true, opengl3 = true, freetype = true } })
 add_requires("libsdl3", { configs = { use_sdlmain = true } })
-add_requires("botan", "catch2", "magic_enum", "nameof", "nlohmann_json", "opengl", "out_ptr", "utfcpp")
+add_requires("botan", "catch2", "imguitextselect", "magic_enum", "nameof", "nlohmann_json", "opengl", "out_ptr", "utfcpp")
 
 if is_plat("linux") then
     add_requires("liburing", "bluez")
@@ -96,7 +96,7 @@ target("terminal-core")
     end
 
 target("terminal")
-    add_packages("imgui-with-sdl3", "libsdl3", "opengl")
+    add_packages("imgui-with-sdl3", "imguitextselect", "libsdl3", "nlohmann_json", "opengl")
     add_deps("terminal-core")
 
     -- GUI code and main entry point
