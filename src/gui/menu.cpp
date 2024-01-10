@@ -4,7 +4,10 @@
 module;
 #include <format>
 
+#include <config.h>
 #include <imgui.h>
+#include <SDL3/SDL_misc.h>
+#include <SDL3/SDL_platform.h>
 
 module gui.menu;
 import components.windowlist;
@@ -19,6 +22,41 @@ void windowMenu(WindowList& list, const char* desc) {
         for (const auto& i : list) ImGuiExt::windowMenuItem(i->getTitle());
 
     ImGui::EndMenu();
+}
+
+void drawBuildInfo(bool& open) {
+    if (!open) return;
+
+    using namespace ImGuiExt::Literals;
+    ImGui::SetNextWindowSize(25_fh * 20_fh, ImGuiCond_FirstUseEver);
+    if (!ImGui::Begin("About", &open)) {
+        ImGui::End();
+        return;
+    }
+
+    static bool copy = false;
+    if (copy) ImGui::LogToClipboard();
+
+    ImGui::Text("Network Socket Terminal");
+    ImGui::Text("Cross-platform network communication software");
+
+    ImGui::SeparatorText("Version/Build");
+    ImGui::Text("Version: " CONFIG_VERSION);
+    ImGui::Text("Build: %ld", CONFIG_VERSION_BUILD);
+    ImGui::Text("Git commit: " GIT_COMMIT_LONG);
+    ImGui::Text("Dear ImGui: " IMGUI_VERSION " (%d)", IMGUI_VERSION_NUM);
+
+    ImGui::SeparatorText("System");
+    ImGui::Text("OS: %s", SDL_GetPlatform());
+
+    if (copy) {
+        ImGui::LogFinish();
+        copy = false;
+    }
+
+    ImGui::Spacing();
+    if (ImGui::Button("Copy")) copy = true;
+    ImGui::End();
 }
 
 void drawMenuBar(bool& quit, bool& settingsOpen, bool& newConnOpen, bool& notificationsOpen, bool& newServerOpen,
@@ -44,5 +82,21 @@ void drawMenuBar(bool& quit, bool& settingsOpen, bool& newConnOpen, bool& notifi
     windowMenu(connections, "Connections");
     windowMenu(servers, "Servers");
 
+    static bool aboutOpen = false;
+
+    if (ImGui::BeginMenu("Help")) {
+        ImGui::MenuItem("About", nullptr, &aboutOpen);
+        if (ImGui::MenuItem("Show Changelog"))
+            SDL_OpenURL("https://github.com/NSTerminal/terminal/blob/main/docs/changelog.md");
+
+        ImGui::Separator();
+        if (ImGui::MenuItem("Open on GitHub")) SDL_OpenURL("https://github.com/NSTerminal/terminal");
+        if (ImGui::MenuItem("View License")) SDL_OpenURL("https://github.com/NSTerminal/terminal/blob/main/COPYING");
+
+        ImGui::EndMenu();
+    }
+
     ImGui::EndMainMenuBar();
+
+    drawBuildInfo(aboutOpen);
 }
