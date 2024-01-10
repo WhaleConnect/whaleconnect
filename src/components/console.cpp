@@ -70,8 +70,7 @@ void Console::add(std::string_view s, const ImVec4& color, bool canUseHex, std::
 void Console::drawTimestamps() {
     ImGuiStyle& style = ImGui::GetStyle();
 
-    // Disable padding in X direction and link scrolling to main content
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, style.WindowPadding.y });
+    // Link scrolling to main content
     ImGui::SetNextWindowScroll({ 0, yScrollPos });
 
     // The timestamps child window is shorter by ScrollbarSize to align with main content
@@ -93,8 +92,7 @@ void Console::drawTimestamps() {
     clipper.End();
 
     ImGui::EndChild();
-    ImGui::PopStyleVar();
-    ImGui::SameLine();
+    ImGui::SameLine(0, 0);
 }
 
 void Console::drawContextMenu() {
