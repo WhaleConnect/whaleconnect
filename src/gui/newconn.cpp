@@ -6,10 +6,14 @@ module;
 #include <string>
 #include <string_view>
 
+#include <imgui.h>
 #include <magic_enum.hpp>
 
 module gui.newconn;
 import components.connwindow;
+import gui.imguiext;
+import gui.newconnbt;
+import gui.newconnip;
 import gui.notifications;
 import net.device;
 import net.enums;
@@ -48,4 +52,18 @@ void addConnWindow(WindowList& list, bool useTLS, const Device& device, std::str
 
     // If the connection exists, show a message
     if (!isNew) ImGuiExt::addNotification("This connection is already open.", NotificationType::Warning);
+}
+
+void drawNewConnectionWindow(bool& open, WindowList& connections, WindowList& sdpWindows) {
+    if (!open) return;
+
+    using namespace ImGuiExt::Literals;
+    ImGui::SetNextWindowSize(40_fh * 11_fh, ImGuiCond_Appearing);
+
+    if (ImGui::Begin("New Connection", &open) && ImGui::BeginTabBar("ConnectionTypes")) {
+        drawIPConnectionTab(connections);
+        drawBTConnectionTab(connections, sdpWindows);
+        ImGui::EndTabBar();
+    }
+    ImGui::End();
 }

@@ -17,8 +17,8 @@ module;
 #include <SDL3/SDL_opengl.h>
 #include <SDL3/SDL_video.h>
 
-module gui.appcore;
-import gui.settings;
+module app.appcore;
+import app.settings;
 import gui.notifications;
 import utils.handleptr;
 

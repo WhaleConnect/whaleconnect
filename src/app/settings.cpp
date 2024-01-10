@@ -10,7 +10,7 @@ module;
 #include <imgui.h>
 #include <nlohmann/json.hpp>
 
-module gui.settings;
+module app.settings;
 import gui.imguiext;
 
 const nlohmann::json defaultSettings{

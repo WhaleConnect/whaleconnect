@@ -6,7 +6,7 @@ module;
 
 #include <nlohmann/json.hpp>
 
-export module gui.settings;
+export module app.settings;
 
 namespace Internal {
     const nlohmann::json& getValue(std::string_view key);

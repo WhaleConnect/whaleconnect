@@ -6,8 +6,6 @@
 #endif
 
 #include <cstdlib> // EXIT_FAILURE, EXIT_SUCCESS
-#include <format>
-#include <memory>
 #include <optional>
 #include <string_view>
 #include <system_error>
@@ -16,71 +14,16 @@
 #include <nlohmann/json.hpp> // IWYU pragma: keep (fixes errors on MSVC)
 #include <SDL3/SDL_main.h>
 
+import app.appcore;
+import app.settings;
 import components.windowlist;
-import gui.appcore;
-import gui.imguiext;
-import gui.newconnbt;
-import gui.newconnip;
+import gui.menu;
+import gui.newconn;
 import gui.newserver;
 import gui.notifications;
-import gui.settings;
 import net.btutils;
-import net.device;
-import net.enums;
 import os.async;
 import os.error;
-
-// Draws the new connection window.
-void drawNewConnectionWindow(bool& open, WindowList& connections, WindowList& sdpWindows) {
-    if (!open) return;
-
-    using namespace ImGuiExt::Literals;
-    ImGui::SetNextWindowSize(40_fh * 11_fh, ImGuiCond_Appearing);
-
-    if (ImGui::Begin("New Connection", &open) && ImGui::BeginTabBar("ConnectionTypes")) {
-        drawIPConnectionTab(connections);
-        drawBTConnectionTab(connections, sdpWindows);
-        ImGui::EndTabBar();
-    }
-    ImGui::End();
-}
-
-void windowMenu(WindowList& list, std::string_view desc) {
-    if (!ImGui::BeginMenu(desc.data())) return;
-
-    if (list.empty()) ImGui::TextDisabled("%s", std::format("No {}", desc).c_str());
-    else
-        for (const auto& i : list) ImGuiExt::windowMenuItem(i->getTitle());
-
-    ImGui::EndMenu();
-}
-
-// Draws the main menu bar.
-void drawMenuBar(bool& quit, bool& settingsOpen, bool& newConnOpen, bool& notificationsOpen, bool& newServerOpen,
-    WindowList& connections, WindowList& servers) {
-    if (!ImGui::BeginMainMenuBar()) return;
-
-    ImGuiExt::drawNotificationsMenu(notificationsOpen);
-
-    if (ImGui::BeginMenu("File")) {
-        ImGui::MenuItem("Settings", nullptr, &settingsOpen);
-        ImGui::MenuItem("Quit", nullptr, &quit);
-        ImGui::EndMenu();
-    }
-
-    if (ImGui::BeginMenu("View")) {
-        ImGui::MenuItem("New Connection", nullptr, &newConnOpen);
-        ImGui::MenuItem("New Server", nullptr, &newServerOpen);
-        ImGui::MenuItem("Notifications", nullptr, &notificationsOpen);
-        ImGui::EndMenu();
-    }
-
-    // List all open connections and servers
-    windowMenu(connections, "Connections");
-    windowMenu(servers, "Servers");
-
-    ImGui::EndMainMenuBar();
-}
 
 // Contains the app's core logic and functions.
 void mainLoop() {
