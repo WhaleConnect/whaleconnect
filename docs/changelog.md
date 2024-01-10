@@ -4,6 +4,12 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 ## 0.4.0-beta (Unreleased)
 
+### Additions
+
+- Added JSON-based settings to allow changing settings at runtime.
+- Added a settings editor window.
+- Added a "Quit" option under the "File" menu item.
+
 ### Improvements
 
 - When selecting text, the scrolling speed now changes based on the cursor position.
