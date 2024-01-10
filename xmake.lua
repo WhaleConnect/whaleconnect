@@ -1,6 +1,7 @@
 -- Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
+set_version("0.4.0", {build = "%Y%m%d%H%M"})
 add_repositories("xrepo-patches https://github.com/NSTerminal/xrepo-patches.git")
 
 add_rules("mode.debug", "mode.release")
@@ -100,9 +101,12 @@ target("terminal")
     add_deps("terminal-core")
 
     -- GUI code and main entry point
-    add_files("src/components/*.cpp", "src/components/*.mpp",
-              "src/gui/*.cpp", "src/gui/*.mpp",
-              "src/main.cpp")
+    add_files("src/app/*.cpp", "src/app/*.mpp",
+        "src/components/*.cpp", "src/components/*.mpp",
+        "src/gui/*.cpp", "src/gui/*.mpp",
+        "src/main.cpp")
+    add_configfiles("src/config.h.in")
+    add_includedirs("$(buildir)")
 
     -- Add platform rules
     if is_plat("windows") then
