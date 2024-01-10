@@ -26,8 +26,8 @@ set_license("GPL-3.0-or-later")
 add_packages("botan", "magic_enum", "nameof", "out_ptr", "utfcpp")
 
 add_cxxflags("-Wno-missing-field-initializers",
-             "-Wno-read-modules-implicitly",
-             "-pthread", { tools = { "clang", "clangxx" } })
+    "-Wno-read-modules-implicitly",
+    "-pthread", { tools = { "clang", "clangxx" } })
 add_cxxflags("cl::/Zc:preprocessor", { force = true })
 
 -- Use MSVC Unicode character set and prevent clashing macros
@@ -38,8 +38,8 @@ set_encodings("utf-8")
 
 -- Platform detection macros ("or false" is needed because is_plat() can return nil)
 add_defines("OS_WINDOWS=" .. tostring(is_plat("windows") or false),
-            "OS_MACOS=" .. tostring(is_plat("macosx") or false),
-            "OS_LINUX=" .. tostring(is_plat("linux") or false))
+    "OS_MACOS=" .. tostring(is_plat("macosx") or false),
+    "OS_LINUX=" .. tostring(is_plat("linux") or false))
 
 -- Include directories
 add_includedirs("src")
@@ -72,27 +72,27 @@ target("terminal-core")
     set_kind("static")
 
     add_files("src/net/*.cpp", "src/net/*.mpp",
-              "src/os/*.cpp", "src/os/*.mpp",
-              "src/sockets/*.mpp", "src/sockets/delegates/*.mpp",
-              "src/sockets/delegates/secure/*.cpp", "src/sockets/delegates/secure/*.mpp",
-              "src/utils/*.cpp", "src/utils/*.mpp")
+        "src/os/*.cpp", "src/os/*.mpp",
+        "src/sockets/*.mpp", "src/sockets/delegates/*.mpp",
+        "src/sockets/delegates/secure/*.cpp", "src/sockets/delegates/secure/*.mpp",
+        "src/utils/*.cpp", "src/utils/*.mpp")
 
     -- Platform-specific files
     if is_plat("windows") then
         add_links("crypt32", "user32")
         add_files("src/net/windows/*.cpp",
-                  "src/os/windows/*.cpp", "src/os/windows/*.mpp",
-                  "src/sockets/delegates/windows/*.cpp")
+            "src/os/windows/*.cpp", "src/os/windows/*.mpp",
+            "src/sockets/delegates/windows/*.cpp")
     elseif is_plat("macosx") then
         add_deps("swift")
         add_files("swift/bridge/cppbridge.cpp",
-                  "src/net/macos/*.cpp",
-                  "src/os/macos/*.cpp", "src/os/macos/*.mpp",
-                  "src/sockets/delegates/macos/*.cpp")
+            "src/net/macos/*.cpp",
+            "src/os/macos/*.cpp", "src/os/macos/*.mpp",
+            "src/sockets/delegates/macos/*.cpp")
     elseif is_plat("linux") then
         add_files("src/net/linux/*.cpp",
-                  "src/os/linux/*.cpp", "src/os/linux/*.mpp",
-                  "src/sockets/delegates/linux/*.cpp")
+            "src/os/linux/*.cpp", "src/os/linux/*.mpp",
+            "src/sockets/delegates/linux/*.cpp")
     end
 
 target("terminal")
