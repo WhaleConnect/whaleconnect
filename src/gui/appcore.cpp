@@ -5,10 +5,12 @@ module;
 #include <array>
 #include <cmath>
 #include <string>
+#include <vector>
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl3.h>
+#include <nlohmann/json.hpp> // IWYU pragma: keep (fixes errors on MSVC)
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_filesystem.h>

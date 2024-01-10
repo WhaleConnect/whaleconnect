@@ -71,7 +71,7 @@ const nlohmann::json& Internal::getDefaultValue(std::string_view key) {
 }
 
 void Settings::load(std::string_view filePath) {
-    std::ifstream f{ filePath };
+    std::ifstream f{ filePath.data() };
     if (f.fail()) {
         loadedSettings = defaultSettings;
     } else {
@@ -84,7 +84,7 @@ void Settings::load(std::string_view filePath) {
 }
 
 void Settings::save(std::string_view filePath) {
-    std::ofstream f{ filePath };
+    std::ofstream f{ filePath.data() };
     f << loadedSettings.dump(4) << "\n";
 }
 

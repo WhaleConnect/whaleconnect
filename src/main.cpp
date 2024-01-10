@@ -13,6 +13,7 @@
 #include <system_error>
 
 #include <imgui.h>
+#include <nlohmann/json.hpp> // IWYU pragma: keep (fixes errors on MSVC)
 #include <SDL3/SDL_main.h>
 
 import components.windowlist;
