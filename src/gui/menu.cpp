@@ -42,7 +42,7 @@ void drawBuildInfo(bool& open) {
 
     ImGui::SeparatorText("Version/Build");
     ImGui::Text("Version: " CONFIG_VERSION);
-    ImGui::Text("Build: %ld", CONFIG_VERSION_BUILD);
+    ImGui::Text("Build: %llu", CONFIG_VERSION_BUILD);
     ImGui::Text("Git commit: " GIT_COMMIT_LONG);
     ImGui::Text("Dear ImGui: " IMGUI_VERSION " (%d)", IMGUI_VERSION_NUM);
 
