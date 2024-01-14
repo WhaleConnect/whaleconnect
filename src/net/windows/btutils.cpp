@@ -99,10 +99,6 @@ void checkProtocolAttributes(SDP_ELEMENT_DATA& element, BTUtils::SDPResult& resu
             case SDP_ST_UINT16:
                 // L2CAP PSM is stored in a 16-bit integer
                 if (proto == L2CAP_PROTOCOL_UUID16) result.port = data.uint16;
-                break;
-            default:
-                // Other types not handled
-                break;
         }
     }
 }
