@@ -12,8 +12,6 @@ module;
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "os/check.hpp"
-
 module sockets.delegates.server;
 import net.netutils;
 import os.async;
@@ -39,7 +37,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
     auto clientAddr = reinterpret_cast<sockaddr*>(&client);
     socklen_t clientLen = sizeof(client);
 
-    SocketHandle<SocketTag::IP> fd{ CHECK(::accept(*handle, clientAddr, &clientLen)) };
+    SocketHandle<SocketTag::IP> fd{ check(::accept(*handle, clientAddr, &clientLen)) };
     Device device = NetUtils::fromAddr(clientAddr, clientLen, ConnectionType::TCP);
 
     Async::prepSocket(*fd);
@@ -55,7 +53,7 @@ Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
     co_await Async::run(std::bind_front(Async::submitKqueue, *handle, Async::IOType::Receive));
 
     std::string data(size, 0);
-    ssize_t recvLen = CHECK(recvfrom(*handle, data.data(), data.size(), 0, fromAddr, &addrSize));
+    ssize_t recvLen = check(recvfrom(*handle, data.data(), data.size(), 0, fromAddr, &addrSize));
     data.resize(recvLen);
 
     co_return { NetUtils::fromAddr(fromAddr, addrSize, ConnectionType::UDP), data };
@@ -67,7 +65,7 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
 
     co_await NetUtils::loopWithAddr(addr.get(), [this, &data](const AddrInfoType* resolveRes) -> Task<> {
         co_await Async::run(std::bind_front(Async::submitKqueue, *handle, Async::IOType::Send));
-        CHECK(sendto(*handle, data.data(), data.size(), 0, resolveRes->ai_addr, resolveRes->ai_addrlen));
+        check(sendto(*handle, data.data(), data.size(), 0, resolveRes->ai_addr, resolveRes->ai_addrlen));
     });
 }
 
@@ -76,7 +74,7 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
     handle.reset(BluetoothMacOS::makeBTServerHandle());
 
     bool isL2CAP = serverInfo.type == ConnectionType::L2CAP;
-    CHECK((*handle)->startServer(isL2CAP, serverInfo.port), checkTrue, [](bool) { return kIOReturnError; },
+    check((*handle)->startServer(isL2CAP, serverInfo.port), checkTrue, [](bool) { return kIOReturnError; },
         System::ErrorType::IOReturn);
     return { serverInfo.port };
 }

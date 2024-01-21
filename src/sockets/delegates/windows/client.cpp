@@ -13,8 +13,6 @@ module;
 #include <MSWSock.h>
 #include <ws2bth.h>
 
-#include "os/check.hpp"
-
 module sockets.delegates.client;
 import net.enums;
 import net.netutils;
@@ -35,7 +33,7 @@ void startConnect(SOCKET s, sockaddr* addr, size_t len, Async::CompletionResult&
     int addrSize = addr->sa_family == AF_BTH ? sizeof(SOCKADDR_BTH) : sizeof(sockaddr_storage);
 
     // Bind the socket
-    CHECK(bind(s, reinterpret_cast<sockaddr*>(&addrBind), addrSize));
+    check(bind(s, reinterpret_cast<sockaddr*>(&addrBind), addrSize));
 
     static LPFN_CONNECTEX connectExPtr = nullptr;
 
@@ -43,16 +41,16 @@ void startConnect(SOCKET s, sockaddr* addr, size_t len, Async::CompletionResult&
         // Load the ConnectEx() function
         GUID guid = WSAID_CONNECTEX;
         DWORD numBytes = 0;
-        CHECK(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &connectExPtr, sizeof(connectExPtr),
+        check(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &connectExPtr, sizeof(connectExPtr),
             &numBytes, nullptr, nullptr));
     }
 
-    CHECK(connectExPtr(s, addr, static_cast<int>(len), nullptr, 0, nullptr, &result), checkTrue);
+    check(connectExPtr(s, addr, static_cast<int>(len), nullptr, 0, nullptr, &result), checkTrue);
 }
 
 void finalizeConnect(SOCKET s) {
     // Make the socket behave more like a regular socket connected with connect()
-    CHECK(setsockopt(s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0));
+    check(setsockopt(s, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, nullptr, 0));
 }
 
 template <>
@@ -60,14 +58,14 @@ Task<> Delegates::Client<SocketTag::IP>::connect(Device device) {
     auto addr = NetUtils::resolveAddr(device);
 
     co_await NetUtils::loopWithAddr(addr.get(), [this, type = device.type](const AddrInfoType* result) -> Task<> {
-        handle.reset(CHECK(socket(result->ai_family, result->ai_socktype, result->ai_protocol)));
+        handle.reset(check(socket(result->ai_family, result->ai_socktype, result->ai_protocol)));
 
         // Add the socket to the async queue
         Async::add(*handle);
 
         // Datagram sockets can be directly connected (ConnectEx doesn't support them)
         if (type == ConnectionType::UDP) {
-            CHECK(::connect(*handle, result->ai_addr, static_cast<int>(result->ai_addrlen)));
+            check(::connect(*handle, result->ai_addr, static_cast<int>(result->ai_addrlen)));
         } else {
             co_await Async::run(std::bind_front(startConnect, *handle, result->ai_addr, result->ai_addrlen));
             finalizeConnect(*handle);
@@ -80,7 +78,7 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     // Only RFCOMM sockets are supported by the Microsoft Bluetooth stack on Windows
     if (device.type != ConnectionType::RFCOMM) throw std::invalid_argument{ "Socket type not supported" };
 
-    handle.reset(CHECK(socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM)));
+    handle.reset(check(socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM)));
     Async::add(*handle);
 
     // Convert the MAC address from string form into integer form

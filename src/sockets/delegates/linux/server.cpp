@@ -16,8 +16,6 @@ module;
 #include <netdb.h>
 #include <netinet/in.h>
 
-#include "os/check.hpp"
-
 module sockets.delegates.server;
 import net.enums;
 import net.netutils;
@@ -112,22 +110,22 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
     bool isRFCOMM = serverInfo.type == ConnectionType::RFCOMM;
 
     if (isRFCOMM) {
-        handle.reset(CHECK(socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)));
+        handle.reset(check(socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)));
 
         sockaddr_rc addr{ AF_BLUETOOTH, addrAny, static_cast<uint8_t>(serverInfo.port) };
-        CHECK(bind(*handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
+        check(bind(*handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
     } else {
-        handle.reset(CHECK(socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)));
+        handle.reset(check(socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)));
 
         sockaddr_l2 addr{ AF_BLUETOOTH, htobs(serverInfo.port), addrAny, 0, 0 };
-        CHECK(bind(*handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
+        check(bind(*handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
     }
 
     sockaddr_storage serverAddr;
     socklen_t serverAddrLen = sizeof(serverAddr);
 
-    CHECK(listen(*handle, SOMAXCONN));
-    CHECK(getsockname(*handle, reinterpret_cast<sockaddr*>(&serverAddr), &serverAddrLen));
+    check(listen(*handle, SOMAXCONN));
+    check(getsockname(*handle, reinterpret_cast<sockaddr*>(&serverAddr), &serverAddrLen));
 
     uint16_t port = isRFCOMM ? reinterpret_cast<sockaddr_rc*>(&serverAddr)->rc_channel
                              : reinterpret_cast<sockaddr_l2*>(&serverAddr)->l2_psm;
@@ -141,7 +139,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
     socklen_t sockTypeLen = sizeof(sockType);
 
     // Check if socket is RFCOMM or L2CAP
-    CHECK(getsockopt(*handle, SOL_SOCKET, SO_TYPE, &sockType, &sockTypeLen));
+    check(getsockopt(*handle, SOL_SOCKET, SO_TYPE, &sockType, &sockTypeLen));
 
     Device device;
     bdaddr_t clientbdAddr;
@@ -176,12 +174,12 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
 
     // Get device name
     device.name.resize(1024);
-    int devID = CHECK(hci_get_route(nullptr));
+    int devID = check(hci_get_route(nullptr));
 
     // HCI socket uses same close call as a standard socket
-    SocketHandle<SocketTag::BT> hciSock{ CHECK(hci_open_dev(devID)) };
+    SocketHandle<SocketTag::BT> hciSock{ check(hci_open_dev(devID)) };
 
-    CHECK(hci_read_remote_name(*hciSock, &clientbdAddr, device.name.size(), device.name.data(), 0));
+    check(hci_read_remote_name(*hciSock, &clientbdAddr, device.name.size(), device.name.data(), 0));
     Strings::stripNull(device.name);
 
     co_return { device, std::make_unique<IncomingSocket<SocketTag::BT>>(std::move(fd)) };

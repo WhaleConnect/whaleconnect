@@ -18,14 +18,18 @@ module;
 #include <mach/mach_error.h>
 #endif
 
-#include <magic_enum.hpp>
-
 module os.error;
 
-template <>
-constexpr magic_enum::customize::customize_t magic_enum::customize::enum_name(System::ErrorType value) noexcept {
-    if (value == System::ErrorType::AddrInfo) return "getaddrinfo";
-    return default_tag;
+const char* getErrorName(System::ErrorType type) {
+    using enum System::ErrorType;
+    switch (type) {
+        case System:
+            return "System";
+        case AddrInfo:
+            return "getaddrinfo";
+        case IOReturn:
+            return "IOReturn";
+    }
 }
 
 System::ErrorCode System::getLastError() {
@@ -90,7 +94,7 @@ std::string System::formatSystemError(ErrorCode code, ErrorType type, std::strin
 #endif
     }
 
-    return std::format("{} (type {}, in {}): {}", code, magic_enum::enum_name(type), fnName, msg);
+    return std::format("{} (type {}, in {}): {}", code, getErrorName(type), fnName, msg);
 }
 
 bool System::SystemError::isCanceled() const {

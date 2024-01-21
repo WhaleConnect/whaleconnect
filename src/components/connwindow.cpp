@@ -9,7 +9,6 @@ module;
 
 #include <botan/tls_exceptn.h>
 #include <imgui.h>
-#include <magic_enum.hpp>
 
 module components.connwindow;
 import gui.imguiext;

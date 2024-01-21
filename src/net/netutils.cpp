@@ -13,8 +13,6 @@ module;
 
 #include <ztd/out_ptr.hpp>
 
-#include "os/check.hpp"
-
 module net.netutils;
 import net.enums;
 import os.errcheck;
@@ -41,7 +39,7 @@ AddrInfoHandle NetUtils::resolveAddr(const Device& device, bool useDNS) {
 
     // Resolve the IP
     AddrInfoHandle ret;
-    CHECK(GetAddrInfo(addrWide.c_str(), portWide.c_str(), &hints, ztd::out_ptr::out_ptr(ret)), checkZero, useReturnCode,
+    check(GetAddrInfo(addrWide.c_str(), portWide.c_str(), &hints, ztd::out_ptr::out_ptr(ret)), checkZero, useReturnCode,
         System::ErrorType::AddrInfo);
 
     return ret;
@@ -56,7 +54,7 @@ Device NetUtils::fromAddr(const sockaddr* addr, socklen_t addrLen, ConnectionTyp
     auto ipLen = static_cast<socklen_t>(ipStr.size());
     auto portLen = static_cast<socklen_t>(portStr.size());
 
-    CHECK(GetNameInfo(addr, addrLen, ipStr.data(), ipLen, portStr.data(), portLen, NI_NUMERICHOST | NI_NUMERICSERV),
+    check(GetNameInfo(addr, addrLen, ipStr.data(), ipLen, portStr.data(), portLen, NI_NUMERICHOST | NI_NUMERICSERV),
         checkZero, useReturnCode, System::ErrorType::AddrInfo);
 
     // Process returned strings
@@ -70,7 +68,7 @@ Device NetUtils::fromAddr(const sockaddr* addr, socklen_t addrLen, ConnectionTyp
 uint16_t NetUtils::getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4) {
     sockaddr_storage addr;
     socklen_t localAddrLen = sizeof(addr);
-    CHECK(getsockname(handle, reinterpret_cast<sockaddr*>(&addr), &localAddrLen));
+    check(getsockname(handle, reinterpret_cast<sockaddr*>(&addr), &localAddrLen));
 
     uint16_t port
         = isV4 ? reinterpret_cast<sockaddr_in*>(&addr)->sin_port : reinterpret_cast<sockaddr_in6*>(&addr)->sin6_port;
@@ -95,11 +93,11 @@ ServerAddress NetUtils::startServer(const Device& serverInfo, Delegates::SocketH
                 return;
         }
 
-        handle.reset(CHECK(socket(result->ai_family, result->ai_socktype, result->ai_protocol)));
+        handle.reset(check(socket(result->ai_family, result->ai_socktype, result->ai_protocol)));
 
         // Bind and listen
-        CHECK(bind(*handle, result->ai_addr, static_cast<socklen_t>(result->ai_addrlen)));
-        if (isTCP) CHECK(listen(*handle, SOMAXCONN));
+        check(bind(*handle, result->ai_addr, static_cast<socklen_t>(result->ai_addrlen)));
+        if (isTCP) check(listen(*handle, SOMAXCONN));
     });
 
     return { getPort(*handle, isV4), isV4 ? IPType::IPv4 : IPType::IPv6 };

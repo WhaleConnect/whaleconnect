@@ -9,8 +9,6 @@ module;
 
 #include <WinSock2.h>
 
-#include "os/check.hpp"
-
 module sockets.delegates.bidirectional;
 import net.enums;
 import os.async;
@@ -21,7 +19,7 @@ template <auto Tag>
 Task<> Delegates::Bidirectional<Tag>::send(std::string data) {
     co_await Async::run([this, &data](Async::CompletionResult& result) {
         WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-        CHECK(WSASend(*handle, &buf, 1, nullptr, 0, &result, nullptr));
+        check(WSASend(*handle, &buf, 1, nullptr, 0, &result, nullptr));
     });
 }
 
@@ -32,7 +30,7 @@ Task<RecvResult> Delegates::Bidirectional<Tag>::recv(size_t size) {
     auto recvResult = co_await Async::run([this, &data](Async::CompletionResult& result) {
         DWORD flags = 0;
         WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-        CHECK(WSARecv(*handle, &buf, 1, nullptr, &flags, &result, nullptr));
+        check(WSARecv(*handle, &buf, 1, nullptr, &flags, &result, nullptr));
     });
 
     // Check for disconnects

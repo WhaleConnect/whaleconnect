@@ -7,7 +7,6 @@ module;
 #include <string_view>
 
 #include <imgui.h>
-#include <magic_enum.hpp>
 
 module gui.newconn;
 import components.connwindow;
@@ -23,7 +22,7 @@ import utils.strings;
 std::string formatDevice(bool useTLS, const Device& device, std::string_view extraInfo) {
     // Type of the connection
     bool isIP = device.type == ConnectionType::TCP || device.type == ConnectionType::UDP;
-    auto typeName = magic_enum::enum_name(device.type);
+    const char* typeName = getConnectionTypeName(device.type);
     auto typeString = useTLS ? std::format("{}+TLS", typeName) : std::string{ typeName };
 
     // Bluetooth-based connections are described using the device's name (e.g. "MyESP32"),

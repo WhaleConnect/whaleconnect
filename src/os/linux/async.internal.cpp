@@ -7,8 +7,6 @@ module;
 
 #include <liburing.h>
 
-#include "os/check.hpp"
-
 module os.async.internal;
 import os.async.platform.internal;
 import os.async;
@@ -23,7 +21,7 @@ void Async::Internal::init(unsigned int numThreads, unsigned int queueEntries) {
         io_uring& ring = rings.emplace_back();
 
         // Initialize the instance
-        CHECK(io_uring_queue_init(queueEntries, &ring, 0), checkZero, useReturnCodeNeg);
+        check(io_uring_queue_init(queueEntries, &ring, 0), checkZero, useReturnCodeNeg);
     }
 }
 

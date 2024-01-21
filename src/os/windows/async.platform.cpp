@@ -5,13 +5,11 @@ module;
 #if OS_WINDOWS
 #include <WinSock2.h>
 
-#include "os/check.hpp"
-
 module os.async.platform;
 import os.async.platform.internal;
 import os.errcheck;
 
 void Async::add(SOCKET sockfd) {
-    CHECK(CreateIoCompletionPort(reinterpret_cast<HANDLE>(sockfd), Internal::completionPort, 0, 0), checkTrue);
+    check(CreateIoCompletionPort(reinterpret_cast<HANDLE>(sockfd), Internal::completionPort, 0, 0), checkTrue);
 }
 #endif

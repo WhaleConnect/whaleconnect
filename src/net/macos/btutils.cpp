@@ -8,8 +8,6 @@ module;
 #include <BluetoothMacOS-Swift.h>
 #include <IOKit/IOReturn.h>
 
-#include "os/check.hpp"
-
 module net.btutils;
 import net.btutils.internal;
 import net.device;
@@ -30,7 +28,7 @@ DeviceList BTUtils::getPaired() {
 }
 
 BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, bool flushCache) {
-    auto list = CHECK(
+    auto list = check(
         BluetoothMacOS::sdpLookup(addr.data(), uuid.data(), flushCache),
         [](const BluetoothMacOS::LookupResult& result) { return result.getResult() == kIOReturnSuccess; },
         [](const BluetoothMacOS::LookupResult& result) { return result.getResult(); }, System::ErrorType::IOReturn)

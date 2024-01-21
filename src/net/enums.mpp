@@ -9,8 +9,36 @@ export {
 
     // All possible connection types.
     // L2CAP connections are not supported on Windows because of limitations with the Microsoft Bluetooth stack.
-    enum class ConnectionType { TCP, UDP, L2CAP, RFCOMM, None };
+    enum class ConnectionType { None, TCP, UDP, L2CAP, RFCOMM };
 
     // IP versions.
     enum class IPType { None, IPv4, IPv6 };
+
+    const char* getConnectionTypeName(ConnectionType type) {
+        using enum ConnectionType;
+        switch (type) {
+            case TCP:
+                return "TCP";
+            case UDP:
+                return "UDP";
+            case L2CAP:
+                return "L2CAP";
+            case RFCOMM:
+                return "RFCOMM";
+            case None:
+                return "None";
+        }
+    }
+
+    const char* getIPTypeName(IPType type) {
+        using enum IPType;
+        switch (type) {
+            case None:
+                return "None";
+            case IPv4:
+                return "IPv4";
+            case IPv6:
+                return "IPv6";
+        }
+    }
 }

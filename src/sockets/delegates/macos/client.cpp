@@ -11,8 +11,6 @@ module;
 #include <sys/event.h>
 #include <sys/socket.h>
 
-#include "os/check.hpp"
-
 module sockets.delegates.client;
 import net.device;
 import net.enums;
@@ -27,12 +25,12 @@ Task<> Delegates::Client<SocketTag::IP>::connect(Device device) {
     auto addr = NetUtils::resolveAddr(device);
 
     co_await NetUtils::loopWithAddr(addr.get(), [this](const AddrInfoType* result) -> Task<> {
-        handle.reset(CHECK(::socket(result->ai_family, result->ai_socktype, result->ai_protocol)));
+        handle.reset(check(::socket(result->ai_family, result->ai_socktype, result->ai_protocol)));
 
         Async::prepSocket(*handle);
 
         // Start connect
-        CHECK(::connect(*handle, result->ai_addr, result->ai_addrlen));
+        check(::connect(*handle, result->ai_addr, result->ai_addrlen));
         co_await Async::run(std::bind_front(Async::submitKqueue, *handle, Async::IOType::Send));
     });
 }
@@ -54,7 +52,7 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     }
 
     // Init handle
-    auto newHandle = CHECK(
+    auto newHandle = check(
         BluetoothMacOS::makeBTHandle(device.address, device.port, isL2CAP),
         [](const BluetoothMacOS::BTHandleResult& result) { return result.getResult() == kIOReturnSuccess; },
         [](const BluetoothMacOS::BTHandleResult& result) { return result.getResult(); }, System::ErrorType::IOReturn)

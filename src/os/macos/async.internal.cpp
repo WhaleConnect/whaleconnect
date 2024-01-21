@@ -7,13 +7,11 @@ module;
 #if OS_MACOS
 #include <array>
 #include <vector>
+#include <optional>
 
 #include <IOKit/IOReturn.h>
-#include <magic_enum.hpp>
 #include <sys/event.h>
 #include <sys/fcntl.h>
-
-#include "os/check.hpp"
 
 module os.async.internal;
 import os.async;
@@ -52,7 +50,7 @@ void Async::Internal::init(unsigned int numThreads, unsigned int) {
     // Populate the vector of kqueues
     kqs.reserve(numThreads);
 
-    for (unsigned int i = 0; i < numThreads; i++) kqs.push_back(CHECK(kqueue()));
+    for (unsigned int i = 0; i < numThreads; i++) kqs.push_back(check(kqueue()));
 }
 
 void Async::Internal::stopThreads(unsigned int) {
@@ -88,7 +86,7 @@ void Async::Internal::worker(unsigned int threadNum) {
             if (ident & ASYNC_ADD) {
                 // Add completion result to queue
                 auto id = ident & socketIDMask;
-                auto ioType = magic_enum::enum_cast<IOType>(event.fflags & NOTE_FFLAGSMASK).value();
+                auto ioType = static_cast<IOType>(event.fflags & NOTE_FFLAGSMASK);
                 auto& result = *reinterpret_cast<CompletionResult*>(event.udata);
 
                 addPending(id, sockets, ioType, result);
@@ -111,7 +109,7 @@ void Async::Internal::worker(unsigned int threadNum) {
 
         // Get I/O type from user data pointer
         auto ioTypeInt = static_cast<int>(reinterpret_cast<uint64_t>(event.udata));
-        auto ioType = magic_enum::enum_cast<IOType>(ioTypeInt).value();
+        auto ioType = static_cast<IOType>(ioTypeInt);
 
         // Pop an event from the queue and get its completion result
         auto resultOpt = popPending(event.ident, sockets, ioType);

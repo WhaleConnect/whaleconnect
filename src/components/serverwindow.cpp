@@ -9,7 +9,6 @@ module;
 
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <magic_enum.hpp>
 
 module components.serverwindow;
 import components.connwindow;
@@ -91,17 +90,20 @@ ServerWindow::ServerWindow(std::string_view title, const Device& serverInfo) :
 
 void ServerWindow::startServer(const Device& serverInfo) try {
     auto [port, ip] = socket->startServer(serverInfo);
-    std::string_view ipType = magic_enum::enum_name(ip);
-    std::string_view type = magic_enum::enum_name(serverInfo.type);
+    const char* ipType = getIPTypeName(ip);
+    const char* type = getConnectionTypeName(serverInfo.type);
 
     // Format title and status messages
+    std::string title;
     if (ip == IPType::None) {
-        setTitle(std::format("{} Server - port {}##{}", type, port, serverInfo.address));
+        title = std::format("{} Server - port {}##{}", type, port, serverInfo.address);
         console.addInfo(std::format("Server is active on port {}.", port));
     } else {
-        setTitle(std::format("{} ({}) Server - port {}##{}", type, ipType, port, serverInfo.address));
+        title = std::format("{} ({}) Server - port {}##{}", type, ipType, port, serverInfo.address);
         console.addInfo(std::format("Server is active on port {} ({}).", port, ipType));
     }
+
+    setTitle(title);
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
 }

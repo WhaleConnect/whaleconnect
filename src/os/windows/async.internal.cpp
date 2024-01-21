@@ -5,8 +5,6 @@ module;
 #if OS_WINDOWS
 #include <WinSock2.h>
 
-#include "os/check.hpp"
-
 module os.async.internal;
 import os.async.platform.internal;
 import os.async;
@@ -15,10 +13,10 @@ import os.errcheck;
 void Async::Internal::init(unsigned int numThreads, unsigned int) {
     // Start Winsock
     WSADATA wsaData{};
-    CHECK(WSAStartup(MAKEWORD(2, 2), &wsaData), checkTrue, useReturnCode); // MAKEWORD(2, 2) for Winsock 2.2
+    check(WSAStartup(MAKEWORD(2, 2), &wsaData), checkTrue, useReturnCode); // MAKEWORD(2, 2) for Winsock 2.2
 
     // Initialize IOCP
-    completionPort = CHECK(CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, numThreads), checkTrue);
+    completionPort = check(CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, numThreads), checkTrue);
 }
 
 void Async::Internal::stopThreads(unsigned int numThreads) {
@@ -29,7 +27,7 @@ void Async::Internal::cleanup() {
     CloseHandle(completionPort);
 
     // Cleanup Winsock
-    CHECK(WSACleanup());
+    check(WSACleanup());
 }
 
 void Async::Internal::worker(unsigned int) {

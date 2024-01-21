@@ -11,8 +11,6 @@ module;
 #include <bluetoothapis.h>
 #include <ztd/out_ptr.hpp>
 
-#include "os/check.hpp"
-
 module net.btutils;
 import net.btutils.internal;
 import net.device;
@@ -79,7 +77,7 @@ std::vector<SDP_ELEMENT_DATA> getSDPListData(LPBLOB blob, USHORT attrib) {
 
     // Get the list data by reading from the blob (the SDP stream)
     SDP_ELEMENT_DATA element{};
-    CHECK(BluetoothSdpGetAttributeValue(blob->pBlobData, blob->cbSize, attrib, &element), checkZero, useReturnCode);
+    check(BluetoothSdpGetAttributeValue(blob->pBlobData, blob->cbSize, attrib, &element), checkZero, useReturnCode);
     return getSDPListData(element);
 }
 
@@ -147,7 +145,7 @@ DeviceList BTUtils::getPaired() try {
 
     // Find the first device
     BLUETOOTH_DEVICE_INFO_STRUCT deviceInfo{ .dwSize = sizeof(BLUETOOTH_DEVICE_INFO_STRUCT) };
-    HandlePtr<void, BluetoothFindDeviceClose> foundDevice{ CHECK(BluetoothFindFirstDevice(&searchCriteria, &deviceInfo),
+    HandlePtr<void, BluetoothFindDeviceClose> foundDevice{ check(BluetoothFindFirstDevice(&searchCriteria, &deviceInfo),
         checkTrue) };
 
     // Loop through each found device
@@ -194,7 +192,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     HandlePtr<void, WSALookupServiceEnd> lookup;
 
     try {
-        CHECK(WSALookupServiceBegin(&wsaQuery, flags, ztd::out_ptr::out_ptr(lookup)));
+        check(WSALookupServiceBegin(&wsaQuery, flags, ztd::out_ptr::out_ptr(lookup)));
     } catch (const System::SystemError& error) {
         if (error.code == WSASERVICE_NOT_FOUND) return {}; // No services found
 

@@ -7,15 +7,13 @@ module;
 #include <queue>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <BluetoothMacOS-Swift.h>
 #include <IOKit/IOReturn.h>
-#include <magic_enum.hpp>
 #include <sys/event.h>
 #include <sys/fcntl.h>
-
-#include "os/check.hpp"
 
 module os.async.platform;
 import net.device;
@@ -33,15 +31,15 @@ std::unordered_map<Async::SwiftID, std::queue<std::optional<std::string>>> btRea
 std::unordered_map<Async::SwiftID, std::queue<Async::BTAccept>> btAccepts;
 
 void Async::prepSocket(int s) {
-    int flags = CHECK(fcntl(s, F_GETFL, 0));
-    CHECK(fcntl(s, F_SETFL, flags | O_NONBLOCK));
+    int flags = check(fcntl(s, F_GETFL, 0));
+    check(fcntl(s, F_SETFL, flags | O_NONBLOCK));
 }
 
 void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
     // The EV_ONESHOT flag will delete the event once it is retrieved in one of the threads.
     // This ensures only one thread will wake up to handle the event.
     std::array<struct kevent, 3> events{};
-    int ioTypeInt = magic_enum::enum_integer(ioType);
+    int ioTypeInt = std::to_underlying(ioType);
 
     // Pass I/O type as user data pointer
     auto typeData = reinterpret_cast<void*>(static_cast<uint64_t>(ioTypeInt));
@@ -60,7 +58,7 @@ void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
     // Enable the I/O filter once the pending queue has been modified
     EV_SET(&events[2], ident, filt, EV_ENABLE | EV_ONESHOT, 0, 0, typeData);
 
-    CHECK(kevent(Internal::kqs[currentKqueueIdx], events.data(), events.size(), nullptr, 0, nullptr));
+    check(kevent(Internal::kqs[currentKqueueIdx], events.data(), events.size(), nullptr, 0, nullptr));
 
     // Cycle through all worker threads
     currentKqueueIdx = (currentKqueueIdx + 1) % Internal::kqs.size();
@@ -72,7 +70,7 @@ void Async::cancelPending(int fd) {
 
         // The file descriptor is used in "ident" so events can remain unique
         EV_SET(&event, Internal::ASYNC_CANCEL | fd, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER, 0, nullptr);
-        CHECK(kevent(kq, &event, 1, nullptr, 0, nullptr));
+        check(kevent(kq, &event, 1, nullptr, 0, nullptr));
     }
 }
 
