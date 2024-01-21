@@ -8,6 +8,7 @@ module;
 #include <thread>
 
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <nlohmann/json.hpp>
 
 module app.settings;
@@ -89,6 +90,8 @@ void Settings::save(std::string_view filePath) {
 }
 
 void Settings::drawSettingsWindow(bool& open) {
+    if (ImGui::IsKeyChordPressed(ImGuiMod_Shortcut | ImGuiKey_Comma)) open = true;
+
     if (!open) return;
 
     using namespace ImGuiExt::Literals;
