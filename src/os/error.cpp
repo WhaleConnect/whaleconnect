@@ -3,6 +3,7 @@
 
 module;
 #include <format>
+#include <source_location>
 
 #if OS_WINDOWS
 #include <WinSock2.h>
@@ -56,7 +57,7 @@ bool System::isFatal(ErrorCode code) {
     return true;
 }
 
-std::string System::formatSystemError(ErrorCode code, ErrorType type, std::string_view fnName) {
+std::string System::formatSystemError(ErrorCode code, ErrorType type, const std::source_location& location) {
     using enum ErrorType;
 
     // Message buffer
@@ -94,7 +95,8 @@ std::string System::formatSystemError(ErrorCode code, ErrorType type, std::strin
 #endif
     }
 
-    return std::format("{} (type {}, in {}): {}", code, getErrorName(type), fnName, msg);
+    std::string where = std::format("{}({}:{})", location.file_name(), location.line(), location.column());
+    return std::format("{} (type {}, at {}): {}", code, getErrorName(type), where, msg);
 }
 
 bool System::SystemError::isCanceled() const {

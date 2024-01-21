@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
+#include <source_location>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -33,17 +34,16 @@ export namespace System {
     bool isFatal(ErrorCode code);
 
     // Formats a system error into a readable string.
-    std::string formatSystemError(ErrorCode code, ErrorType type, std::string_view fnName);
+    std::string formatSystemError(ErrorCode code, ErrorType type, const std::source_location& location);
 
     // Exception structure containing details of an error.
     struct SystemError : std::runtime_error {
         ErrorCode code = 0; // The platform-specific error code
         ErrorType type = ErrorType::System; // The type of the error
-        std::string fnName; // The name of the function that caused the error
 
         // Constructs an object representing a specific error.
-        SystemError(ErrorCode code, ErrorType type, std::string_view fnName) :
-            std::runtime_error(formatSystemError(code, type, fnName)), code(code), type(type), fnName(fnName) {}
+        SystemError(ErrorCode code, ErrorType type, const std::source_location& location = std::source_location::current()) :
+            std::runtime_error(formatSystemError(code, type, location)), code(code), type(type) {}
 
         // Checks if this object represents a fatal error.
         explicit operator bool() const {

@@ -27,8 +27,6 @@ export {
     T check(const T& rc, Pred checkFn = {}, Proj transformFn = {}, System::ErrorType type = System::ErrorType::System,
         const std::source_location& location = std::source_location::current()) {
         System::ErrorCode code = transformFn(rc);
-
-        const char* fnName = location.function_name();
-        return checkFn(rc) || !System::isFatal(code) ? rc : throw System::SystemError{ code, type, fnName };
+        return checkFn(rc) || !System::isFatal(code) ? rc : throw System::SystemError{ code, type, location };
     }
 }
