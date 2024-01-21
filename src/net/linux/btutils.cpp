@@ -7,6 +7,7 @@ module;
 #include <functional>
 #include <stdexcept>
 #include <string_view>
+#include <utility>
 
 #include <bluetooth/sdp.h>
 #include <bluetooth/sdp_lib.h>
@@ -97,7 +98,7 @@ BTUtils::UUID128 getUUID(uuid_t* uuid) {
         case SDP_UUID128:
             return std::to_array(uuid->value.uuid128.data);
         default:
-            throw std::invalid_argument{ "Unknown UUID type" };
+            std::unreachable();
     }
 }
 

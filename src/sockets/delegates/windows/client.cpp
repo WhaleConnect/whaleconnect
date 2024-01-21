@@ -6,8 +6,8 @@ module;
 #include <coroutine> // IWYU pragma: keep
 #include <exception>
 #include <functional>
-#include <stdexcept>
 #include <string>
+#include <utility>
 
 #include <WinSock2.h>
 #include <MSWSock.h>
@@ -76,7 +76,7 @@ Task<> Delegates::Client<SocketTag::IP>::connect(Device device) {
 template <>
 Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     // Only RFCOMM sockets are supported by the Microsoft Bluetooth stack on Windows
-    if (device.type != ConnectionType::RFCOMM) throw std::invalid_argument{ "Socket type not supported" };
+    if (device.type != ConnectionType::RFCOMM) std::unreachable();
 
     handle.reset(check(socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM)));
     Async::add(*handle);

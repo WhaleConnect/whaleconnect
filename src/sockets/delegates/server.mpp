@@ -3,7 +3,8 @@
 
 module;
 #include <cstddef>
-#include <stdexcept>
+#include <string>
+#include <utility>
 
 #if OS_WINDOWS
 #if __clang__
@@ -30,10 +31,6 @@ export namespace Delegates {
         SocketHandle<Tag>& handle;
         NO_UNIQUE_ADDRESS Traits::Server<Tag> traits;
 
-        [[noreturn]] static void throwUnsupported() {
-            throw std::invalid_argument{ "Operation not supported with socket type" };
-        }
-
     public:
         explicit Server(SocketHandle<Tag>& handle) : handle(handle) {}
 
@@ -57,10 +54,10 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept();
 
 template <>
 Task<DgramRecvResult> Delegates::Server<SocketTag::BT>::recvFrom(size_t) {
-    throwUnsupported();
+    std::unreachable();
 }
 
 template <>
 Task<> Delegates::Server<SocketTag::BT>::sendTo(Device, std::string) {
-    throwUnsupported();
+    std::unreachable();
 }

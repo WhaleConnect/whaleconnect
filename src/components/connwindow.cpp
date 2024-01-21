@@ -6,6 +6,7 @@ module;
 #include <format>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
 #include <botan/tls_exceptn.h>
 #include <imgui.h>
@@ -33,7 +34,7 @@ SocketPtr makeClientSocket(bool useTLS, ConnectionType type) {
         case RFCOMM:
             return std::make_unique<ClientSocketBT>();
         default:
-            throw std::invalid_argument{ "Invalid socket type" };
+            std::unreachable();
     }
 }
 

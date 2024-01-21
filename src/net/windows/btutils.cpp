@@ -6,6 +6,7 @@ module;
 #include <cstring> // std::memcpy()
 #include <format>
 #include <memory>
+#include <utility>
 
 #include <WinSock2.h>
 #include <bluetoothapis.h>
@@ -110,7 +111,7 @@ BTUtils::UUID128 getUUID(const SDP_ELEMENT_DATA& element) {
         case SDP_ST_UUID128:
             return toUUID(element.data.uuid128);
         default:
-            throw std::invalid_argument{ "Unknown UUID type" };
+            std::unreachable();
     }
 }
 

@@ -5,6 +5,7 @@ module;
 #if OS_MACOS
 #include <coroutine> // IWYU pragma: keep
 #include <functional>
+#include <utility>
 
 #include <BluetoothMacOS-Swift.h>
 #include <IOKit/IOReturn.h>
@@ -48,7 +49,7 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
             isL2CAP = false;
             break;
         default:
-            throw System::SystemError{ kIOReturnUnsupported, System::ErrorType::IOReturn, "connect" };
+            std::unreachable();
     }
 
     // Init handle

@@ -6,6 +6,7 @@ module;
 #include <coroutine> // IWYU pragma: keep
 #include <format>
 #include <map>
+#include <utility>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -30,7 +31,7 @@ const std::array colors{
 SocketPtr makeServerSocket(ConnectionType type) {
     using enum ConnectionType;
 
-    if (type == None) throw std::invalid_argument{ "Invalid socket type" };
+    if (type == None) std::unreachable();
     if (type == TCP || type == UDP) return std::make_unique<ServerSocket<SocketTag::IP>>();
     return std::make_unique<ServerSocket<SocketTag::BT>>();
 }
