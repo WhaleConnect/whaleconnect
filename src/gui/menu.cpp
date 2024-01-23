@@ -7,6 +7,7 @@ module;
 #include <string_view>
 
 #include <imgui.h>
+#include <nlohmann/json.hpp> // IWYU pragma: keep (fixes errors on MSVC)
 #include <SDL3/SDL_misc.h>
 
 #if OS_MACOS
@@ -36,9 +37,11 @@ void Menu::drawMenuBar(bool& quit, WindowList& connections, WindowList& servers)
 
     ImGuiExt::drawNotificationsMenu(notificationsOpen);
 
-    if (OS_MACOS && useSystemMenu) {
-        ImGui::EndMainMenuBar();
-        return;
+    if constexpr (OS_MACOS) {
+        if (useSystemMenu) {
+            ImGui::EndMainMenuBar();
+            return;
+        }
     }
 
     if (ImGui::BeginMenu("File")) {
