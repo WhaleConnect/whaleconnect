@@ -85,5 +85,5 @@ export namespace Async {
     void handleEvents();
 
     // Queues an async event for completion.
-    void queueForCompletion(CompletionResult& result);
+    void queueForCompletion(const CompletionResult& result);
 }

@@ -17,6 +17,7 @@
 import app.appcore;
 import app.settings;
 import components.windowlist;
+import gui.about;
 import gui.menu;
 import gui.newconn;
 import gui.newserver;
@@ -36,20 +37,14 @@ void mainLoop() {
     bool quit = false;
     while (!quit && AppCore::newFrame()) {
         Async::handleEvents();
-
-        static bool settingsOpen = false;
-        static bool newConnOpen = true;
-        static bool newServerOpen = false;
-        static bool notificationsOpen = false;
-
-        // Main menu bar
-        drawMenuBar(quit, settingsOpen, newConnOpen, notificationsOpen, newServerOpen, connections, servers);
+        Menu::drawMenuBar(quit, connections, servers);
 
         // Application windows
-        Settings::drawSettingsWindow(settingsOpen);
-        drawNewConnectionWindow(newConnOpen, connections, sdpWindows);
-        drawNewServerWindow(servers, newServerOpen);
-        ImGuiExt::drawNotificationsWindow(notificationsOpen);
+        Settings::drawSettingsWindow(Menu::settingsOpen);
+        drawNewConnectionWindow(Menu::newConnectionOpen, connections, sdpWindows);
+        drawNewServerWindow(servers, Menu::newServerOpen);
+        ImGuiExt::drawNotificationsWindow(Menu::notificationsOpen);
+        drawAboutWindow(Menu::aboutOpen);
 
         connections.update();
         servers.update();
@@ -61,6 +56,7 @@ void mainLoop() {
 int main(int, char**) {
     // Create a main application window
     if (!AppCore::init()) return EXIT_FAILURE;
+    Menu::setupMenuBar();
 
     // OS API resource instances
     std::optional<Async::Instance> asyncInstance;

@@ -53,9 +53,11 @@ elseif is_plat("macosx") then
     local swiftBuildDir = format("$(scriptdir)/swift/.build/%s", swiftBuildMode)
     local swiftLibDir = "/Library/Developer/CommandLineTools/usr/lib/swift"
 
-    add_includedirs(path.join(swiftBuildDir, "BluetoothMacOS.build"), swiftLibDir)
+    add_includedirs(swiftLibDir,
+        path.join(swiftBuildDir, "BluetoothMacOS.build"),
+        path.join(swiftBuildDir, "GUIMacOS.build"))
     add_linkdirs(swiftBuildDir, path.join(swiftLibDir, "macosx"))
-    add_links("BluetoothMacOS")
+    add_links("BluetoothMacOS", "GUIMacOS")
 elseif is_plat("linux") then
     add_packages("liburing", "dbus", "bluez")
 end
@@ -105,8 +107,11 @@ target("terminal")
         "src/components/*.cpp", "src/components/*.mpp",
         "src/gui/*.cpp", "src/gui/*.mpp",
         "src/main.cpp")
-    add_configfiles("src/config.h.in")
-    add_includedirs("$(buildir)")
+    add_configfiles("src/app/config.mpp.in")
+
+    on_config(function (target)
+        target:add("files", "$(buildir)/config.mpp")
+    end)
 
     -- Add platform rules
     if is_plat("windows") then
@@ -114,6 +119,7 @@ target("terminal")
         add_files("res/app.manifest")
     elseif is_plat("macosx") then
         add_rules("xcode.application")
+        add_files("res/Info.plist", "swift/bridge/guibridge.cpp")
     end
 
     if is_plat("macosx") then

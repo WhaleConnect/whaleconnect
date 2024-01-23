@@ -2,3 +2,8 @@ module CppBridge {
     header "cppbridge.hpp"
     export *
 }
+
+module GUIBridge {
+    header "guibridge.hpp"
+    export *
+}

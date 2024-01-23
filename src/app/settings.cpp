@@ -20,6 +20,7 @@ const nlohmann::json defaultSettings{
     { "font.ranges", { 0x0020, 0x00FF } }, // Glyph ranges to load from font
     { "gui.roundedCorners", false }, // If corners in the UI are rounded
     { "gui.windowTransparency", false }, // If application windows have a transparent effect
+    { "gui.systemMenu", true }, // If sytem menu bars are used (macOS only)
     { "os.numThreads", 0 }, // Number of worker threads (0 to auto-detect)
     { "os.queueEntries", 128 }, // Number of entries in io_uring instances
 };
@@ -126,6 +127,9 @@ void Settings::drawSettingsWindow(bool& open) {
     static auto guiWindowTransparency = getSetting<bool>("gui.windowTransparency");
     ImGui::Checkbox("Window transparency (make windows have a transparent effect)", &guiWindowTransparency);
 
+    static auto guiSystemMenu = getSetting<bool>("gui.systemMenu");
+    ImGui::Checkbox("Use system menu bars (macOS only)", &guiSystemMenu);
+
     // ========================= OS settings =========================
     ImGui::Dummy({ 0, 1_fh });
     ImGui::SeparatorText("OS");
@@ -153,6 +157,7 @@ void Settings::drawSettingsWindow(bool& open) {
 
         loadedSettings["gui.roundedCorners"] = guiRoundedCorners;
         loadedSettings["gui.windowTransparency"] = guiWindowTransparency;
+        loadedSettings["gui.systemMenu"] = guiSystemMenu;
 
         loadedSettings["os.numThreads"] = osNumThreads;
         loadedSettings["os.queueEntries"] = osQueueEntries;

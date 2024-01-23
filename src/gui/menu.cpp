@@ -3,16 +3,23 @@
 
 module;
 #include <format>
+#include <string>
+#include <string_view>
 
-#include <config.h>
 #include <imgui.h>
 #include <SDL3/SDL_misc.h>
-#include <SDL3/SDL_platform.h>
+
+#if OS_MACOS
+#include <GUIMacOS-Swift.h>
+#endif
 
 module gui.menu;
+import app.settings;
 import components.windowlist;
 import gui.imguiext;
 import gui.notifications;
+
+bool useSystemMenu = false;
 
 void windowMenu(WindowList& list, const char* desc) {
     if (!ImGui::BeginMenu(desc)) return;
@@ -24,57 +31,29 @@ void windowMenu(WindowList& list, const char* desc) {
     ImGui::EndMenu();
 }
 
-void drawBuildInfo(bool& open) {
-    if (!open) return;
-
-    using namespace ImGuiExt::Literals;
-    ImGui::SetNextWindowSize(25_fh * 20_fh, ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("About", &open)) {
-        ImGui::End();
-        return;
-    }
-
-    static bool copy = false;
-    if (copy) ImGui::LogToClipboard();
-
-    ImGui::Text("Network Socket Terminal");
-    ImGui::Text("Cross-platform network communication software");
-
-    ImGui::SeparatorText("Version/Build");
-    ImGui::Text("Version: " CONFIG_VERSION);
-    ImGui::Text("Build: %llu", CONFIG_VERSION_BUILD);
-    ImGui::Text("Git commit: " GIT_COMMIT_LONG);
-    ImGui::Text("Dear ImGui: " IMGUI_VERSION " (%d)", IMGUI_VERSION_NUM);
-
-    ImGui::SeparatorText("System");
-    ImGui::Text("OS: %s", SDL_GetPlatform());
-
-    if (copy) {
-        ImGui::LogFinish();
-        copy = false;
-    }
-
-    ImGui::Spacing();
-    if (ImGui::Button("Copy")) copy = true;
-    ImGui::End();
-}
-
-void drawMenuBar(bool& quit, bool& settingsOpen, bool& newConnOpen, bool& notificationsOpen, bool& newServerOpen,
-    WindowList& connections, WindowList& servers) {
+void Menu::drawMenuBar(bool& quit, WindowList& connections, WindowList& servers) {
     if (!ImGui::BeginMainMenuBar()) return;
 
     ImGuiExt::drawNotificationsMenu(notificationsOpen);
 
+    if (OS_MACOS && useSystemMenu) {
+        ImGui::EndMainMenuBar();
+        return;
+    }
+
     if (ImGui::BeginMenu("File")) {
-        ImGui::MenuItem("Settings", nullptr, &settingsOpen);
+        if (ImGui::MenuItem("Settings", SHORTCUT(","))) settingsOpen = true;
         ImGui::MenuItem("Quit", nullptr, &quit);
         ImGui::EndMenu();
     }
 
     if (ImGui::BeginMenu("View")) {
-        ImGui::MenuItem("New Connection", nullptr, &newConnOpen);
-        ImGui::MenuItem("New Server", nullptr, &newServerOpen);
-        ImGui::MenuItem("Notifications", nullptr, &notificationsOpen);
+        if (ImGui::MenuItem("New Connection", nullptr, nullptr))
+            newConnectionOpen = true;
+        if (ImGui::MenuItem("New Server", nullptr, nullptr))
+            newServerOpen = true;
+        if (ImGui::MenuItem("Notifications", nullptr, nullptr))
+            notificationsOpen = true;
         ImGui::EndMenu();
     }
 
@@ -82,21 +61,45 @@ void drawMenuBar(bool& quit, bool& settingsOpen, bool& newConnOpen, bool& notifi
     windowMenu(connections, "Connections");
     windowMenu(servers, "Servers");
 
-    static bool aboutOpen = false;
-
     if (ImGui::BeginMenu("Help")) {
-        ImGui::MenuItem("About", nullptr, &aboutOpen);
+        if (ImGui::MenuItem("About", nullptr, nullptr)) aboutOpen = true;
         if (ImGui::MenuItem("Show Changelog"))
             SDL_OpenURL("https://github.com/NSTerminal/terminal/blob/main/docs/changelog.md");
-
-        ImGui::Separator();
-        if (ImGui::MenuItem("Open on GitHub")) SDL_OpenURL("https://github.com/NSTerminal/terminal");
-        if (ImGui::MenuItem("View License")) SDL_OpenURL("https://github.com/NSTerminal/terminal/blob/main/COPYING");
 
         ImGui::EndMenu();
     }
 
     ImGui::EndMainMenuBar();
+}
 
-    drawBuildInfo(aboutOpen);
+void Menu::setupMenuBar() {
+    useSystemMenu = Settings::getSetting<bool>("gui.systemMenu");
+
+#if OS_MACOS
+    if (useSystemMenu) GUIMacOS::setupMenuBar();
+#endif
+}
+
+void Menu::addWindowMenuItem([[maybe_unused]] std::string_view name) {
+#if OS_MACOS
+    GUIMacOS::addWindowMenuItem(std::string{ name });
+#endif
+}
+
+void Menu::removeWindowMenuItem([[maybe_unused]] std::string_view name) {
+#if OS_MACOS
+    GUIMacOS::removeWindowMenuItem(std::string{ name });
+#endif
+}
+
+void Menu::addServerMenuItem([[maybe_unused]] std::string_view name) {
+#if OS_MACOS
+    GUIMacOS::addServerMenuItem(std::string{ name });
+#endif
+}
+
+void Menu::removeServerMenuItem([[maybe_unused]] std::string_view name) {
+#if OS_MACOS
+    GUIMacOS::removeServerMenuItem(std::string{ name });
+#endif
 }

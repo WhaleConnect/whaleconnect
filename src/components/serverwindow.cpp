@@ -14,6 +14,7 @@ module;
 module components.serverwindow;
 import components.connwindow;
 import gui.imguiext;
+import gui.menu;
 import net.enums;
 import os.error;
 import sockets.delegates.delegates;
@@ -89,6 +90,11 @@ ServerWindow::ServerWindow(std::string_view title, const Device& serverInfo) :
     ImGui::DockBuilderFinish(id);
 }
 
+ServerWindow::~ServerWindow() {
+    Menu::removeServerMenuItem(getTitle());
+    if (socket) socket->cancelIO();
+}
+
 void ServerWindow::startServer(const Device& serverInfo) try {
     auto [port, ip] = socket->startServer(serverInfo);
     const char* ipType = getIPTypeName(ip);
@@ -105,6 +111,7 @@ void ServerWindow::startServer(const Device& serverInfo) try {
     }
 
     setTitle(title);
+    Menu::addServerMenuItem(title);
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
 }

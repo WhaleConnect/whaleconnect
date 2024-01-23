@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <memory>
 #include <string>
 #include <string_view>
 
@@ -38,7 +37,5 @@ export class ConnWindow : public Window {
 public:
     ConnWindow(std::string_view title, bool useTLS, const Device& device, std::string_view);
 
-    ~ConnWindow() override {
-        socket->cancelIO();
-    }
+    ~ConnWindow() override;
 };

@@ -5,7 +5,6 @@ module;
 #include <coroutine> // IWYU pragma: keep
 #include <format>
 #include <memory>
-#include <stdexcept>
 #include <utility>
 
 #include <botan/tls_exceptn.h>
@@ -13,6 +12,7 @@ module;
 
 module components.connwindow;
 import gui.imguiext;
+import gui.menu;
 import net.device;
 import net.enums;
 import os.error;
@@ -40,7 +40,13 @@ SocketPtr makeClientSocket(bool useTLS, ConnectionType type) {
 
 ConnWindow::ConnWindow(std::string_view title, bool useTLS, const Device& device, std::string_view) :
     Window(title), socket(makeClientSocket(useTLS, device.type)) {
+    Menu::addWindowMenuItem(getTitle());
     connect(device);
+}
+
+ConnWindow::~ConnWindow() {
+    Menu::removeWindowMenuItem(getTitle());
+    socket->cancelIO();
 }
 
 Task<> ConnWindow::connect(Device device) try {
