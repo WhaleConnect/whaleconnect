@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_MACOS
 #include <optional>
 #include <queue>
 #include <unordered_map>
@@ -37,4 +36,3 @@ export namespace Async::Internal {
     // Pops and returns a pending operation.
     OptCompletionResult popPending(SwiftID id, SocketQueueMap& map, Async::IOType ioType);
 }
-#endif

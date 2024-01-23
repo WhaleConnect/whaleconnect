@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_MACOS
 #include <coroutine> // IWYU pragma: keep
 #include <functional>
 #include <utility>
@@ -63,4 +62,3 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     co_await Async::run(std::bind_front(Async::submitIOBluetooth, (*handle)->getHash(), Async::IOType::Send),
         System::ErrorType::IOReturn);
 }
-#endif

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_MACOS
 #include <optional>
 
 module os.async.platform.internal;
@@ -30,4 +29,3 @@ Async::Internal::OptCompletionResult Async::Internal::popPending(SwiftID id, Soc
     queue.pop();
     return front;
 }
-#endif

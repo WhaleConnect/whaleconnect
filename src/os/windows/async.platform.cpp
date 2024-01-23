@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_WINDOWS
 #include <WinSock2.h>
 
 module os.async.platform;
@@ -12,4 +11,3 @@ import os.errcheck;
 void Async::add(SOCKET sockfd) {
     check(CreateIoCompletionPort(reinterpret_cast<HANDLE>(sockfd), Internal::completionPort, 0, 0), checkTrue);
 }
-#endif

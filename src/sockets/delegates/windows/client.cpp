@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_WINDOWS
 #include <coroutine> // IWYU pragma: keep
 #include <exception>
 #include <functional>
@@ -90,4 +89,3 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
     co_await Async::run(std::bind_front(startConnect, *handle, reinterpret_cast<sockaddr*>(&sAddrBT), sizeof(sAddrBT)));
     finalizeConnect(*handle);
 }
-#endif

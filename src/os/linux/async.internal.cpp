@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_LINUX
 #include <vector>
 
 #include <liburing.h>
@@ -68,4 +67,3 @@ void Async::Internal::worker(unsigned int threadNum) {
         queueForCompletion(result);
     }
 }
-#endif

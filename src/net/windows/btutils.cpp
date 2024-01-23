@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_WINDOWS
 #include <cstring> // std::memcpy()
 #include <format>
 #include <memory>
@@ -236,4 +235,3 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
 
     return ret;
 }
-#endif

@@ -4,7 +4,6 @@
 // kqueue and IOBluetooth only handle notifications for I/O, so completion queues must be managed manually.
 
 module;
-#if OS_MACOS
 #include <array>
 #include <vector>
 #include <optional>
@@ -124,4 +123,3 @@ void Async::Internal::worker(unsigned int threadNum) {
         queueForCompletion(result);
     }
 }
-#endif

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_LINUX
 #include <liburing.h>
 
 export module os.async.platform;
@@ -17,4 +16,3 @@ export namespace Async {
     // Cancels pending operations on a socket.
     void cancelPending(int fd);
 }
-#endif

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_LINUX
 #include <array>
 #include <functional>
 #include <stdexcept>
@@ -277,4 +276,3 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
 
     return ret;
 }
-#endif

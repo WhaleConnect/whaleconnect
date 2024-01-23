@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_WINDOWS
 #include <coroutine> // IWYU pragma: keep
 #include <functional>
 #include <memory>
@@ -174,4 +173,3 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
     Device device{ ConnectionType::RFCOMM, Strings::fromSys(deviceInfo.szName), clientAddr, static_cast<uint16_t>(clientPtr->port) };
     co_return { device, std::make_unique<IncomingSocket<SocketTag::BT>>(std::move(fd)) };
 }
-#endif

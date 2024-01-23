@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_WINDOWS
 #include <bit>
 
 #include <WinSock2.h>
@@ -26,4 +25,3 @@ template void Delegates::SocketHandle<SocketTag::IP>::cancelIO();
 
 template void Delegates::SocketHandle<SocketTag::BT>::closeImpl();
 template void Delegates::SocketHandle<SocketTag::BT>::cancelIO();
-#endif

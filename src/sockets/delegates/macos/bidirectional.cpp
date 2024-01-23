@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_MACOS
 #include <coroutine> // IWYU pragma: keep
 #include <functional>
 #include <optional>
@@ -55,4 +54,3 @@ Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv(size_t) {
     co_return readResult ? RecvResult{ true, false, *readResult, std::nullopt }
                          : RecvResult{ true, true, "", std::nullopt };
 }
-#endif

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_MACOS
 #include <optional>
 #include <queue>
 #include <string>
@@ -135,4 +134,3 @@ void Async::bluetoothCancel(SwiftID id) {
     while (bluetoothComplete(id, IOType::Receive, kIOReturnAborted));
     // clang-format on
 }
-#endif

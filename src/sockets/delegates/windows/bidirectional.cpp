@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_WINDOWS
 #include <coroutine> // IWYU pragma: keep
 #include <optional>
 #include <string>
@@ -46,4 +45,3 @@ template Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv(size_t);
 
 template Task<> Delegates::Bidirectional<SocketTag::BT>::send(std::string);
 template Task<RecvResult> Delegates::Bidirectional<SocketTag::BT>::recv(size_t);
-#endif

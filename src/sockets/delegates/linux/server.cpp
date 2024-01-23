@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_LINUX
 #include <coroutine> // IWYU pragma: keep
 #include <functional>
 #include <memory>
@@ -184,4 +183,3 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
 
     co_return { device, std::make_unique<IncomingSocket<SocketTag::BT>>(std::move(fd)) };
 }
-#endif

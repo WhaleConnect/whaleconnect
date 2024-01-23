@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_MACOS
 #include <string_view>
 
 #include <BluetoothMacOS-Swift.h>
@@ -63,4 +62,3 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
 
     return ret;
 }
-#endif

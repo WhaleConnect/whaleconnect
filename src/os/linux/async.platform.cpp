@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_LINUX
 #include <vector>
 
 #include <liburing.h>
@@ -29,4 +28,3 @@ void Async::cancelPending(int fd) {
         io_uring_submit(&ring);
     }
 }
-#endif

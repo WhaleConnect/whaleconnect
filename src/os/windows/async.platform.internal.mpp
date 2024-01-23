@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_WINDOWS
 #include <WinSock2.h>
 
 export module os.async.platform.internal;
@@ -10,4 +9,3 @@ export module os.async.platform.internal;
 export namespace Async::Internal {
     HANDLE completionPort = nullptr; // IOCP handle
 }
-#endif

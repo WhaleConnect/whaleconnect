@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_MACOS
 #include <sys/event.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -31,4 +30,3 @@ template <>
 void Delegates::SocketHandle<SocketTag::BT>::cancelIO() {
     Async::bluetoothCancel(handle->getHash());
 }
-#endif

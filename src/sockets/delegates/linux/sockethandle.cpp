@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_LINUX
 #include <liburing.h>
 
 module sockets.delegates.sockethandle;
@@ -26,4 +25,3 @@ template void Delegates::SocketHandle<SocketTag::IP>::cancelIO();
 
 template void Delegates::SocketHandle<SocketTag::BT>::closeImpl();
 template void Delegates::SocketHandle<SocketTag::BT>::cancelIO();
-#endif

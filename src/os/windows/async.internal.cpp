@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#if OS_WINDOWS
 #include <WinSock2.h>
 
 module os.async.internal;
@@ -54,4 +53,3 @@ void Async::Internal::worker(unsigned int) {
         queueForCompletion(result);
     }
 }
-#endif
