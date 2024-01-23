@@ -18,6 +18,7 @@ module;
 #include <SDL3/SDL_video.h>
 
 module app.appcore;
+import app.config;
 import app.settings;
 import gui.notifications;
 import utils.handleptr;
@@ -121,6 +122,32 @@ void configImGui() {
     scaleToDPI();
 }
 
+void drawDebugTools() {
+    // The demo and metrics window are enabled in debug builds, provide a window to show them
+    ImGui::Begin("Debug Tools", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Text("This is a debug build for testing.");
+
+    static bool showDemoWindow = false;
+    static bool showMetricsWindow = false;
+    static bool showIDStackToolWindow = false;
+    ImGui::Checkbox("Show Demo Window", &showDemoWindow);
+    ImGui::Checkbox("Show Metrics Window", &showMetricsWindow);
+    ImGui::Checkbox("Show Stack Tool Window", &showIDStackToolWindow);
+
+    if (showDemoWindow) ImGui::ShowDemoWindow(&showDemoWindow);
+    if (showMetricsWindow) ImGui::ShowMetricsWindow(&showMetricsWindow);
+    if (showIDStackToolWindow) ImGui::ShowIDStackToolWindow(&showIDStackToolWindow);
+
+    // Buttons to add notifications with different timeouts and icons
+    if (ImGui::Button("Test Notification (3s)"))
+        ImGuiExt::addNotification("Test Notification (3s)", NotificationType::Info, 3);
+
+    if (ImGui::Button("Test Notification (5s)"))
+        ImGuiExt::addNotification("Test Notification (5s)", NotificationType::Success, 5);
+
+    ImGui::End();
+}
+
 bool AppCore::init() {
     Settings::load(settingsFilePath);
 
@@ -182,31 +209,7 @@ bool AppCore::newFrame() {
 
     ImGuiExt::drawNotifications();
 
-#ifndef NDEBUG
-    // The demo and metrics window are enabled in debug builds, provide a window to show them
-    ImGui::Begin("Debug Tools", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::Text("This is a debug build for testing.");
-
-    static bool showDemoWindow = false;
-    static bool showMetricsWindow = false;
-    static bool showIDStackToolWindow = false;
-    ImGui::Checkbox("Show Demo Window", &showDemoWindow);
-    ImGui::Checkbox("Show Metrics Window", &showMetricsWindow);
-    ImGui::Checkbox("Show Stack Tool Window", &showIDStackToolWindow);
-
-    if (showDemoWindow) ImGui::ShowDemoWindow(&showDemoWindow);
-    if (showMetricsWindow) ImGui::ShowMetricsWindow(&showMetricsWindow);
-    if (showIDStackToolWindow) ImGui::ShowIDStackToolWindow(&showIDStackToolWindow);
-
-    // Buttons to add notifications with different timeouts and icons
-    if (ImGui::Button("Test Notification (3s)"))
-        ImGuiExt::addNotification("Test Notification (3s)", NotificationType::Info, 3);
-
-    if (ImGui::Button("Test Notification (5s)"))
-        ImGuiExt::addNotification("Test Notification (5s)", NotificationType::Success, 5);
-
-    ImGui::End();
-#endif
+    if constexpr (Config::debug == 1) drawDebugTools();
 
     return true;
 }

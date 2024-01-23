@@ -9,4 +9,5 @@ export namespace Config {
     constexpr auto gitCommitLong = "${GIT_COMMIT_LONG}";
     constexpr auto plat = "${plat}";
     constexpr auto arch = "${arch}";
+    constexpr auto debug = ${DEBUG};
 }
