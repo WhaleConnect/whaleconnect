@@ -42,7 +42,7 @@ void Menu::drawMenuBar(bool& quit, WindowList& connections, WindowList& servers)
     }
 
     if (ImGui::BeginMenu("File")) {
-        if (ImGui::MenuItem("Settings", SHORTCUT(","))) settingsOpen = true;
+        if (ImGui::MenuItem("Settings", ImGuiExt::shortcut(',').data())) settingsOpen = true;
         ImGui::MenuItem("Quit", nullptr, &quit);
         ImGui::EndMenu();
     }

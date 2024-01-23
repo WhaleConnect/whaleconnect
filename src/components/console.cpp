@@ -94,10 +94,10 @@ void Console::drawTimestamps() {
 
 void Console::drawContextMenu() {
     ImGui::BeginDisabled(!textSelect.hasSelection());
-    if (ImGui::MenuItem("Copy", SHORTCUT("C"))) textSelect.copy();
+    if (ImGui::MenuItem("Copy", ImGuiExt::shortcut('C').data())) textSelect.copy();
     ImGui::EndDisabled();
 
-    if (ImGui::MenuItem("Select all", SHORTCUT("A"))) textSelect.selectAll();
+    if (ImGui::MenuItem("Select all", ImGuiExt::shortcut('A').data())) textSelect.selectAll();
 }
 
 void Console::drawOptions() {

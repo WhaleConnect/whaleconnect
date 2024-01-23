@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
+#include <array>
 #include <cfloat>
 #include <concepts>
 #include <cstdint>
@@ -98,6 +99,14 @@ export namespace ImGuiExt {
     // Displays a menu item that focuses on a window when clicked.
     void windowMenuItem(std::string_view name) {
         if (ImGui::MenuItem(name.data())) ImGui::SetWindowFocus(name.data());
+    }
+
+    // Constructs a shortcut string according to the platform.
+    constexpr std::array<char, 7> shortcut(char key) {
+        // macOS: U+EBB8 (Cmd symbol in Remix Icon)
+        // Other platforms: Ctrl+[key]
+        if constexpr (OS_MACOS) return { '\xee', '\xae', '\xb8', key, '\0' };
+        else return { 'C', 't', 'r', 'l', '+', key, '\0' };
     }
 }
 

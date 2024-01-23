@@ -122,12 +122,6 @@ target("terminal")
         add_files("res/Info.plist", "swift/bridge/guibridge.cpp")
     end
 
-    if is_plat("macosx") then
-        add_defines("SHORTCUT(x)=\"\\uebb8\" x")
-    else
-        add_defines("SHORTCUT(x)=\"Ctrl+\" x")
-    end
-
     on_load(function (target)
         -- Install font files and license next to executable
         -- Fonts are embedded in the Resources directory in the macOS bundle.
