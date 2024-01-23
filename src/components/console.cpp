@@ -19,9 +19,6 @@ module components.console;
 import gui.imguiext;
 import utils.strings;
 
-constexpr const char* selectAllShortcut = OS_MACOS ? "\uebb8A" : "Ctrl+A";
-constexpr const char* copyShortcut = OS_MACOS ? "\uebb8C" : "Ctrl+C";
-
 bool floatsEqual(float a, float b) {
     return std::abs(a - b) <= std::numeric_limits<float>::epsilon();
 }
@@ -97,10 +94,10 @@ void Console::drawTimestamps() {
 
 void Console::drawContextMenu() {
     ImGui::BeginDisabled(!textSelect.hasSelection());
-    if (ImGui::MenuItem("Copy", copyShortcut)) textSelect.copy();
+    if (ImGui::MenuItem("Copy", SHORTCUT("C"))) textSelect.copy();
     ImGui::EndDisabled();
 
-    if (ImGui::MenuItem("Select all", selectAllShortcut)) textSelect.selectAll();
+    if (ImGui::MenuItem("Select all", SHORTCUT("A"))) textSelect.selectAll();
 }
 
 void Console::drawOptions() {

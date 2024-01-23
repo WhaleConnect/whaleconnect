@@ -114,7 +114,12 @@ target("terminal")
         add_files("res/app.manifest")
     elseif is_plat("macosx") then
         add_rules("xcode.application")
-        add_files("res/Info.plist")
+    end
+
+    if is_plat("macosx") then
+        add_defines("SHORTCUT(x)=\"\\uebb8\" x")
+    else
+        add_defines("SHORTCUT(x)=\"Ctrl+\" x")
     end
 
     on_load(function (target)
