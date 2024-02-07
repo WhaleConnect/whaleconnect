@@ -48,22 +48,7 @@ add_defines(
     "NO_UNIQUE_ADDRESS=" .. (is_plat("windows") and "[[msvc::no_unique_address]]" or "[[no_unique_address]]")
 )
 
--- Platform-specific links/compile options
 local swiftBuildMode = is_mode("release") and "release" or "debug"
-if is_plat("windows") then
-    add_syslinks("Ws2_32", "Bthprops")
-elseif is_plat("macosx") then
-    local swiftBuildDir = format("$(scriptdir)/swift/.build/%s", swiftBuildMode)
-    local swiftLibDir = "/Library/Developer/CommandLineTools/usr/lib/swift"
-
-    add_includedirs(
-        swiftLibDir,
-        path.join(swiftBuildDir, "BluetoothMacOS.build"),
-        path.join(swiftBuildDir, "GUIMacOS.build")
-    )
-    add_linkdirs(swiftBuildDir, path.join(swiftLibDir, "macosx"))
-    add_links("BluetoothMacOS", "GUIMacOS")
-end
 
 target("swift")
     set_kind("phony")
@@ -75,7 +60,19 @@ target("swift")
 
 target("external")
     add_packages("botan", "imgui-with-sdl3", "imguitextselect", "libsdl3", "opengl", "out_ptr", "utfcpp")
-    if is_plat("linux") then
+    if is_plat("macosx") then
+        add_deps("swift")
+
+        local swiftBuildDir = format("$(scriptdir)/swift/.build/%s", swiftBuildMode)
+        local swiftLibDir = "/Library/Developer/CommandLineTools/usr/lib/swift"
+        add_includedirs(
+            swiftLibDir,
+            path.join(swiftBuildDir, "BluetoothMacOS.build"),
+            path.join(swiftBuildDir, "GUIMacOS.build")
+        )
+        add_linkdirs(swiftBuildDir, path.join(swiftLibDir, "macosx"))
+        add_links("BluetoothMacOS", "GUIMacOS")
+    elseif is_plat("linux") then
         add_packages("liburing", "dbus", "bluez")
     end
 
@@ -101,14 +98,13 @@ target("terminal-core")
 
     -- Platform-specific files
     if is_plat("windows") then
-        add_links("crypt32", "user32")
+        add_syslinks("Bthprops", "crypt32", "user32", "Ws2_32")
         add_files(
             "src/net/windows/*.cpp",
             "src/os/windows/*.cpp", "src/os/windows/*.mpp",
             "src/sockets/delegates/windows/*.cpp"
         )
     elseif is_plat("macosx") then
-        add_deps("swift")
         add_files(
             "swift/bridge/cppbridge.cpp",
             "src/net/macos/*.cpp",
