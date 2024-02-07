@@ -63,7 +63,29 @@ void drawBluetoothUUIDsSettings(std::vector<std::pair<std::string, UUIDs::UUID12
         auto& [name, uuid] = uuids[i];
 
         ImGui::PushID(i);
+        ImGui::SetNextItemWidth(6_fh);
         ImGuiExt::inputText("##name", name);
+
+        // Cumulative sizes of each UUID component
+        static std::array sizes{ 0, 4, 6, 8, 10, 16 };
+
+        for (std::size_t i = 0; i < 5; i++) {
+            u8* start = uuid.data() + sizes[i];
+            std::size_t components = sizes[i + 1] - sizes[i];
+
+            ImGui::SameLine();
+
+            // Show separator between components
+            if (i > 0) {
+                ImGui::Text("-");
+                ImGui::SameLine();
+            }
+
+            ImGui::SetNextItemWidth(components * 2 * ImGui::GetFontSize());
+            ImGui::PushID(i);
+            ImGui::InputScalarN("##components", ImGuiDataType_U8, start, components, nullptr, nullptr, "%02X");
+            ImGui::PopID();
+        }
 
         if (uuids.size() > 1) {
             ImGui::SameLine();
@@ -97,10 +119,11 @@ void Settings::load(std::string_view filePath) {
 
     OS::numThreads = parser.get<u8>("os", "numThreads");
     OS::queueEntries = parser.get<u8>("os", "queueEntries", 128);
-    OS::bluetoothUUIDs = parser.get<std::vector<std::pair<std::string, UUIDs::UUID128>>>("os", "bluetoothUUIDs", {
-        { "L2CAP", UUIDs::createFromBase(0x0100) },
-        { "RFCOMM", UUIDs::createFromBase(0x0003) },
-    });
+    OS::bluetoothUUIDs = parser.get<std::vector<std::pair<std::string, UUIDs::UUID128>>>("os", "bluetoothUUIDs",
+        {
+            { "L2CAP", UUIDs::createFromBase(0x0100) },
+            { "RFCOMM", UUIDs::createFromBase(0x0003) },
+        });
 }
 
 void Settings::drawSettingsWindow(bool& open) {
