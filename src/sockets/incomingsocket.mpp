@@ -1,10 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <utility>
-
 export module sockets.incomingsocket;
+import external.std;
 import sockets.delegates.bidirectional;
 import sockets.delegates.noops;
 import sockets.delegates.sockethandle;

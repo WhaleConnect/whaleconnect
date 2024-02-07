@@ -1,15 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#if OS_WINDOWS
-#include <Windows.h>
-#endif
-
-#include <string>
-#include <string_view>
-
 module utils.strings;
+import external.platform;
+import external.std;
 
 Strings::SysStr Strings::toSys(std::string_view from) {
 #if OS_WINDOWS
@@ -59,7 +53,7 @@ std::string Strings::replaceAll(std::string str, std::string_view from, std::str
     // 3. If from and to are equal the function call becomes pointless
     if (str.empty() || from.empty() || from == to) return str;
 
-    size_t start = 0;
+    std::size_t start = 0;
     while ((start = str.find(from, start)) != std::string::npos) {
         str.replace(start, from.size(), to);
         start += to.size(); // In case 'to' contains 'from', like replacing 'x' with 'yx'

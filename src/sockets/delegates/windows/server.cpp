@@ -1,28 +1,15 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <coroutine> // IWYU pragma: keep
-#include <functional>
-#include <memory>
-#include <string>
-#include <utility>
-
-#include <WinSock2.h>
-#include <bluetoothapis.h>
-#include <MSWSock.h>
-#include <ws2bth.h>
-#include <ws2ipdef.h>
-#include <WS2tcpip.h>
-#include <ztd/out_ptr.hpp>
-
 module sockets.delegates.server;
+import external.platform;
+import external.std;
+import external.out_ptr;
 import net.netutils;
 import os.async;
 import os.async.platform;
 import os.errcheck;
 import sockets.incomingsocket;
-import sockets.socket; // Prevents "LNK1227: conflicting weak extern definition" (MSVC)
 import utils.handleptr;
 import utils.strings;
 import utils.task;
@@ -97,7 +84,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
 }
 
 template <>
-Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
+Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(std::size_t size) {
     sockaddr_storage from;
     auto fromPtr = reinterpret_cast<sockaddr*>(&from);
     socklen_t fromLen = sizeof(from);
@@ -142,7 +129,7 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
     check(getsockname(*handle, reinterpret_cast<sockaddr*>(&serverAddr), &serverAddrLen));
 
     Async::add(*handle);
-    return { static_cast<uint16_t>(serverAddr.port), IPType::None };
+    return { static_cast<u16>(serverAddr.port), IPType::None };
 }
 
 template <>
@@ -158,18 +145,18 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
     auto clientPtr = reinterpret_cast<SOCKADDR_BTH*>(remoteAddrPtr);
     std::wstring clientAddrW(40, L'\0');
     auto addrLen = static_cast<DWORD>(clientAddrW.size());
-    check(WSAAddressToString(remoteAddrPtr, remoteAddrLen, nullptr, clientAddrW.data(), &addrLen));
+    check(WSAAddressToStringW(remoteAddrPtr, remoteAddrLen, nullptr, clientAddrW.data(), &addrLen));
 
     std::string clientAddr = Strings::fromSys(clientAddrW).substr(1, 17);
 
     // Get device name
-    BLUETOOTH_DEVICE_INFO deviceInfo{
-        .dwSize = sizeof(BLUETOOTH_DEVICE_INFO),
-        .Address = std::stoull(Strings::replaceAll(clientAddr, ":", ""), nullptr, 16)
+    BLUETOOTH_DEVICE_INFO_STRUCT deviceInfo{
+        .dwSize = sizeof(BLUETOOTH_DEVICE_INFO_STRUCT),
+        .Address = { std::stoull(Strings::replaceAll(clientAddr, ":", ""), nullptr, 16) }
     };
 
     check(BluetoothGetDeviceInfo(nullptr, &deviceInfo), checkZero, useReturnCode);
 
-    Device device{ ConnectionType::RFCOMM, Strings::fromSys(deviceInfo.szName), clientAddr, static_cast<uint16_t>(clientPtr->port) };
+    Device device{ ConnectionType::RFCOMM, Strings::fromSys(deviceInfo.szName), clientAddr, static_cast<u16>(clientPtr->port) };
     co_return { device, std::make_unique<IncomingSocket<SocketTag::BT>>(std::move(fd)) };
 }

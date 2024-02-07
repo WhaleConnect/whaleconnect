@@ -1,0 +1,5 @@
+includes
+    ztd/out_ptr.hpp
+
+ns ztd::out_ptr
+    out_ptr

@@ -1,17 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#define IMGUI_DEFINE_MATH_OPERATORS
-
-#include <format>
-#include <string>
-#include <vector>
-
-#include <imgui.h>
-#include <imgui_internal.h>
-
 module gui.notifications;
+import external.imgui;
+import external.std;
 import gui.imguiext;
 
 constexpr const char* notificationsWindowTitle = "Notifications";
@@ -28,7 +20,7 @@ class Notification {
 
     static inline int numNotifications = 0; // Total number of notifications
 
-    std::string id = std::format("Notification {}", numNotifications); // String to identify the notification
+    std::string id; // String to identify the notification
 
     double timeAdded = ImGui::GetTime(); // When this notification was added
 
@@ -41,7 +33,7 @@ class Notification {
 public:
     // Sets the information to draw the notification.
     Notification(std::string_view text, NotificationType type, float timeout) :
-        text(text), type(type), timeout(timeout) {
+        id(std::format("Notification {}", numNotifications)), text(text), type(type), timeout(timeout) {
         numNotifications++;
     }
 
@@ -73,7 +65,7 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
     // Get position of the notification's bottom-right corner relative to the viewport
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImVec2 viewportSize = viewport->Size;
-    ImVec2 windowPos = viewport->Pos + viewportSize - pos;
+    ImVec2 windowPos{ viewport->Pos.x + viewportSize.x - pos.x, viewport->Pos.y + viewportSize.y - pos.y };
 
     if (showInCorner) {
         if (visibility & Fading) opacity -= 5_dt;

@@ -1,13 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <string>
-
-#include <imgui.h>
-
 module gui.newserver;
 import components.serverwindow;
+import external.imgui;
 import gui.imguiext;
 import gui.notifications;
 import net.device;

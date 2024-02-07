@@ -1,12 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <sys/event.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
 module sockets.delegates.sockethandle;
+import external.platform;
 import os.async.platform;
 import net.enums;
 

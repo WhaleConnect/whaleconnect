@@ -1,18 +1,12 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <coroutine> // IWYU pragma: keep
-#include <format>
-#include <memory>
-#include <utility>
-
-#include <botan/tls_exceptn.h>
-#include <imgui.h>
-
 module components.connwindow;
 import gui.imguiext;
 import gui.menu;
+import external.botan;
+import external.imgui;
+import external.std;
 import net.device;
 import net.enums;
 import os.error;

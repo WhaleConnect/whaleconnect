@@ -3,16 +3,9 @@
 
 // kqueue and IOBluetooth only handle notifications for I/O, so completion queues must be managed manually.
 
-module;
-#include <array>
-#include <vector>
-#include <optional>
-
-#include <IOKit/IOReturn.h>
-#include <sys/event.h>
-#include <sys/fcntl.h>
-
 module os.async.internal;
+import external.platform;
+import external.std;
 import os.async;
 import os.async.platform;
 import os.async.platform.internal;
@@ -23,8 +16,7 @@ import os.error;
 constexpr auto socketIDMask = 0xFFFFFFFFUL;
 
 // Pops and cancels a pending operation.
-Async::Internal::OptCompletionResult cancelOne(uint64_t id, Async::Internal::SocketQueueMap& map,
-    Async::IOType ioType) {
+Async::Internal::OptCompletionResult cancelOne(u64 id, Async::Internal::SocketQueueMap& map, Async::IOType ioType) {
     // Completion result pointing to suspended coroutine
     auto pending = popPending(id, map, ioType);
     if (!pending) return std::nullopt;
@@ -37,10 +29,10 @@ Async::Internal::OptCompletionResult cancelOne(uint64_t id, Async::Internal::Soc
 
 // Removes kqueue events for a socket.
 void deleteKqueueEvents(int kq, int id) {
-    std::array<struct kevent, 2> events;
-
-    EV_SET(&events[0], id, EVFILT_READ, EV_DELETE, 0, 0, nullptr);
-    EV_SET(&events[1], id, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+    std::array<struct kevent, 2> events{ {
+        { static_cast<unsigned long>(id), EVFILT_READ, EV_DELETE, 0, 0, nullptr },
+        { static_cast<unsigned long>(id), EVFILT_WRITE, EV_DELETE, 0, 0, nullptr },
+    } };
 
     kevent(kq, events.data(), events.size(), nullptr, 0, nullptr);
 }
@@ -55,9 +47,10 @@ void Async::Internal::init(unsigned int numThreads, unsigned int) {
 void Async::Internal::stopThreads(unsigned int) {
     // Submit events to wake up all threads
     for (auto kq : kqs) {
-        struct kevent event {};
+        struct kevent event {
+            ASYNC_INTERRUPT, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER, 0, nullptr
+        };
 
-        EV_SET(&event, ASYNC_INTERRUPT, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER, 0, nullptr);
         kevent(kq, &event, 1, nullptr, 0, nullptr);
     }
 }
@@ -107,7 +100,7 @@ void Async::Internal::worker(unsigned int threadNum) {
         }
 
         // Get I/O type from user data pointer
-        auto ioTypeInt = static_cast<int>(reinterpret_cast<uint64_t>(event.udata));
+        auto ioTypeInt = static_cast<int>(reinterpret_cast<u64>(event.udata));
         auto ioType = static_cast<IOType>(ioTypeInt);
 
         // Pop an event from the queue and get its completion result

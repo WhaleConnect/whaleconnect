@@ -1,21 +1,10 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <cmath>
-#include <chrono>
-#include <ctime>
-#include <format>
-#include <iterator>
-#include <limits>
-#include <optional>
-#include <string>
-#include <string_view>
-
-#include <imgui.h>
-#include <utf8.h>
-
 module components.console;
+import external.imgui;
+import external.std;
+import external.utfcpp;
 import gui.imguiext;
 import utils.strings;
 
@@ -30,6 +19,7 @@ bool colorsEqual(const ImVec4& a, const ImVec4& b) {
 std::string getTimestamp() {
     // Adapted from https://stackoverflow.com/a/35157784
     using namespace std::chrono;
+    using namespace std::literals;
 
     auto now = system_clock::now();
 
@@ -38,7 +28,7 @@ std::string getTimestamp() {
 
     // Get local time from current time point
     auto timer = system_clock::to_time_t(now);
-    auto local = *std::localtime(&timer);
+    auto local = *localtime2(&timer);
 
     // Return formatted string
     return std::format("{:02}:{:02}:{:02}.{:03}", local.tm_hour, local.tm_min, local.tm_sec, ms);
@@ -125,7 +115,7 @@ void Console::update(std::string_view id) {
 
     if (showTimestamps) drawTimestamps();
 
-    ImVec2 size{ ImGuiExt::FILL, -ImGui::GetFrameHeightWithSpacing() };
+    ImVec2 size{ ImGuiExt::fill, -ImGui::GetFrameHeightWithSpacing() };
 
     // Always show horizontal scrollbar to maintain a known content height / prevents occasional flickering on scroll
     ImGuiWindowFlags flags = ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NoMove;

@@ -1,12 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <vector>
-
-#include <liburing.h>
-
 module os.async.platform;
+import external.platform;
+import external.std;
 import os.async.platform.internal;
 
 int currentRingIdx = 0;

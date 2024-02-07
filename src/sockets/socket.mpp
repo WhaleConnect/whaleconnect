@@ -1,10 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <string>
-
 export module sockets.socket;
+import external.std;
 import net.device;
 import sockets.delegates.delegates;
 import utils.task;
@@ -38,7 +36,7 @@ public:
         return io->send(std::string{ data });
     }
 
-    Task<RecvResult> recv(size_t size) const {
+    Task<RecvResult> recv(std::size_t size) const {
         return io->recv(size);
     }
 
@@ -54,7 +52,7 @@ public:
         return server->accept();
     }
 
-    Task<DgramRecvResult> recvFrom(size_t size) const {
+    Task<DgramRecvResult> recvFrom(std::size_t size) const {
         return server->recvFrom(size);
     }
 

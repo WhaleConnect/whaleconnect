@@ -1,15 +1,12 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <coroutine> // IWYU pragma: keep
-#include <string>
-
-#include <botan/tls_exceptn.h>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_templated.hpp>
-#include <nlohmann/json.hpp>
 
+import external.botan;
+import external.std;
 import helpers.helpers;
 import net.enums;
 import sockets.clientsockettls;
@@ -34,7 +31,7 @@ struct TLSErrorMatcher : Catch::Matchers::MatcherGenericBase {
 TEST_CASE("HTTPS") {
     // Security check with howsmyssl.com
     SECTION("TLS check") {
-        runSync([]() -> Task<> {
+        runSync([] -> Task<> {
             ClientSocketTLS sock;
             co_await sock.connect({ ConnectionType::TCP, "", "www.howsmyssl.com", 443 });
 
@@ -59,23 +56,19 @@ TEST_CASE("HTTPS") {
             // Check HTTP response
             CHECK(response.starts_with("HTTP/1.1 200 OK"));
 
-            // Extract and parse JSON response
-            auto jsonStart = response.find_first_of("{");
-            auto json = nlohmann::json::parse(response.substr(jsonStart, response.find_last_of("}") - jsonStart + 1));
-
             // Check attributes
-            CHECK(json["ephemeral_keys_supported"].get<bool>());
-            CHECK(json["session_ticket_supported"].get<bool>());
-            CHECK(json["insecure_cipher_suites"].size() == 0);
-            CHECK(json["tls_version"].get<std::string>() == "TLS 1.3");
-            CHECK(json["rating"].get<std::string>() == "Probably Okay");
+            CHECK(response.contains("\"ephemeral_keys_supported\":true"));
+            CHECK(response.contains("\"session_ticket_supported\":true"));
+            CHECK(response.contains("\"insecure_cipher_suites\":{}"));
+            CHECK(response.contains("\"tls_version\":\"TLS 1.3\""));
+            CHECK(response.contains("\"rating\":\"Probably Okay\""));
         });
     }
 
     // Error handling checks with badssl.com
 
     SECTION("Self-signed certificate") {
-        auto operation = []() -> Task<> {
+        auto operation = [] -> Task<> {
             ClientSocketTLS sock;
             co_await sock.connect({ ConnectionType::TCP, "", "self-signed.badssl.com", 443 });
         };
@@ -85,7 +78,7 @@ TEST_CASE("HTTPS") {
     }
 
     SECTION("Expired certificate") {
-        auto operation = []() -> Task<> {
+        auto operation = [] -> Task<> {
             ClientSocketTLS sock;
             co_await sock.connect({ ConnectionType::TCP, "", "expired.badssl.com", 443 });
         };
@@ -95,7 +88,7 @@ TEST_CASE("HTTPS") {
     }
 
     SECTION("Handshake failure") {
-        runSync([]() -> Task<> {
+        runSync([] -> Task<> {
             ClientSocketTLS sock;
             co_await sock.connect({ ConnectionType::TCP, "", "rc4.badssl.com", 443 });
             auto alert = *(co_await sock.recv(1024)).alert; // No data is actually being received

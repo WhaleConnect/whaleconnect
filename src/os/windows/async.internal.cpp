@@ -1,25 +1,25 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <WinSock2.h>
-
 module os.async.internal;
+import external.platform;
+import external.std;
 import os.async.platform.internal;
 import os.async;
 import os.errcheck;
+import os.error;
 
 void Async::Internal::init(unsigned int numThreads, unsigned int) {
     // Start Winsock
     WSADATA wsaData{};
-    check(WSAStartup(MAKEWORD(2, 2), &wsaData), checkTrue, useReturnCode); // MAKEWORD(2, 2) for Winsock 2.2
+    check(WSAStartup(makeWord(2, 2), &wsaData), checkTrue, useReturnCode); // MAKEWORD(2, 2) for Winsock 2.2
 
     // Initialize IOCP
     completionPort = check(CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, numThreads), checkTrue);
 }
 
 void Async::Internal::stopThreads(unsigned int numThreads) {
-    for (size_t i = 0; i < numThreads; i++) PostQueuedCompletionStatus(completionPort, 0, ASYNC_INTERRUPT, nullptr);
+    for (std::size_t i = 0; i < numThreads; i++) PostQueuedCompletionStatus(completionPort, 0, ASYNC_INTERRUPT, nullptr);
 }
 
 void Async::Internal::cleanup() {

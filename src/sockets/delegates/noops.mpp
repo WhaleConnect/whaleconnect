@@ -1,11 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <coroutine> // IWYU pragma: keep
-#include <string>
-
 export module sockets.delegates.noops;
+import external.std;
 import sockets.delegates.delegates;
 import net.enums;
 import net.device;
@@ -19,7 +16,7 @@ export namespace Delegates {
             co_return;
         }
 
-        Task<RecvResult> recv(size_t) override {
+        Task<RecvResult> recv(std::size_t) override {
             co_return {};
         }
     };
@@ -41,7 +38,7 @@ export namespace Delegates {
             co_return {};
         }
 
-        Task<DgramRecvResult> recvFrom(size_t) override {
+        Task<DgramRecvResult> recvFrom(std::size_t) override {
             co_return {};
         }
 

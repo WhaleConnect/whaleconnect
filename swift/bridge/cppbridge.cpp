@@ -1,11 +1,10 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <BluetoothMacOS-Swift.h>
-
 #include "cppbridge.hpp"
 
 import os.async.platform;
+import external.platform;
 import net.device;
 import net.enums;
 import os.error;
@@ -14,7 +13,7 @@ void clearDataQueue(unsigned long id) {
     Async::clearBluetoothDataQueue(id);
 }
 
-void newData(unsigned long id, const char* data, size_t dataLen) {
+void newData(unsigned long id, const char* data, std::size_t dataLen) {
     Async::bluetoothReadComplete(id, data, dataLen);
 }
 
@@ -23,7 +22,7 @@ void outgoingComplete(unsigned long id, IOReturn status) {
 }
 
 void acceptComplete(unsigned long id, bool isL2CAP, const void* channel, const std::string& name,
-    const std::string& addr, uint16_t port) {
+    const std::string& addr, std::uint16_t port) {
     using enum ConnectionType;
     Async::bluetoothAcceptComplete(id, *static_cast<const BluetoothMacOS::BTHandle*>(channel),
         { isL2CAP ? L2CAP : RFCOMM, name, addr, port });

@@ -1,15 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <optional>
-#include <string>
-
-#include <BluetoothMacOS-Swift.h>
-#include <IOKit/IOReturn.h>
-#include <swiftToCxx/_SwiftCxxInteroperability.h>
-
 export module os.async.platform;
+import external.platform;
+import external.std;
 import net.device;
 import os.async;
 
@@ -40,7 +34,7 @@ export namespace Async {
     bool bluetoothComplete(SwiftID id, IOType ioType, IOReturn status);
 
     // Signals completion of a Bluetooth read operation.
-    void bluetoothReadComplete(SwiftID id, const char* data, size_t dataLen);
+    void bluetoothReadComplete(SwiftID id, const char* data, std::size_t dataLen);
 
     // Signals completion of a Bluetooth accept operation.
     void bluetoothAcceptComplete(SwiftID id, const BluetoothMacOS::BTHandle& handle, const Device& device);

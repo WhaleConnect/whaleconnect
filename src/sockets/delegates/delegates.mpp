@@ -1,23 +1,13 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <cstdint>
-#include <memory>
-#include <optional>
-#include <string>
-
 export module sockets.delegates.delegates;
+import external.std;
 import net.enums;
 import net.device;
 import utils.task;
 
-// MSVC and Clang currently handle forward declarations in modules differently
-#ifdef _MSC_VER
-export class Socket;
-#else
 class Socket;
-#endif
 
 export {
     using SocketPtr = std::unique_ptr<Socket>;
@@ -47,7 +37,7 @@ export {
     };
 
     struct ServerAddress {
-        uint16_t port = 0;
+        u16 port = 0;
         IPType ipType = IPType::None;
     };
 }
@@ -76,7 +66,7 @@ export namespace Delegates {
         virtual Task<> send(std::string data) = 0;
 
         // Receives a string.
-        virtual Task<RecvResult> recv(size_t size) = 0;
+        virtual Task<RecvResult> recv(std::size_t size) = 0;
     };
 
     // Manages client operations.
@@ -98,7 +88,7 @@ export namespace Delegates {
         virtual Task<AcceptResult> accept() = 0;
 
         // Receives data from a connectionless client.
-        virtual Task<DgramRecvResult> recvFrom(size_t size) = 0;
+        virtual Task<DgramRecvResult> recvFrom(std::size_t size) = 0;
 
         // Sends data to a connectionless client.
         virtual Task<> sendTo(Device device, std::string data) = 0;

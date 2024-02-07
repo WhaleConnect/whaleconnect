@@ -1,23 +1,12 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <algorithm>
-#include <format>
-#include <map>
-#include <variant>
-
-#ifdef _MSC_VER
-// Prevents an error in stable_sort with modules
-#include <ranges>
-#endif
-
-#include <imgui.h>
-#include <imgui_internal.h>
-
 module gui.newconnbt;
+import app.settings;
 import components.sdpwindow;
 import components.windowlist;
+import external.imgui;
+import external.std;
 import net.btutils;
 import net.device;
 import os.error;
@@ -88,12 +77,6 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
 
     static std::variant<std::monostate, DeviceList, System::SystemError> pairedDevices; // Paired devices
 
-    // Map of UUIDs, associating a UUID value with a user-given name
-    static std::map<std::string, BTUtils::UUID128, std::less<>> uuidList = {
-        { "L2CAP", BTUtils::createUUIDFromBase(0x0100) },
-        { "RFCOMM", BTUtils::createUUIDFromBase(0x0003) },
-    };
-
     bool needsSort = false;
 
     // Get paired devices if the button is clicked or if the variant currently holds nothing
@@ -121,7 +104,7 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
             // There are devices, display them
             if (auto device = drawPairedDevices(deviceList, needsSort)) {
                 std::string title = std::format("Connect To {}##{}", device->name, device->address);
-                sdpWindows.add<SDPWindow>(title, *device, uuidList, connections);
+                sdpWindows.add<SDPWindow>(title, *device, Settings::OS::bluetoothUUIDs, connections);
             }
         },
         [](const System::SystemError& error) {

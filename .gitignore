@@ -7,12 +7,10 @@ desktop.ini
 .cache/
 .xmake/
 build/
-dist/
-vsxmake*/
 
 # IDE directories
 .vs/
 .vscode/
 
 # Test settings
-tests/settings/settings.json
+tests/settings/settings.ini

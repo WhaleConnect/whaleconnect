@@ -1,13 +1,11 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <string>
-
-#include <imgui.h>
-
 #include "guibridge.hpp"
 
 import gui.menu;
+import external.imgui;
+import external.std;
 
 void setWindowFocus(const std::string& title) {
     ImGui::SetWindowFocus(title.c_str());

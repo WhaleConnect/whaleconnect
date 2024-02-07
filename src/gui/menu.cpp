@@ -2,14 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <format>
-#include <string>
-#include <string_view>
-
-#include <imgui.h>
-#include <nlohmann/json.hpp> // IWYU pragma: keep (fixes errors on MSVC)
-#include <SDL3/SDL_misc.h>
-
 #if OS_MACOS
 #include <GUIMacOS-Swift.h>
 #endif
@@ -17,10 +9,11 @@ module;
 module gui.menu;
 import app.settings;
 import components.windowlist;
+import external.imgui;
+import external.libsdl3;
+import external.std;
 import gui.imguiext;
 import gui.notifications;
-
-bool useSystemMenu = false;
 
 void windowMenu(WindowList& list, const char* desc) {
     if (!ImGui::BeginMenu(desc)) return;
@@ -38,7 +31,7 @@ void Menu::drawMenuBar(bool& quit, WindowList& connections, WindowList& servers)
     ImGuiExt::drawNotificationsMenu(notificationsOpen);
 
     if constexpr (OS_MACOS) {
-        if (useSystemMenu) {
+        if (Settings::GUI::systemMenu) {
             ImGui::EndMainMenuBar();
             return;
         }
@@ -76,10 +69,8 @@ void Menu::drawMenuBar(bool& quit, WindowList& connections, WindowList& servers)
 }
 
 void Menu::setupMenuBar() {
-    useSystemMenu = Settings::getSetting<bool>("gui.systemMenu");
-
 #if OS_MACOS
-    if (useSystemMenu) GUIMacOS::setupMenuBar();
+    if (Settings::GUI::systemMenu) GUIMacOS::setupMenuBar();
 #endif
 }
 

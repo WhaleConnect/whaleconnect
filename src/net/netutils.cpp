@@ -1,28 +1,15 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <string>
-
-#if OS_WINDOWS
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#else
-#include <netdb.h>
-#endif
-
-#include <ztd/out_ptr.hpp>
-
 module net.netutils;
+import external.out_ptr;
+import external.platform;
+import external.std;
 import net.enums;
 import os.errcheck;
 import os.error;
 import utils.strings;
-
-#if !OS_WINDOWS
-constexpr auto GetAddrInfo = getaddrinfo;
-constexpr auto GetNameInfo = getnameinfo;
-#endif
+import utils.uuids;
 
 AddrInfoHandle NetUtils::resolveAddr(const Device& device, bool useDNS) {
     bool isUDP = device.type == ConnectionType::UDP;
@@ -39,7 +26,7 @@ AddrInfoHandle NetUtils::resolveAddr(const Device& device, bool useDNS) {
 
     // Resolve the IP
     AddrInfoHandle ret;
-    check(GetAddrInfo(addrWide.c_str(), portWide.c_str(), &hints, ztd::out_ptr::out_ptr(ret)), checkZero, useReturnCode,
+    check(GetAddrInfoW(addrWide.c_str(), portWide.c_str(), &hints, ztd::out_ptr::out_ptr(ret)), checkZero, useReturnCode,
         System::ErrorType::AddrInfo);
 
     return ret;
@@ -54,25 +41,25 @@ Device NetUtils::fromAddr(const sockaddr* addr, socklen_t addrLen, ConnectionTyp
     auto ipLen = static_cast<socklen_t>(ipStr.size());
     auto portLen = static_cast<socklen_t>(portStr.size());
 
-    check(GetNameInfo(addr, addrLen, ipStr.data(), ipLen, portStr.data(), portLen, NI_NUMERICHOST | NI_NUMERICSERV),
+    check(GetNameInfoW(addr, addrLen, ipStr.data(), ipLen, portStr.data(), portLen, NI_NUMERICHOST | NI_NUMERICSERV),
         checkZero, useReturnCode, System::ErrorType::AddrInfo);
 
     // Process returned strings
     Strings::stripNull(ipStr);
     std::string ip = Strings::fromSys(ipStr);
-    auto port = static_cast<uint16_t>(std::stoi(Strings::fromSys(portStr)));
+    auto port = static_cast<u16>(std::stoi(Strings::fromSys(portStr)));
 
     return { type, "", ip, port };
 }
 
-uint16_t NetUtils::getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4) {
+u16 NetUtils::getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4) {
     sockaddr_storage addr;
     socklen_t localAddrLen = sizeof(addr);
     check(getsockname(handle, reinterpret_cast<sockaddr*>(&addr), &localAddrLen));
 
-    uint16_t port
+    u16 port
         = isV4 ? reinterpret_cast<sockaddr_in*>(&addr)->sin_port : reinterpret_cast<sockaddr_in6*>(&addr)->sin6_port;
-    return ntohs(port);
+    return UUIDs::byteSwap(port);
 }
 
 ServerAddress NetUtils::startServer(const Device& serverInfo, Delegates::SocketHandle<SocketTag::IP>& handle) {

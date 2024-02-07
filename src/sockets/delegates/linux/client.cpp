@@ -1,17 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <coroutine> // IWYU pragma: keep
-#include <functional>
-
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/l2cap.h>
-#include <bluetooth/rfcomm.h>
-#include <liburing.h>
-#include <sys/socket.h>
-
 module sockets.delegates.client;
+import external.platform;
+import external.std;
 import net.device;
 import net.enums;
 import net.netutils;
@@ -44,12 +36,12 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
 
     // Set the appropriate sockaddr struct based on the protocol
     if (device.type == ConnectionType::RFCOMM) {
-        sockaddr_rc addr{ AF_BLUETOOTH, bdaddr, static_cast<uint8_t>(device.port) };
+        sockaddr_rc addr{ AF_BLUETOOTH, bdaddr, static_cast<u8>(device.port) };
         handle.reset(check(socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)));
 
         co_await Async::run(std::bind_front(startConnect, *handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
     } else {
-        sockaddr_l2 addr{ AF_BLUETOOTH, htobs(device.port), bdaddr, 0, 0 };
+        sockaddr_l2 addr{ AF_BLUETOOTH, htobs2(device.port), bdaddr, 0, 0 };
         handle.reset(check(socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)));
 
         co_await Async::run(std::bind_front(startConnect, *handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));

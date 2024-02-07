@@ -1,17 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <coroutine> // IWYU pragma: keep
-#include <functional>
-#include <utility>
-
-#include <BluetoothMacOS-Swift.h>
-#include <IOKit/IOReturn.h>
-#include <sys/event.h>
-#include <sys/socket.h>
-
 module sockets.delegates.client;
+import external.platform;
+import external.std;
 import net.device;
 import net.enums;
 import net.netutils;

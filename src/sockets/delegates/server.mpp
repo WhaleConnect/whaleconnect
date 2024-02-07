@@ -1,22 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <cstddef>
-#include <string>
-#include <utility>
-
-#if OS_WINDOWS
-#if __clang__
-#define NO_UNIQUE_ADDRESS // Not supported on Clang on Windows
-#else
-#define NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
-#endif
-#else
-#define NO_UNIQUE_ADDRESS [[no_unique_address]]
-#endif
-
 export module sockets.delegates.server;
+import external.std;
 import net.device;
 import net.enums;
 import sockets.delegates.delegates;
@@ -38,7 +24,7 @@ export namespace Delegates {
 
         Task<AcceptResult> accept() override;
 
-        Task<DgramRecvResult> recvFrom(size_t size) override;
+        Task<DgramRecvResult> recvFrom(std::size_t size) override;
 
         Task<> sendTo(Device device, std::string data) override;
     };
@@ -53,7 +39,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept();
 // There are no connectionless operations on Bluetooth sockets
 
 template <>
-Task<DgramRecvResult> Delegates::Server<SocketTag::BT>::recvFrom(size_t) {
+Task<DgramRecvResult> Delegates::Server<SocketTag::BT>::recvFrom(std::size_t) {
     std::unreachable();
 }
 

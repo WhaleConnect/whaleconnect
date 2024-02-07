@@ -1,20 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <concepts>
-#include <exception>
-#include <type_traits>
-
-#if OS_WINDOWS
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#else
-#include <netdb.h>
-#include <sys/socket.h>
-#endif
-
 export module net.netutils;
+import external.platform;
+import external.std;
 import net.device;
 import net.enums;
 import os.error;
@@ -24,16 +13,7 @@ import sockets.delegates.sockethandle;
 import utils.handleptr;
 import utils.task;
 
-// Winsock-specific definitions and their Berkeley equivalents
-export {
-#if OS_WINDOWS
-    using AddrInfoType = ADDRINFOW;
-    using AddrInfoHandle = HandlePtr<AddrInfoType, FreeAddrInfo>;
-#else
-    using AddrInfoType = addrinfo;
-    using AddrInfoHandle = HandlePtr<AddrInfoType, freeaddrinfo>;
-#endif
-}
+export using AddrInfoHandle = HandlePtr<AddrInfoType, FreeAddrInfoW>;
 
 export namespace NetUtils {
     // Resolves an address with getaddrinfo.
@@ -79,7 +59,7 @@ export namespace NetUtils {
     Device fromAddr(const sockaddr* addr, socklen_t addrLen, ConnectionType type);
 
     // Returns the port from a sockaddr.
-    uint16_t getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4);
+    u16 getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4);
 
     // Starts a server with the specified socket handle.
     ServerAddress startServer(const Device& serverInfo, Delegates::SocketHandle<SocketTag::IP>& handle);

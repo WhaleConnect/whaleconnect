@@ -1,43 +1,26 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <fstream>
-#include <string>
-#include <string_view>
-#include <thread>
-
-#include <imgui.h>
-#include <imgui_internal.h>
-#include <nlohmann/json.hpp>
-
 module app.settings;
+import external.imgui;
+import external.std;
 import gui.imguiext;
+import utils.settingsparser;
+import utils.uuids;
 
-const nlohmann::json defaultSettings{
-    { "font.size", 15 }, // Application font height in pixels
-    { "font.file", "" }, // Font file
-    { "font.ranges", { 0x0020, 0x00FF } }, // Glyph ranges to load from font
-    { "gui.roundedCorners", false }, // If corners in the UI are rounded
-    { "gui.windowTransparency", false }, // If application windows have a transparent effect
-    { "gui.systemMenu", true }, // If sytem menu bars are used (macOS only)
-    { "os.numThreads", 0 }, // Number of worker threads (0 to auto-detect)
-    { "os.queueEntries", 128 }, // Number of entries in io_uring instances
-};
-
-nlohmann::json loadedSettings;
+SettingsParser parser;
 
 void drawFontRangesSettings(std::vector<ImWchar>& fontRanges) {
     using namespace ImGuiExt::Literals;
 
-    size_t rangesSize = fontRanges.size();
+    std::size_t rangesSize = fontRanges.size();
     auto deletePos = fontRanges.end();
 
     ImGui::Spacing();
     ImGui::Text("Glyph ranges to load from font");
 
     // Iterate through ranges (every 2 codepoints)
-    for (size_t i = 0; i < rangesSize; i += 2) {
+    for (std::size_t i = 0; i < rangesSize; i += 2) {
         ImGui::PushID(i);
 
         constexpr ImGuiDataType type = ImGuiExt::getDataType<ImWchar>();
@@ -64,30 +47,59 @@ void drawFontRangesSettings(std::vector<ImWchar>& fontRanges) {
     ImGui::Spacing();
 }
 
-const nlohmann::json& Internal::getValue(std::string_view key) {
-    return loadedSettings[key];
-}
+void drawBluetoothUUIDsSettings(std::map<std::string, UUIDs::UUID128, std::less<>>& uuids) {
+    using namespace ImGuiExt::Literals;
 
-const nlohmann::json& Internal::getDefaultValue(std::string_view key) {
-    return defaultSettings[key];
+    auto deletePos = uuids.end();
+
+    ImGui::Spacing();
+    ImGui::Text("sdfds");
+
+    // Iterate through ranges (every 2 codepoints)
+    for (auto i = uuids.begin(); i != uuids.end(); i++) {
+        auto& [name, uuid] = *i;
+
+        ImGui::PushID(name.c_str());
+
+        // ImGui::SetNextItemWidth(8_fh);
+        // ImGuiExt::inputText(std::format("{}", uuid).c_str(), name);
+        ImGuiExt::textUnformatted(name.c_str());
+
+        // Show delete button if more than one UUID (over 2)
+        if (uuids.size() > 2) {
+            ImGui::SameLine();
+            if (ImGui::Button("\uf1af")) deletePos = i;
+        }
+
+        ImGui::PopID();
+    }
+
+    if (deletePos != uuids.end()) uuids.erase(deletePos);
+
+    // Add button
+    ImGui::SameLine();
+    if (ImGui::Button("\uea13")) uuids.try_emplace("newUUID", UUIDs::createFromBase(0x00000000));
+    ImGui::Spacing();
 }
 
 void Settings::load(std::string_view filePath) {
-    std::ifstream f{ filePath.data() };
-    if (f.fail()) {
-        loadedSettings = defaultSettings;
-    } else {
-        try {
-            loadedSettings = nlohmann::json::parse(f);
-        } catch (const nlohmann::json::parse_error&) {
-            loadedSettings = defaultSettings;
-        }
-    }
-}
+    using Internal::parser;
+    parser.load(filePath);
 
-void Settings::save(std::string_view filePath) {
-    std::ofstream f{ filePath.data() };
-    f << loadedSettings.dump(4) << "\n";
+    Font::file = parser.get<std::string>("font", "file");
+    Font::ranges = parser.get<std::vector<ImWchar>>("font", "ranges", { 0x0020, 0x00FF });
+    Font::size = parser.get<u8>("font", "size", 15);
+
+    GUI::roundedCorners = parser.get<bool>("gui", "roundedCorners");
+    GUI::windowTransparency = parser.get<bool>("gui", "windowTransparency");
+    GUI::systemMenu = parser.get<bool>("gui", "systemMenu", true);
+
+    OS::numThreads = parser.get<u8>("os", "numThreads");
+    OS::queueEntries = parser.get<u8>("os", "queueEntries", 128);
+    OS::bluetoothUUIDs = parser.get<std::map<std::string, UUIDs::UUID128, std::less<>>>("os", "bluetoothUUIDs", {
+        { "L2CAP", UUIDs::createFromBase(0x0100) },
+        { "RFCOMM", UUIDs::createFromBase(0x0003) },
+    });
 }
 
 void Settings::drawSettingsWindow(bool& open) {
@@ -106,44 +118,36 @@ void Settings::drawSettingsWindow(bool& open) {
     // ========================= Font settings =========================
     ImGui::SeparatorText("Font");
 
-    static auto fontFile = getSetting<std::string>("font.file");
     ImGui::SetNextItemWidth(18_fh);
-    ImGuiExt::inputText("File (empty to use default font)", fontFile);
+    ImGuiExt::inputText("File (empty to use default font)", Font::file);
 
-    static auto fontRanges = getSetting<std::vector<ImWchar>>("font.ranges");
-    drawFontRangesSettings(fontRanges);
+    drawFontRangesSettings(Font::ranges);
 
-    static auto fontSize = getSetting<uint8_t>("font.size");
     ImGui::SetNextItemWidth(4_fh);
-    ImGuiExt::inputScalar("Size", fontSize);
+    ImGuiExt::inputScalar("Size", Font::size);
 
     // ========================= GUI settings =========================
     ImGui::Dummy({ 0, 1_fh });
     ImGui::SeparatorText("GUI");
 
-    static auto guiRoundedCorners = getSetting<bool>("gui.roundedCorners");
-    ImGui::Checkbox("Rounded corners", &guiRoundedCorners);
-
-    static auto guiWindowTransparency = getSetting<bool>("gui.windowTransparency");
-    ImGui::Checkbox("Window transparency (make windows have a transparent effect)", &guiWindowTransparency);
-
-    static auto guiSystemMenu = getSetting<bool>("gui.systemMenu");
-    ImGui::Checkbox("Use system menu bars (macOS only)", &guiSystemMenu);
+    ImGui::Checkbox("Rounded corners", &GUI::roundedCorners);
+    ImGui::Checkbox("Window transparency (make windows have a transparent effect)", &GUI::windowTransparency);
+    ImGui::Checkbox("Use system menu bars (macOS only)", &GUI::systemMenu);
 
     // ========================= OS settings =========================
     ImGui::Dummy({ 0, 1_fh });
     ImGui::SeparatorText("OS");
 
-    static auto osNumThreads = getSetting<uint8_t>("os.numThreads");
     static const int numThreads = std::thread::hardware_concurrency();
     ImGui::SetNextItemWidth(4_fh);
-    ImGuiExt::inputScalar("Number of worker threads", osNumThreads);
+    ImGuiExt::inputScalar("Number of worker threads", OS::numThreads);
     ImGui::SameLine();
     ImGui::Text("(0 to use auto-detected number: %d)", numThreads);
 
-    static auto osQueueEntries = getSetting<uint8_t>("os.queueEntries");
     ImGui::SetNextItemWidth(4_fh);
-    ImGuiExt::inputScalar("io_uring queue entries (Linux only)", osQueueEntries);
+    ImGuiExt::inputScalar("io_uring queue entries (Linux only)", OS::queueEntries);
+
+    drawBluetoothUUIDsSettings(OS::bluetoothUUIDs);
 
     // ========================= Actions =========================
     ImGui::Dummy({ 0, 1_fh });
@@ -151,16 +155,18 @@ void Settings::drawSettingsWindow(bool& open) {
 
     ImGui::SameLine();
     if (ImGui::Button("Save")) {
-        loadedSettings["font.file"] = fontFile;
-        loadedSettings["font.ranges"] = fontRanges;
-        loadedSettings["font.size"] = fontSize;
+        using Internal::parser;
+        parser.set("font", "file", Font::file);
+        parser.set("font", "ranges", Font::ranges);
+        parser.set("font", "size", Font::size);
 
-        loadedSettings["gui.roundedCorners"] = guiRoundedCorners;
-        loadedSettings["gui.windowTransparency"] = guiWindowTransparency;
-        loadedSettings["gui.systemMenu"] = guiSystemMenu;
+        parser.set("gui", "roundedCorners", GUI::roundedCorners);
+        parser.set("gui", "windowTransparency", GUI::windowTransparency);
+        parser.set("gui", "systemMenu", GUI::systemMenu);
 
-        loadedSettings["os.numThreads"] = osNumThreads;
-        loadedSettings["os.queueEntries"] = osQueueEntries;
+        parser.set("os", "numThreads", OS::numThreads);
+        parser.set("os", "queueEntries", OS::queueEntries);
+        parser.set("os", "bluetoothUUIDs", OS::bluetoothUUIDs);
     }
 
     ImGui::Text("Restart the application to apply settings.");

@@ -1,20 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <optional>
-#include <queue>
-#include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
-
-#include <BluetoothMacOS-Swift.h>
-#include <IOKit/IOReturn.h>
-#include <sys/event.h>
-#include <sys/fcntl.h>
-
 module os.async.platform;
+import external.platform;
+import external.std;
 import net.device;
 import os.async;
 import os.async.platform.internal;
@@ -37,25 +26,25 @@ void Async::prepSocket(int s) {
 void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
     // The EV_ONESHOT flag will delete the event once it is retrieved in one of the threads.
     // This ensures only one thread will wake up to handle the event.
-    std::array<struct kevent, 3> events{};
-    int ioTypeInt = std::to_underlying(ioType);
+    u32 ioTypeInt = std::to_underlying(ioType);
 
     // Pass I/O type as user data pointer
-    auto typeData = reinterpret_cast<void*>(static_cast<uint64_t>(ioTypeInt));
-    int filt = ioType == IOType::Send ? EVFILT_WRITE : EVFILT_READ;
+    auto typeData = reinterpret_cast<void*>(static_cast<u64>(ioTypeInt));
+    i16 filt = ioType == IOType::Send ? EVFILT_WRITE : EVFILT_READ;
 
-    // Add and disable the I/O filter
-    // If there's a problem with the file descriptor, kevent will exit early.
-    EV_SET(&events[0], ident, filt, EV_ADD | EV_DISABLE, 0, 0, nullptr);
+    std::array<struct kevent, 3> events{ {
+        // Add and disable the I/O filter
+        // If there's a problem with the file descriptor, kevent will exit early.
+        { static_cast<unsigned long>(ident), filt, EV_ADD | EV_DISABLE, 0, 0, nullptr },
 
-    // Request to add the operation to the pending queue
-    // Early exiting of kevent will prevent dangling entries in the thread's queue if the socket's I/O filter didn't
-    // make it into the kqueue.
-    EV_SET(&events[1], Internal::ASYNC_ADD | ident, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER | ioTypeInt, 0,
-        &result);
+        // Request to add the operation to the pending queue
+        // Early exiting of kevent will prevent dangling entries in the thread's queue if the socket's I/O filter didn't
+        // make it into the kqueue.
+        { Internal::ASYNC_ADD | ident, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER | ioTypeInt, 0, &result },
 
-    // Enable the I/O filter once the pending queue has been modified
-    EV_SET(&events[2], ident, filt, EV_ENABLE | EV_ONESHOT, 0, 0, typeData);
+        // Enable the I/O filter once the pending queue has been modified
+        { static_cast<unsigned long>(ident), filt, EV_ENABLE | EV_ONESHOT, 0, 0, typeData },
+    } };
 
     check(kevent(Internal::kqs[currentKqueueIdx], events.data(), events.size(), nullptr, 0, nullptr));
 
@@ -65,10 +54,11 @@ void Async::submitKqueue(int ident, IOType ioType, CompletionResult& result) {
 
 void Async::cancelPending(int fd) {
     for (auto kq : Internal::kqs) {
-        struct kevent event {};
-
         // The file descriptor is used in "ident" so events can remain unique
-        EV_SET(&event, Internal::ASYNC_CANCEL | fd, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER, 0, nullptr);
+        struct kevent event {
+            Internal::ASYNC_CANCEL | fd, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER, 0, nullptr
+        };
+
         check(kevent(kq, &event, 1, nullptr, 0, nullptr));
     }
 }
@@ -89,7 +79,7 @@ bool Async::bluetoothComplete(SwiftID id, IOType ioType, IOReturn status) {
     return true;
 }
 
-void Async::bluetoothReadComplete(SwiftID id, const char* data, size_t dataLen) {
+void Async::bluetoothReadComplete(SwiftID id, const char* data, std::size_t dataLen) {
     btReads[id].emplace(std::in_place, data, dataLen);
 
     bluetoothComplete(id, IOType::Receive, kIOReturnSuccess);

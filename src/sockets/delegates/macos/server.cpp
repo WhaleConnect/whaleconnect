@@ -1,17 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <coroutine> // IWYU pragma: keep
-#include <functional>
-
-#include <BluetoothMacOS-Swift.h>
-#include <IOKit/IOReturn.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-
 module sockets.delegates.server;
+import external.platform;
+import external.std;
 import net.netutils;
 import os.async;
 import os.async.platform;
@@ -44,7 +36,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
 }
 
 template <>
-Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
+Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(std::size_t size) {
     sockaddr_storage from;
     auto fromAddr = reinterpret_cast<sockaddr*>(&from);
     socklen_t addrSize = sizeof(from);
@@ -52,7 +44,7 @@ Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
     co_await Async::run(std::bind_front(Async::submitKqueue, *handle, Async::IOType::Receive));
 
     std::string data(size, 0);
-    ssize_t recvLen = check(recvfrom(*handle, data.data(), data.size(), 0, fromAddr, &addrSize));
+    auto recvLen = check(recvfrom(*handle, data.data(), data.size(), 0, fromAddr, &addrSize));
     data.resize(recvLen);
 
     co_return { NetUtils::fromAddr(fromAddr, addrSize, ConnectionType::UDP), data };

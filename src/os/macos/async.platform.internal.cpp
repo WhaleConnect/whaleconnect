@@ -1,10 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <optional>
-
 module os.async.platform.internal;
+import external.std;
 import os.async;
 import os.async.platform;
 

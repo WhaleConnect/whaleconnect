@@ -1,0 +1,25 @@
+includes
+    botan/certstor_system.h
+    botan/system_rng.h
+    botan/tls_alert.h
+    botan/tls_client.h
+    botan/tls_exceptn.h
+    botan/tls_policy.h
+    botan/tls_server_info.h
+    botan/tls_session_manager_memory.h
+    botan/x509cert.h
+
+ns Botan
+    ns TLS
+        Alert
+        Callbacks
+        Client
+        Policy
+        Server_Information
+        Session_Manager_In_Memory
+        TLS_Exception
+
+    Certificate_Store
+    Credentials_Manager
+    System_Certificate_Store
+    System_RNG

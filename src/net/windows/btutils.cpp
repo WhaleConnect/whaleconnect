@@ -1,47 +1,25 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <cstring> // std::memcpy()
-#include <format>
-#include <memory>
-#include <utility>
-
-#include <WinSock2.h>
-#include <bluetoothapis.h>
-#include <ztd/out_ptr.hpp>
-
 module net.btutils;
+import external.std;
+import external.out_ptr;
 import net.btutils.internal;
 import net.device;
 import net.enums;
 import os.errcheck;
+import os.error;
 import utils.handleptr;
 import utils.strings;
+import utils.uuids;
 
 // Converts a Windows GUID struct into a UUID128.
-BTUtils::UUID128 toUUID(GUID in) {
-    BTUtils::UUID128 ret;
-
-    // Fields in a GUID structure have a system-dependent endianness, while bytes in a UUID128 are ordered based on
-    // network byte ordering. The ntohl/ntohs function are used to convert the byte ordering before copying.
-    uint32_t data1 = ntohl(in.Data1);
-    uint16_t data2 = ntohs(in.Data2);
-    uint16_t data3 = ntohs(in.Data3);
-
-    // Copy data into return object, the destination pointer is incremented by the sum of the previous sizes
-    // Bytes stored in an array are guaranteed to be contiguous, while different fields in a struct may have padding in
-    // between, so memcpy is used to populate the return object.
-    std::memcpy(ret.data(), &data1, 4);
-    std::memcpy(ret.data() + 4, &data2, 2);
-    std::memcpy(ret.data() + 6, &data3, 2);
-    std::memcpy(ret.data() + 8, &in.Data4, 8);
-
-    return ret;
+UUIDs::UUID128 toUUID(GUID in) {
+    return UUIDs::fromSegments(in.Data1, in.Data2, in.Data3, UUIDs::byteSwap(*reinterpret_cast<u64*>(in.Data4)));
 }
 
 // Converts a UUID128 into a Windows GUID struct.
-GUID fromUUID(BTUtils::UUID128 in) {
+GUID fromUUID(UUIDs::UUID128 in) {
     GUID ret;
 
     // Copy data
@@ -82,7 +60,7 @@ std::vector<SDP_ELEMENT_DATA> getSDPListData(LPBLOB blob, USHORT attrib) {
 }
 
 void checkProtocolAttributes(SDP_ELEMENT_DATA& element, BTUtils::SDPResult& result) {
-    uint16_t proto = 0;
+    u16 proto = 0;
     for (const auto& [_, specificType, data] : getSDPListData(element)) {
         switch (specificType) {
             case SDP_ST_UUID16:
@@ -101,12 +79,12 @@ void checkProtocolAttributes(SDP_ELEMENT_DATA& element, BTUtils::SDPResult& resu
     }
 }
 
-BTUtils::UUID128 getUUID(const SDP_ELEMENT_DATA& element) {
+UUIDs::UUID128 getUUID(const SDP_ELEMENT_DATA& element) {
     switch (element.specificType) {
         case SDP_ST_UUID16:
-            return BTUtils::createUUIDFromBase(element.data.uuid16);
+            return UUIDs::createFromBase(element.data.uuid16);
         case SDP_ST_UUID32:
-            return BTUtils::createUUIDFromBase(element.data.uuid32);
+            return UUIDs::createFromBase(element.data.uuid32);
         case SDP_ST_UUID128:
             return toUUID(element.data.uuid128);
         default:
@@ -159,7 +137,7 @@ DeviceList BTUtils::getPaired() try {
         std::string name = Strings::fromSys(deviceInfo.szName);
 
         // Add to results
-        deviceList.emplace_back(ConnectionType::None, name, mac, uint16_t{ 0 });
+        deviceList.emplace_back(ConnectionType::None, name, mac, u16{ 0 });
     } while (BluetoothFindNextDevice(foundDevice.get(), &deviceInfo));
 
     return deviceList;
@@ -169,15 +147,15 @@ DeviceList BTUtils::getPaired() try {
     throw;
 }
 
-BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, bool flushCache) {
+BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUIDs::UUID128 uuid, bool flushCache) {
     SDPResultList ret;
 
     Strings::SysStr addrWide = Strings::toSys(addr);
     GUID guid = fromUUID(uuid);
 
     // Set up the query set restrictions
-    WSAQUERYSET wsaQuery{
-        .dwSize = sizeof(WSAQUERYSET),
+    WSAQUERYSETW wsaQuery{
+        .dwSize = sizeof(WSAQUERYSETW),
         .lpServiceClassId = &guid,
         .dwNameSpace = NS_BTH,
         .lpszContext = addrWide.data(),
@@ -192,7 +170,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     HandlePtr<void, WSALookupServiceEnd> lookup;
 
     try {
-        check(WSALookupServiceBegin(&wsaQuery, flags, ztd::out_ptr::out_ptr(lookup)));
+        check(WSALookupServiceBeginW(&wsaQuery, flags, ztd::out_ptr::out_ptr(lookup)));
     } catch (const System::SystemError& error) {
         if (error.code == WSASERVICE_NOT_FOUND) return {}; // No services found
 
@@ -202,12 +180,12 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     // Continue the lookup
     DWORD size = 2048;
     std::vector<BYTE> resultsBuf(size);
-    auto wsaResults = reinterpret_cast<LPWSAQUERYSET>(resultsBuf.data());
+    auto wsaResults = reinterpret_cast<LPWSAQUERYSETW>(resultsBuf.data());
     wsaResults->dwSize = size;
     wsaResults->dwNameSpace = NS_BTH;
 
     // Get various service information
-    while (WSALookupServiceNext(lookup.get(), flags, &size, wsaResults) == 0) {
+    while (WSALookupServiceNextW(lookup.get(), flags, &size, wsaResults) == 0) {
         SDPResult result;
 
         // The name and description

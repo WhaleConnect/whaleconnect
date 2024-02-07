@@ -1,13 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <concepts>
-#include <string>
-#include <string_view>
-#include <type_traits>
-
 export module utils.strings;
+import external.std;
 
 export namespace Strings {
     // Generalized string type for system functions.

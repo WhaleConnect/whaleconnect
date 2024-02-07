@@ -1,25 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <format>
-#include <source_location>
-
-#if OS_WINDOWS
-#include <WinSock2.h>
-#else
-#include <cerrno>
-#include <cstring>
-
-#include <netdb.h>
-#endif
-
-#if OS_MACOS
-#include <IOKit/IOReturn.h>
-#include <mach/mach_error.h>
-#endif
-
 module os.error;
+import external.platform;
+import external.std;
 
 const char* getErrorName(System::ErrorType type) {
     using enum System::ErrorType;
@@ -37,7 +21,7 @@ System::ErrorCode System::getLastError() {
 #if OS_WINDOWS
     return GetLastError();
 #else
-    return errno;
+    return getErrno();
 #endif
 }
 

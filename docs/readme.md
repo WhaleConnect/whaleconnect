@@ -32,7 +32,6 @@ NST and its build scripts are licensed under the [GPL v3+ license](../COPYING).
 - [Catch2](https://github.com/catchorg/Catch2) (BSL 1.0 License)
 - [Dear ImGui](https://www.github.com/ocornut/imgui) (MIT License)
 - [ImGuiTextSelect](https://github.com/AidanSun05/ImGuiTextSelect) (MIT License)
-- [JSON for Modern C++](https://github.com/nlohmann/json) (MIT License)
 - [libdbus](https://www.freedesktop.org/wiki/Software/dbus) (GNU GPL v2+ License)
 - [liburing](https://github.com/axboe/liburing) (GNU LGPL v2.1 and MIT Licenses)
 - [SDL](https://www.libsdl.org/) (Zlib License)

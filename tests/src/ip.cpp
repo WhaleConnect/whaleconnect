@@ -2,21 +2,22 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <catch2/catch_test_macros.hpp>
-#include <nlohmann/json.hpp>
 
+import external.std;
 import helpers.helpers;
 import helpers.testio;
 import net.enums;
 import sockets.clientsocket;
+import utils.settingsparser;
 
 TEST_CASE("I/O (Internet Protocol)") {
-    const auto settings = loadSettings();
-    const auto ipSettings = settings["ip"];
+    SettingsParser parser;
+    parser.load(SETTINGS_FILE);
 
-    const auto v4Addr = ipSettings["v4"].get<std::string>();
-    const auto v6Addr = ipSettings["v4"].get<std::string>();
-    const auto tcpPort = ipSettings["tcpPort"].get<uint16_t>();
-    const auto udpPort = ipSettings["udpPort"].get<uint16_t>();
+    const auto v4Addr = parser.get<std::string>("ip", "v4");
+    const auto v6Addr = parser.get<std::string>("ip", "v6");
+    const auto tcpPort = parser.get<u16>("ip", "tcpPort");
+    const auto udpPort = parser.get<u16>("ip", "udpPort");
 
     using enum ConnectionType;
 

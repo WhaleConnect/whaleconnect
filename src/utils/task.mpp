@@ -1,12 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <coroutine>
-#include <exception>
-#include <type_traits>
-
 export module utils.task;
+import external.std;
 
 // An asynchronous coroutine's return object.
 // T: the datatype of the value(s) produced by the coroutine

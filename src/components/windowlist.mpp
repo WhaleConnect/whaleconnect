@@ -1,15 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <algorithm>
-#include <concepts>
-#include <memory>
-#include <string_view>
-#include <vector>
-
 export module components.windowlist;
 import components.window;
+import external.std;
 
 // Manages and updates Window objects.
 export class WindowList {
@@ -27,7 +21,7 @@ public:
     // Adds a new window to the list.
     template <class T, class... Args>
     requires std::derived_from<T, Window> && std::constructible_from<T, std::string_view, Args...>
-    auto add(std::string_view title, Args&&... args) {
+    bool add(std::string_view title, Args&&... args) {
         if (!validateDuplicate(title)) return false;
 
         // Create the pointer and add it to the list

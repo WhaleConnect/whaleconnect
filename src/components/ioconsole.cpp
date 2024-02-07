@@ -1,14 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <array>
-#include <optional>
-#include <string>
-
-#include <imgui.h>
-
 module components.ioconsole;
+import external.imgui;
+import external.std;
 import gui.imguiext;
 import utils.strings;
 
@@ -57,7 +52,7 @@ std::optional<std::string> IOConsole::updateWithTextbox() {
     using namespace ImGuiExt::Literals;
 
     float textboxHeight = 4_fh; // Number of lines that can be displayed
-    ImVec2 size{ ImGuiExt::FILL, textboxHeight };
+    ImVec2 size{ ImGuiExt::fill, textboxHeight };
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_CtrlEnterForNewLine | ImGuiInputTextFlags_EnterReturnsTrue;
 
     if (ImGuiExt::inputTextMultiline("##input", textBuf, size, flags)) {

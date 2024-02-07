@@ -1,14 +1,10 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <string>
-#include <string_view>
-
-#include <imgui.h>
-
 module gui.newconnip;
 import components.windowlist;
+import external.imgui;
+import external.std;
 import gui.imguiext;
 import gui.newconn;
 import net.enums;
@@ -25,7 +21,7 @@ void drawIPConnectionTab(WindowList& connections) {
     using enum ConnectionType;
 
     static std::string addr; // Server address
-    static uint16_t port = 0; // Server port
+    static u16 port = 0; // Server port
     static ConnectionType type = TCP; // Type of connection to create
     static bool useTLS = false; // If TLS is used for secure connections
 

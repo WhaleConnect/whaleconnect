@@ -1,13 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <string_view>
-
-#include <BluetoothMacOS-Swift.h>
-#include <IOKit/IOReturn.h>
-
 module net.btutils;
+import external.platform;
+import external.std;
 import net.btutils.internal;
 import net.device;
 import net.enums;
@@ -26,7 +22,7 @@ DeviceList BTUtils::getPaired() {
     return ret;
 }
 
-BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, bool flushCache) {
+BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUIDs::UUID128 uuid, bool flushCache) {
     auto list = check(
         BluetoothMacOS::sdpLookup(addr.data(), uuid.data(), flushCache),
         [](const BluetoothMacOS::LookupResult& result) { return result.getResult() == kIOReturnSuccess; },
@@ -36,16 +32,12 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     SDPResultList ret;
 
     for (const auto& i : list) {
-        SDPResult result{
-            .port = i.getPort(),
-            .name = i.getName(),
-            .desc = i.getDesc(),
-        };
+        SDPResult result{ .port = i.getPort(), .name = i.getName(), .desc = i.getDesc() };
 
         for (const auto& proto : i.getProtoUUIDs()) result.protoUUIDs.push_back(proto);
 
         for (const auto& service : i.getServiceUUIDs()) {
-            UUID128 uuid;
+            UUIDs::UUID128 uuid;
             std::memcpy(uuid.data(), service, 16);
             result.serviceUUIDs.push_back(uuid);
         }

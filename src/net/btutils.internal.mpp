@@ -1,13 +1,11 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <cstdint>
-
 export module net.btutils.internal;
+import external.std;
 import net.btutils;
 
 export namespace BTUtils::Internal {
     // Gets the major and minor version numbers from a profile descriptor.
-    void extractVersionNums(uint16_t version, BTUtils::ProfileDesc& desc);
+    void extractVersionNums(u16 version, BTUtils::ProfileDesc& desc);
 }

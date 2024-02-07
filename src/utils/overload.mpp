@@ -10,8 +10,6 @@ export {
         using Ts::operator()...;
     };
 
-#ifdef __clang__
     template <class... Ts>
     Overload(Ts...) -> Overload<Ts...>;
-#endif
 }

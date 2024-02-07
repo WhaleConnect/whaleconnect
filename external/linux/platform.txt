@@ -1,0 +1,174 @@
+defines
+    IOURINGINLINE inline
+
+    sdp_get_service_name sdp_get_service_name2
+    sdp_get_service_desc sdp_get_service_desc2
+    sdp_get_service_classes sdp_get_service_classes2
+
+includes
+    bluetooth/bluetooth.h
+    bluetooth/l2cap.h
+    bluetooth/rfcomm.h
+    bluetooth/hci.h
+    bluetooth/hci_lib.h
+    bluetooth/sdp.h
+    bluetooth/sdp_lib.h
+    dbus/dbus.h
+    liburing.h
+    netdb.h
+    sys/socket.h
+
+constants
+    IORING_ASYNC_CANCEL_ALL
+
+    SDP_UUID16
+    SDP_UUID32
+    SDP_UUID128
+    SDP_UINT8
+    SDP_UINT16
+
+    RFCOMM_UUID
+    L2CAP_UUID
+
+    FALSE
+
+    DBUS_TIMEOUT_USE_DEFAULT
+    DBUS_TYPE_OBJECT_PATH
+
+    SDP_RETRY_IF_BUSY
+
+    AI_NUMERICHOST
+    NI_NUMERICHOST
+    NI_NUMERICSERV
+    NI_MAXHOST
+    NI_MAXSERV
+
+    AF_INET
+    AF_INET6
+    AF_UNSPEC
+    AF_BLUETOOTH
+    SOMAXCONN
+
+    BTPROTO_RFCOMM
+    BTPROTO_L2CAP
+
+    SOL_SOCKET
+    SO_TYPE
+
+    ECANCELED
+    EINPROGRESS
+
+    sdp_get_service_name
+    sdp_get_service_desc
+    sdp_get_service_classes
+
+functions
+    int& getErrno() -> return errno
+
+    unsigned short htobs2(unsigned short x) -> return htobs(x)
+    unsigned short btohs2(unsigned short x) -> return btohs(x)
+
+    int GetAddrInfoW(const char* node, const char* service, const addrinfo* hints, addrinfo** res) -> return getaddrinfo(node, service, hints, res)
+    void FreeAddrInfoW(addrinfo* res) -> freeaddrinfo(res)
+
+    int GetNameInfoW(const sockaddr* addr, socklen_t addrlen, char* host, socklen_t hostlen, char* serv, socklen_t servlen, int flags) -> return getnameinfo(addr, addrlen, host, hostlen, serv, servlen, flags)
+
+SOCK_DGRAM
+SOCK_STREAM
+SOCK_SEQPACKET
+IPPROTO_TCP
+IPPROTO_UDP
+SHUT_RDWR
+
+DBUS_BUS_SYSTEM
+SDP_ATTR_REQ_RANGE
+
+AddrInfoType addrinfo
+gai_strerror
+
+sockaddr
+sockaddr_in
+sockaddr_in6
+sockaddr_storage
+sockaddr_rc
+sockaddr_l2
+socklen_t
+
+socket
+bind
+listen
+getsockname
+getsockopt
+
+io_uring
+io_uring_sqe
+io_uring_cqe
+
+io_uring_get_sqe
+io_uring_sqe_set_data
+io_uring_sqe_set_data64
+io_uring_submit
+
+io_uring_queue_init
+io_uring_queue_exit
+io_uring_wait_cqe
+io_uring_cqe_get_data
+io_uring_cqe_seen
+
+io_uring_prep_nop
+io_uring_prep_connect
+io_uring_prep_accept
+io_uring_prep_send
+io_uring_prep_recv
+io_uring_prep_recvmsg
+io_uring_prep_sendto
+io_uring_prep_shutdown
+io_uring_prep_close
+io_uring_prep_cancel_fd
+
+DBusConnection
+DBusMessage
+DBusMessageIter
+dbus_bool_t
+
+dbus_message_iter_init
+dbus_message_iter_recurse
+dbus_message_iter_next
+dbus_message_iter_get_basic
+dbus_message_iter_get_arg_type
+dbus_message_unref
+dbus_bus_get
+dbus_connection_set_exit_on_disconnect
+dbus_connection_unref
+dbus_message_new_method_call
+dbus_connection_send_with_reply_and_block
+
+uuid_t
+bdaddr_t
+iovec
+msghdr
+
+str2ba
+ba2str
+
+hci_get_route
+hci_open_dev
+hci_read_remote_name
+
+sdp_list_t
+sdp_list_append
+sdp_list_free
+
+sdp_data_t
+sdp_record_t
+sdp_session_t
+sdp_profile_desc_t
+
+sdp_uuid_to_proto
+sdp_connect
+sdp_uuid128_create
+sdp_service_search_attr_req
+sdp_get_access_protos
+sdp_get_profile_descs
+sdp_record_free
+sdp_close

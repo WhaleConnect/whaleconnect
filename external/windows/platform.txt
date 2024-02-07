@@ -1,0 +1,170 @@
+defines
+    WIN32_LEAN_AND_MEAN
+    UNICODE
+    _UNICODE
+
+includes
+    Windows.h
+    WinSock2.h
+    ws2bth.h
+    ws2ipdef.h
+    WS2tcpip.h
+    MSWSock.h
+    bluetoothapis.h
+
+constants
+    CP_UTF8
+    INVALID_SOCKET
+
+    AI_NUMERICHOST
+    NI_MAXHOST
+    NI_MAXSERV
+    NI_NUMERICHOST
+    NI_NUMERICSERV
+
+    AF_INET
+    AF_INET6
+    AF_UNSPEC
+    AF_BTH
+    SOCK_DGRAM
+    SOCK_STREAM
+    BTHPROTO_RFCOMM
+    SOMAXCONN
+
+    RFCOMM_PROTOCOL_UUID16
+    L2CAP_PROTOCOL_UUID16
+
+    LUP_RETURN_NAME
+    LUP_RETURN_TYPE
+    LUP_RETURN_ADDR
+    LUP_RETURN_BLOB
+    LUP_RETURN_COMMENT
+    LUP_FLUSHCACHE
+
+    ERROR_NO_MORE_ITEMS
+    WSASERVICE_NOT_FOUND
+    WSA_IO_PENDING
+    WSA_OPERATION_ABORTED
+
+    FORMAT_MESSAGE_FROM_SYSTEM
+    FORMAT_MESSAGE_IGNORE_INSERTS
+    FORMAT_MESSAGE_MAX_WIDTH_MASK
+
+    NS_BTH
+    SDP_ATTRIB_PROTOCOL_DESCRIPTOR_LIST
+    SDP_ATTRIB_CLASS_ID_LIST
+    SDP_ATTRIB_PROFILE_DESCRIPTOR_LIST
+
+    WSAID_CONNECTEX:constexpr GUID
+    WSAID_ACCEPTEX:constexpr GUID
+    WSAID_GETACCEPTEXSOCKADDRS:constexpr GUID
+    SIO_GET_EXTENSION_FUNCTION_POINTER
+
+    SOL_SOCKET
+    SO_UPDATE_CONNECT_CONTEXT
+    SO_UPDATE_ACCEPT_CONTEXT
+
+    BT_PORT_ANY
+
+    INFINITE
+    INVALID_HANDLE_VALUE:const HANDLE
+
+    SD_BOTH
+
+functions
+    constexpr WORD makeWord(BYTE low, BYTE high) -> return MAKEWORD(low, high)
+
+MultiByteToWideChar
+WideCharToMultiByte
+
+WSAStartup
+WSACleanup
+WSADATA
+
+IPPROTO_UDP
+IPPROTO_TCP
+
+HANDLE
+CloseHandle
+CreateIoCompletionPort
+GetQueuedCompletionStatus
+PostQueuedCompletionStatus
+OVERLAPPED
+LPOVERLAPPED
+WSASend
+WSARecv
+WSARecvFrom
+WSASendTo
+CancelIoEx
+
+SOCKET
+sockaddr
+sockaddr_storage
+sockaddr_in
+sockaddr_in6
+SOCKADDR_BTH
+socklen_t
+BTH_ADDR
+
+LPFN_CONNECTEX
+LPFN_ACCEPTEX
+LPFN_GETACCEPTEXSOCKADDRS
+WSAIoctl
+
+GetLastError
+FormatMessageA
+LocaleNameToLCID
+
+AddrInfoType ADDRINFOW
+GetAddrInfoW
+FreeAddrInfoW
+GetNameInfoW
+
+getsockname
+bind
+socket
+listen
+connect
+setsockopt
+shutdown
+closesocket
+
+GUID
+htonl
+htons
+
+SDP_ELEMENT_DATA
+HBLUETOOTH_CONTAINER_ELEMENT
+LPBYTE
+LPBLOB
+ULONG
+ULONG_PTR
+DWORD
+BYTE
+BOOL
+USHORT
+
+SDP_ST_UUID16
+SDP_ST_UUID32
+SDP_ST_UUID128
+SDP_ST_UINT8
+SDP_ST_UINT16
+
+BLUETOOTH_DEVICE_SEARCH_PARAMS
+BLUETOOTH_DEVICE_INFO_STRUCT
+BluetoothSdpGetContainerElementData
+BluetoothSdpGetAttributeValue
+BluetoothFindDeviceClose
+BluetoothFindFirstDevice
+BluetoothFindNextDevice
+BluetoothGetDeviceInfo
+
+WSAQUERYSETW
+LPWSAQUERYSETW
+WSALookupServiceEnd
+WSALookupServiceBeginW
+WSALookupServiceNextW
+
+WSABUF
+
+WSAAddressToStringW

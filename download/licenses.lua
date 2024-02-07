@@ -11,7 +11,6 @@ function download_licenses(installdir)
         ["catch2"] = { "https://raw.githubusercontent.com/catchorg/Catch2/devel/LICENSE.txt" },
         ["dear_imgui"] = { "https://raw.githubusercontent.com/ocornut/imgui/master/LICENSE.txt" },
         ["imguitextselect"] = { "https://raw.githubusercontent.com/AidanSun05/ImGuiTextSelect/main/LICENSE.txt" },
-        ["json_for_modern_c++"] = { "https://raw.githubusercontent.com/nlohmann/json/develop/LICENSE.MIT" },
         ["libdbus"] = { "https://gitlab.freedesktop.org/dbus/dbus/-/raw/master/COPYING" },
         ["liburing"] = {
             "https://raw.githubusercontent.com/axboe/liburing/master/LICENSE",

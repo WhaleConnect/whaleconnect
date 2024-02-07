@@ -1,12 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <vector>
-
-#include <liburing.h>
-
 module os.async.internal;
+import external.platform;
+import external.std;
 import os.async.platform.internal;
 import os.async;
 import os.errcheck;
@@ -48,7 +45,7 @@ void Async::Internal::worker(unsigned int threadNum) {
         if (io_uring_wait_cqe(ring, &cqe) != 0) continue;
 
         // Make sure the wait succeeded before getting user data pointer
-        // When io_uring_wait_cqe() fails, cqe is null.
+        // When io_uring_wait_cqe fails, cqe is null.
         // One such failure case is EINTR, when a breakpoint is hit in another part of the program while this is
         // waiting.
         void* userData = io_uring_cqe_get_data(cqe);
@@ -57,7 +54,7 @@ void Async::Internal::worker(unsigned int threadNum) {
         if (userData == nullptr) continue;
 
         // Check for interrupt
-        if (reinterpret_cast<uint64_t>(userData) == ASYNC_INTERRUPT) break;
+        if (reinterpret_cast<u64>(userData) == ASYNC_INTERRUPT) break;
 
         // Fill in completion result information
         auto& result = *reinterpret_cast<CompletionResult*>(userData);

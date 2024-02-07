@@ -1,10 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <string>
-
 export module sockets.delegates.bidirectional;
+import external.std;
 import sockets.delegates.delegates;
 import sockets.delegates.sockethandle;
 import utils.task;
@@ -20,6 +18,6 @@ export namespace Delegates {
 
         Task<> send(std::string data) override;
 
-        Task<RecvResult> recv(size_t size) override;
+        Task<RecvResult> recv(std::size_t size) override;
     };
 }

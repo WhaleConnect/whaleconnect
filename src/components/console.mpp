@@ -1,18 +1,10 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <format>
-#include <functional>
-#include <optional>
-#include <string>
-#include <string_view>
-#include <vector>
-
-#include <imgui.h>
-#include <textselect.hpp>
-
 export module components.console;
+import external.imgui;
+import external.imguitextselect;
+import external.std;
 
 // Text panel output with colors and other information.
 export class Console {
@@ -63,13 +55,13 @@ export class Console {
     void drawOptions();
 
     // Gets the line at an index.
-    std::string_view getLineAtIdx(size_t i) const {
+    std::string_view getLineAtIdx(std::size_t i) const {
         const ConsoleItem& item = items[i];
         return showHex && item.canUseHex ? item.textHex : item.text;
     }
 
     // Gets the number of lines in the output.
-    size_t getNumLines() const {
+    std::size_t getNumLines() const {
         return items.size();
     }
 

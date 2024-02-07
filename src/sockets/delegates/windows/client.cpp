@@ -1,18 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <coroutine> // IWYU pragma: keep
-#include <exception>
-#include <functional>
-#include <string>
-#include <utility>
-
-#include <WinSock2.h>
-#include <MSWSock.h>
-#include <ws2bth.h>
-
 module sockets.delegates.client;
+import external.platform;
+import external.std;
 import net.enums;
 import net.netutils;
 import os.async;
@@ -20,7 +11,7 @@ import os.async.platform;
 import os.errcheck;
 import utils.strings;
 
-void startConnect(SOCKET s, sockaddr* addr, size_t len, Async::CompletionResult& result) {
+void startConnect(SOCKET s, sockaddr* addr, std::size_t len, Async::CompletionResult& result) {
     // ConnectEx() requires the socket to be initially bound.
     // A sockaddr_storage can be used with all connection types, Internet and Bluetooth.
     sockaddr_storage addrBind{ .ss_family = addr->sa_family };

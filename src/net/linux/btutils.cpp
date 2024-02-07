@@ -1,24 +1,16 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <array>
-#include <functional>
-#include <stdexcept>
-#include <string_view>
-#include <utility>
-
-#include <bluetooth/sdp.h>
-#include <bluetooth/sdp_lib.h>
-#include <dbus/dbus.h>
-#include <ztd/out_ptr.hpp>
-
 module net.btutils;
+import external.platform;
+import external.std;
+import external.out_ptr;
 import net.device;
 import net.btutils.internal;
 import os.errcheck;
 import utils.handleptr;
 import utils.strings;
+import utils.uuids;
 
 DBusConnection* conn = nullptr;
 
@@ -67,14 +59,14 @@ void getDeviceInfo(dbus_bool_t& paired, Device& device, DBusMessageIter& propDic
 }
 
 void checkProtocolAttributes(sdp_list_t* pds, BTUtils::SDPResult& result) {
-    uint16_t proto = 0;
+    u16 proto = 0;
     for (auto d = static_cast<sdp_data_t*>(pds->data); d; d = d->next) {
         switch (d->dtd) {
             case SDP_UUID16:
             case SDP_UUID32:
             case SDP_UUID128:
                 // Keep track of protocol UUIDs
-                proto = static_cast<uint16_t>(sdp_uuid_to_proto(&d->val.uuid));
+                proto = static_cast<u16>(sdp_uuid_to_proto(&d->val.uuid));
                 result.protoUUIDs.push_back(proto);
                 break;
             case SDP_UINT8:
@@ -88,12 +80,12 @@ void checkProtocolAttributes(sdp_list_t* pds, BTUtils::SDPResult& result) {
     }
 }
 
-BTUtils::UUID128 getUUID(uuid_t* uuid) {
+UUIDs::UUID128 getUUID(uuid_t* uuid) {
     switch (uuid->type) {
         case SDP_UUID16:
-            return BTUtils::createUUIDFromBase(uuid->value.uuid16);
+            return UUIDs::createFromBase(uuid->value.uuid16);
         case SDP_UUID32:
-            return BTUtils::createUUIDFromBase(uuid->value.uuid32);
+            return UUIDs::createFromBase(uuid->value.uuid32);
         case SDP_UUID128:
             return std::to_array(uuid->value.uuid128.data);
         default:
@@ -152,7 +144,7 @@ DeviceList BTUtils::getPaired() {
     //
     // https://dbus.freedesktop.org/doc/dbus-specification.html
 
-    // Iterate through the "a{o" part of the signature - array of object paths
+    // Iterate through array of object paths
     using namespace std::literals;
     recurseDictIter(responseIter, [&deviceList](DBusMessageIter& objectDict) {
         // Object path - o
@@ -161,7 +153,7 @@ DeviceList BTUtils::getPaired() {
         // We can ignore this, and move on with the message iterator.
         if (dbus_message_iter_get_arg_type(&objectDict) == DBUS_TYPE_OBJECT_PATH) dbus_message_iter_next(&objectDict);
 
-        // Iterate through the a{s part of the signature - array of interfaces
+        // Iterate through array of interfaces
         recurseDictIter(objectDict, [&deviceList](DBusMessageIter& ifaceDict) {
             // Interface name - s
             // Most of what's returned from GetManagedObjects we don't care about,
@@ -179,7 +171,7 @@ DeviceList BTUtils::getPaired() {
             Device device;
             dbus_bool_t paired = false;
 
-            // Iterate through the a{s part of the signature - array of properties
+            // Iterate through array of properties
             recurseDictIter(ifaceDict, std::bind_front(getDeviceInfo, std::ref(paired), std::ref(device)));
 
             // If the device is paired, add it to the results
@@ -190,7 +182,7 @@ DeviceList BTUtils::getPaired() {
     return deviceList;
 }
 
-BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, bool) {
+BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUIDs::UUID128 uuid, bool) {
     SDPResultList ret;
 
     using SDPListPtr = HandlePtr<sdp_list_t, [](sdp_list_t* p) { sdp_list_free(p, nullptr); }>;
@@ -211,7 +203,7 @@ BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUID128 uuid, b
     SDPListPtr searchList{ sdp_list_append(nullptr, &serviceUUID) };
     SDPListPtr responseList;
 
-    uint32_t range = 0x0000FFFF;
+    u32 range = 0x0000FFFF;
     SDPListPtr attridList{ sdp_list_append(nullptr, &range) };
 
     check(sdp_service_search_attr_req(session.get(), searchList.get(), SDP_ATTR_REQ_RANGE, attridList.get(),

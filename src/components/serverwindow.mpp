@@ -1,17 +1,11 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <functional>
-#include <map>
-#include <memory>
-#include <string_view>
-#include <utility>
-
 export module components.serverwindow;
 import components.console;
 import components.ioconsole;
 import components.window;
+import external.std;
 import net.device;
 import sockets.delegates.delegates;
 import sockets.socket;

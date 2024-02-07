@@ -1,12 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-
-#include <imgui.h>
-
 module gui.about;
 import app.config;
+import external.imgui;
 import gui.imguiext;
 
 void drawAboutWindow(bool& open) {

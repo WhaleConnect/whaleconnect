@@ -1,18 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <array>
-#include <cfloat>
-#include <concepts>
-#include <cstdint>
-#include <string>
-#include <string_view>
-#include <type_traits>
-
-#include <imgui.h>
-
 export module gui.imguiext;
+import external.imgui;
+import external.std;
 
 export namespace ImGuiExt {
     // Dimension expressed in terms of font size, for DPI-aware size calculations.
@@ -55,7 +46,8 @@ export namespace ImGuiExt {
         }
     }
 
-    constexpr float FILL = -FLT_MIN; // Makes a widget fill a dimension. Use with ImVec2.
+    constexpr float fill = -std::numeric_limits<float>::min(); // Makes a widget fill a dimension. Use with ImVec2.
+    int y = 5;
 
     // Wrapper for TextUnformatted() to allow a string_view parameter.
     void textUnformatted(std::string_view s) {
@@ -112,14 +104,14 @@ export namespace ImGuiExt {
 
 template <class T>
 constexpr ImGuiDataType ImGuiExt::getDataType() {
-    if constexpr (std::is_same_v<T, int8_t>) return ImGuiDataType_S8;
-    if constexpr (std::is_same_v<T, uint8_t>) return ImGuiDataType_U8;
-    if constexpr (std::is_same_v<T, int16_t>) return ImGuiDataType_S16;
-    if constexpr (std::is_same_v<T, uint16_t>) return ImGuiDataType_U16;
-    if constexpr (std::is_same_v<T, int32_t>) return ImGuiDataType_S32;
-    if constexpr (std::is_same_v<T, uint32_t>) return ImGuiDataType_U32;
-    if constexpr (std::is_same_v<T, int64_t>) return ImGuiDataType_S64;
-    if constexpr (std::is_same_v<T, uint64_t>) return ImGuiDataType_U64;
+    if constexpr (std::is_same_v<T, i8>) return ImGuiDataType_S8;
+    if constexpr (std::is_same_v<T, u8>) return ImGuiDataType_U8;
+    if constexpr (std::is_same_v<T, i16>) return ImGuiDataType_S16;
+    if constexpr (std::is_same_v<T, u16>) return ImGuiDataType_U16;
+    if constexpr (std::is_same_v<T, i32>) return ImGuiDataType_S32;
+    if constexpr (std::is_same_v<T, u32>) return ImGuiDataType_U32;
+    if constexpr (std::is_same_v<T, i64>) return ImGuiDataType_S64;
+    if constexpr (std::is_same_v<T, u64>) return ImGuiDataType_U64;
     if constexpr (std::is_same_v<T, float>) return ImGuiDataType_Float;
     if constexpr (std::is_same_v<T, double>) return ImGuiDataType_Double;
 }

@@ -1,16 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#if OS_WINDOWS
-#include <WinSock2.h>
-#elif OS_MACOS
-#include <optional>
-
-#include <BluetoothMacOS-Swift.h>
-#endif
-
 export module sockets.delegates.traits;
+import external.platform;
+import external.std;
 import net.enums;
 
 export namespace Traits {
@@ -36,7 +29,7 @@ export namespace Traits {
         using HandleType = std::optional<BluetoothMacOS::BTHandle>;
         static constexpr auto invalidHandle = std::nullopt;
     };
-#else
+#elif OS_LINUX
     template <auto Tag>
     struct SocketHandle {
         using HandleType = int;

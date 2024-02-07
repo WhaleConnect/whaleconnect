@@ -1,15 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <algorithm>
-#include <coroutine>
-#include <mutex>
-#include <queue>
-#include <thread>
-#include <vector>
-
 module os.async;
+import external.std;
 import os.async.internal;
 
 std::queue<std::coroutine_handle<>> queuedHandles;

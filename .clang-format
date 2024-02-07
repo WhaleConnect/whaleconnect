@@ -90,4 +90,3 @@ RequiresClausePosition: OwnLine
 # Other
 Standard: Latest
 FixNamespaceComments: false
-SortIncludes: Never

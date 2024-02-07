@@ -1,10 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <memory>
-
 export module utils.handleptr;
+import external.std;
 
 // Provides operator() for function pointers.
 template <class T, auto Fn>

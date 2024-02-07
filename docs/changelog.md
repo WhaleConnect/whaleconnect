@@ -6,7 +6,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 ### Additions
 
-- Added JSON-based settings to allow changing settings at runtime.
+- Added file-based configuration to allow changing settings at runtime.
 - Added a settings editor window.
 - Added a "Quit" option under the "File" menu item.
 

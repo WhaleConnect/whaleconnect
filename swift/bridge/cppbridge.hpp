@@ -13,12 +13,12 @@
 
 void clearDataQueue(unsigned long id);
 
-void newData(unsigned long id, const char* data, size_t dataLen);
+void newData(unsigned long id, const char* data, std::size_t dataLen);
 
 void outgoingComplete(unsigned long id, IOReturn status);
 
 // Using void* to remove dependency on Swift-generated handle type
 void acceptComplete(unsigned long id, bool isL2CAP, const void* channel, const std::string& name,
-    const std::string& addr, uint16_t port);
+    const std::string& addr, std::uint16_t port);
 
 void closed(unsigned long id);

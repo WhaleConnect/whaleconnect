@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module;
-#include <coroutine> // IWYU pragma: keep
-
 #include <catch2/catch_test_macros.hpp>
 
 module helpers.testio;
+import external.std;
 import helpers.helpers;
 import utils.task;
 
@@ -16,7 +15,7 @@ void testIO(const Socket& socket, bool useRunLoop) {
 
     // Send/receive
     runSync(
-        [&socket]() -> Task<> {
+        [&socket] -> Task<> {
             constexpr const char* echoString = "echo test";
 
             co_await socket.send(echoString);
@@ -30,7 +29,7 @@ void testIO(const Socket& socket, bool useRunLoop) {
 }
 
 void testIOClient(const Socket& socket, const Device& device, bool useRunLoop) {
-    runSync([&socket, &device]() -> Task<> { co_await socket.connect(device); }, useRunLoop);
+    runSync([&socket, &device] -> Task<> { co_await socket.connect(device); }, useRunLoop);
 
     testIO(socket, useRunLoop);
 }

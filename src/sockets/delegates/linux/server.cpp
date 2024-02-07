@@ -1,21 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#include <coroutine> // IWYU pragma: keep
-#include <functional>
-#include <memory>
-
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/l2cap.h>
-#include <bluetooth/rfcomm.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/hci_lib.h>
-#include <liburing.h>
-#include <netdb.h>
-#include <netinet/in.h>
-
 module sockets.delegates.server;
+import external.platform;
+import external.std;
 import net.enums;
 import net.netutils;
 import os.async;
@@ -52,7 +40,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
 }
 
 template <>
-Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(size_t size) {
+Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(std::size_t size) {
     // io_uring currently does not support recvfrom so recvmsg must be used instead:
     // https://github.com/axboe/liburing/issues/397
     // https://github.com/axboe/liburing/discussions/581
@@ -111,12 +99,12 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
     if (isRFCOMM) {
         handle.reset(check(socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)));
 
-        sockaddr_rc addr{ AF_BLUETOOTH, addrAny, static_cast<uint8_t>(serverInfo.port) };
+        sockaddr_rc addr{ AF_BLUETOOTH, addrAny, static_cast<u8>(serverInfo.port) };
         check(bind(*handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
     } else {
         handle.reset(check(socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)));
 
-        sockaddr_l2 addr{ AF_BLUETOOTH, htobs(serverInfo.port), addrAny, 0, 0 };
+        sockaddr_l2 addr{ AF_BLUETOOTH, htobs2(serverInfo.port), addrAny, 0, 0 };
         check(bind(*handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
     }
 
@@ -126,10 +114,10 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
     check(listen(*handle, SOMAXCONN));
     check(getsockname(*handle, reinterpret_cast<sockaddr*>(&serverAddr), &serverAddrLen));
 
-    uint16_t port = isRFCOMM ? reinterpret_cast<sockaddr_rc*>(&serverAddr)->rc_channel
-                             : reinterpret_cast<sockaddr_l2*>(&serverAddr)->l2_psm;
+    u16 port = isRFCOMM ? reinterpret_cast<sockaddr_rc*>(&serverAddr)->rc_channel
+                        : reinterpret_cast<sockaddr_l2*>(&serverAddr)->l2_psm;
 
-    return { btohs(port), IPType::None };
+    return { btohs2(port), IPType::None };
 }
 
 template <>
@@ -162,7 +150,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
 
         auto acceptResult = co_await Async::run(std::bind_front(startAccept, *handle, clientAddr, clientLen));
 
-        device = { ConnectionType::L2CAP, "", "", btohs(client.l2_psm) };
+        device = { ConnectionType::L2CAP, "", "", btohs2(client.l2_psm) };
         clientbdAddr = client.l2_bdaddr;
         fd.reset(acceptResult.res);
     }
