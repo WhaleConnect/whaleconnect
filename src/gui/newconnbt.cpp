@@ -104,7 +104,7 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
             // There are devices, display them
             if (auto device = drawPairedDevices(deviceList, needsSort)) {
                 std::string title = std::format("Connect To {}##{}", device->name, device->address);
-                sdpWindows.add<SDPWindow>(title, *device, Settings::OS::bluetoothUUIDs, connections);
+                sdpWindows.add<SDPWindow>(title, *device, connections);
             }
         },
         [](const System::SystemError& error) {

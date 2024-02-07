@@ -14,13 +14,11 @@ import utils.uuids;
 // Handles an SDP inquiry in a GUI window.
 export class SDPWindow : public Window {
     using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>; // Results of an SDP search
-    using UUIDMap = std::map<std::string, UUIDs::UUID128, std::less<>>; // List of UUIDs used for SDP filtering
 
     Device target; // Target to perform SDP inquiries on and connect to
 
     // Fields for SDP connections
-    const UUIDMap& uuids; // Available UUIDs used for SDP inquiries
-    std::string selectedUUID; // UUID selected for an inquiry
+    std::size_t selectedUUID = 0; // UUID selected for an inquiry
     bool flushCache = false; // If data should be flushed on the next inquiry
     std::string serviceName; // Service name of the selected SDP result, displayed in the connection window title
 
@@ -65,6 +63,6 @@ export class SDPWindow : public Window {
 
 public:
     // Sets the information needed to create connections.
-    SDPWindow(std::string_view title, const Device& target, const UUIDMap& uuids, WindowList& list) :
-        Window(title), target(target), uuids(uuids), selectedUUID(uuids.begin()->first), list(list) {}
+    SDPWindow(std::string_view title, const Device& target, WindowList& list) :
+        Window(title), target(target), list(list) {}
 };

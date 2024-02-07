@@ -6,6 +6,7 @@
 import app.appcore;
 import app.settings;
 import components.windowlist;
+import external.menu;
 import external.std;
 import gui.about;
 import gui.menu;
@@ -46,7 +47,7 @@ void mainLoop() {
 int main(int, char**) {
     // Create a main application window
     if (!AppCore::init()) return 1;
-    Menu::setupMenuBar();
+    if (Settings::GUI::systemMenu) setupMenuBar();
 
     // OS API resource instances
     std::optional<Async::Instance> asyncInstance;

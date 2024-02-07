@@ -18,6 +18,7 @@ void drawFontRangesSettings(std::vector<ImWchar>& fontRanges) {
 
     ImGui::Spacing();
     ImGui::Text("Glyph ranges to load from font");
+    ImGui::PushID("ranges");
 
     // Iterate through ranges (every 2 codepoints)
     for (std::size_t i = 0; i < rangesSize; i += 2) {
@@ -44,31 +45,29 @@ void drawFontRangesSettings(std::vector<ImWchar>& fontRanges) {
         fontRanges.push_back(0);
         fontRanges.push_back(0);
     }
+
     ImGui::Spacing();
+    ImGui::PopID();
 }
 
-void drawBluetoothUUIDsSettings(std::map<std::string, UUIDs::UUID128, std::less<>>& uuids) {
+void drawBluetoothUUIDsSettings(std::vector<std::pair<std::string, UUIDs::UUID128>>& uuids) {
     using namespace ImGuiExt::Literals;
 
     auto deletePos = uuids.end();
 
     ImGui::Spacing();
     ImGui::Text("sdfds");
+    ImGui::PushID("asdsa");
 
-    // Iterate through ranges (every 2 codepoints)
-    for (auto i = uuids.begin(); i != uuids.end(); i++) {
-        auto& [name, uuid] = *i;
+    for (std::size_t i = 0; i < uuids.size(); i++) {
+        auto& [name, uuid] = uuids[i];
 
-        ImGui::PushID(name.c_str());
+        ImGui::PushID(i);
+        ImGuiExt::inputText("##name", name);
 
-        // ImGui::SetNextItemWidth(8_fh);
-        // ImGuiExt::inputText(std::format("{}", uuid).c_str(), name);
-        ImGuiExt::textUnformatted(name.c_str());
-
-        // Show delete button if more than one UUID (over 2)
-        if (uuids.size() > 2) {
+        if (uuids.size() > 1) {
             ImGui::SameLine();
-            if (ImGui::Button("\uf1af")) deletePos = i;
+            if (ImGui::Button("\uf1af")) deletePos = uuids.begin() + i;
         }
 
         ImGui::PopID();
@@ -78,8 +77,10 @@ void drawBluetoothUUIDsSettings(std::map<std::string, UUIDs::UUID128, std::less<
 
     // Add button
     ImGui::SameLine();
-    if (ImGui::Button("\uea13")) uuids.try_emplace("newUUID", UUIDs::createFromBase(0x00000000));
+    if (ImGui::Button("\uea13")) uuids.emplace_back("newUUID", UUIDs::createFromBase(0x00000000));
+
     ImGui::Spacing();
+    ImGui::PopID();
 }
 
 void Settings::load(std::string_view filePath) {
@@ -96,7 +97,7 @@ void Settings::load(std::string_view filePath) {
 
     OS::numThreads = parser.get<u8>("os", "numThreads");
     OS::queueEntries = parser.get<u8>("os", "queueEntries", 128);
-    OS::bluetoothUUIDs = parser.get<std::map<std::string, UUIDs::UUID128, std::less<>>>("os", "bluetoothUUIDs", {
+    OS::bluetoothUUIDs = parser.get<std::vector<std::pair<std::string, UUIDs::UUID128>>>("os", "bluetoothUUIDs", {
         { "L2CAP", UUIDs::createFromBase(0x0100) },
         { "RFCOMM", UUIDs::createFromBase(0x0003) },
     });

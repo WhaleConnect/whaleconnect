@@ -27,7 +27,7 @@ export namespace Settings {
     namespace OS {
         u8 numThreads;
         u8 queueEntries;
-        std::map<std::string, UUIDs::UUID128, std::less<>> bluetoothUUIDs;
+        std::vector<std::pair<std::string, UUIDs::UUID128>> bluetoothUUIDs;
     }
 
     void load(std::string_view filePath);

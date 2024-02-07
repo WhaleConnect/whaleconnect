@@ -66,12 +66,12 @@ export namespace ImGuiExt {
 
     // Wrapper for InputScalar() with automatic type detection.
     template <class T>
-    void inputScalar(std::string_view label, T& data, int step = 0, int stepFast = 0) {
+    void inputScalar(std::string_view label, T& data, int step = 0, int stepFast = 0, const char* format = nullptr) {
         // Any negative step value is considered invalid and nullptr is passed to disable the step buttons
         int* stepPtr = step > 0 ? &step : nullptr;
         int* stepFastPtr = step > 0 && stepFast > 0 ? &stepFast : nullptr;
 
-        ImGui::InputScalar(label.data(), getDataType<T>(), &data, stepPtr, stepFastPtr);
+        ImGui::InputScalar(label.data(), getDataType<T>(), &data, stepPtr, stepFastPtr, format);
     }
 
     // Wrapper for InputText() to use a std::string buffer.

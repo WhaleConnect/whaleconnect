@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module components.sdpwindow;
+import app.settings;
 import external.imgui;
 import external.std;
 import gui.imguiext;
@@ -123,11 +124,17 @@ void SDPWindow::drawSDPTab() {
 
     // UUID selection combobox
     using namespace ImGuiExt::Literals;
+    const auto& uuids = Settings::OS::bluetoothUUIDs;
+
+    if (selectedUUID >= uuids.size()) selectedUUID = uuids.size() - 1;
 
     ImGui::SetNextItemWidth(10_fh);
-    if (ImGui::BeginCombo("Protocol/Service UUID", selectedUUID.c_str())) {
-        for (const auto& [name, _] : uuids)
-            if (ImGui::Selectable(name.c_str())) selectedUUID = name;
+    if (ImGui::BeginCombo("Protocol/Service UUID", uuids[selectedUUID].first.c_str())) {
+        for (std::size_t i = 0; i < uuids.size(); i++) {
+            ImGui::PushID(i);
+            if (ImGui::Selectable(uuids[i].first.c_str())) selectedUUID = i;
+            ImGui::PopID();
+        }
         ImGui::EndCombo();
     }
 
@@ -142,7 +149,7 @@ void SDPWindow::drawSDPTab() {
     if (ImGui::Button("Run SDP Inquiry")) {
         try {
             // Start the inquiry
-            sdpInquiry = std::async(std::launch::async, BTUtils::sdpLookup, target.address, uuids.at(selectedUUID),
+            sdpInquiry = std::async(std::launch::async, BTUtils::sdpLookup, target.address, uuids[selectedUUID].second,
                 flushCache);
         } catch (const std::system_error& error) {
             sdpInquiry = error;
