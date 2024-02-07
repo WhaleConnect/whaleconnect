@@ -51,70 +51,89 @@ i64 std::int64_t
 u64 std::uint64_t
 
 ns std
+    ifstream
+    ofstream
+    size_t
+    source_location
+    endian
+    byteswap
+
+    // Containers
     array
-    unique_ptr
+    vector
     optional
+    map
+    unordered_map
+    queue
+    span
+    back_inserter
+    erase_if
+    find
+
+    // Strings
     string
     string_view
     wstring
     basic_string
     basic_string_view
-    vector
-    system_error
-    runtime_error
-    coroutine_traits
-    coroutine_handle
     format
+    strerror
+    getline
+
+    // Utility
     unreachable
     move
     forward
+    exchange
+    tie
+    in_place
+    cmp_equal
+    cmp_not_equal
+
+    // Optional/variant
     monostate
     nullopt
-    exchange
-    ifstream
-    ofstream
-    thread
-    size_t
-    make_unique
-    shared_ptr
-    make_shared
-    find
-    bind_front
     variant
+    visit
+
+    // Memory
+    memcpy
+    unique_ptr
+    shared_ptr
+    make_unique
+    make_shared
+
+    // Functional
+    bind_front
+    ref
+    pair
+    less
+    greater
+
+    // Futures
     future
     future_status
     holds_alternative
     async
     launch
-    visit
-    map
-    unordered_map
-    erase_if
-    less
-    greater
+
+    // Conversions
+    to_array
     to_string
     to_wstring
-    memcpy
-    tie
-    queue
-    stoi
-    strerror
     to_underlying
-    in_place
-    span
-    atomic_bool
-    exception
-    pair
     from_chars
-    errc
-    getline
-    bad_optional_access
+    stoi
     stoull
-    cmp_equal
-    cmp_not_equal
-    to_array
-    ref
 
+    // Errors
+    exception
+    bad_optional_access
+    system_error
+    runtime_error
+    errc
+
+    // Concepts/type traits
     integral
     floating_point
     is_same_v
@@ -125,6 +144,9 @@ ns std
     conditional_t
     is_void_v
 
+    // Coroutines
+    coroutine_traits
+    coroutine_handle
     suspend_always
     suspend_never
     coroutine_handle
@@ -133,21 +155,18 @@ ns std
     rethrow_exception
     exception_ptr
 
+    // Math
     abs
     floor
     max
     round
+    numeric_limits
 
+    // Threading
+    thread
+    atomic_bool
     mutex
     scoped_lock
-
-    numeric_limits
-    source_location
-
-    back_inserter
-
-    endian
-    byteswap
 
     operator==
     operator!=
