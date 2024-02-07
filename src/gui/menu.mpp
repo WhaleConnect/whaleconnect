@@ -14,16 +14,4 @@ export namespace Menu {
 
     // Draws the main menu bar.
     void drawMenuBar(bool& quit, WindowList& connections, WindowList& servers);
-
-    // Wrapper functions for OS-specific menu functions.
-
-    void setupMenuBar();
-
-    void addWindowMenuItem(std::string_view name);
-
-    void removeWindowMenuItem(std::string_view name);
-
-    void addServerMenuItem(std::string_view name);
-
-    void removeServerMenuItem(std::string_view name);
 }

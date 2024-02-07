@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module components.serverwindow;
+import app.settings;
 import components.connwindow;
 import external.imgui;
+import external.menu;
 import external.std;
 import gui.imguiext;
-import gui.menu;
 import net.enums;
 import os.error;
 import sockets.delegates.delegates;
@@ -83,7 +84,7 @@ ServerWindow::ServerWindow(std::string_view title, const Device& serverInfo) :
 }
 
 ServerWindow::~ServerWindow() {
-    Menu::removeServerMenuItem(getTitle());
+    if (Settings::GUI::systemMenu) removeServerMenuItem(getTitle());
     if (socket) socket->cancelIO();
 }
 
@@ -103,7 +104,7 @@ void ServerWindow::startServer(const Device& serverInfo) try {
     }
 
     setTitle(title);
-    Menu::addServerMenuItem(title);
+    if (Settings::GUI::systemMenu) addServerMenuItem(title);
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
 }

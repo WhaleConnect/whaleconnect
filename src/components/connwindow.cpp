@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module components.connwindow;
+import app.settings;
 import gui.imguiext;
-import gui.menu;
 import external.botan;
 import external.imgui;
+import external.menu;
 import external.std;
 import net.device;
 import net.enums;
@@ -34,12 +35,12 @@ SocketPtr makeClientSocket(bool useTLS, ConnectionType type) {
 
 ConnWindow::ConnWindow(std::string_view title, bool useTLS, const Device& device, std::string_view) :
     Window(title), socket(makeClientSocket(useTLS, device.type)) {
-    Menu::addWindowMenuItem(getTitle());
+    if (Settings::GUI::systemMenu) addWindowMenuItem(getTitle());
     connect(device);
 }
 
 ConnWindow::~ConnWindow() {
-    Menu::removeWindowMenuItem(getTitle());
+    if (Settings::GUI::systemMenu) removeWindowMenuItem(getTitle());
     socket->cancelIO();
 }
 

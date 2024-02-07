@@ -1,11 +1,6 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
-#if OS_MACOS
-#include <GUIMacOS-Swift.h>
-#endif
-
 module gui.menu;
 import app.settings;
 import components.windowlist;
@@ -66,34 +61,4 @@ void Menu::drawMenuBar(bool& quit, WindowList& connections, WindowList& servers)
     }
 
     ImGui::EndMainMenuBar();
-}
-
-void Menu::setupMenuBar() {
-#if OS_MACOS
-    if (Settings::GUI::systemMenu) GUIMacOS::setupMenuBar();
-#endif
-}
-
-void Menu::addWindowMenuItem([[maybe_unused]] std::string_view name) {
-#if OS_MACOS
-    GUIMacOS::addWindowMenuItem(std::string{ name });
-#endif
-}
-
-void Menu::removeWindowMenuItem([[maybe_unused]] std::string_view name) {
-#if OS_MACOS
-    GUIMacOS::removeWindowMenuItem(std::string{ name });
-#endif
-}
-
-void Menu::addServerMenuItem([[maybe_unused]] std::string_view name) {
-#if OS_MACOS
-    GUIMacOS::addServerMenuItem(std::string{ name });
-#endif
-}
-
-void Menu::removeServerMenuItem([[maybe_unused]] std::string_view name) {
-#if OS_MACOS
-    GUIMacOS::removeServerMenuItem(std::string{ name });
-#endif
 }
