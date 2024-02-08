@@ -56,8 +56,9 @@ void drawBluetoothUUIDsSettings(std::vector<std::pair<std::string, UUIDs::UUID12
     auto deletePos = uuids.end();
 
     ImGui::Spacing();
-    ImGui::Text("sdfds");
-    ImGui::PushID("asdsa");
+    ImGui::Text("Bluetooth UUIDs");
+
+    ImGui::BeginChild("uuids", { ImGuiExt::fill, 0 }, ImGuiChildFlags_AutoResizeY);
 
     for (std::size_t i = 0; i < uuids.size(); i++) {
         auto& [name, uuid] = uuids[i];
@@ -101,6 +102,7 @@ void drawBluetoothUUIDsSettings(std::vector<std::pair<std::string, UUIDs::UUID12
     ImGui::SameLine();
     if (ImGui::Button("\uea13")) uuids.emplace_back("newUUID", UUIDs::createFromBase(0x00000000));
 
+    ImGui::EndChild();
     ImGui::Spacing();
     ImGui::PopID();
 }
