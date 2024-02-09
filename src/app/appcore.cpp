@@ -10,6 +10,7 @@ import external.std;
 import gui.notifications;
 import utils.handleptr;
 
+bool doConfig = true;
 SDL_Window* window; // The main application window
 SDL_GLContext glContext; // The OpenGL context
 
@@ -17,7 +18,7 @@ const HandlePtr<char, SDL_free> prefPath{ SDL_GetPrefPath("NSTerminal", "termina
 const std::string settingsFilePath = std::string{ prefPath.get() } + "settings.ini";
 
 // Scales the app and fonts to the screen's DPI.
-void scaleToDPI() {
+void loadFont() {
     // https://github.com/ocornut/imgui/issues/5301
     // https://github.com/ocornut/imgui/issues/6485
     // https://github.com/ocornut/imgui/blob/master/docs/FAQ.md#q-how-should-i-handle-dpi-in-my-application
@@ -39,32 +40,32 @@ void scaleToDPI() {
     ImFontAtlas& fonts = *io.Fonts;
 
     // Clear built fonts to save memory
-    if (fonts.IsBuilt()) fonts.Clear();
+    bool fontsBuilt = false;
+    if (fonts.IsBuilt()) {
+        ImGui_ImplOpenGL3_DestroyFontsTexture();
+        fontsBuilt = true;
+        fonts.Clear();
+    }
 
     // Path to font files
     static const HandlePtr<char, SDL_free> basePath{ SDL_GetBasePath() };
     static const std::string basePathStr{ basePath.get() };
 
     // Select glyphs for loading
-    static const ImVector<ImWchar> ranges = [&] {
-        ImVector<ImWchar> rangesOut;
-        ImFontGlyphRangesBuilder builder;
+    ImVector<ImWchar> ranges;
+    ImFontGlyphRangesBuilder builder;
+    auto fontRanges = Settings::Font::ranges;
+    fontRanges.push_back(0); // Add null terminator to configured ranges
+    builder.AddRanges(fontRanges.data());
+    builder.AddChar(0xFFFD); // Substitution character
+    builder.BuildRanges(&ranges);
 
-        auto fontRanges = Settings::Font::ranges;
-        builder.AddRanges(fontRanges.data());
-        builder.AddChar(0xFFFD); // Substitution character
-
-        builder.BuildRanges(&rangesOut);
-        return rangesOut;
-    }();
-
-    static const auto configuredFontFile = Settings::Font::file;
-    static const auto fontFile
-        = configuredFontFile.empty() ? basePathStr + "NotoSansMono-Regular.ttf" : configuredFontFile;
+    const auto configuredFontFile = Settings::Font::file;
+    const auto fontFile = configuredFontFile.empty() ? basePathStr + "NotoSansMono-Regular.ttf" : configuredFontFile;
     fonts.AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges.Data);
 
     // Load icons
-    static const std::array<ImWchar, 3> iconRanges{ 0xe000, 0xf8ff, 0 };
+    static const std::array<ImWchar, 3> iconRanges{ 0xE000, 0xF8FF, 0 };
     static const auto iconFontFile = basePathStr + "RemixIcon.ttf";
 
     // Merge icons into main font
@@ -77,19 +78,12 @@ void scaleToDPI() {
 
     // Scale sizes to DPI scale
     ImGui::GetStyle().ScaleAllSizes(dpiScale);
+
+    if (fontsBuilt) ImGui_ImplOpenGL3_CreateFontsTexture();
 }
 
 // Sets Dear ImGui's configuration for use by the application.
 void configImGui() {
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard // Enable Keyboard Controls
-        | ImGuiConfigFlags_DockingEnable // Enable Docking
-        | ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
-
-    // Disable imgui.ini
-    // It can easily get plastered all over the filesystem and grow in size rapidly over time.
-    io.IniFilename = nullptr;
-
     // Set styles
     ImGuiStyle& style = ImGui::GetStyle();
     style.Colors[ImGuiCol_WindowBg].w = Settings::GUI::windowTransparency ? 0.92f : 1.0f;
@@ -101,8 +95,6 @@ void configImGui() {
 
     style.ChildRounding = style.FrameRounding = style.PopupRounding = style.ScrollbarRounding = style.GrabRounding
         = style.TabRounding = roundedCorners ? 4.0f : 0.0f;
-
-    scaleToDPI();
 }
 
 void drawDebugTools() {
@@ -160,11 +152,24 @@ bool AppCore::init() {
     // Set up Dear ImGui
     ImGuiCheckVersion();
     ImGui::CreateContext();
-    configImGui();
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard // Enable Keyboard Controls
+        | ImGuiConfigFlags_DockingEnable // Enable Docking
+        | ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
+
+    // Disable imgui.ini
+    // It can easily get plastered all over the filesystem and grow in size rapidly over time.
+    io.IniFilename = nullptr;
+
     ImGui_ImplSDL3_InitForOpenGL(window, glContext);
     ImGui_ImplOpenGL3_Init();
 
     return true;
+}
+
+void AppCore::configOnNextFrame() {
+    doConfig = true;
 }
 
 bool AppCore::newFrame() {
@@ -176,11 +181,14 @@ bool AppCore::newFrame() {
             case SDL_EVENT_QUIT:
                 return false;
             case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
-                // Rescale app on DPI change
-                ImGui_ImplOpenGL3_DestroyFontsTexture();
-                scaleToDPI();
-                ImGui_ImplOpenGL3_CreateFontsTexture();
+                configOnNextFrame();
         }
+    }
+
+    if (doConfig) {
+        loadFont();
+        configImGui();
+        doConfig = false;
     }
 
     ImGui_ImplOpenGL3_NewFrame();

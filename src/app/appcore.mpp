@@ -4,6 +4,9 @@
 export module app.appcore;
 
 export namespace AppCore {
+    // Re-applies Dear ImGui configuration before the next frame.
+    void configOnNextFrame();
+
     // Sets up backends/context, configures Dear ImGui, and creates a main application window.
     bool init();
 

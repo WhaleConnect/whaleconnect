@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 module app.settings;
+import app.appcore;
 import external.imgui;
 import external.std;
 import gui.imguiext;
@@ -180,7 +181,7 @@ void Settings::drawSettingsWindow(bool& open) {
     if (ImGui::Button("Discard Changes")) open = false;
 
     ImGui::SameLine();
-    if (ImGui::Button("Save")) {
+    if (ImGui::Button("Apply")) {
         using Internal::parser;
         parser.set("font", "file", Font::file);
         parser.set("font", "ranges", Font::ranges);
@@ -193,8 +194,9 @@ void Settings::drawSettingsWindow(bool& open) {
         parser.set("os", "numThreads", OS::numThreads);
         parser.set("os", "queueEntries", OS::queueEntries);
         parser.set("os", "bluetoothUUIDs", OS::bluetoothUUIDs);
+
+        AppCore::configOnNextFrame();
     }
 
-    ImGui::Text("Restart the application to apply settings.");
     ImGui::End();
 }
