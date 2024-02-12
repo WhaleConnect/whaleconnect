@@ -8,17 +8,25 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 - Added file-based configuration to allow changing settings at runtime.
 - Added a settings editor window.
+- Added a "Bluetooth UUIDs" setting to add/remove UUIDs in SDP queries.
 - Added a "Quit" option under the "File" menu item.
+- Added a "Help" menu item with build information.
+- Added the ability to use system menu bars on macOS.
 
 ### Improvements
 
 - When selecting text, the scrolling speed now changes based on the cursor position.
 - Connection windows now always show the horizontal scrollbar to prevent flickering from hiding/showing it while scrolling.
 - Updated the timestamps display in connection windows to reduce the number of computations per application frame.
+- Errors are now reported in terms of location in source files.
 
 ### Bug Fixes
 
 - Fixed a crash in connection windows if text was highlighted and the output was cleared.
+
+### Development
+
+- Updated code to use C++23.
 
 ## 0.3.0-alpha (01/03/2024)
 
