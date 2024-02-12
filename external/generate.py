@@ -11,15 +11,18 @@ import sys
 INDENT_SIZE = 4
 SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
 
+# All possible blocks
 Blocks = Enum(
     "Blocks", ["Global", "Define", "Include", "Constants", "Functions", "Namespace"]
 )
 
 
+# Returns the spacing for the current indentation level.
 def calc_spacing(indentation: int):
     return " " * max(indentation * INDENT_SIZE, 0)
 
 
+# Returns the correct number of brackets to reach a lower target indentation level.
 def calc_dedent(indentation: int, target_indent: int, ns_list: list[str]):
     out = ""
     for i in range(indentation, target_indent, -1):
@@ -29,11 +32,13 @@ def calc_dedent(indentation: int, target_indent: int, ns_list: list[str]):
     return out
 
 
+# Returns a using-directive for a line.
 def calc_using_statement(stripped: str):
     parts = stripped.split(" ", 1)
     return f"{parts[0]} = {parts[1]}" if len(parts) == 2 else f"::{parts[0]}"
 
 
+# Returns the syntax for a namespace directive and if a new scope should be opened.
 def handle_namespace(spacing: str, stripped: str, indentation: int, ns_list: list[str]):
     parts = stripped.split(" ")
     prefix = ""
@@ -50,6 +55,7 @@ def handle_namespace(spacing: str, stripped: str, indentation: int, ns_list: lis
         return False, f"{spacing}{prefix}namespace {namespace_name} = {parts[2]};\n"
 
 
+# Returns the syntax for a line in a block.
 def handle_statement(
     spacing: str,
     stripped: str,
@@ -81,6 +87,7 @@ def handle_statement(
     return out
 
 
+# Returns the generated C++ file for a list of data lines.
 def generate(name: str, lines: list[str]):
     out = "module;\n"
     block = Blocks.Global
@@ -102,8 +109,11 @@ def generate(name: str, lines: list[str]):
         excess_indents = new_indent - indentation > 1
         forbidden_indent = new_indent > indentation and not can_indent
 
+        # Validate indentation
         if excess_indents or forbidden_indent:
             raise Exception(f"Extra indentation on line {line_num + 1}")
+
+        # Check if exiting a block
         if new_indent < indentation:
             if block == Blocks.Include:
                 out += f"export module external.{name};\n"
@@ -140,6 +150,7 @@ def generate(name: str, lines: list[str]):
     return out
 
 
+# Returns the platform to use in directory names.
 def get_platform():
     match sys.platform:
         case "win32":
@@ -160,16 +171,20 @@ print("Generating modules...")
 out_dir = sys.argv[1]
 Path(out_dir).mkdir(parents=True, exist_ok=True)
 
+# Get last generation time from cache file
 file = os.path.join(out_dir, "lastbuild.txt")
 last_build_time = -1
 if os.path.exists(file):
     with open(file) as f:
         last_build_time = float(f.read())
 
-for i in glob.glob(f"{SCRIPT_PATH}/common/*.txt") + glob.glob(f"{SCRIPT_PATH}/{get_platform()}/*.txt"):
+common_files = glob.glob(f"{SCRIPT_PATH}/common/*.txt")
+platform_files = glob.glob(f"{SCRIPT_PATH}/{get_platform()}/*.txt")
+for i in common_files + platform_files:
     out = ""
     name = Path(i).stem
 
+    # Compare modification time to last generation time
     modified = os.path.getmtime(i)
     if modified > last_build_time:
         print(">", name)
@@ -179,6 +194,7 @@ for i in glob.glob(f"{SCRIPT_PATH}/common/*.txt") + glob.glob(f"{SCRIPT_PATH}/{g
         with open(os.path.join(out_dir, name + ".mpp"), "w") as f:
             f.write(out)
 
+# Save last generation time
 with open(file, "w") as f:
     f.write(str(time.time()))
 
