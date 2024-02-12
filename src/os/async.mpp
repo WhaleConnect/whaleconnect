@@ -61,7 +61,7 @@ export namespace Async {
         void await_resume() const noexcept {}
     };
 
-    // Awaits an asynchronous operation and returns the result of the operation's end function (if given).
+    // Awaits an asynchronous operation and returns the result.
     Task<CompletionResult> run(auto fn, System::ErrorType type = System::ErrorType::System) {
         CompletionResult result;
         co_await result;
