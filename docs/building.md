@@ -4,9 +4,13 @@ To build NST from source code, you will need [xmake](https://xmake.io) and an up
 
 All commands are run in the repository root.
 
-## Supported Compilers
+## Tools
 
-This project uses C++23 features and Swift-to-C++ interop. Compilation is officially supported with Clang 18+ and Swift 5.9+ (Swift is only used on macOS). Clang 19+ is required on Windows which fixes false positive ODR violation errors from the Microsoft STL.
+This project uses C++23 features and Swift-to-C++ interop. Required tools and their minimum versions are listed below:
+
+- Clang 18 (Clang 19 is required on Windows which fixes false positive ODR violation errors from the Microsoft STL)
+- Swift 5.9 (Swift is only used on macOS)
+- Python 3.10
 
 All code is standards compliant. However, because the project uses recent C++ features, other compilers, and versions older than those listed above, are not supported.
 
