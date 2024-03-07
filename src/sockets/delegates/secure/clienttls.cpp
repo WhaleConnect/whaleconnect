@@ -6,7 +6,6 @@ import external.botan;
 import external.std;
 import os.async;
 import os.error;
-import utils.overload;
 
 class CredentialsManager : public Botan::Credentials_Manager {
     Botan::System_Certificate_Store systemCertStore;
