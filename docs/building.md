@@ -26,7 +26,7 @@ If you are using the xmake VSCode extension, these arguments can be saved in the
 
 ### General
 
-- `--cc=[PATH]`, `--cxx=[PATH]`: Locate the C and C++ compilers, respectively
+- `--sdk=[PATH]`: Directory containing the C and C++ compilers (only needed if not using the system's default compiler)
 - `--cxxflags=...`: C++ compilation flags
 - `--ldflags=...`: Linker flags
 
