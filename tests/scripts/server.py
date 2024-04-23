@@ -22,10 +22,8 @@ is_interactive = args.interactive
 is_echo = args.echo
 
 # Load settings from INI
-SETTINGS_FILE = pathlib.Path(__file__).parent.parent / "settings" / "settings.ini"
-
 config = configparser.ConfigParser()
-config.read(SETTINGS_FILE)
+config.read(pathlib.Path(__file__).parent.parent / "settings" / "settings.ini")
 
 match args.transport:
     case "TCP":
@@ -109,14 +107,14 @@ elif is_echo:
     print("Running in echo mode.")
 
 with socket.socket(SOCKET_FAMILY, SOCKET_TYPE, SOCKET_PROTO) as s:
+    # Enable dual-stack server so IPv4 and IPv6 clients can connect
     if SOCKET_FAMILY == socket.AF_INET6:
-        # Enable dual-stack server so IPv4 and IPv6 clients can connect
         s.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
 
     s.bind((HOST, PORT))
 
+    # Listen on connection-based sockets
     is_dgram = SOCKET_TYPE == socket.SOCK_DGRAM
-
     if not is_dgram:
         s.listen()
 
