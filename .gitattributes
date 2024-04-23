@@ -1,4 +1,2 @@
 * text=auto
 docs/img/** binary
-
-*.mpp linguist-language=cpp

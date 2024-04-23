@@ -10,5 +10,5 @@ trim_trailing_whitespace = true
 indent_size = 4
 
 # Config and manifest files
-[*.{manifest,plist,clang-format,clangd,ini}]
+[*.{manifest,plist,clang-format,ini}]
 indent_size = 2
