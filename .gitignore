@@ -9,7 +9,6 @@ desktop.ini
 build/
 
 # IDE directories
-.vs/
 .vscode/
 
 # Test settings
