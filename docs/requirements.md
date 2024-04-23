@@ -2,7 +2,7 @@
 
 This document lists the minimum system requirements for NST to run.
 
-## Hardware Requirements
+## Minimum Hardware Requirements
 
 - **Architecture:** amd64, arm64
 - **Free memory:** 256 MB
