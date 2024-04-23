@@ -1,3 +1,6 @@
+-- Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
 function download_fonts(targetdir)
     local font_path = path.join(targetdir, "NotoSansMono-Regular.ttf")
     local icon_font_path = path.join(targetdir, "RemixIcon.ttf")

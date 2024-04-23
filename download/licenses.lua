@@ -1,3 +1,6 @@
+-- Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
 function download_licenses(installdir)
     print("Downloading licenses...")
 
@@ -12,7 +15,7 @@ function download_licenses(installdir)
         ["dear_imgui"] = { "https://raw.githubusercontent.com/ocornut/imgui/master/LICENSE.txt" },
         ["glfw"] = { "https://raw.githubusercontent.com/glfw/glfw/master/LICENSE.md" },
         ["imguitextselect"] = { "https://raw.githubusercontent.com/AidanSun05/ImGuiTextSelect/main/LICENSE.txt" },
-        ["libdbus"] = { "https://gitlab.freedesktop.org/dbus/dbus/-/raw/master/COPYING" },
+        ["libdbus"] = { "https://gitlab.freedesktop.org/dbus/dbus/-/raw/master/LICENSES/GPL-2.0-or-later.txt" },
         ["liburing"] = {
             "https://raw.githubusercontent.com/axboe/liburing/master/LICENSE",
             "https://raw.githubusercontent.com/axboe/liburing/master/COPYING",
