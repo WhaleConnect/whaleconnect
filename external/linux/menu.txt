@@ -1,9 +1,0 @@
-includes
-    string_view
-
-functions
-    void setupMenuBar() -> return
-    void addWindowMenuItem(std::string_view) -> return
-    void removeWindowMenuItem(std::string_view) -> return
-    void addServerMenuItem(std::string_view) -> return
-    void removeServerMenuItem(std::string_view) -> return
