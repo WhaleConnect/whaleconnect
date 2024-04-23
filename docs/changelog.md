@@ -24,10 +24,6 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 - Fixed a crash in connection windows if text was highlighted and the output was cleared.
 
-### Development
-
-- Updated code to use C++23.
-
 ## 0.3.0-alpha (01/03/2024)
 
 ### Additions
@@ -56,11 +52,6 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Removals
 
 - Removed L2CAP stream and datagram options due to their infrequent usage.
-
-### Development
-
-- Updated code to use C++20 modules.
-- Rewrote macOS Bluetooth functions in Swift.
 
 ## 0.2.2-alpha (08/13/2023)
 
@@ -113,11 +104,6 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Removed the "send textbox height" setting.
 - Removed the "show FPS counter" setting.
 - Removed the "use default font" setting.
-
-### Development
-
-- Switched the platform backend library to SDL.
-- Added unit tests for socket functions.
 
 ## 0.1.0-alpha (10/05/2022)
 
