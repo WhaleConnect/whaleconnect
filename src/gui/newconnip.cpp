@@ -1,13 +1,15 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module gui.newconnip;
-import components.windowlist;
-import external.imgui;
-import external.std;
-import gui.imguiext;
-import gui.newconn;
-import net.enums;
+#include "newconnip.hpp"
+
+#include <string>
+#include <string_view>
+
+#include "imguiext.hpp"
+#include "newconn.hpp"
+#include "components/windowlist.hpp"
+#include "net/enums.hpp"
 
 // Gets the width of a rendered string added with the item inner spacing specified in the Dear ImGui style.
 float calcTextWidthWithSpacing(std::string_view text) {
@@ -21,7 +23,7 @@ void drawIPConnectionTab(WindowList& connections) {
     using enum ConnectionType;
 
     static std::string addr; // Server address
-    static u16 port = 0; // Server port
+    static std::uint16_t port = 0; // Server port
     static ConnectionType type = TCP; // Type of connection to create
     static bool useTLS = false; // If TLS is used for secure connections
 

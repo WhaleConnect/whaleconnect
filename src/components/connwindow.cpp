@@ -1,20 +1,26 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module components.connwindow;
-import app.settings;
-import gui.imguiext;
-import external.botan;
-import external.imgui;
-import external.menu;
-import external.std;
-import net.device;
-import net.enums;
-import os.error;
-import sockets.clientsocket;
-import sockets.clientsockettls;
-import sockets.delegates.delegates;
-import utils.strings;
+#include "connwindow.hpp"
+
+#include <format>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <utility>
+
+#include <botan/tls_exceptn.h>
+#include <imgui.h>
+
+#include "app/settings.hpp"
+#include "gui/imguiext.hpp"
+#include "gui/menu.hpp"
+#include "net/device.hpp"
+#include "net/enums.hpp"
+#include "os/error.hpp"
+#include "sockets/clientsocket.hpp"
+#include "sockets/clientsockettls.hpp"
+#include "sockets/delegates/delegates.hpp"
 
 SocketPtr makeClientSocket(bool useTLS, ConnectionType type) {
     using enum ConnectionType;
@@ -35,12 +41,12 @@ SocketPtr makeClientSocket(bool useTLS, ConnectionType type) {
 
 ConnWindow::ConnWindow(std::string_view title, bool useTLS, const Device& device, std::string_view) :
     Window(title), socket(makeClientSocket(useTLS, device.type)) {
-    if (Settings::GUI::systemMenu) addWindowMenuItem(getTitle());
+    if (Settings::GUI::systemMenu) Menu::addWindowMenuItem(getTitle());
     connect(device);
 }
 
 ConnWindow::~ConnWindow() {
-    if (Settings::GUI::systemMenu) removeWindowMenuItem(getTitle());
+    if (Settings::GUI::systemMenu) Menu::removeWindowMenuItem(getTitle());
     socket->cancelIO();
 }
 

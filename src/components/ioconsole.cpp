@@ -1,11 +1,16 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module components.ioconsole;
-import external.imgui;
-import external.std;
-import gui.imguiext;
-import utils.strings;
+#include "ioconsole.hpp"
+
+#include <array>
+#include <optional>
+#include <string>
+
+#include <imgui.h>
+
+#include "gui/imguiext.hpp"
+#include "utils/strings.hpp"
 
 void IOConsole::drawControls() {
     // Popup for more options

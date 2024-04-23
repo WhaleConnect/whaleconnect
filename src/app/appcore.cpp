@@ -1,42 +1,57 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module app.appcore;
-import app.config;
-import app.settings;
-import external.imgui;
-import external.libsdl3;
-import external.std;
-import gui.notifications;
-import utils.handleptr;
+#undef GLFW_INCLUDE_NONE
+
+#include "appcore.hpp"
+
+#include <array>
+#include <cmath>
+#include <filesystem>
+#include <numeric>
+#include <string>
+
+#include <config.hpp>
+#include <GLFW/glfw3.h>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
+#include "fs.hpp"
+#include "settings.hpp"
+#include "gui/notifications.hpp"
 
 bool doConfig = true;
-SDL_Window* window; // The main application window
-SDL_GLContext glContext; // The OpenGL context
-
-const HandlePtr<char, SDL_free> prefPath{ SDL_GetPrefPath("NSTerminal", "terminal") };
-const std::string settingsFilePath = std::string{ prefPath.get() } + "settings.ini";
+GLFWwindow* window; // The main application window
 
 // Scales the app and fonts to the screen's DPI.
-void loadFont() {
+void loadFont(GLFWwindow*, float scaleX, float scaleY) {
     // https://github.com/ocornut/imgui/issues/5301
     // https://github.com/ocornut/imgui/issues/6485
     // https://github.com/ocornut/imgui/blob/master/docs/FAQ.md#q-how-should-i-handle-dpi-in-my-application
-    // https://github.com/libsdl-org/SDL/blob/main/docs/README-highdpi.md
 
-    ImGuiIO& io = ImGui::GetIO();
-    float dpiScale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(window));
+    int fbX, fbY;
+    glfwGetFramebufferSize(window, &fbX, &fbY);
 
-    float scale = SDL_GetWindowPixelDensity(window);
+    int windowX, windowY;
+    glfwGetWindowSize(window, &windowX, &windowY);
+
+    auto pixelRatioX = static_cast<float>(fbX) / windowX;
+    auto pixelRatioY = static_cast<float>(fbY) / windowY;
+
+    float contentScale = std::midpoint(scaleX, scaleY);
+    float pixelRatio = std::midpoint(pixelRatioX, pixelRatioY);
+    float zoomFactor = std::midpoint(scaleX / pixelRatioX, scaleY / pixelRatioY);
 
     // Font size
     ImFontConfig config;
-    config.SizePixels = Settings::Font::size * scale;
+    config.SizePixels = Settings::Font::size * pixelRatio;
 
     // The icons are slightly larger than the main font so they are scaled down from the font size
-    float fontSize = std::floor(Settings::Font::size * dpiScale * scale);
+    float fontSize = std::floor(Settings::Font::size * contentScale);
     float iconFontSize = std::floor(fontSize * 0.9f);
 
+    ImGuiIO& io = ImGui::GetIO();
     ImFontAtlas& fonts = *io.Fonts;
 
     // Clear built fonts to save memory
@@ -47,10 +62,6 @@ void loadFont() {
         fonts.Clear();
     }
 
-    // Path to font files
-    static const HandlePtr<char, SDL_free> basePath{ SDL_GetBasePath() };
-    static const std::string basePathStr{ basePath.get() };
-
     // Select glyphs for loading
     ImVector<ImWchar> ranges;
     ImFontGlyphRangesBuilder builder;
@@ -60,24 +71,33 @@ void loadFont() {
     builder.AddChar(0xFFFD); // Substitution character
     builder.BuildRanges(&ranges);
 
-    const auto configuredFontFile = Settings::Font::file;
-    const auto fontFile = configuredFontFile.empty() ? basePathStr + "NotoSansMono-Regular.ttf" : configuredFontFile;
-    fonts.AddFontFromFileTTF(fontFile.c_str(), fontSize, nullptr, ranges.Data);
+    const auto basePath = AppFS::getBasePath();
+    const std::filesystem::path configuredFontFile = Settings::Font::file;
+    const auto fontFile = configuredFontFile.empty() ? basePath / "NotoSansMono-Regular.ttf" : configuredFontFile;
+
+    if (std::filesystem::is_regular_file(fontFile)) {
+        fonts.AddFontFromFileTTF(fontFile.string().c_str(), fontSize, nullptr, ranges.Data);
+    } else {
+        ImFontConfig config;
+        config.SizePixels = fontSize;
+        fonts.AddFontDefault(&config);
+        ImGuiExt::addNotification("Font file not found: " + fontFile.string(), NotificationType::Error, 0);
+    }
 
     // Load icons
     static const std::array<ImWchar, 3> iconRanges{ 0xE000, 0xF8FF, 0 };
-    static const auto iconFontFile = basePathStr + "RemixIcon.ttf";
+    static const auto iconFontFile = basePath / "RemixIcon.ttf";
 
     // Merge icons into main font
     config.MergeMode = true;
-    fonts.AddFontFromFileTTF(iconFontFile.c_str(), iconFontSize, &config, iconRanges.data());
+    fonts.AddFontFromFileTTF(iconFontFile.string().c_str(), iconFontSize, &config, iconRanges.data());
 
     // Scale fonts and rebuild
-    io.FontGlobalScale = 1.0f / scale;
+    io.FontGlobalScale = 1.0f / pixelRatio;
     fonts.Build();
 
-    // Scale sizes to DPI scale
-    ImGui::GetStyle().ScaleAllSizes(dpiScale);
+    // Scale sizes to zoom factor
+    ImGui::GetStyle().ScaleAllSizes(zoomFactor);
 
     if (fontsBuilt) ImGui_ImplOpenGL3_CreateFontsTexture();
 }
@@ -90,7 +110,7 @@ void configImGui() {
     style.Colors[ImGuiCol_Tab].w = 0.0f;
 
     // Set corner rounding
-    auto roundedCorners = Settings::GUI::roundedCorners;
+    bool roundedCorners = Settings::GUI::roundedCorners;
     style.WindowRounding = roundedCorners ? 8.0f : 0.0f;
 
     style.ChildRounding = style.FrameRounding = style.PopupRounding = style.ScrollbarRounding = style.GrabRounding
@@ -124,33 +144,26 @@ void drawDebugTools() {
 }
 
 bool AppCore::init() {
-    Settings::load(settingsFilePath);
+    Settings::load();
 
-    // Set up SDL
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "SDL Initialization Error", SDL_GetError(), nullptr);
-        return false;
-    }
+    // Set up GLFW
+    if (!glfwInit()) return false;
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // Create window
-    window = SDL_CreateWindow("Network Socket Terminal", 1280, 720,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    window = glfwCreateWindow(1280, 720, "Network Socket Terminal", nullptr, nullptr);
+    if (!window) return false;
 
-    // Create context
-    glContext = SDL_GL_CreateContext(window);
-    SDL_GL_MakeCurrent(window, glContext);
-    SDL_GL_SetSwapInterval(1); // Enable vsync
+    glfwSetWindowContentScaleCallback(window, loadFont);
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
 
     // Set up Dear ImGui
-    ImGuiCheckVersion();
+    IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
     ImGuiIO& io = ImGui::GetIO();
@@ -162,7 +175,7 @@ bool AppCore::init() {
     // It can easily get plastered all over the filesystem and grow in size rapidly over time.
     io.IniFilename = nullptr;
 
-    ImGui_ImplSDL3_InitForOpenGL(window, glContext);
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init();
 
     return true;
@@ -173,26 +186,22 @@ void AppCore::configOnNextFrame() {
 }
 
 bool AppCore::newFrame() {
+    if (glfwWindowShouldClose(window)) return false;
+
     // Poll for events
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        ImGui_ImplSDL3_ProcessEvent(&event);
-        switch (event.type) {
-            case SDL_EVENT_QUIT:
-                return false;
-            case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
-                configOnNextFrame();
-        }
-    }
+    glfwPollEvents();
 
     if (doConfig) {
-        loadFont();
+        float scaleX, scaleY;
+        glfwGetWindowContentScale(window, &scaleX, &scaleY);
+
+        loadFont(nullptr, scaleX, scaleY);
         configImGui();
         doConfig = false;
     }
 
     ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     // Dockspace
@@ -218,17 +227,16 @@ void AppCore::render() {
     // Render multi-viewport platform windows
     ImGui::UpdatePlatformWindows();
     ImGui::RenderPlatformWindowsDefault();
-    SDL_GL_MakeCurrent(window, glContext);
-    SDL_GL_SwapWindow(window);
+    glfwMakeContextCurrent(window);
+    glfwSwapBuffers(window);
 }
 
 void AppCore::cleanup() {
-    Settings::save(settingsFilePath);
+    Settings::save();
     ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    SDL_GL_DeleteContext(glContext);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }

@@ -1,17 +1,19 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <string>
+#include <string_view>
+
+#include <botan/tls_exceptn.h>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_templated.hpp>
 
-import external.botan;
-import external.std;
-import helpers.helpers;
-import net.enums;
-import sockets.clientsockettls;
-import sockets.delegates.delegates;
-import utils.task;
+#include "helpers/helpers.hpp"
+#include "net/enums.hpp"
+#include "sockets/clientsockettls.hpp"
+#include "sockets/delegates/delegates.hpp"
+#include "utils/task.hpp"
 
 // Matcher to check for specific TLS error cases.
 struct TLSErrorMatcher : Catch::Matchers::MatcherGenericBase {
@@ -31,7 +33,7 @@ struct TLSErrorMatcher : Catch::Matchers::MatcherGenericBase {
 TEST_CASE("HTTPS") {
     // Security check with howsmyssl.com
     SECTION("TLS check") {
-        runSync([] -> Task<> {
+        runSync([]() -> Task<> {
             ClientSocketTLS sock;
             co_await sock.connect({ ConnectionType::TCP, "", "www.howsmyssl.com", 443 });
 
@@ -68,7 +70,7 @@ TEST_CASE("HTTPS") {
     // Error handling checks with badssl.com
 
     SECTION("Self-signed certificate") {
-        auto operation = [] -> Task<> {
+        auto operation = []() -> Task<> {
             ClientSocketTLS sock;
             co_await sock.connect({ ConnectionType::TCP, "", "self-signed.badssl.com", 443 });
         };
@@ -78,7 +80,7 @@ TEST_CASE("HTTPS") {
     }
 
     SECTION("Expired certificate") {
-        auto operation = [] -> Task<> {
+        auto operation = []() -> Task<> {
             ClientSocketTLS sock;
             co_await sock.connect({ ConnectionType::TCP, "", "expired.badssl.com", 443 });
         };
@@ -88,7 +90,7 @@ TEST_CASE("HTTPS") {
     }
 
     SECTION("Handshake failure") {
-        runSync([] -> Task<> {
+        runSync([]() -> Task<> {
             ClientSocketTLS sock;
             co_await sock.connect({ ConnectionType::TCP, "", "rc4.badssl.com", 443 });
             auto alert = *(co_await sock.recv(1024)).alert; // No data is actually being received

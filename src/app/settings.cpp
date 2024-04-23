@@ -1,14 +1,24 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module app.settings;
-import app.appcore;
-import external.imgui;
-import external.std;
-import gui.imguiext;
-import utils.settingsparser;
-import utils.uuids;
+#include "settings.hpp"
 
+#include <array>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <utility>
+#include <vector>
+
+#include <imgui.h>
+
+#include "appcore.hpp"
+#include "fs.hpp"
+#include "gui/imguiext.hpp"
+#include "utils/settingsparser.hpp"
+#include "utils/uuids.hpp"
+
+const auto settingsFilePath = AppFS::getSettingsPath() / "settings.ini";
 SettingsParser parser;
 
 void drawFontRangesSettings(std::vector<ImWchar>& fontRanges) {
@@ -72,7 +82,7 @@ void drawBluetoothUUIDsSettings(std::vector<std::pair<std::string, UUIDs::UUID12
         static std::array sizes{ 0, 4, 6, 8, 10, 16 };
 
         for (std::size_t i = 0; i < 5; i++) {
-            u8* start = uuid.data() + sizes[i];
+            std::uint8_t* start = uuid.data() + sizes[i];
             std::size_t components = sizes[i + 1] - sizes[i];
 
             ImGui::SameLine();
@@ -108,25 +118,28 @@ void drawBluetoothUUIDsSettings(std::vector<std::pair<std::string, UUIDs::UUID12
     ImGui::PopID();
 }
 
-void Settings::load(std::string_view filePath) {
-    using Internal::parser;
-    parser.load(filePath);
+void Settings::load() {
+    parser.load(settingsFilePath);
 
     Font::file = parser.get<std::string>("font", "file");
     Font::ranges = parser.get<std::vector<ImWchar>>("font", "ranges", { 0x0020, 0x00FF });
-    Font::size = parser.get<u8>("font", "size", 15);
+    Font::size = parser.get<std::uint8_t>("font", "size", 15);
 
     GUI::roundedCorners = parser.get<bool>("gui", "roundedCorners");
     GUI::windowTransparency = parser.get<bool>("gui", "windowTransparency");
     GUI::systemMenu = parser.get<bool>("gui", "systemMenu", true);
 
-    OS::numThreads = parser.get<u8>("os", "numThreads");
-    OS::queueEntries = parser.get<u8>("os", "queueEntries", 128);
+    OS::numThreads = parser.get<std::uint8_t>("os", "numThreads");
+    OS::queueEntries = parser.get<std::uint8_t>("os", "queueEntries", 128);
     OS::bluetoothUUIDs = parser.get<std::vector<std::pair<std::string, UUIDs::UUID128>>>("os", "bluetoothUUIDs",
         {
             { "L2CAP", UUIDs::createFromBase(0x0100) },
             { "RFCOMM", UUIDs::createFromBase(0x0003) },
         });
+}
+
+void Settings::save() {
+    parser.write(settingsFilePath);
 }
 
 void Settings::drawSettingsWindow(bool& open) {
@@ -182,7 +195,6 @@ void Settings::drawSettingsWindow(bool& open) {
 
     ImGui::SameLine();
     if (ImGui::Button("Apply")) {
-        using Internal::parser;
         parser.set("font", "file", Font::file);
         parser.set("font", "ranges", Font::ranges);
         parser.set("font", "size", Font::size);

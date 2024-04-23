@@ -1,14 +1,14 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <string>
+
 #include <catch2/catch_test_macros.hpp>
 
-import external.std;
-import helpers.helpers;
-import helpers.testio;
-import net.enums;
-import sockets.clientsocket;
-import utils.settingsparser;
+#include "helpers/testio.hpp"
+#include "net/enums.hpp"
+#include "sockets/clientsocket.hpp"
+#include "utils/settingsparser.hpp"
 
 TEST_CASE("I/O (Internet Protocol)") {
     SettingsParser parser;
@@ -16,8 +16,8 @@ TEST_CASE("I/O (Internet Protocol)") {
 
     const auto v4Addr = parser.get<std::string>("ip", "v4");
     const auto v6Addr = parser.get<std::string>("ip", "v6");
-    const auto tcpPort = parser.get<u16>("ip", "tcpPort");
-    const auto udpPort = parser.get<u16>("ip", "udpPort");
+    const auto tcpPort = parser.get<std::uint16_t>("ip", "tcpPort");
+    const auto udpPort = parser.get<std::uint16_t>("ip", "udpPort");
 
     using enum ConnectionType;
 

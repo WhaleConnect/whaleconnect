@@ -1,10 +1,11 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module utils.uuids;
-import external.std;
+#include <cstring>
 
-UUIDs::UUID128 UUIDs::fromSegments(u32 d1, u16 d2, u16 d3, u64 d4) {
+#include "uuids.hpp"
+
+UUIDs::UUID128 UUIDs::fromSegments(std::uint32_t d1, std::uint16_t d2, std::uint16_t d3, std::uint64_t d4) {
     UUIDs::UUID128 ret;
 
     // Input fields have a system-dependent endianness, while bytes in a UUID128 are ordered based on network byte

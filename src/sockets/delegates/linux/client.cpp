@@ -1,21 +1,19 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module sockets.delegates.client;
-import external.platform;
-import external.std;
-import net.device;
-import net.enums;
-import net.netutils;
-import os.async;
-import os.async.platform;
-import os.errcheck;
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/l2cap.h>
+#include <bluetooth/rfcomm.h>
 
-void startConnect(int s, const sockaddr* addr, socklen_t len, Async::CompletionResult& result) {
-    io_uring_sqe* sqe = Async::getUringSQE();
-    io_uring_prep_connect(sqe, s, addr, len);
-    io_uring_sqe_set_data(sqe, &result);
-    Async::submitRing();
+#include "net/device.hpp"
+#include "net/enums.hpp"
+#include "net/netutils.hpp"
+#include "os/async.hpp"
+#include "os/errcheck.hpp"
+#include "sockets/delegates/client.hpp"
+
+void startConnect(int s, sockaddr* addr, socklen_t len, Async::CompletionResult& result) {
+    Async::submit(Async::Connect{ { s, &result }, addr, len });
 }
 
 template <>
@@ -36,7 +34,7 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
 
     // Set the appropriate sockaddr struct based on the protocol
     if (device.type == ConnectionType::RFCOMM) {
-        sockaddr_rc addr{ AF_BLUETOOTH, bdaddr, static_cast<u8>(device.port) };
+        sockaddr_rc addr{ AF_BLUETOOTH, bdaddr, static_cast<std::uint8_t>(device.port) };
         handle.reset(check(socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)));
 
         co_await Async::run(std::bind_front(startConnect, *handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));

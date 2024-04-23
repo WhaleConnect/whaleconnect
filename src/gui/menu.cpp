@@ -1,14 +1,23 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module gui.menu;
-import app.settings;
-import components.windowlist;
-import external.imgui;
-import external.libsdl3;
-import external.std;
-import gui.imguiext;
-import gui.notifications;
+#include "menu.hpp"
+
+#include <format>
+#include <string>
+#include <string_view>
+
+#include <imgui.h>
+
+#if OS_MACOS
+#include <GUIMacOS-Swift.h>
+#endif
+
+#include "imguiext.hpp"
+#include "menu.state.hpp"
+#include "notifications.hpp"
+#include "app/settings.hpp"
+#include "components/windowlist.hpp"
 
 void windowMenu(WindowList& list, const char* desc) {
     if (!ImGui::BeginMenu(desc)) return;
@@ -39,12 +48,9 @@ void Menu::drawMenuBar(bool& quit, WindowList& connections, WindowList& servers)
     }
 
     if (ImGui::BeginMenu("View")) {
-        if (ImGui::MenuItem("New Connection", nullptr, nullptr))
-            newConnectionOpen = true;
-        if (ImGui::MenuItem("New Server", nullptr, nullptr))
-            newServerOpen = true;
-        if (ImGui::MenuItem("Notifications", nullptr, nullptr))
-            notificationsOpen = true;
+        if (ImGui::MenuItem("New Connection", nullptr, nullptr)) newConnectionOpen = true;
+        if (ImGui::MenuItem("New Server", nullptr, nullptr)) newServerOpen = true;
+        if (ImGui::MenuItem("Notifications", nullptr, nullptr)) notificationsOpen = true;
         ImGui::EndMenu();
     }
 
@@ -54,11 +60,44 @@ void Menu::drawMenuBar(bool& quit, WindowList& connections, WindowList& servers)
 
     if (ImGui::BeginMenu("Help")) {
         if (ImGui::MenuItem("About", nullptr, nullptr)) aboutOpen = true;
-        if (ImGui::MenuItem("Show Changelog"))
-            SDL_OpenURL("https://github.com/NSTerminal/terminal/blob/main/docs/changelog.md");
+        if (ImGui::MenuItem("Links")) linksOpen = true;
 
         ImGui::EndMenu();
     }
 
     ImGui::EndMainMenuBar();
+}
+
+void Menu::setWindowFocus(const char* title) {
+    ImGui::SetWindowFocus(title);
+}
+
+void Menu::setupMenuBar() {
+#if OS_MACOS
+    GUIMacOS::setupMenuBar();
+#endif
+}
+
+void Menu::addWindowMenuItem([[maybe_unused]] std::string_view name) {
+#if OS_MACOS
+    GUIMacOS::addWindowMenuItem(std::string{ name });
+#endif
+}
+
+void Menu::removeWindowMenuItem([[maybe_unused]] std::string_view name) {
+#if OS_MACOS
+    GUIMacOS::removeWindowMenuItem(std::string{ name });
+#endif
+}
+
+void Menu::addServerMenuItem([[maybe_unused]] std::string_view name) {
+#if OS_MACOS
+    GUIMacOS::addServerMenuItem(std::string{ name });
+#endif
+}
+
+void Menu::removeServerMenuItem([[maybe_unused]] std::string_view name) {
+#if OS_MACOS
+    GUIMacOS::removeServerMenuItem(std::string{ name });
+#endif
 }

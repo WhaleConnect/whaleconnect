@@ -1,7 +1,7 @@
 import Cocoa
-import GUIBridge
+import Menu
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+class MenuHandler {
     let connectionsSubMenu = NSMenu()
     let noConnections = NSMenuItem(title: "No Connections", action: nil, keyEquivalent: "")
 
@@ -9,39 +9,43 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let noServers = NSMenuItem(title: "No Servers", action: nil, keyEquivalent: "")
 
     @objc private func windowItemClicked(_ sender: NSMenuItem) {
-        GUIBridge.setWindowFocus(std.string(sender.representedObject as! String))
+        Menu.setWindowFocus(sender.representedObject as! String)
     }
 
     @objc private func openSettingsWindow() {
-        GUIBridge.openSettingsWindow()
+        Menu.settingsOpen = true
     }
 
     @objc private func openNewConnectionWindow() {
-        GUIBridge.openNewConnectionWindow()
+        Menu.newConnectionOpen = true
     }
 
     @objc private func openNewServerWindow() {
-        GUIBridge.openNewServerWindow()
+        Menu.newServerOpen = true
     }
 
     @objc private func openNotificationsWindow() {
-        GUIBridge.openNotificationsWindow()
+        Menu.notificationsOpen = true
     }
 
     @objc private func openAboutWindow() {
-        GUIBridge.openAboutWindow()
+        Menu.aboutOpen = true
     }
 
-    @objc private func showChangelog() {
-        let url = URL(string: "https://www.github.com/NSTerminal/terminal/blob/main/docs/changelog.md")!
-        NSWorkspace.shared.open(url)
+    @objc private func openLinksWindow() {
+        Menu.linksOpen = true
+    }
+
+    private func addItem(menu: NSMenu, title: String, action: Selector) {
+        let item = menu.addItem(withTitle: title, action: action, keyEquivalent: "")
+        item.target = self
     }
 
     private func buildViewMenu() -> NSMenuItem {
         let subMenu = NSMenu()
-        subMenu.addItem(withTitle: "New Connection", action: #selector(openNewConnectionWindow), keyEquivalent: "")
-        subMenu.addItem(withTitle: "New Server", action: #selector(openNewServerWindow), keyEquivalent: "")
-        subMenu.addItem(withTitle: "Notifications", action: #selector(openNotificationsWindow), keyEquivalent: "")
+        addItem(menu: subMenu, title: "New Connection", action: #selector(openNewConnectionWindow))
+        addItem(menu: subMenu, title: "New Server", action: #selector(openNewServerWindow))
+        addItem(menu: subMenu, title: "Notifications", action: #selector(openNotificationsWindow))
 
         let viewMenu = NSMenuItem(title: "View", action: nil, keyEquivalent: "")
         viewMenu.submenu = subMenu
@@ -68,7 +72,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func buildHelpMenu() -> NSMenuItem {
         let subMenu = NSMenu()
-        subMenu.addItem(withTitle: "Show Changelog", action: #selector(showChangelog), keyEquivalent: "")
+        addItem(menu: subMenu, title: "Links", action: #selector(openLinksWindow))
 
         NSApp.helpMenu = subMenu
         let helpMenu = NSMenuItem(title: "Help", action: nil, keyEquivalent: "")
@@ -88,6 +92,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         newItem.representedObject = name
+        newItem.target = self
         subMenu.addItem(newItem)
     }
 
@@ -118,7 +123,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         removeMenuItem(name: name, subMenu: serversSubMenu, emptyLabel: noServers)
     }
 
-    func applicationDidFinishLaunching(_: Notification) {
+    func buildMenus() {
         NSApp.mainMenu?.insertItem(buildViewMenu(), at: 1)
         NSApp.mainMenu?.insertItem(buildConnectionsMenu(), at: 2)
         NSApp.mainMenu?.insertItem(buildServersMenu(), at: 3)
@@ -126,33 +131,36 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Build settings menu
         let appMenu = NSApp.mainMenu!.item(at: 0)!.submenu!
-        let settingsMenu = appMenu.item(at: 2)!
-        settingsMenu.isEnabled = true
-        settingsMenu.action = #selector(openSettingsWindow)
+
+        let settingsItem = NSMenuItem(title: "Settings...", action: #selector(openSettingsWindow), keyEquivalent: ",")
+        settingsItem.target = self
+        appMenu.insertItem(settingsItem, at: 1)
 
         // "About" menu item
-        appMenu.item(at: 0)!.action = #selector(openAboutWindow)
+        let aboutItem = appMenu.item(at: 0)!
+        aboutItem.action = #selector(openAboutWindow)
+        aboutItem.target = self
     }
 }
 
-let delegate = AppDelegate()
+let menu = MenuHandler()
 
 public func setupMenuBar() {
-    NSApplication.shared.delegate = delegate
+    menu.buildMenus()
 }
 
 public func addWindowMenuItem(name: String) {
-    delegate.addWindowMenuItem(name: name)
+    menu.addWindowMenuItem(name: name)
 }
 
 public func removeWindowMenuItem(name: String) {
-    delegate.removeWindowMenuItem(name: name)
+    menu.removeWindowMenuItem(name: name)
 }
 
 public func addServerMenuItem(name: String) {
-    delegate.addServerMenuItem(name: name)
+    menu.addServerMenuItem(name: name)
 }
 
 public func removeServerMenuItem(name: String) {
-    delegate.removeServerMenuItem(name: name)
+    menu.removeServerMenuItem(name: name)
 }

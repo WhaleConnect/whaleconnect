@@ -1,44 +1,40 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module sockets.delegates.server;
-import external.platform;
-import external.std;
-import external.out_ptr;
-import net.netutils;
-import os.async;
-import os.async.platform;
-import os.errcheck;
-import sockets.incomingsocket;
-import utils.handleptr;
-import utils.strings;
-import utils.task;
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include <WinSock2.h>
+#include <ws2bth.h>
+#include <MSWSock.h>
+#include <bluetoothapis.h>
+#include <ztd/out_ptr.hpp>
+
+#include "net/netutils.hpp"
+#include "os/async.hpp"
+#include "os/errcheck.hpp"
+#include "sockets/delegates/server.hpp"
+#include "sockets/incomingsocket.hpp"
+#include "utils/strings.hpp"
+#include "utils/task.hpp"
 
 // Buffer to hold local and remote addresses
 constexpr DWORD addrSize = sizeof(sockaddr_storage) + 16;
 using AcceptExBuf = std::vector<BYTE>;
 
 Task<std::pair<sockaddr*, int>> startAccept(SOCKET s, AcceptExBuf& buf, SOCKET clientSocket) {
-    static LPFN_ACCEPTEX acceptExPtr = nullptr;
-
-    if (!acceptExPtr) {
-        // Load the AcceptEx() function
-        GUID guid = WSAID_ACCEPTEX;
-        DWORD numBytes = 0;
-        check(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &acceptExPtr, sizeof(acceptExPtr),
-            &numBytes, nullptr, nullptr));
-    }
-
     // Accept and update context on the client socket
     co_await Async::run([s, clientSocket, &buf](Async::CompletionResult& result) {
-        check(acceptExPtr(s, clientSocket, buf.data(), 0, addrSize, addrSize, nullptr, &result), checkTrue);
+        Async::submit(Async::Accept{ { s, &result }, clientSocket, buf.data() });
     });
 
     check(setsockopt(clientSocket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, reinterpret_cast<char*>(&s), sizeof(s)));
     Async::add(clientSocket);
 
     static LPFN_GETACCEPTEXSOCKADDRS getAcceptExSockaddrsPtr = nullptr;
-
     if (!getAcceptExSockaddrsPtr) {
         // Load the GetAcceptExSockaddrs() function
         GUID guid = WSAID_GETACCEPTEXSOCKADDRS;
@@ -91,9 +87,8 @@ Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(std::size_t siz
 
     std::string data(size, 0);
     auto recvResult = co_await Async::run([this, &data, fromPtr, &fromLen](Async::CompletionResult& result) {
-        DWORD flags = 0;
         WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-        check(WSARecvFrom(*handle, &buf, 1, nullptr, &flags, fromPtr, &fromLen, &result, nullptr));
+        Async::submit(Async::ReceiveFrom{ { *handle, &result }, &buf, fromPtr, &fromLen });
     });
 
     data.resize(recvResult.res);
@@ -108,8 +103,7 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
     co_await NetUtils::loopWithAddr(addr.get(), [this, &data](const AddrInfoType* resolveRes) -> Task<> {
         co_await Async::run([this, resolveRes, &data](Async::CompletionResult& result) {
             WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-            check(WSASendTo(*handle, &buf, 1, nullptr, 0, resolveRes->ai_addr, static_cast<int>(resolveRes->ai_addrlen),
-                &result, nullptr));
+            Async::submit(Async::SendTo{ { *handle, &result }, &buf, resolveRes->ai_addr, static_cast<socklen_t>(resolveRes->ai_addrlen) });
         });
     });
 }
@@ -129,7 +123,7 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
     check(getsockname(*handle, reinterpret_cast<sockaddr*>(&serverAddr), &serverAddrLen));
 
     Async::add(*handle);
-    return { static_cast<u16>(serverAddr.port), IPType::None };
+    return { static_cast<std::uint16_t>(serverAddr.port), IPType::None };
 }
 
 template <>
@@ -157,6 +151,6 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
 
     check(BluetoothGetDeviceInfo(nullptr, &deviceInfo), checkZero, useReturnCode);
 
-    Device device{ ConnectionType::RFCOMM, Strings::fromSys(deviceInfo.szName), clientAddr, static_cast<u16>(clientPtr->port) };
+    Device device{ ConnectionType::RFCOMM, Strings::fromSys(deviceInfo.szName), clientAddr, static_cast<std::uint16_t>(clientPtr->port) };
     co_return { device, std::make_unique<IncomingSocket<SocketTag::BT>>(std::move(fd)) };
 }

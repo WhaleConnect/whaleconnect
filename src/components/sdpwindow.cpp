@@ -1,18 +1,25 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module components.sdpwindow;
-import app.settings;
-import external.imgui;
-import external.std;
-import gui.imguiext;
-import gui.newconn;
-import net.btutils;
-import utils.overload;
-import utils.uuids;
+#include "sdpwindow.hpp"
+
+#include <format>
+#include <future>
+#include <string_view>
+#include <system_error>
+#include <variant>
+
+#include <imgui.h>
+
+#include "app/settings.hpp"
+#include "gui/imguiext.hpp"
+#include "gui/newconn.hpp"
+#include "net/btutils.hpp"
+#include "utils/overload.hpp"
+#include "utils/uuids.hpp"
 
 void printUUID(UUIDs::UUID128 uuid) {
-    const u8* u = uuid.data();
+    const std::uint8_t* u = uuid.data();
     ImGui::BulletText("%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X", u[0], u[1], u[2], u[3],
         u[4], u[5], u[6], u[7], u[8], u[9], u[10], u[11], u[12], u[13], u[14], u[15]);
 }

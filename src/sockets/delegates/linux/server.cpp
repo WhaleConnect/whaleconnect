@@ -1,23 +1,23 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module sockets.delegates.server;
-import external.platform;
-import external.std;
-import net.enums;
-import net.netutils;
-import os.async;
-import os.async.platform;
-import os.errcheck;
-import sockets.incomingsocket;
-import utils.strings;
-import utils.task;
+#include <functional>
+#include <memory>
+#include <string>
+
+#include <sys/socket.h>
+
+#include "net/enums.hpp"
+#include "net/netutils.hpp"
+#include "os/async.hpp"
+#include "os/errcheck.hpp"
+#include "sockets/delegates/server.hpp"
+#include "sockets/incomingsocket.hpp"
+#include "utils/strings.hpp"
+#include "utils.task.hpp"
 
 void startAccept(int s, sockaddr* clientAddr, socklen_t& clientLen, Async::CompletionResult& result) {
-    io_uring_sqe* sqe = Async::getUringSQE();
-    io_uring_prep_accept(sqe, s, clientAddr, &clientLen, 0);
-    io_uring_sqe_set_data(sqe, &result);
-    Async::submitRing();
+    Async::submit(Async::Accept{ { s, &result }, clientAddr, &clientLen });
 }
 
 template <>
@@ -66,10 +66,7 @@ Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(std::size_t siz
     };
 
     auto recvResult = co_await Async::run([this, &msg](Async::CompletionResult& result) {
-        io_uring_sqe* sqe = Async::getUringSQE();
-        io_uring_prep_recvmsg(sqe, *handle, &msg, MSG_NOSIGNAL);
-        io_uring_sqe_set_data(sqe, &result);
-        Async::submitRing();
+        Async::submit(Async::ReceiveFrom{ { *handle, &result }, &msg });
     });
 
     data.resize(recvResult.res);
@@ -82,11 +79,7 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
 
     co_await NetUtils::loopWithAddr(addr.get(), [this, &data](const AddrInfoType* resolveRes) -> Task<> {
         co_await Async::run([this, &data, &resolveRes](Async::CompletionResult& result) {
-            io_uring_sqe* sqe = Async::getUringSQE();
-            io_uring_prep_sendto(sqe, *handle, data.data(), data.size(), MSG_NOSIGNAL, resolveRes->ai_addr,
-                resolveRes->ai_addrlen);
-            io_uring_sqe_set_data(sqe, &result);
-            Async::submitRing();
+            Async::submit(Async::SendTo{ { *handle, &result }, data, resolveRes->ai_addr, resolveRes->ai_addrlen });
         });
     });
 }
@@ -99,7 +92,7 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
     if (isRFCOMM) {
         handle.reset(check(socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)));
 
-        sockaddr_rc addr{ AF_BLUETOOTH, addrAny, static_cast<u8>(serverInfo.port) };
+        sockaddr_rc addr{ AF_BLUETOOTH, addrAny, static_cast<std::uint8_t>(serverInfo.port) };
         check(bind(*handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
     } else {
         handle.reset(check(socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)));
@@ -114,7 +107,7 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
     check(listen(*handle, SOMAXCONN));
     check(getsockname(*handle, reinterpret_cast<sockaddr*>(&serverAddr), &serverAddrLen));
 
-    u16 port = isRFCOMM ? reinterpret_cast<sockaddr_rc*>(&serverAddr)->rc_channel
+    std::uint16_t port = isRFCOMM ? reinterpret_cast<sockaddr_rc*>(&serverAddr)->rc_channel
                         : reinterpret_cast<sockaddr_l2*>(&serverAddr)->l2_psm;
 
     return { btohs2(port), IPType::None };

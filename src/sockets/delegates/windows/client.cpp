@@ -1,15 +1,20 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module sockets.delegates.client;
-import external.platform;
-import external.std;
-import net.enums;
-import net.netutils;
-import os.async;
-import os.async.platform;
-import os.errcheck;
-import utils.strings;
+#include <functional>
+#include <string>
+#include <utility>
+
+#include <WinSock2.h>
+#include <MSWSock.h>
+#include <ws2bth.h>
+
+#include "net/enums.hpp"
+#include "net/netutils.hpp"
+#include "os/async.hpp"
+#include "os/errcheck.hpp"
+#include "sockets/delegates/client.hpp"
+#include "utils/strings.hpp"
 
 void startConnect(SOCKET s, sockaddr* addr, std::size_t len, Async::CompletionResult& result) {
     // ConnectEx() requires the socket to be initially bound.
@@ -24,18 +29,7 @@ void startConnect(SOCKET s, sockaddr* addr, std::size_t len, Async::CompletionRe
 
     // Bind the socket
     check(bind(s, reinterpret_cast<sockaddr*>(&addrBind), addrSize));
-
-    static LPFN_CONNECTEX connectExPtr = nullptr;
-
-    if (!connectExPtr) {
-        // Load the ConnectEx() function
-        GUID guid = WSAID_CONNECTEX;
-        DWORD numBytes = 0;
-        check(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &connectExPtr, sizeof(connectExPtr),
-            &numBytes, nullptr, nullptr));
-    }
-
-    check(connectExPtr(s, addr, static_cast<int>(len), nullptr, 0, nullptr, &result), checkTrue);
+    Async::submit(Async::Connect{ { s, &result }, addr, static_cast<socklen_t>(len) });
 }
 
 void finalizeConnect(SOCKET s) {

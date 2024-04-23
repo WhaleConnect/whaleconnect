@@ -1,10 +1,26 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module gui.about;
-import app.config;
-import external.imgui;
-import gui.imguiext;
+#include "about.hpp"
+
+#include <config.hpp>
+#include <imgui.h>
+
+#include "gui/imguiext.hpp"
+
+void drawLink(const char* label, const char* link) {
+    ImGui::PushID(label);
+    bool copy = ImGui::SmallButton("Copy");
+    ImGui::PopID();
+
+    ImGui::SameLine();
+    ImGui::Text("%s:", label);
+    ImGui::SameLine();
+
+    if (copy) ImGui::LogToClipboard();
+    ImGui::Text("https://%s", link);
+    if (copy) ImGui::LogFinish();
+}
 
 void drawAboutWindow(bool& open) {
     if (!open) return;
@@ -37,5 +53,21 @@ void drawAboutWindow(bool& open) {
 
     ImGui::Spacing();
     if (ImGui::Button("Copy")) copy = true;
+    ImGui::End();
+}
+
+void drawLinksWindow(bool& open) {
+    if (!open) return;
+
+    using namespace ImGuiExt::Literals;
+    ImGui::SetNextWindowSize(40_fh * 10_fh, ImGuiCond_FirstUseEver);
+    if (!ImGui::Begin("Links", &open)) {
+        ImGui::End();
+        return;
+    }
+
+    drawLink("Repository", "github.com/NSTerminal/terminal");
+    drawLink("Changelog", "github.com/NSTerminal/terminal/blob/main/docs/changelog.md");
+
     ImGui::End();
 }

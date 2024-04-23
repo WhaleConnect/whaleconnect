@@ -1,12 +1,23 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module components.console;
-import external.imgui;
-import external.std;
-import external.utfcpp;
-import gui.imguiext;
-import utils.strings;
+#include "console.hpp"
+
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <ctime>
+#include <format>
+#include <iterator>
+#include <limits>
+#include <optional>
+#include <string>
+#include <string_view>
+
+#include <imgui.h>
+#include <utf8.h>
+
+#include "gui/imguiext.hpp"
 
 bool floatsEqual(float a, float b) {
     return std::abs(a - b) <= std::numeric_limits<float>::epsilon();
@@ -28,7 +39,7 @@ std::string getTimestamp() {
 
     // Get local time from current time point
     auto timer = system_clock::to_time_t(now);
-    auto local = *localtime2(&timer);
+    auto local = *std::localtime(&timer);
 
     // Return formatted string
     return std::format("{:02}:{:02}:{:02}.{:03}", local.tm_hour, local.tm_min, local.tm_sec, ms);
@@ -41,8 +52,9 @@ void Console::add(std::string_view s, const ImVec4& color, bool canUseHex, std::
     auto hoverTextOpt = hoverText.empty() ? std::nullopt : std::optional<std::string>{ hoverText };
 
     // Determine if text goes on a new line
+    // TODO: Replace with emplace_back when Apple Clange supports P0960
     if (items.empty() || items.back().text.ends_with('\n') || !colorsEqual(items.back().color, color))
-        items.emplace_back(canUseHex, "", "", color, getTimestamp(), hoverTextOpt);
+        items.push_back({ canUseHex, "", "", color, getTimestamp(), hoverTextOpt });
 
     // Add text, fix invalid UTF-8 if necessary
     utf8::replace_invalid(s.begin(), s.end(), std::back_inserter(items.back().text));

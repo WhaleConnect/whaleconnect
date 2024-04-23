@@ -1,17 +1,24 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module components.serverwindow;
-import app.settings;
-import components.connwindow;
-import external.imgui;
-import external.menu;
-import external.std;
-import gui.imguiext;
-import net.enums;
-import os.error;
-import sockets.delegates.delegates;
-import sockets.serversocket;
+#include "serverwindow.hpp"
+
+#include <array>
+#include <format>
+#include <memory>
+#include <string>
+#include <string_view>
+
+#include <imgui.h>
+#include <imgui_internal.h>
+
+#include "app/settings.hpp"
+#include "gui/imguiext.hpp"
+#include "gui/menu.hpp"
+#include "net/enums.hpp"
+#include "os/error.hpp"
+#include "sockets/delegates/delegates.hpp"
+#include "sockets/serversocket.hpp"
 
 // Colors to display each client in
 const std::array colors{
@@ -84,7 +91,7 @@ ServerWindow::ServerWindow(std::string_view title, const Device& serverInfo) :
 }
 
 ServerWindow::~ServerWindow() {
-    if (Settings::GUI::systemMenu) removeServerMenuItem(getTitle());
+    if (Settings::GUI::systemMenu) Menu::removeServerMenuItem(getTitle());
     if (socket) socket->cancelIO();
 }
 
@@ -104,7 +111,7 @@ void ServerWindow::startServer(const Device& serverInfo) try {
     }
 
     setTitle(title);
-    if (Settings::GUI::systemMenu) addServerMenuItem(title);
+    if (Settings::GUI::systemMenu) Menu::addServerMenuItem(title);
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
 }

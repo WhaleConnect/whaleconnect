@@ -1,15 +1,19 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module net.netutils;
-import external.out_ptr;
-import external.platform;
-import external.std;
-import net.enums;
-import os.errcheck;
-import os.error;
-import utils.strings;
-import utils.uuids;
+#include "netutils.hpp"
+
+#include <ztd/out_ptr.hpp>
+
+#include "enums.hpp"
+#include "os/errcheck.hpp"
+#include "utils/strings.hpp"
+#include "utils/uuids.hpp"
+
+#if !OS_WINDOWS
+constexpr auto GetAddrInfoW = getaddrinfo;
+constexpr auto GetNameInfoW = getnameinfo;
+#endif
 
 AddrInfoHandle NetUtils::resolveAddr(const Device& device, bool useDNS) {
     bool isUDP = device.type == ConnectionType::UDP;
@@ -26,8 +30,8 @@ AddrInfoHandle NetUtils::resolveAddr(const Device& device, bool useDNS) {
 
     // Resolve the IP
     AddrInfoHandle ret;
-    check(GetAddrInfoW(addrWide.c_str(), portWide.c_str(), &hints, ztd::out_ptr::out_ptr(ret)), checkZero, useReturnCode,
-        System::ErrorType::AddrInfo);
+    check(GetAddrInfoW(addrWide.c_str(), portWide.c_str(), &hints, ztd::out_ptr::out_ptr(ret)), checkZero,
+        useReturnCode, System::ErrorType::AddrInfo);
 
     return ret;
 }
@@ -47,17 +51,17 @@ Device NetUtils::fromAddr(const sockaddr* addr, socklen_t addrLen, ConnectionTyp
     // Process returned strings
     Strings::stripNull(ipStr);
     std::string ip = Strings::fromSys(ipStr);
-    auto port = static_cast<u16>(std::stoi(Strings::fromSys(portStr)));
+    auto port = static_cast<std::uint16_t>(std::stoi(Strings::fromSys(portStr)));
 
     return { type, "", ip, port };
 }
 
-u16 NetUtils::getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4) {
+std::uint16_t NetUtils::getPort(Traits::SocketHandleType<SocketTag::IP> handle, bool isV4) {
     sockaddr_storage addr;
     socklen_t localAddrLen = sizeof(addr);
     check(getsockname(handle, reinterpret_cast<sockaddr*>(&addr), &localAddrLen));
 
-    u16 port
+    std::uint16_t port
         = isV4 ? reinterpret_cast<sockaddr_in*>(&addr)->sin_port : reinterpret_cast<sockaddr_in6*>(&addr)->sin6_port;
     return UUIDs::byteSwap(port);
 }

@@ -1,9 +1,0 @@
-// Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
-// SPDX-License-Identifier: GPL-3.0-or-later
-
-export module os.async.platform.internal;
-import external.platform;
-
-export namespace Async::Internal {
-    HANDLE completionPort = nullptr; // IOCP handle
-}

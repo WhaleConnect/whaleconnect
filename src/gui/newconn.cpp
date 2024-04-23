@@ -1,17 +1,20 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module gui.newconn;
-import components.connwindow;
-import external.imgui;
-import external.std;
-import gui.imguiext;
-import gui.newconnbt;
-import gui.newconnip;
-import gui.notifications;
-import net.device;
-import net.enums;
-import utils.strings;
+#include "newconn.hpp"
+
+#include <format>
+#include <string>
+#include <string_view>
+
+#include "imguiext.hpp"
+#include "newconnbt.hpp"
+#include "newconnip.hpp"
+#include "notifications.hpp"
+#include "components/connwindow.hpp"
+#include "net/device.hpp"
+#include "net/enums.hpp"
+#include "utils/strings.hpp"
 
 // Formats a Device instance into a string for use in a ConnWindow title.
 std::string formatDevice(bool useTLS, const Device& device, std::string_view extraInfo) {

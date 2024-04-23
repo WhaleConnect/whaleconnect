@@ -1,13 +1,14 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module;
+#pragma once
+
 #include <catch2/catch_test_macros.hpp>
 
-module helpers.testio;
-import external.std;
-import helpers.helpers;
-import utils.task;
+#include "helpers.hpp"
+#include "net/device.hpp"
+#include "sockets/socket.hpp"
+#include "utils/task.hpp"
 
 void testIO(const Socket& socket, bool useRunLoop) {
     // Check the socket is valid
@@ -15,7 +16,7 @@ void testIO(const Socket& socket, bool useRunLoop) {
 
     // Send/receive
     runSync(
-        [&socket] -> Task<> {
+        [&socket]() -> Task<> {
             constexpr const char* echoString = "echo test";
 
             co_await socket.send(echoString);
@@ -29,7 +30,7 @@ void testIO(const Socket& socket, bool useRunLoop) {
 }
 
 void testIOClient(const Socket& socket, const Device& device, bool useRunLoop) {
-    runSync([&socket, &device] -> Task<> { co_await socket.connect(device); }, useRunLoop);
+    runSync([&socket, &device]() -> Task<> { co_await socket.connect(device); }, useRunLoop);
 
     testIO(socket, useRunLoop);
 }

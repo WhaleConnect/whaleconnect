@@ -1,11 +1,21 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module sockets.delegates.secure.clienttls;
-import external.botan;
-import external.std;
-import os.async;
-import os.error;
+#include <memory>
+#include <optional>
+#include <span>
+#include <string>
+#include <vector>
+
+#include <botan/certstor_system.h>
+#include <botan/system_rng.h>
+#include <botan/tls_alert.h>
+#include <botan/tls_client.h>
+#include <botan/tls_policy.h>
+#include <botan/tls_server_info.h>
+#include <botan/tls_session_manager_memory.h>
+
+#include "clienttls.hpp"
 
 class CredentialsManager : public Botan::Credentials_Manager {
     Botan::System_Certificate_Store systemCertStore;
@@ -24,11 +34,11 @@ public:
     explicit TLSCallbacks(Delegates::ClientTLS& io) : io(io) {}
 
     // The TLS channel is used as an adapter that takes unencrypted data and outputs encrypted data into a send queue
-    void tls_emit_data(std::span<const u8> buf) override {
+    void tls_emit_data(std::span<const std::uint8_t> buf) override {
         io.queueWrite({ reinterpret_cast<const char*>(buf.data()), buf.size() });
     }
 
-    void tls_record_received(u64, std::span<const u8> buf) override {
+    void tls_record_received(std::uint64_t, std::span<const std::uint8_t> buf) override {
         io.queueRead({ reinterpret_cast<const char*>(buf.data()), buf.size() });
     }
 
@@ -56,7 +66,7 @@ Task<bool> Delegates::ClientTLS::recvBase(std::size_t size) {
     auto recvResult = co_await baseIO.recv(size);
 
     if (recvResult.closed) channel->close();
-    else channel->received_data(reinterpret_cast<u8*>(recvResult.data.data()), recvResult.data.size());
+    else channel->received_data(reinterpret_cast<std::uint8_t*>(recvResult.data.data()), recvResult.data.size());
 
     co_return recvResult.closed;
 }

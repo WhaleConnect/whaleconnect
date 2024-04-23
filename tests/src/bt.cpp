@@ -1,28 +1,25 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <string>
+
 #include <catch2/catch_test_macros.hpp>
 
-import external.std;
-import helpers.helpers;
-import helpers.testio;
-import net.device;
-import net.enums;
-import os.async;
-import os.error;
-import sockets.clientsocket;
-import utils.settingsparser;
+#include "helpers/testio.hpp"
+#include "net/enums.hpp"
+#include "sockets/clientsocket.hpp"
+#include "utils/settingsparser.hpp"
 
 TEST_CASE("I/O (Bluetooth)") {
     SettingsParser parser;
     parser.load(SETTINGS_FILE);
 
     const auto mac = parser.get<std::string>("bluetooth", "mac");
-    const auto rfcommPort = parser.get<u16>("bluetooth", "rfcommPort");
+    const auto rfcommPort = parser.get<std::uint16_t>("bluetooth", "rfcommPort");
 
     // L2CAP sockets are not supported on Windows
 #if !OS_WINDOWS
-    const auto l2capPSM = parser.get<u16>("bluetooth", "l2capPSM");
+    const auto l2capPSM = parser.get<std::uint16_t>("bluetooth", "l2capPSM");
 #endif
 
     using enum ConnectionType;

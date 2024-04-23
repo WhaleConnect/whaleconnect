@@ -4,19 +4,14 @@
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 
-import external.std;
-import os.async;
+#include "os/async.hpp"
 
 // Listener to initialize OS APIs when tests are run.
 struct InitListener : Catch::EventListenerBase {
     using Catch::EventListenerBase::EventListenerBase;
 
     void testRunStarting(const Catch::TestRunInfo&) override {
-        // Putting the instance inside a static optional will give it a lifetime until the program ends, but
-        // construction only when this function is called
-        static std::optional<Async::Instance> asyncInstance;
-
-        asyncInstance.emplace(1, 128);
+        Async::init(1, 128);
     }
 };
 

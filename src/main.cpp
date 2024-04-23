@@ -1,21 +1,21 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <SDL3/SDL_main.h>
+#include <optional>
+#include <system_error>
 
-import app.appcore;
-import app.settings;
-import components.windowlist;
-import external.menu;
-import external.std;
-import gui.about;
-import gui.menu;
-import gui.newconn;
-import gui.newserver;
-import gui.notifications;
-import net.btutils;
-import os.async;
-import os.error;
+#include "app/appcore.hpp"
+#include "app/settings.hpp"
+#include "components/windowlist.hpp"
+#include "gui/about.hpp"
+#include "gui/menu.hpp"
+#include "gui/menu.state.hpp"
+#include "gui/newconn.hpp"
+#include "gui/newserver.hpp"
+#include "gui/notifications.hpp"
+#include "net/btutils.hpp"
+#include "os/async.hpp"
+#include "os/error.hpp"
 
 // Contains the app's core logic and functions.
 void mainLoop() {
@@ -27,7 +27,6 @@ void mainLoop() {
 
     bool quit = false;
     while (!quit && AppCore::newFrame()) {
-        Async::handleEvents();
         Menu::drawMenuBar(quit, connections, servers);
 
         // Application windows
@@ -36,6 +35,7 @@ void mainLoop() {
         drawNewServerWindow(servers, Menu::newServerOpen);
         ImGuiExt::drawNotificationsWindow(Menu::notificationsOpen);
         drawAboutWindow(Menu::aboutOpen);
+        drawLinksWindow(Menu::linksOpen);
 
         connections.update();
         servers.update();
@@ -44,20 +44,24 @@ void mainLoop() {
     }
 }
 
-int main(int, char**) {
+#if OS_WINDOWS
+int WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+#else
+int main(int, char**)
+#endif
+{
     // Create a main application window
     if (!AppCore::init()) return 1;
-    if (Settings::GUI::systemMenu) setupMenuBar();
+    if (Settings::GUI::systemMenu) Menu::setupMenuBar();
 
     // OS API resource instances
-    std::optional<Async::Instance> asyncInstance;
     std::optional<BTUtils::Instance> btutilsInstance;
 
     using namespace std::literals;
 
     // Initialize APIs for sockets and Bluetooth
     try {
-        asyncInstance.emplace(Settings::OS::numThreads, Settings::OS::queueEntries);
+        Async::init(Settings::OS::numThreads, Settings::OS::queueEntries);
         btutilsInstance.emplace();
     } catch (const System::SystemError& error) {
         ImGuiExt::addNotification("Initialization error "s + error.what(), NotificationType::Error, 0);

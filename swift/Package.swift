@@ -16,7 +16,7 @@ let package = Package(
             sources: ["bthandle.swift", "btutils.swift"],
             swiftSettings: [
                 .interoperabilityMode(.Cxx),
-                .unsafeFlags(["-I", "./bridge"]),
+                .unsafeFlags(["-I", "../src", "-Xcc", "-std=c++2b"]),
             ]
         ),
         .target(
@@ -27,7 +27,7 @@ let package = Package(
             sources: ["gui.swift"],
             swiftSettings: [
                 .interoperabilityMode(.Cxx),
-                .unsafeFlags(["-I", "./bridge"]),
+                .unsafeFlags(["-I", "../src", "-Xcc", "-std=c++2b"]),
             ]
         ),
     ]

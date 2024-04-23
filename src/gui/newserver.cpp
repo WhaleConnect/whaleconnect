@@ -1,13 +1,15 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module gui.newserver;
-import components.serverwindow;
-import external.imgui;
-import gui.imguiext;
-import gui.notifications;
-import net.device;
-import net.enums;
+#include "newserver.hpp"
+
+#include <imgui.h>
+
+#include "imguiext.hpp"
+#include "notifications.hpp"
+#include "components/serverwindow.hpp"
+#include "net/device.hpp"
+#include "net/enums.hpp"
 
 void drawNewServerWindow(WindowList& servers, bool& open) {
     if (!open) return;

@@ -1,16 +1,23 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module gui.newconnbt;
-import app.settings;
-import components.sdpwindow;
-import components.windowlist;
-import external.imgui;
-import external.std;
-import net.btutils;
-import net.device;
-import os.error;
-import utils.overload;
+#include "newconnbt.hpp"
+
+#include <algorithm>
+#include <format>
+#include <functional>
+#include <string>
+#include <variant>
+
+#include <imgui.h>
+#include <imgui_internal.h>
+
+#include "components/sdpwindow.hpp"
+#include "components/windowlist.hpp"
+#include "net/btutils.hpp"
+#include "net/device.hpp"
+#include "os/error.hpp"
+#include "utils/overload.hpp"
 
 void sortTable(DeviceList& devices) {
     // A sort is only needed for 2 or more entries

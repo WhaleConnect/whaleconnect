@@ -1,7 +1,7 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import CppBridge
+import Async
 import IOBluetooth
 
 enum Channel {
@@ -21,47 +21,47 @@ class BTHandleDelegate: IOBluetoothL2CAPChannelDelegate, IOBluetoothRFCOMMChanne
     var hash: UInt = 0
 
     func l2capChannelClosed(_: IOBluetoothL2CAPChannel!) {
-        CppBridge.closed(hash)
+        Async.bluetoothClosed(hash)
     }
 
     func l2capChannelData(_: IOBluetoothL2CAPChannel!,
                           data dataPointer: UnsafeMutableRawPointer!,
                           length dataLength: Int)
     {
-        CppBridge.newData(hash, dataPointer, dataLength)
+        Async.bluetoothReadComplete(hash, dataPointer, dataLength)
     }
 
     func l2capChannelOpenComplete(_: IOBluetoothL2CAPChannel!, status error: IOReturn) {
-        CppBridge.outgoingComplete(hash, error)
+        Async.bluetoothComplete(hash, .Send, error)
     }
 
     func l2capChannelWriteComplete(_: IOBluetoothL2CAPChannel!,
                                    refcon _: UnsafeMutableRawPointer!,
                                    status error: IOReturn)
     {
-        CppBridge.outgoingComplete(hash, error)
+        Async.bluetoothComplete(hash, .Send, error)
     }
 
     func rfcommChannelClosed(_: IOBluetoothRFCOMMChannel!) {
-        CppBridge.closed(hash)
+        Async.bluetoothClosed(hash)
     }
 
     func rfcommChannelData(_: IOBluetoothRFCOMMChannel!,
                            data dataPointer: UnsafeMutableRawPointer!,
                            length dataLength: Int)
     {
-        CppBridge.newData(hash, dataPointer, dataLength)
+        Async.bluetoothReadComplete(hash, dataPointer, dataLength)
     }
 
     func rfcommChannelOpenComplete(_: IOBluetoothRFCOMMChannel!, status error: IOReturn) {
-        CppBridge.outgoingComplete(hash, error)
+        Async.bluetoothComplete(hash, .Send, error)
     }
 
     func rfcommChannelWriteComplete(_: IOBluetoothRFCOMMChannel!,
                                     refcon _: UnsafeMutableRawPointer!,
                                     status error: IOReturn)
     {
-        CppBridge.outgoingComplete(hash, error)
+        Async.bluetoothComplete(hash, .Send, error)
     }
 }
 
@@ -72,7 +72,7 @@ public class BTHandle {
     init(channel: Channel) {
         self.channel = channel
         delegate.hash = UInt(bitPattern: ObjectIdentifier(self))
-        CppBridge.clearDataQueue(getHash())
+        Async.clearBluetoothDataQueue(getHash())
 
         switch channel {
             case let .l2cap(l2capChannel): l2capChannel.setDelegate(delegate)
@@ -81,23 +81,25 @@ public class BTHandle {
         }
     }
 
-    private func acceptComplete(device: IOBluetoothDevice?, newChannel: Channel, port: UInt16) {
+    private func acceptComplete(device: IOBluetoothDevice?, isL2CAP: Bool, newChannel: Channel, port: UInt16) {
         let name = std.string(device?.name ?? "")
         let addr = std.string(device?.addressString.replacingOccurrences(of: "-", with: ":").uppercased() ?? "")
         let newHandle = BTHandle(channel: newChannel)
 
         withUnsafePointer(to: newHandle) {
-            CppBridge.acceptComplete(getHash(), true, $0, name, addr, port)
+            let device = Async.Device(type: isL2CAP ? .L2CAP : .RFCOMM, name: name, address: addr, port: port)
+            Async.bluetoothAcceptComplete(getHash(), $0, device)
         }
     }
 
     @objc private func acceptL2CAP(_: IOBluetoothUserNotification, channel newChannel: IOBluetoothL2CAPChannel) {
-        acceptComplete(device: newChannel.device, newChannel: .l2cap(newChannel), port: newChannel.psm)
+        acceptComplete(device: newChannel.device, isL2CAP: true, newChannel: .l2cap(newChannel), port: newChannel.psm)
     }
 
     @objc private func acceptRFCOMM(_: IOBluetoothUserNotification, channel newChannel: IOBluetoothRFCOMMChannel) {
         acceptComplete(
             device: newChannel.getDevice(),
+            isL2CAP: false,
             newChannel: .rfcomm(newChannel),
             port: UInt16(newChannel.getID())
         )

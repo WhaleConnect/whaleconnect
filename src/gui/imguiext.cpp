@@ -1,9 +1,13 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module gui.imguiext;
-import external.imgui;
-import external.std;
+#include "imguiext.hpp"
+
+#include <numbers>
+#include <string>
+#include <string_view>
+
+#include <imgui.h>
 
 int stringCallback(ImGuiInputTextCallbackData* data) {
     // Get user data (assume it's a string pointer)

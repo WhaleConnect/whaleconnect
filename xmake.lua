@@ -3,43 +3,43 @@
 
 set_version("0.4.0", { build = "%Y%m%d%H%M" })
 add_repositories("xrepo-patches https://github.com/NSTerminal/xrepo-patches.git")
+set_license("GPL-3.0-or-later")
 
 add_rules("mode.debug", "mode.release")
-set_policy("check.auto_ignore_flags", false)
+set_defaultmode("debug")
 
 -- Avoid linking to system libraries - prevents dependency mismatches on different platforms and makes package self-contained
 add_requireconfs("*|opengl", { system = false })
 
-add_requires("imgui-with-sdl3 v20240204-docking", { configs = { sdl3_no_renderer = true, opengl3 = true, freetype = true } })
-add_requires("libsdl3", { configs = { use_sdlmain = true, wayland = false } })
-add_requires("botan", "catch2", "imguitextselect", "opengl", "out_ptr", "utfcpp")
+add_requires("imgui v1.90.3-docking", { configs = { glfw = true, opengl3 = true, freetype = true } })
+add_requires("botan", "catch2", "glfw", "imguitextselect", "opengl", "out_ptr", "utfcpp")
 
-if is_plat("linux") then
+add_packages("botan", "out_ptr")
+
+if is_plat("windows") then
+    -- Use MSVC Unicode character set and prevent clashing macros
+    add_defines("UNICODE", "_UNICODE", "NOMINMAX")
+elseif is_plat("linux") then
     add_requires("liburing", "bluez")
     add_requires("dbus", { configs = { system_bus_address = "unix:path=/run/dbus/system_bus_socket" } })
-end
-
-if not is_plat("windows") then
-    add_cxxflags("-pthread", "-fexperimental-library")
-    add_ldflags("-fexperimental-library")
+    add_packages("liburing", "dbus", "bluez")
 end
 
 set_languages("c++23")
 set_exceptions("cxx")
+set_encodings("utf-8")
+
+-- Warnings
 set_warnings("allextra")
-set_defaultmode("debug")
-set_license("GPL-3.0-or-later")
+add_cxxflags("-Wno-missing-field-initializers", { tools = { "gcc", "clang" } })
 
-add_cxxflags(
-    -- Warnings
-    "-Wno-missing-field-initializers", "-Wno-read-modules-implicitly",
+add_cxxflags("clang::-fexperimental-library")
+add_ldflags("clangxx::-fexperimental-library")
 
-    -- UTF-8 charset
-    "-finput-charset=UTF-8", "-fexec-charset=UTF-8"
-)
+add_includedirs("src")
 
 add_defines(
-    -- Platform detection macros ("or false" is needed because is_plat() can return nil)
+    -- Platform detection macros ("or false" is needed because is_plat can return nil)
     "OS_WINDOWS=" .. tostring(is_plat("windows") or false),
     "OS_MACOS=" .. tostring(is_plat("macosx") or false),
     "OS_LINUX=" .. tostring(is_plat("linux") or false),
@@ -49,6 +49,12 @@ add_defines(
 )
 
 local swiftBuildMode = is_mode("release") and "release" or "debug"
+local swiftBuildDir = format("$(scriptdir)/swift/.build/%s", swiftBuildMode)
+if is_plat("macosx") then
+    local swiftLibDir = "/Library/Developer/CommandLineTools/usr/lib/swift"
+    add_includedirs(swiftLibDir)
+    add_linkdirs(swiftBuildDir, path.join(swiftLibDir, "macosx"))
+end
 
 target("swift")
     set_kind("phony")
@@ -58,91 +64,68 @@ target("swift")
         os.exec("swift build -c %s", swiftBuildMode)
     end)
 
-target("external")
-    add_packages("botan", "imgui-with-sdl3", "imguitextselect", "libsdl3", "opengl", "out_ptr", "utfcpp")
-    if is_plat("macosx") then
-        add_deps("swift")
-
-        local swiftBuildDir = format("$(scriptdir)/swift/.build/%s", swiftBuildMode)
-        local swiftLibDir = "/Library/Developer/CommandLineTools/usr/lib/swift"
-        add_includedirs(
-            swiftLibDir,
-            path.join(swiftBuildDir, "BluetoothMacOS.build"),
-            path.join(swiftBuildDir, "GUIMacOS.build")
-        )
-        add_linkdirs(swiftBuildDir, path.join(swiftLibDir, "macosx"))
-        add_links("BluetoothMacOS", "GUIMacOS")
-    elseif is_plat("linux") then
-        add_packages("liburing", "dbus", "bluez")
-    end
-
-    set_kind("static")
-    add_files("$(buildir)/generated-modules/*.mpp")
-
-    on_config(function (target)
-        os.exec("python $(scriptdir)/external/generate.py $(buildir)/generated-modules")
-    end)
-
 target("terminal-core")
     -- Project files
     set_kind("static")
-    add_deps("external")
+
+    if is_plat("macosx") then
+        add_deps("swift")
+        add_includedirs(path.join(swiftBuildDir, "BluetoothMacOS.build"), { public = true })
+        add_links("BluetoothMacOS")
+    end
 
     add_files(
-        "src/net/*.cpp", "src/net/*.mpp",
-        "src/os/*.cpp", "src/os/*.mpp",
-        "src/sockets/*.mpp", "src/sockets/delegates/*.mpp",
-        "src/sockets/delegates/secure/*.cpp", "src/sockets/delegates/secure/*.mpp",
-        "src/utils/*.cpp", "src/utils/*.mpp"
+        "src/net/netutils.cpp",
+        "src/os/async.cpp", "src/os/error.cpp",
+        "src/sockets/delegates/secure/*.cpp",
+        "src/utils/*.cpp"
     )
 
     -- Platform-specific files
     if is_plat("windows") then
         add_syslinks("Bthprops", "crypt32", "user32", "Ws2_32")
         add_files(
-            "src/net/windows/*.cpp",
-            "src/os/windows/*.cpp", "src/os/windows/*.mpp",
+            "src/net/btutils.windows.cpp",
+            "src/os/async.windows.cpp",
             "src/sockets/delegates/windows/*.cpp"
         )
     elseif is_plat("macosx") then
         add_files(
-            "swift/bridge/cppbridge.cpp",
-            "src/net/macos/*.cpp",
-            "src/os/macos/*.cpp", "src/os/macos/*.mpp",
+            "src/net/btutils.macos.cpp",
+            "src/os/async.macos.cpp",
             "src/sockets/delegates/macos/*.cpp"
         )
     elseif is_plat("linux") then
         add_files(
-            "src/net/linux/*.cpp",
-            "src/os/linux/*.cpp", "src/os/linux/*.mpp",
+            "src/net/btutils.linux.cpp",
+            "src/os/async.linux.cpp",
             "src/sockets/delegates/linux/*.cpp"
         )
     end
 
 target("terminal")
-    add_packages("libsdl3")
-    add_deps("terminal-core", "external")
+    add_packages("glfw")
+    add_deps("terminal-core")
+    add_packages("glfw", "imgui", "imguitextselect", "opengl", "utfcpp")
+
+    if is_plat("macosx") then
+        add_deps("swift")
+        add_includedirs(path.join(swiftBuildDir, "GUIMacOS.build"))
+        add_links("GUIMacOS")
+    end
 
     -- GUI code and main entry point
-    add_files(
-        "src/app/*.cpp", "src/app/*.mpp",
-        "src/components/*.cpp", "src/components/*.mpp",
-        "src/gui/*.cpp", "src/gui/*.mpp",
-        "src/main.cpp"
-    )
-    add_configfiles("src/app/config.mpp.in")
-
-    on_config(function (target)
-        target:add("files", "$(buildir)/config.mpp")
-    end)
+    add_files("src/app/*.cpp", "src/components/*.cpp", "src/gui/*.cpp", "src/main.cpp")
+    add_configfiles("src/app/config.hpp.in")
+    add_includedirs("$(buildir)")
 
     -- Add platform rules
     if is_plat("windows") then
-        add_ldflags("-Wl,/SUBSYSTEM:WINDOWS")
+        add_rules("win.sdk.application")
         add_files("res/app.rc")
     elseif is_plat("macosx") then
         add_rules("xcode.application")
-        add_files("res/Info.plist", "swift/bridge/guibridge.cpp")
+        add_files("res/Info.plist")
     end
 
     on_load(function (target)
@@ -167,7 +150,13 @@ target("socket-tests")
 
     add_packages("catch2")
     add_deps("terminal-core")
-    add_files("tests/src/**.cpp", "tests/src/**.mpp")
+    add_files("tests/src/**.cpp")
 
      -- Path to settings file
     add_defines(format("SETTINGS_FILE=R\"(%s)\"", path.absolute("tests/settings/settings.ini")))
+
+target("benchmark-server")
+    set_default(false)
+
+    add_deps("terminal-core")
+    add_files("tests/benchmarks/server.cpp")

@@ -1,10 +1,16 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module gui.notifications;
-import external.imgui;
-import external.std;
-import gui.imguiext;
+#include "notifications.hpp"
+
+#include <format>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include <imgui.h>
+
+#include "imguiext.hpp"
 
 constexpr const char* notificationsWindowTitle = "Notifications";
 

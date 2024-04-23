@@ -1,8 +1,18 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-module utils.settingsparser;
-import utils.uuids;
+#include "settingsparser.hpp"
+
+#include <charconv>
+#include <cstdint>
+#include <cstring>
+#include <fstream>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <utility>
+
+#include "uuids.hpp"
 
 std::string trim(std::string_view s) {
     std::size_t first = s.find_first_not_of(" ");
@@ -35,11 +45,11 @@ ParseResult<UUIDs::UUID128> parse(std::string_view data) {
 
     auto process = [&](auto&... args) { return (extractHex(args) && ...); };
 
-    u32 data1;
-    u16 data2;
-    u16 data3;
-    u16 data4;
-    u64 data5;
+    std::uint32_t data1;
+    std::uint16_t data2;
+    std::uint16_t data3;
+    std::uint16_t data4;
+    std::uint64_t data5;
 
     UUIDs::UUID128 ret;
     if (process(data1, data2, data3, data4, data5)) {
@@ -55,17 +65,17 @@ ParseResult<UUIDs::UUID128> parse(std::string_view data) {
 
 template <>
 std::string stringify(const UUIDs::UUID128& in) {
-    const auto data1 = UUIDs::byteSwap(*reinterpret_cast<const u32*>(in.data()));
-    const auto data2 = UUIDs::byteSwap(*reinterpret_cast<const u16*>(in.data() + 4));
-    const auto data3 = UUIDs::byteSwap(*reinterpret_cast<const u16*>(in.data() + 6));
-    const auto data4 = UUIDs::byteSwap(*reinterpret_cast<const u64*>(in.data() + 8));
+    const auto data1 = UUIDs::byteSwap(*reinterpret_cast<const std::uint32_t*>(in.data()));
+    const auto data2 = UUIDs::byteSwap(*reinterpret_cast<const std::uint16_t*>(in.data() + 4));
+    const auto data3 = UUIDs::byteSwap(*reinterpret_cast<const std::uint16_t*>(in.data() + 6));
+    const auto data4 = UUIDs::byteSwap(*reinterpret_cast<const std::uint64_t*>(in.data() + 8));
 
     return std::format("{:08X}-{:04X}-{:04X}-{:04X}-{:012X}", data1, data2, data3, data4 >> 48,
         data4 & 0xFFFFFFFFFFFFULL);
 }
 
-void SettingsParser::load(std::string_view filePath) {
-    std::ifstream f{ filePath.data() };
+void SettingsParser::load(const std::filesystem::path& filePath) {
+    std::ifstream f{ filePath };
     if (!f.is_open()) return;
 
     std::string line;
@@ -96,8 +106,8 @@ void SettingsParser::load(std::string_view filePath) {
     }
 }
 
-void SettingsParser::write(std::string_view filePath) const {
-    std::ofstream f{ filePath.data() };
+void SettingsParser::write(const std::filesystem::path& filePath) const {
+    std::ofstream f{ filePath };
 
     std::string currentKey;
     for (const auto& [keys, value] : data) {

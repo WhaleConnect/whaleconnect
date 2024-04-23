@@ -10,6 +10,7 @@ function download_licenses(installdir)
         ["botan"] = { "https://raw.githubusercontent.com/randombit/botan/master/license.txt" },
         ["catch2"] = { "https://raw.githubusercontent.com/catchorg/Catch2/devel/LICENSE.txt" },
         ["dear_imgui"] = { "https://raw.githubusercontent.com/ocornut/imgui/master/LICENSE.txt" },
+        ["glfw"] = { "https://raw.githubusercontent.com/glfw/glfw/master/LICENSE.md" },
         ["imguitextselect"] = { "https://raw.githubusercontent.com/AidanSun05/ImGuiTextSelect/main/LICENSE.txt" },
         ["libdbus"] = { "https://gitlab.freedesktop.org/dbus/dbus/-/raw/master/COPYING" },
         ["liburing"] = {
@@ -17,7 +18,6 @@ function download_licenses(installdir)
             "https://raw.githubusercontent.com/axboe/liburing/master/COPYING",
             "https://raw.githubusercontent.com/axboe/liburing/master/COPYING.GPL"
         },
-        ["sdl"] = { "https://raw.githubusercontent.com/libsdl-org/SDL/main/LICENSE.txt" },
         ["utfcpp"] = { "https://raw.githubusercontent.com/nemtrif/utfcpp/master/LICENSE" },
         ["ztd.out_ptr"] = { "https://raw.githubusercontent.com/soasis/out_ptr/main/LICENSE" },
 
