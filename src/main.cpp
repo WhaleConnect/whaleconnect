@@ -27,6 +27,7 @@ void mainLoop() {
 
     bool quit = false;
     while (!quit && AppCore::newFrame()) {
+        Async::handleEvents();
         Menu::drawMenuBar(quit, connections, servers);
 
         // Application windows

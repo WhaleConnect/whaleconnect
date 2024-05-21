@@ -231,6 +231,10 @@ namespace Async {
 
     void submit(const Operation& op);
 
+    Task<> queueToMainThread();
+
+    void handleEvents();
+
 #if OS_WINDOWS
     void add(SOCKET s) {
         WorkerThread::add(s);

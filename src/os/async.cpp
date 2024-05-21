@@ -4,10 +4,18 @@
 #include "async.hpp"
 
 #include <algorithm>
+#include <atomic>
+#include <coroutine>
 #include <forward_list>
+#include <mutex>
+#include <queue>
 
 using WorkerThreadPool = std::forward_list<Async::WorkerThread>;
 WorkerThreadPool threads;
+
+std::queue<std::coroutine_handle<>> queuedHandles;
+std::mutex queuedMutex;
+std::atomic_bool hasQueued = false;
 
 void Async::init(unsigned int numThreads, unsigned int queueEntries) {
     // If 0 threads are specified, the number is chosen with hardware_concurrency.
@@ -42,4 +50,29 @@ void Async::submit(const Operation& op) {
 
     least->push(op);
 #endif
+}
+
+Task<> Async::queueToMainThread() {
+    CompletionResult result;
+    co_await result;
+
+    {
+        std::scoped_lock lock{ queuedMutex };
+        queuedHandles.push(result.coroHandle);
+    }
+
+    hasQueued.store(true, std::memory_order_relaxed);
+    co_await std::suspend_always{};
+}
+
+void Async::handleEvents() {
+    bool expected = true;
+    if (hasQueued.compare_exchange_weak(expected, false, std::memory_order_relaxed)) {
+        std::scoped_lock lock{ queuedMutex };
+        while (!queuedHandles.empty()) {
+            auto next = queuedHandles.front();
+            queuedHandles.pop();
+            next();
+        }
+    }
 }

@@ -17,6 +17,7 @@
 #include "gui/menu.hpp"
 #include "net/device.hpp"
 #include "net/enums.hpp"
+#include "os/async.hpp"
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
 #include "sockets/clientsockettls.hpp"
@@ -54,6 +55,7 @@ Task<> ConnWindow::connect(Device device) try {
     // Connect the socket
     console.addInfo("Connecting...");
     co_await socket->connect(device);
+    co_await Async::queueToMainThread();
 
     console.addInfo("Connected.");
     connected = true;
@@ -65,6 +67,7 @@ Task<> ConnWindow::connect(Device device) try {
 
 Task<> ConnWindow::sendHandler(std::string s) try {
     co_await socket->send(s);
+    co_await Async::queueToMainThread();
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
 } catch (const Botan::TLS::TLS_Exception& error) {
@@ -76,6 +79,7 @@ Task<> ConnWindow::readHandler() try {
 
     pendingRecv = true;
     auto [complete, closed, data, alert] = co_await socket->recv(console.getRecvSize());
+    co_await Async::queueToMainThread();
 
     if (complete) {
         if (closed) {
