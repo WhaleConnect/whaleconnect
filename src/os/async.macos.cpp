@@ -103,17 +103,20 @@ Async::WorkerThread::WorkerThread(unsigned int, unsigned int) :
     kq(check(kqueue())), thread(&Async::WorkerThread::eventLoop, this) {}
 
 Async::WorkerThread::~WorkerThread() {
+    stopWait(asyncInterrupt);
+    signalPending();
+
+    thread.join();
+    close(kq);
+}
+
+void Async::WorkerThread::stopWait(std::uintptr_t key) {
     struct kevent event {
-        asyncInterrupt, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER, 0, nullptr
+        key, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER, 0, nullptr
     };
 
     kevent(kq, &event, 1, nullptr, 0, nullptr);
     numOperations.fetch_add(1, std::memory_order_relaxed);
-    operationsPending.store(true, std::memory_order_relaxed);
-    operationsPending.notify_one();
-
-    thread.join();
-    close(kq);
 }
 
 void Async::WorkerThread::cancel(std::uint64_t ident) {
@@ -154,9 +157,7 @@ void Async::WorkerThread::handleOperation(std::vector<struct kevent>& events, co
         [&](const Async::ReceiveFrom& op) { submit(op.handle, EVFILT_READ, op.result); },
         [&](const Async::Shutdown& op) { shutdown(op.handle, SHUT_RDWR); },
         [&](const Async::Close& op) { close(op.handle); },
-        [&](const Async::Cancel&) {
-            // Already handled
-        },
+        [&](const Async::Cancel& op) { cancel(op.handle); },
     };
 
     std::visit(visitor, next);
@@ -209,11 +210,16 @@ void Async::WorkerThread::eventLoop() {
         }
 
         struct kevent event {};
+
         if (kevent(kq, nullptr, 0, &event, 1, nullptr) == -1) continue;
         numOperations.fetch_sub(1, std::memory_order_relaxed);
 
         // Handle user events
-        if (event.filter == EVFILT_USER && event.ident == asyncInterrupt) break;
+        if (event.filter == EVFILT_USER) {
+            if (event.ident == asyncInterrupt) break;
+
+            continue;
+        }
 
         // Pop an event from the map and get its completion result
         auto& result = *static_cast<CompletionResult*>(event.udata);

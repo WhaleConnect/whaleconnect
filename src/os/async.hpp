@@ -180,6 +180,13 @@ namespace Async {
         static void add(SOCKET s);
 #else
 #if OS_MACOS
+        void stopWait(std::uintptr_t key);
+
+        void signalPending() {
+            operationsPending.store(true, std::memory_order_relaxed);
+            operationsPending.notify_one();
+        }
+
         void cancel(std::uint64_t ident);
 
         void handleOperation(std::vector<struct kevent>& events, const Async::Operation& next);
@@ -194,15 +201,11 @@ namespace Async {
 #endif
 
         void push(const Operation& operation) {
-            if (std::holds_alternative<Cancel>(operation)) {
-                cancel(std::get<Cancel>(operation).handle);
-                return;
-            }
-
             std::scoped_lock lock{ operationsMtx };
             operations.push(operation);
-            operationsPending.store(true, std::memory_order_relaxed);
-            operationsPending.notify_one();
+
+            if (size() > 0) stopWait(2);
+            signalPending();
         }
 
         std::size_t size() const {
