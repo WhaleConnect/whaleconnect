@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <atomic>
 #include <string>
 #include <string_view>
 
@@ -17,8 +16,8 @@
 class ConnWindow : public Window {
     SocketPtr socket; // Internal socket
     IOConsole console;
-    std::atomic_bool connected = false;
-    std::atomic_bool pendingRecv = false;
+    bool connected = false;
+    bool pendingRecv = false;
 
     // Connects to the server.
     Task<> connect(Device device);
