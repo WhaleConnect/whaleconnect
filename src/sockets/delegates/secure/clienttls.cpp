@@ -1,6 +1,8 @@
 // Copyright 2021-2023 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "clienttls.hpp"
+
 #include <memory>
 #include <optional>
 #include <span>
@@ -14,8 +16,6 @@
 #include <botan/tls_policy.h>
 #include <botan/tls_server_info.h>
 #include <botan/tls_session_manager_memory.h>
-
-#include "clienttls.hpp"
 
 class CredentialsManager : public Botan::Credentials_Manager {
     Botan::System_Certificate_Store systemCertStore;
