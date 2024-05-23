@@ -12,6 +12,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+#include "os/async.hpp"
 #include "utils/task.hpp"
 
 // Concept to ensure a function type is an awaitable coroutine.
@@ -35,6 +36,7 @@ void runSync(const Awaitable auto& fn, bool useRunLoop = false) {
         try {
             // Await the given coroutine
             co_await fn();
+            co_await Async::queueToMainThread();
         } catch (const std::exception&) {
             // Store thrown exceptions
             ptr = std::current_exception();
@@ -57,7 +59,7 @@ void runSync(const Awaitable auto& fn, bool useRunLoop = false) {
 #endif
     } else {
         // clang-format off
-        while (!completed);
+        while (!completed) Async::handleEvents();
         // clang-format on
     }
 
