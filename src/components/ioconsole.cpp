@@ -10,6 +10,7 @@
 #include <imgui.h>
 
 #include "gui/imguiext.hpp"
+#include "os/async.hpp"
 #include "utils/strings.hpp"
 
 void IOConsole::drawControls() {
@@ -90,8 +91,11 @@ std::optional<std::string> IOConsole::updateWithTextbox() {
     return ret;
 }
 
-void IOConsole::errorHandler(const System::SystemError& error) {
+Task<> IOConsole::errorHandler(System::SystemError error) {
     // Check for non-fatal errors, then add error line to console
     // Don't handle errors caused by I/O cancellation
-    if (error && !error.isCanceled()) addError(error.what());
+    if (error && !error.isCanceled()) {
+        co_await Async::queueToMainThread();
+        addError(error.what());
+    }
 }

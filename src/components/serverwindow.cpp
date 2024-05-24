@@ -16,9 +16,11 @@
 #include "gui/imguiext.hpp"
 #include "gui/menu.hpp"
 #include "net/enums.hpp"
+#include "os/async.hpp"
 #include "os/error.hpp"
 #include "sockets/delegates/delegates.hpp"
 #include "sockets/serversocket.hpp"
+#include "utils/booleanlock.hpp"
 
 // Colors to display each client in
 const std::array colors{
@@ -43,9 +45,10 @@ std::string formatDevice(const Device& device) {
 
 Task<> ServerWindow::Client::recv(IOConsole& serverConsole, const Device& device, unsigned int size) try {
     if (!connected || pendingRecv) co_return;
+    BooleanLock lock{ pendingRecv };
 
-    pendingRecv = true;
     auto recvResult = co_await socket->recv(size);
+    co_await Async::queueToMainThread();
 
     if (recvResult.closed) {
         serverConsole.addInfo(std::format("{} closed connection.", formatDevice(device)));
@@ -56,10 +59,8 @@ Task<> ServerWindow::Client::recv(IOConsole& serverConsole, const Device& device
         serverConsole.addText(recvResult.data, "", colors[colorIndex], true, formatDevice(device));
         console.addText(recvResult.data);
     }
-    pendingRecv = false;
 } catch (const System::SystemError& error) {
     serverConsole.errorHandler(error);
-    pendingRecv = false;
 }
 
 ServerWindow::ServerWindow(std::string_view title, const Device& serverInfo) :
@@ -118,9 +119,10 @@ void ServerWindow::startServer(const Device& serverInfo) try {
 
 Task<> ServerWindow::accept() try {
     if (!socket->isValid() || pendingIO) co_return;
+    BooleanLock lock{ pendingIO };
 
-    pendingIO = true;
     auto [device, clientSocket] = co_await socket->accept();
+    co_await Async::queueToMainThread();
 
     std::string message = device.name.empty()
         ? std::format("Accepted connection from {} on port {}.", device.address, device.port)
@@ -135,28 +137,24 @@ Task<> ServerWindow::accept() try {
         it->second.socket = std::move(clientSocket);
         it->second.connected = it->second.selected = true;
     }
-    pendingIO = false;
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
-    pendingIO = false;
 }
 
 Task<> ServerWindow::recvDgram() try {
     if (!socket->isValid() || pendingIO) co_return;
+    BooleanLock lock{ pendingIO };
 
-    pendingIO = true;
     auto [device, data] = co_await socket->recvFrom(console.getRecvSize());
+    co_await Async::queueToMainThread();
 
     auto [it, didEmplace] = clients.try_emplace(device, nullptr, colorIndex);
     if (didEmplace) nextColor(); // Advance colors if there is data received from a new client
 
     console.addText(data, "", colors[it->second.colorIndex], true, formatDevice(device));
     it->second.console.addText(data);
-
-    pendingIO = false;
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
-    pendingIO = false;
 }
 
 void ServerWindow::nextColor() {
