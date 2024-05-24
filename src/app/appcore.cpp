@@ -191,6 +191,7 @@ bool AppCore::newFrame() {
     // Poll for events
     glfwPollEvents();
 
+    // Edit configuration before the new frame
     if (doConfig) {
         float scaleX, scaleY;
         glfwGetWindowContentScale(window, &scaleX, &scaleY);

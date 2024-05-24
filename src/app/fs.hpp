@@ -8,7 +8,9 @@
 namespace fs = std::filesystem;
 
 namespace AppFS {
+    // Gets the directory of the executable. In a macOS app bundle, returns the path to the Contents directory.
     fs::path getBasePath();
 
+    // Gets the path to the settings directory.
     fs::path getSettingsPath();
 }

@@ -31,6 +31,7 @@
 }
 
 fs::path AppFS::getBasePath() {
+    // First get the path to the executable itself
 #if OS_WINDOWS
     std::wstring path(MAX_PATH, 0);
     if (GetModuleFileNameW(nullptr, path.data(), path.size()) == 0) throwBasePathError();
@@ -46,6 +47,7 @@ fs::path AppFS::getBasePath() {
     if (readlink("/proc/self/exe", path.data(), path.size()) == -1) throwBasePathError();
 #endif
 
+    // Return the containing directory
     return std::filesystem::path{ path }.parent_path();
 }
 

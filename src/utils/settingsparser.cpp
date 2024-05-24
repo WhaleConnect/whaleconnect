@@ -30,12 +30,13 @@ ParseResult<UUIDs::UUID128> parse(std::string_view data) {
     int lengthIdx = 0;
 
     auto extractHex = [&](auto& arg) {
+        // Lengths of UUID segments in characters
         static constexpr std::array expectedLengths{ 8, 4, 4, 4, 12 };
 
         auto [ptrTmp, ec] = std::from_chars(p, data.data() + data.size(), arg, 16);
         bool success = ec == std::errc{};
         bool lengthValid = ptrTmp - p == expectedLengths[lengthIdx++];
-        bool delimValid = *ptrTmp == '-' || lengthIdx == 5;
+        bool delimValid = *ptrTmp == '-' || lengthIdx == 5; // At delimiter or end of string
 
         if (success) arg = UUIDs::byteSwap(arg);
 
@@ -83,25 +84,31 @@ void SettingsParser::load(const std::filesystem::path& filePath) {
     std::optional<std::string> possibleArrayKey;
 
     while (std::getline(f, line)) {
+        // Ignore comments and empty lines
         if (trim(line).empty() || line.front() == ';') continue;
 
+        // Extract section name
         if (line.front() == '[' && line.back() == ']') {
             section = line.substr(1, line.size() - 2);
             possibleArrayKey = std::nullopt;
             continue;
         }
 
+        // Parse each line as a key:string = value:string pair
         auto parsed = parse<std::pair<std::string, std::string>>(line);
         bool indented = line.starts_with("  ");
         if (!parsed || indented) {
+            // Add indented lines to an array
             if (indented && possibleArrayKey) data[{ section, *possibleArrayKey }] += "\n" + line;
 
+            // Skip invalid parses
             continue;
         }
 
         const auto& [key, value] = *parsed;
         data[{ section, key }] = value;
 
+        // If there is no value, it is possible the next line starts an array
         possibleArrayKey = value.empty() ? std::optional<std::string>{ key } : std::nullopt;
     }
 }

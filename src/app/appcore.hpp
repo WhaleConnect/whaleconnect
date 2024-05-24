@@ -4,7 +4,7 @@
 #pragma once
 
 namespace AppCore {
-    // Re-applies Dear ImGui configuration before the next frame.
+    // Re-applies Dear ImGui configuration before the next frame according to app settings.
     void configOnNextFrame();
 
     // Sets up backends/context, configures Dear ImGui, and creates a main application window.

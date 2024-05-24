@@ -11,6 +11,8 @@
 #include "utils/uuids.hpp"
 
 namespace Settings {
+    // Variables that can be configured through settings
+
     namespace Font {
         inline std::string file;
         inline std::vector<ImWchar> ranges;
@@ -29,9 +31,12 @@ namespace Settings {
         inline std::vector<std::pair<std::string, UUIDs::UUID128>> bluetoothUUIDs;
     }
 
+    // Loads the application settings.
     void load();
 
+    // Saves the application settings.
     void save();
 
+    // Renders the settings UI.
     void drawSettingsWindow(bool& open);
 }

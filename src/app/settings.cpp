@@ -143,6 +143,7 @@ void Settings::save() {
 }
 
 void Settings::drawSettingsWindow(bool& open) {
+    // Open on CTRL-,
     if (ImGui::IsKeyChordPressed(ImGuiMod_Shortcut | ImGuiKey_Comma)) open = true;
 
     if (!open) return;
