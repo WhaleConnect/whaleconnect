@@ -19,8 +19,10 @@
 #include <IOKit/IOReturn.h>
 #include <swiftToCxx/_SwiftCxxInteroperability.h>
 #include <sys/event.h>
+#include <unistd.h>
 
 #include "async.bluetooth.hpp"
+#include "errcheck.hpp"
 #include "net/device.hpp"
 #elif OS_LINUX
 #include <atomic>
@@ -28,6 +30,7 @@
 #include <queue>
 
 #include <sys/socket.h>
+#include <unistd.h>
 #endif
 
 #include "error.hpp"
@@ -158,6 +161,8 @@ namespace Async {
         std::atomic_bool operationsPending = false;
 #if OS_MACOS
         int kq = -1;
+        int readPipe = -1;
+        int writePipe = -1;
         std::unordered_map<std::uint64_t, CompletionResult*> pendingEvents;
         std::mutex pendingMtx;
 #elif OS_LINUX
@@ -180,8 +185,6 @@ namespace Async {
         static void add(SOCKET s);
 #else
 #if OS_MACOS
-        void stopWait(std::uintptr_t key);
-
         void signalPending() {
             operationsPending.store(true, std::memory_order_relaxed);
             operationsPending.notify_one();
@@ -201,11 +204,16 @@ namespace Async {
 #endif
 
         void push(const Operation& operation) {
-            std::scoped_lock lock{ operationsMtx };
-            operations.push(operation);
+            {
+                std::scoped_lock lock{ operationsMtx };
+                operations.push(operation);
+            }
 
-            if (size() > 0) stopWait(2);
             signalPending();
+            if (size() > 0) {
+                check(write(writePipe, " ", 2));
+                numOperations.fetch_add(1, std::memory_order_relaxed);
+            }
         }
 
         std::size_t size() const {

@@ -3,6 +3,7 @@
 
 #include "async.hpp"
 
+#include <array>
 #include <cerrno>
 #include <coroutine>
 #include <cstdint>
@@ -100,23 +101,29 @@ void Async::prepSocket(int s) {
 }
 
 Async::WorkerThread::WorkerThread(unsigned int, unsigned int) :
-    kq(check(kqueue())), thread(&Async::WorkerThread::eventLoop, this) {}
+    kq(check(kqueue())), thread(&Async::WorkerThread::eventLoop, this) {
+    std::array<int, 2> pipes;
+    check(pipe(pipes.data()));
+    readPipe = pipes[0];
+    writePipe = pipes[1];
+
+    // Set up read event for pipe
+    struct kevent event {
+        static_cast<std::uintptr_t>(readPipe), EVFILT_READ, EV_ADD, 0, 0, nullptr
+    };
+
+    check(kevent(kq, &event, 1, nullptr, 0, nullptr));
+}
 
 Async::WorkerThread::~WorkerThread() {
-    stopWait(asyncInterrupt);
+    // Signal closure
+    close(writePipe);
+    numOperations.fetch_add(1, std::memory_order_relaxed);
     signalPending();
 
     thread.join();
     close(kq);
-}
-
-void Async::WorkerThread::stopWait(std::uintptr_t key) {
-    struct kevent event {
-        key, EVFILT_USER, EV_ADD | EV_ONESHOT, NOTE_TRIGGER, 0, nullptr
-    };
-
-    kevent(kq, &event, 1, nullptr, 0, nullptr);
-    numOperations.fetch_add(1, std::memory_order_relaxed);
+    close(readPipe);
 }
 
 void Async::WorkerThread::cancel(std::uint64_t ident) {
@@ -214,10 +221,13 @@ void Async::WorkerThread::eventLoop() {
         if (kevent(kq, nullptr, 0, &event, 1, nullptr) == -1) continue;
         numOperations.fetch_sub(1, std::memory_order_relaxed);
 
-        // Handle user events
-        if (event.filter == EVFILT_USER) {
-            if (event.ident == asyncInterrupt) break;
+        // Handle interruptions from pipe
+        if (event.ident == static_cast<std::uintptr_t>(readPipe) && event.filter == EVFILT_READ) {
+            if (event.flags & EV_EOF) break;
 
+            // Clear read status of pipe
+            char buf[2];
+            read(readPipe, buf, 2);
             continue;
         }
 
