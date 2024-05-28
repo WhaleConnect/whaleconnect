@@ -18,7 +18,8 @@ All code is standards compliant. However, because the project uses recent C++ fe
 
 The arguments below are passed to `xmake f`/`xmake config` to configure the build process. Configuration should be done before compiling.
 
-**Note:** You should set all of your desired options in one config command. An invocation overwrites previously set configuration options.
+> [!NOTE]
+> You should set all of your desired options in one config command. An invocation overwrites previously set configuration options.
 
 When configuring for the first time, xmake will ask you to install libraries needed by NST. Enter `y` to continue and install them.
 

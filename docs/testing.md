@@ -23,4 +23,5 @@ Some tests only need one device involved - for example, Internet Protocol tests 
 
 Both the C++ tests and the Python server load configuration information from the same file. See [this document](/tests/settings/readme.md) for more information.
 
-**Note:** If you have separate devices that are running the tests and server script, the same settings file must be available on both.
+> [!IMPORTANT]
+> If you have separate devices that are running the tests and server script, the same settings file must be available on both.
