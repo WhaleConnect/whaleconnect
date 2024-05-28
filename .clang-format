@@ -1,9 +1,10 @@
 # This file defines the formatting style for Network Socket Terminal.
 # Minimum clang-format version required: 16
 
-# Line length
 ColumnLimit: 120
 ReflowComments: true
+Standard: Latest
+FixNamespaceComments: false
 
 # Indentation
 IndentWidth: 4
@@ -87,7 +88,7 @@ BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: AfterColon
 RequiresClausePosition: OwnLine
 
-#################### Sorting ####################
+# Sorting
 SortUsingDeclarations: true
 SortIncludes: CaseInsensitive
 IncludeBlocks: Regroup
@@ -106,7 +107,3 @@ IncludeCategories:
   - Regex: '".+"' # Project headers
     Priority: 3
     SortPriority: 4
-
-# Other
-Standard: Latest
-FixNamespaceComments: false
