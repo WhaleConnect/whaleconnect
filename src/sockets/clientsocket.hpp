@@ -10,7 +10,6 @@
 #include "delegates/noops.hpp"
 #include "delegates/sockethandle.hpp"
 #include "net/enums.hpp"
-#include "utils/task.hpp"
 
 // An outgoing connection.
 template <auto Tag>

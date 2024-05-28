@@ -9,7 +9,6 @@
 #include "delegates/bidirectional.hpp"
 #include "delegates/noops.hpp"
 #include "delegates/sockethandle.hpp"
-#include "delegates/traits.hpp"
 
 // An incoming connection (one accepted from a server).
 template <auto Tag>
