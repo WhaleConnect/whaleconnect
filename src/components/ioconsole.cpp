@@ -26,7 +26,12 @@ void IOConsole::drawControls() {
 
         ImGui::Separator();
         ImGui::SetNextItemWidth(4_fh);
-        ImGuiExt::inputScalar("Receive size", recvSize);
+        ImGuiExt::inputScalar("Receive size", recvSizeTmp);
+
+        if (ImGui::IsItemDeactivatedAfterEdit()) {
+            if (recvSizeTmp == 0) recvSizeTmp = recvSize; // Reset invalid sizes
+            else recvSize = recvSizeTmp;
+        }
 
         ImGui::EndPopup();
     }

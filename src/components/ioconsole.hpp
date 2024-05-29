@@ -24,6 +24,7 @@ class IOConsole : public Console {
     bool clearTextboxOnSubmit = true; // If the textbox is cleared when the submit callback is called
     bool addFinalLineEnding = false; // If a final line ending is added to the callback input string
     unsigned int recvSize = 1024; // Unsigned int to work with ImGuiDataType
+    unsigned int recvSizeTmp = 1024; // Temporary buffer to hold input
 
     void drawControls();
 

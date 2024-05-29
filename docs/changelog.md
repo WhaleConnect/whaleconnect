@@ -19,6 +19,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Connection windows now always show the horizontal scrollbar to prevent flickering from hiding/showing it while scrolling.
 - Updated the timestamps display in connection windows to reduce the number of computations per application frame.
 - Errors are now reported in terms of location in source files.
+- Updated the receive buffer length input to not take effect when the user is making modifications.
 
 ### Bug Fixes
 
