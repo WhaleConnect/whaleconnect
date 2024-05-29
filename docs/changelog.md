@@ -12,13 +12,14 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Added a "Quit" option under the "File" menu item.
 - Added a "Help" menu item with build information.
 - Added the ability to use system menu bars on macOS.
+- Added dynamic scrolling speed when selecting text.
+  - The text will scroll faster as the cursor moves farther from the window boundary.
 
 ### Improvements
 
-- When selecting text, the scrolling speed now changes based on the cursor position.
-- Connection windows now always show the horizontal scrollbar to prevent flickering from hiding/showing it while scrolling.
+- Added a permanent horizontal scrollbar in connection windows to prevent flickering while scrolling.
 - Updated the timestamps display in connection windows to reduce the number of computations per application frame.
-- Errors are now reported in terms of location in source files.
+- Updated error reporting to be in terms of location in source files.
 - Updated the receive buffer length input to not take effect when the user is making modifications.
 
 ### Bug Fixes
@@ -30,15 +31,17 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Additions
 
 - Added server functionality for Internet and Bluetooth sockets.
-- Added TLS for TCP client sockets.
+- Added TLS support for TCP client sockets.
 - Added a setting to change the number of entries in io_uring instances.
 - Added a connection window option to change the receive buffer length.
 
 ### Improvements
 
 - Prevented multiple close calls on invalid or already closed sockets.
-- If the app receives multiple IP addresses for a host, it now tries connecting to each to increase the chance of a successful connection.
-- Improved thread safety. This fixes intermittent data loss in receive operations.
+- Increased the reliability of IP address lookup for client connections.
+  - If the app receives multiple addresses for a host, it tries connecting to each to increase the chance of a successful connection.
+- Improved thread safety.
+  - This fixed intermittent data loss in receive operations.
 
 ### Bug Fixes
 
@@ -58,7 +61,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 ### Improvements
 
-- All libraries are now bundled with the app package to prevent dependency mismatches.
+- Bundled all libraries with the app package to prevent dependency mismatches.
 - Moved the license documents into the Resources directory in the macOS app bundle.
 
 ## 0.2.1-alpha (08/12/2023)
@@ -72,12 +75,14 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Additions
 
 - Added support for macOS.
-- The "Show timestamps" feature is now available in connection windows on all platforms.
+- Added the "Show timestamps" feature in connection windows on all platforms.
   - Timestamps are displayed in millisecond precision with three digits.
+- Added scaling based on display DPI. This improves rendering quality on Mac Retina screens.
 - Added a notification system to display application messages.
 - Added a setting to control how many worker threads are spawned.
   - If `0` is specified, the app creates the maximum number of supported threads.
 - Added a "send echoing" option to connection windows to show sent strings in the console.
+- Added hostname entry and DNS lookup in new IP connections.
 - Added text selection to connection windows.
 - Added a "View" menu to show/hide application windows.
 - Added a "Connections" menu to list and focus on connection windows.
@@ -85,10 +90,9 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Improvements
 
 - Redesigned the loading spinner shown during an SDP inquiry.
-- Initialization errors are now displayed in the notification area instead of as a corner overlay.
-- The app now scales according to display DPI. This improves rendering quality on Mac Retina screens.
-- The app now bundles the Noto Sans Mono font, and support for loading additional fonts will be added in a future release.
-- Allowed hostname entry and DNS lookup in new IP connections.
+- Updated initialization errors to display as a notification instead of a corner overlay.
+- Bundled the Noto Sans Mono font with the app. Support for loading additional fonts will be added in a future release.
+  - **Update:** Loading fonts is now supported in v0.4.0.
 - Removed synchronization between worker threads to improve performance.
 
 ### Bug Fixes
@@ -97,7 +101,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Fixed the reception buffer to correctly handle the ends of strings.
 - Fixed the textbox autofocus in connection windows when the Enter key is pressed.
 - Fixed an issue that would prevent sockets from closing if a connection window was closed while still connecting.
-  - This also fixes a delayed crash on Windows occurring under the same scenario.
+  - This fixed a delayed crash on Windows occurring under the same scenario.
 - Fixed possible hangs that would occur on socket errors.
 
 ### Removals
@@ -108,4 +112,4 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 ## 0.1.0-alpha (10/05/2022)
 
-- Initial release.
+Initial release of Network Socket Terminal.
