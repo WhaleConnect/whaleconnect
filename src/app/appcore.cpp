@@ -206,7 +206,7 @@ bool AppCore::newFrame() {
     ImGui::NewFrame();
 
     // Dockspace
-    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
     ImGuiExt::drawNotifications();
 
