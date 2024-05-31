@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 set_version("0.4.0", { build = "%Y%m%d%H%M" })
-add_repositories("xrepo-patches https://github.com/NSTerminal/xrepo-patches.git")
+add_repositories("additional-deps ./xmake")
 set_license("GPL-3.0-or-later")
 
 add_rules("mode.debug", "mode.release")
@@ -11,8 +11,25 @@ set_defaultmode("debug")
 -- Avoid linking to system libraries - prevents dependency mismatches on different platforms and makes package self-contained
 add_requireconfs("*|opengl", { system = false })
 
-add_requires("imgui v1.90.3-docking", { configs = { glfw = true, opengl3 = true, freetype = true } })
-add_requires("botan", "catch2", "glfw", "imguitextselect", "opengl", "out_ptr", "utfcpp")
+add_requires("botan", { configs = { modules = (function()
+    local certstoreSystem = "certstor_flatfile"
+    if is_plat("windows") then
+        certstoreSystem = "certstor_system_windows"
+    elseif is_plat("macosx") then
+        certstoreSystem = "certstor_system_macos"
+    end
+
+    return {
+        "certstor_system", -- System certificate store
+        "chacha20poly1305", -- Useful cipher suite for TLS
+        "http_util", -- Online OCSP checking
+        "system_rng", -- Random number generator
+        "tls13", -- TLS 1.3
+        certstoreSystem
+    }
+end)() } })
+add_requires("imgui docking", { configs = { glfw = true, opengl3 = true, freetype = true } })
+add_requires("catch2", "glfw", "imguitextselect", "opengl", "out_ptr", "utfcpp")
 
 add_packages("botan", "out_ptr")
 
@@ -138,11 +155,11 @@ target("terminal")
 
     -- Download font files next to executable on pre-build
     before_build(function (target)
-        import("download.fonts").download_fonts(target:targetdir())
+        import("xmake.download").download_fonts(target:targetdir())
     end)
 
     after_install(function (target)
-        import("download.licenses").download_licenses(target:installdir())
+        import("xmake.download").download_licenses(target:installdir())
     end)
 
 target("socket-tests")
