@@ -114,7 +114,7 @@ float Notification::update(const ImVec2& pos, bool showInCorner) {
 
     // Text wrapping position in window coordinates
     // If the notifications are shown in a parent window, the text is wrapped within the window.
-    float wrapPos = showInCorner ? ImGui::GetCursorPosX() + textWidth : ImGui::GetWindowWidth() - 2_fh;
+    float wrapPos = showInCorner ? ImGui::GetCursorPosX() + textWidth : ImGui::GetContentRegionAvail().x - 2_fh;
 
     // Draw text
     ImGui::SameLine();
