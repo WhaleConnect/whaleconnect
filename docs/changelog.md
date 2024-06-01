@@ -25,6 +25,7 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Bug Fixes
 
 - Fixed a crash in connection windows if text was highlighted and the output was cleared.
+- Fixed the placement of notification close buttons when the notifications window has a vertical scrollbar.
 
 ## 0.3.0-alpha (01/03/2024)
 
