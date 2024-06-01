@@ -28,6 +28,8 @@ const char* getErrorName(System::ErrorType type) {
             return "getaddrinfo";
         case IOReturn:
             return "IOReturn";
+        default:
+            std::unreachable();
     }
 }
 
@@ -91,6 +93,8 @@ std::string System::formatSystemError(ErrorCode code, ErrorType type, const std:
 #else
             msg = "Unknown error type";
 #endif
+        default:
+            std::unreachable();
     }
 
     std::string where = std::format("{}({}:{})", location.file_name(), location.line(), location.column());

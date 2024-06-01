@@ -33,7 +33,7 @@ void drawFontRangesSettings(std::vector<ImWchar>& fontRanges) {
 
     // Iterate through ranges (every 2 codepoints)
     for (std::size_t i = 0; i < rangesSize; i += 2) {
-        ImGui::PushID(i);
+        ImGui::PushID(static_cast<int>(i));
 
         constexpr ImGuiDataType type = ImGuiExt::getDataType<ImWchar>();
         ImGui::SetNextItemWidth(8_fh);
@@ -74,27 +74,27 @@ void drawBluetoothUUIDsSettings(std::vector<std::pair<std::string, UUIDs::UUID12
     for (std::size_t i = 0; i < uuids.size(); i++) {
         auto& [name, uuid] = uuids[i];
 
-        ImGui::PushID(i);
+        ImGui::PushID(static_cast<int>(i));
         ImGui::SetNextItemWidth(6_fh);
         ImGuiExt::inputText("##name", name);
 
         // Cumulative sizes of each UUID component
         static std::array sizes{ 0, 4, 6, 8, 10, 16 };
 
-        for (std::size_t i = 0; i < 5; i++) {
-            std::uint8_t* start = uuid.data() + sizes[i];
-            std::size_t components = sizes[i + 1] - sizes[i];
+        for (int uuidPart = 0; uuidPart < 5; uuidPart++) {
+            std::uint8_t* start = uuid.data() + sizes[uuidPart];
+            int components = sizes[uuidPart + 1] - sizes[uuidPart];
 
             ImGui::SameLine();
 
             // Show separator between components
-            if (i > 0) {
+            if (uuidPart > 0) {
                 ImGui::Text("-");
                 ImGui::SameLine();
             }
 
             ImGui::SetNextItemWidth(components * 2 * ImGui::GetFontSize());
-            ImGui::PushID(i);
+            ImGui::PushID(uuidPart);
             ImGui::InputScalarN("##components", ImGuiDataType_U8, start, components, nullptr, nullptr, "%02X");
             ImGui::PopID();
         }

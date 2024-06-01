@@ -34,7 +34,7 @@ fs::path AppFS::getBasePath() {
     // First get the path to the executable itself
 #if OS_WINDOWS
     std::wstring path(MAX_PATH, 0);
-    if (GetModuleFileNameW(nullptr, path.data(), path.size()) == 0) throwBasePathError();
+    if (GetModuleFileNameW(nullptr, path.data(), static_cast<DWORD>(path.size())) == 0) throwBasePathError();
 #elif OS_MACOS
     std::string path(PATH_MAX, 0);
     std::uint32_t size = path.size();

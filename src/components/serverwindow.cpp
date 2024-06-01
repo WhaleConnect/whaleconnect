@@ -102,17 +102,17 @@ void ServerWindow::startServer(const Device& serverInfo) try {
     const char* type = getConnectionTypeName(serverInfo.type);
 
     // Format title and status messages
-    std::string title;
+    std::string newTitle;
     if (ip == IPType::None) {
-        title = std::format("{} Server - port {}##{}", type, port, serverInfo.address);
+        newTitle = std::format("{} Server - port {}##{}", type, port, serverInfo.address);
         console.addInfo(std::format("Server is active on port {}.", port));
     } else {
-        title = std::format("{} ({}) Server - port {}##{}", type, ipType, port, serverInfo.address);
+        newTitle = std::format("{} ({}) Server - port {}##{}", type, ipType, port, serverInfo.address);
         console.addInfo(std::format("Server is active on port {} ({}).", port, ipType));
     }
 
-    setTitle(title);
-    if (Settings::GUI::systemMenu) Menu::addServerMenuItem(title);
+    setTitle(newTitle);
+    if (Settings::GUI::systemMenu) Menu::addServerMenuItem(newTitle);
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
 }

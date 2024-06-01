@@ -151,9 +151,7 @@ std::string stringify(const T& in) {
 // Lines starting with a semicolon are treated as comments
 class SettingsParser {
     using Data = std::map<std::pair<std::string, std::string>, std::string>;
-
     Data data;
-    std::string filePath;
 
 public:
     void load(const std::filesystem::path& filePath);

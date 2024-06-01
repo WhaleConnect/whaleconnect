@@ -43,10 +43,6 @@ void loadFont(GLFWwindow*, float scaleX, float scaleY) {
     float pixelRatio = std::midpoint(pixelRatioX, pixelRatioY);
     float zoomFactor = std::midpoint(scaleX / pixelRatioX, scaleY / pixelRatioY);
 
-    // Font size
-    ImFontConfig config;
-    config.SizePixels = Settings::Font::size * pixelRatio;
-
     // The icons are slightly larger than the main font so they are scaled down from the font size
     float fontSize = std::floor(Settings::Font::size * contentScale);
     float iconFontSize = std::floor(fontSize * 0.9f);
@@ -88,7 +84,8 @@ void loadFont(GLFWwindow*, float scaleX, float scaleY) {
     static const std::array<ImWchar, 3> iconRanges{ 0xE000, 0xF8FF, 0 };
     static const auto iconFontFile = basePath / "RemixIcon.ttf";
 
-    // Merge icons into main font
+    ImFontConfig config;
+    config.SizePixels = Settings::Font::size * pixelRatio;
     config.MergeMode = true;
     fonts.AddFontFromFileTTF(iconFontFile.string().c_str(), iconFontSize, &config, iconRanges.data());
 

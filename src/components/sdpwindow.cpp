@@ -138,7 +138,7 @@ void SDPWindow::drawSDPTab() {
     ImGui::SetNextItemWidth(10_fh);
     if (ImGui::BeginCombo("Protocol/Service UUID", uuids[selectedUUID].first.c_str())) {
         for (std::size_t i = 0; i < uuids.size(); i++) {
-            ImGui::PushID(i);
+            ImGui::PushID(static_cast<int>(i));
             if (ImGui::Selectable(uuids[i].first.c_str())) selectedUUID = i;
             ImGui::PopID();
         }

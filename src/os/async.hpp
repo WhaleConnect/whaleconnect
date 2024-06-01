@@ -244,7 +244,7 @@ namespace Async {
     void handleEvents();
 
 #if OS_WINDOWS
-    void add(SOCKET s) {
+    inline void add(SOCKET s) {
         WorkerThread::add(s);
     }
 #elif OS_MACOS

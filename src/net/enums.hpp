@@ -26,6 +26,8 @@ inline const char* getConnectionTypeName(ConnectionType type) {
             return "RFCOMM";
         case None:
             return "None";
+        default:
+            std::unreachable();
     }
 }
 
@@ -38,5 +40,7 @@ inline const char* getIPTypeName(IPType type) {
             return "IPv4";
         case IPv6:
             return "IPv6";
+        default:
+            std::unreachable();
     }
 }
