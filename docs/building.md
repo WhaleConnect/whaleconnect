@@ -10,7 +10,7 @@ This project uses C++23 features and Swift-to-C++ interop on macOS. Recommended 
 
 - **Windows:** MSVC 19.39 (Visual Studio 2022 17.9)
 - **macOS:** Apple Clang 15, Swift 5.9 (Xcode 15.3)
-- **Linux:** GCC 13
+- **Linux:** GCC 14
 
 All code is standards compliant. However, because the project uses recent C++ features, other compilers, and versions older than those listed above, may not be supported.
 
