@@ -3,6 +3,7 @@
 
 #include "async.hpp"
 
+#include <array>
 #include <atomic>
 #include <cstdint>
 #include <mutex>
@@ -12,7 +13,7 @@
 #include <liburing.h>
 #include <sys/socket.h>
 
-#include "os/errcheck.hpp"
+#include "errcheck.hpp"
 #include "utils/overload.hpp"
 
 void handleOperation(io_uring& ring, const Async::Operation& next) {
@@ -55,6 +56,11 @@ void handleOperation(io_uring& ring, const Async::Operation& next) {
             io_uring_prep_cancel_fd(sqe, op.handle, IORING_ASYNC_CANCEL_ALL);
             io_uring_sqe_set_data(sqe, nullptr);
         },
+        [=](const Async::PipeRead& op) {
+            static char buf[2];
+            io_uring_prep_read(sqe, op.fd, buf, 2, 0);
+            io_uring_sqe_set_data64(sqe, 1);
+        },
     };
 
     std::visit(visitor, next);
@@ -65,19 +71,22 @@ Async::WorkerThread::WorkerThread(unsigned int, unsigned int queueEntries) {
 
     // Initialized after io_uring
     thread = std::thread{ &Async::WorkerThread::eventLoop, this };
+
+    std::array<int, 2> pipes;
+    check(pipe(pipes.data()));
+    readPipe = pipes[0];
+    writePipe = pipes[1];
+    push(PipeRead{ readPipe });
 }
 
 Async::WorkerThread::~WorkerThread() {
-    io_uring_sqe* sqe = io_uring_get_sqe(&ring);
-    io_uring_prep_nop(sqe);
-    io_uring_sqe_set_data64(sqe, asyncInterrupt);
-    io_uring_submit(&ring);
+    close(writePipe);
     numOperations.fetch_add(1, std::memory_order_relaxed);
-    operationsPending.store(true, std::memory_order_relaxed);
-    operationsPending.notify_one();
+    signalPending();
 
     thread.join();
     io_uring_queue_exit(&ring);
+    close(readPipe);
 }
 
 void Async::WorkerThread::processOperations() {
@@ -118,7 +127,14 @@ void Async::WorkerThread::eventLoop() {
         if (userData == nullptr) continue;
 
         // Check for interrupt
-        if (reinterpret_cast<std::uint64_t>(userData) == asyncInterrupt) break;
+        if (reinterpret_cast<std::uint64_t>(userData) == asyncInterrupt) {
+            if (cqe->res > 0) {
+                push(PipeRead{ readPipe });
+                continue;
+            }
+
+            break;
+        }
 
         // Fill in completion result information
         auto& result = *reinterpret_cast<CompletionResult*>(userData);

@@ -27,7 +27,7 @@ inline const char* getConnectionTypeName(ConnectionType type) {
         case None:
             return "None";
         default:
-            std::unreachable();
+            return "Unknown connection type";
     }
 }
 
@@ -41,6 +41,6 @@ inline const char* getIPTypeName(IPType type) {
         case IPv6:
             return "IPv6";
         default:
-            std::unreachable();
+            return "Unknown IP type";
     }
 }

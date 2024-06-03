@@ -29,7 +29,7 @@ const char* getErrorName(System::ErrorType type) {
         case IOReturn:
             return "IOReturn";
         default:
-            std::unreachable();
+            return "Unknown error type";
     }
 }
 
@@ -93,8 +93,9 @@ std::string System::formatSystemError(ErrorCode code, ErrorType type, const std:
 #else
             msg = "Unknown error type";
 #endif
+            break;
         default:
-            std::unreachable();
+            msg = "Unknown error";
     }
 
     std::string where = std::format("{}({}:{})", location.file_name(), location.line(), location.column());

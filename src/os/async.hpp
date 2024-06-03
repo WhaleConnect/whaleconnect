@@ -29,8 +29,11 @@
 #include <mutex>
 #include <queue>
 
+#include <liburing.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+#include "errcheck.hpp"
 #endif
 
 #include "error.hpp"
@@ -146,7 +149,18 @@ namespace Async {
 
     struct Cancel : OperationBase {};
 
-    using Operation = std::variant<Connect, Accept, Send, SendTo, Receive, ReceiveFrom, Shutdown, Close, Cancel>;
+#if OS_LINUX
+    struct PipeRead {
+        int fd;
+    };
+#endif
+
+    using Operation = std::variant<Connect, Accept, Send, SendTo, Receive, ReceiveFrom, Shutdown, Close, Cancel
+#if OS_LINUX
+        ,
+        PipeRead
+#endif
+        >;
 
     class WorkerThread {
         static constexpr int asyncInterrupt = 1;
@@ -167,6 +181,8 @@ namespace Async {
         std::mutex pendingMtx;
 #elif OS_LINUX
         io_uring ring;
+        int readPipe = -1;
+        int writePipe = -1;
 #endif
 #endif
 
@@ -185,11 +201,6 @@ namespace Async {
         static void add(SOCKET s);
 #else
 #if OS_MACOS
-        void signalPending() {
-            operationsPending.store(true, std::memory_order_relaxed);
-            operationsPending.notify_one();
-        }
-
         void cancel(std::uint64_t ident);
 
         void handleOperation(std::vector<struct kevent>& events, const Async::Operation& next);
@@ -202,6 +213,11 @@ namespace Async {
 #elif OS_LINUX
         void processOperations();
 #endif
+
+        void signalPending() {
+            operationsPending.store(true, std::memory_order_relaxed);
+            operationsPending.notify_one();
+        }
 
         void push(const Operation& operation) {
             {

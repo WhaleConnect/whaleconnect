@@ -10,6 +10,7 @@
 
 #include "utils/handleptr.hpp"
 #elif OS_MACOS || OS_LINUX
+#include <climits>
 #include <cstdlib>
 
 #include <pwd.h>

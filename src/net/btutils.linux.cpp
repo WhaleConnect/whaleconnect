@@ -4,6 +4,7 @@
 #include "btutils.hpp"
 
 #include <cstdint>
+#include <functional>
 #include <string_view>
 #include <utility>
 

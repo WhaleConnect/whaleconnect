@@ -1,6 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <functional>
+
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/l2cap.h>
 #include <bluetooth/rfcomm.h>
@@ -39,7 +41,7 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
 
         co_await Async::run(std::bind_front(startConnect, *handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
     } else {
-        sockaddr_l2 addr{ AF_BLUETOOTH, htobs2(device.port), bdaddr, 0, 0 };
+        sockaddr_l2 addr{ AF_BLUETOOTH, htobs(device.port), bdaddr, 0, 0 };
         handle.reset(check(socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)));
 
         co_await Async::run(std::bind_front(startConnect, *handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
