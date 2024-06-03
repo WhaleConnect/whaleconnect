@@ -5,6 +5,7 @@
 
 #include <array>
 #include <bit>
+#include <cstdint>
 
 namespace UUIDs {
     // 128-bit UUID represented in a platform-independent way.
