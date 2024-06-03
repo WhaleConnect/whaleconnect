@@ -5,6 +5,11 @@
 #include <memory>
 #include <string>
 
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/hci.h>
+#include <bluetooth/hci_lib.h>
+#include <bluetooth/l2cap.h>
+#include <bluetooth/rfcomm.h>
 #include <sys/socket.h>
 
 #include "net/enums.hpp"
@@ -14,7 +19,7 @@
 #include "sockets/delegates/server.hpp"
 #include "sockets/incomingsocket.hpp"
 #include "utils/strings.hpp"
-#include "utils.task.hpp"
+#include "utils/task.hpp"
 
 void startAccept(int s, sockaddr* clientAddr, socklen_t& clientLen, Async::CompletionResult& result) {
     Async::submit(Async::Accept{ { s, &result }, clientAddr, &clientLen });
@@ -97,7 +102,7 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
     } else {
         handle.reset(check(socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)));
 
-        sockaddr_l2 addr{ AF_BLUETOOTH, htobs2(serverInfo.port), addrAny, 0, 0 };
+        sockaddr_l2 addr{ AF_BLUETOOTH, htobs(serverInfo.port), addrAny, 0, 0 };
         check(bind(*handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)));
     }
 
@@ -110,7 +115,7 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
     std::uint16_t port = isRFCOMM ? reinterpret_cast<sockaddr_rc*>(&serverAddr)->rc_channel
                         : reinterpret_cast<sockaddr_l2*>(&serverAddr)->l2_psm;
 
-    return { btohs2(port), IPType::None };
+    return { btohs(port), IPType::None };
 }
 
 template <>
@@ -143,7 +148,7 @@ Task<AcceptResult> Delegates::Server<SocketTag::BT>::accept() {
 
         auto acceptResult = co_await Async::run(std::bind_front(startAccept, *handle, clientAddr, clientLen));
 
-        device = { ConnectionType::L2CAP, "", "", btohs2(client.l2_psm) };
+        device = { ConnectionType::L2CAP, "", "", btohs(client.l2_psm) };
         clientbdAddr = client.l2_bdaddr;
         fd.reset(acceptResult.res);
     }
