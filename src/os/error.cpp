@@ -87,15 +87,13 @@ std::string System::formatSystemError(ErrorCode code, ErrorType type, const std:
             msg = gai_strerror(code);
             break;
 #endif
-        case IOReturn:
 #if OS_MACOS
+        case IOReturn:
             msg = mach_error_string(code);
-#else
-            msg = "Unknown error type";
-#endif
             break;
+#endif
         default:
-            msg = "Unknown error";
+            msg = "Unknown error type";
     }
 
     std::string where = std::format("{}({}:{})", location.file_name(), location.line(), location.column());
