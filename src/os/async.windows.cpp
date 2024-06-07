@@ -39,7 +39,7 @@ LPFN_ACCEPTEX loadAcceptEx(SOCKET s) {
     return acceptExPtr;
 }
 
-Async::WorkerThread::WorkerThread(unsigned int numThreads, unsigned int) {
+Async::EventLoop::EventLoop(unsigned int) {
     runningThreads++;
     if (runningThreads > 1) return;
 
@@ -48,14 +48,10 @@ Async::WorkerThread::WorkerThread(unsigned int numThreads, unsigned int) {
     check(WSAStartup(MAKEWORD(2, 2), &wsaData), checkTrue, useReturnCode); // MAKEWORD(2, 2) for Winsock 2.2
 
     // Initialize IOCP
-    completionPort = check(CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, numThreads), checkTrue);
+    completionPort = check(CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0), checkTrue);
 }
 
-Async::WorkerThread::~WorkerThread() {
-    PostQueuedCompletionStatus(completionPort, 0, asyncInterrupt, nullptr);
-
-    thread.join();
-
+Async::EventLoop::~EventLoop() {
     runningThreads--;
     if (runningThreads > 0) return;
 
@@ -65,7 +61,7 @@ Async::WorkerThread::~WorkerThread() {
     check(WSACleanup());
 }
 
-void Async::WorkerThread::push(const Operation& operation) {
+void Async::EventLoop::push(const Operation& operation) {
     Overload visitor{
         [=](const Async::Connect& op) {
             auto connectExPtr = loadConnectEx(op.handle);
@@ -99,31 +95,30 @@ void Async::WorkerThread::push(const Operation& operation) {
     std::visit(visitor, operation);
 }
 
-void Async::WorkerThread::add(SOCKET s) {
+void Async::EventLoop::add(SOCKET s) {
     check(CreateIoCompletionPort(reinterpret_cast<HANDLE>(s), completionPort, 0, 0), checkTrue);
 }
 
-void Async::WorkerThread::eventLoop() {
-    while (true) {
-        DWORD numBytes;
-        ULONG_PTR completionKey;
-        LPOVERLAPPED overlapped = nullptr;
+void Async::EventLoop::runOnce(bool timeout) {
+    DWORD numBytes;
+    ULONG_PTR completionKey;
+    LPOVERLAPPED overlapped = nullptr;
 
-        // Dequeue a completion packet from the system and check for the exit condition
-        BOOL ret = GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, INFINITE);
-        if (completionKey == asyncInterrupt) break;
+    // Dequeue a completion packet from the system and check for the exit condition
+    DWORD timeoutVal = timeout ? 200 : 0;
+    BOOL ret = GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, timeoutVal);
+    if (completionKey == asyncInterrupt) return;
 
-        // Get the structure with completion data, passed through the overlapped pointer
-        // No locking is needed to modify the structure's fields - the calling coroutine will be suspended at this
-        // point so mutually-exclusive access is guaranteed.
-        if (overlapped == nullptr) continue;
+    // Get the structure with completion data, passed through the overlapped pointer
+    // No locking is needed to modify the structure's fields - the calling coroutine will be suspended at this
+    // point so mutually-exclusive access is guaranteed.
+    if (overlapped == nullptr) return;
 
-        auto& result = *static_cast<CompletionResult*>(overlapped);
-        result.res = static_cast<int>(numBytes);
+    auto& result = *static_cast<CompletionResult*>(overlapped);
+    result.res = static_cast<int>(numBytes);
 
-        // Pass any failure back to the calling coroutine
-        if (!ret) result.error = System::getLastError();
+    // Pass any failure back to the calling coroutine
+    if (!ret) result.error = System::getLastError();
 
-        result.coroHandle();
-    }
+    result.coroHandle();
 }
