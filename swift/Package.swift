@@ -16,7 +16,7 @@ let package = Package(
             sources: ["bthandle.swift", "btutils.swift"],
             swiftSettings: [
                 .interoperabilityMode(.Cxx),
-                .unsafeFlags(["-I", "../src", "-Xcc", "-std=c++2b"]),
+                .unsafeFlags(["-I", "../src", "-Xcc", "-std=c++2b", "-Xcc", "-DNO_EXPOSE_INTERNAL"]),
             ]
         ),
         .target(

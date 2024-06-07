@@ -110,6 +110,7 @@ target("terminal-core")
         add_files(
             "src/net/btutils.macos.cpp",
             "src/os/async.macos.cpp",
+            "src/os/bluetooth.cpp",
             "src/sockets/delegates/macos/*.cpp"
         )
     elseif is_plat("linux") then

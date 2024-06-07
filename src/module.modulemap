@@ -1,5 +1,5 @@
 module Async {
-    header "os/async.bluetooth.hpp"
+    header "os/bluetooth.hpp"
     export *
 }
 

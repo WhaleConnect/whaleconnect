@@ -1,6 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "sockets/delegates/client.hpp"
+
 #include <functional>
 #include <utility>
 
@@ -11,9 +13,9 @@
 #include "net/enums.hpp"
 #include "net/netutils.hpp"
 #include "os/async.hpp"
+#include "os/bluetooth.hpp"
 #include "os/errcheck.hpp"
 #include "os/error.hpp"
-#include "sockets/delegates/client.hpp"
 
 template <>
 Task<> Delegates::Client<SocketTag::IP>::connect(Device device) {
@@ -26,9 +28,8 @@ Task<> Delegates::Client<SocketTag::IP>::connect(Device device) {
 
         // Start connect
         check(::connect(*handle, result->ai_addr, result->ai_addrlen));
-        co_await Async::run([this](Async::CompletionResult& result) {
-            Async::submit(Async::Connect{ { *handle, &result } });
-        });
+        co_await Async::run(
+            [this](Async::CompletionResult& result) { Async::submit(Async::Connect{ { *handle, &result } }); });
     });
 }
 
@@ -56,6 +57,6 @@ Task<> Delegates::Client<SocketTag::BT>::connect(Device device) {
                          .getHandle()[0];
 
     handle.reset(newHandle);
-    co_await Async::run(std::bind_front(Async::submitIOBluetooth, (*handle)->getHash(), IOType::Send),
+    co_await Async::run(std::bind_front(AsyncBT::submit, (*handle)->getHash(), IOType::Send),
         System::ErrorType::IOReturn);
 }
