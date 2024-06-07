@@ -116,8 +116,8 @@ BTUtils::Instance::~Instance() {
     conn = nullptr;
 }
 
-DeviceList BTUtils::getPaired() {
-    DeviceList deviceList;
+std::vector<Device> BTUtils::getPaired() {
+    std::vector<Device> deviceList;
 
     if (!conn) return deviceList;
 
@@ -190,8 +190,8 @@ DeviceList BTUtils::getPaired() {
     return deviceList;
 }
 
-BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUIDs::UUID128 uuid, bool) {
-    SDPResultList ret;
+std::vector<BTUtils::SDPResult> BTUtils::sdpLookup(std::string_view addr, UUIDs::UUID128 uuid, bool) {
+    std::vector<BTUtils::SDPResult> ret;
 
     using SDPListPtr = HandlePtr<sdp_list_t, [](sdp_list_t* p) { sdp_list_free(p, nullptr); }>;
 

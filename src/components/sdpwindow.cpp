@@ -24,7 +24,7 @@ void printUUID(UUIDs::UUID128 uuid) {
         u[4], u[5], u[6], u[7], u[8], u[9], u[10], u[11], u[12], u[13], u[14], u[15]);
 }
 
-bool SDPWindow::drawSDPList(const BTUtils::SDPResultList& resultList) {
+bool SDPWindow::drawSDPList(const std::vector<BTUtils::SDPResult>& resultList) {
     // Begin a scrollable child window to contain the list
     ImGui::BeginChild("sdpList", {}, ImGuiChildFlags_Border);
     bool ret = false;
@@ -104,7 +104,7 @@ void SDPWindow::checkInquiryStatus() {
         },
         [](const std::system_error&) { ImGui::TextWrapped("System error: Failed to launch thread."); },
         [](const System::SystemError& error) { ImGui::TextWrapped("Error %s", error.what()); },
-        [this](const BTUtils::SDPResultList& resultList) {
+        [this](const std::vector<BTUtils::SDPResult>& resultList) {
             // Done, print results
             if (resultList.empty()) {
                 ImGui::Text("No SDP results found for \"%s\".", target.name.c_str());

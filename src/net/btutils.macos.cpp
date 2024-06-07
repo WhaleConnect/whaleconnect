@@ -4,6 +4,7 @@
 #include "btutils.hpp"
 
 #include <cstring>
+#include <vector>
 
 #include <BluetoothMacOS-Swift.h>
 #include <IOKit/IOReturn.h>
@@ -18,23 +19,23 @@ BTUtils::Instance::Instance() = default;
 
 BTUtils::Instance::~Instance() = default;
 
-DeviceList BTUtils::getPaired() {
+std::vector<Device> BTUtils::getPaired() {
     auto list = BluetoothMacOS::getPairedDevices();
-    DeviceList ret;
+    std::vector<Device> ret;
 
     // TODO: Replace with emplace_back when Apple Clange supports P0960
     for (const auto& i : list) ret.push_back({ ConnectionType::None, i.getName(), i.getAddress(), 0 });
     return ret;
 }
 
-BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUIDs::UUID128 uuid, bool flushCache) {
+std::vector<BTUtils::SDPResult> BTUtils::sdpLookup(std::string_view addr, UUIDs::UUID128 uuid, bool flushCache) {
     auto list = check(
         BluetoothMacOS::sdpLookup(addr.data(), uuid.data(), flushCache),
         [](const BluetoothMacOS::LookupResult& result) { return result.getResult() == kIOReturnSuccess; },
         [](const BluetoothMacOS::LookupResult& result) { return result.getResult(); }, System::ErrorType::IOReturn)
                     .getList();
 
-    SDPResultList ret;
+    std::vector<BTUtils::SDPResult> ret;
 
     for (const auto& i : list) {
         SDPResult result{ .port = i.getPort(), .name = i.getName(), .desc = i.getDesc() };

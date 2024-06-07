@@ -118,8 +118,8 @@ BTUtils::Instance::Instance() = default;
 
 BTUtils::Instance::~Instance() = default;
 
-DeviceList BTUtils::getPaired() try {
-    DeviceList deviceList;
+std::vector<Device> BTUtils::getPaired() try {
+    std::vector<Device> deviceList;
 
     // Bluetooth search criteria - only return remembered (paired) devices, and don't start a new inquiry search
     BLUETOOTH_DEVICE_SEARCH_PARAMS searchCriteria{
@@ -158,8 +158,8 @@ DeviceList BTUtils::getPaired() try {
     throw;
 }
 
-BTUtils::SDPResultList BTUtils::sdpLookup(std::string_view addr, UUIDs::UUID128 uuid, bool flushCache) {
-    SDPResultList ret;
+std::vector<BTUtils::SDPResult> BTUtils::sdpLookup(std::string_view addr, UUIDs::UUID128 uuid, bool flushCache) {
+    std::vector<BTUtils::SDPResult> ret;
 
     Strings::SysStr addrWide = Strings::toSys(addr);
     GUID guid = fromUUID(uuid);

@@ -8,6 +8,7 @@
 #include <functional>
 #include <string>
 #include <variant>
+#include <vector>
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -19,7 +20,7 @@
 #include "os/error.hpp"
 #include "utils/overload.hpp"
 
-void sortTable(DeviceList& devices) {
+void sortTable(std::vector<Device>& devices) {
     // A sort is only needed for 2 or more entries
     if (devices.size() < 2) return;
 
@@ -40,7 +41,7 @@ void sortTable(DeviceList& devices) {
 }
 
 // Draws a menu composed of the paired Bluetooth devices.
-const Device* drawPairedDevices(DeviceList& devices, bool needsSort) {
+const Device* drawPairedDevices(std::vector<Device>& devices, bool needsSort) {
     // Using a pointer so the return value can be nullable without copying large objects.
     const Device* ret = nullptr;
 
@@ -82,8 +83,7 @@ const Device* drawPairedDevices(DeviceList& devices, bool needsSort) {
 void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
     if (!ImGui::BeginTabItem("Bluetooth")) return;
 
-    static std::variant<std::monostate, DeviceList, System::SystemError> pairedDevices; // Paired devices
-
+    static std::variant<std::monostate, std::vector<Device>, System::SystemError> pairedDevices;
     bool needsSort = false;
 
     // Get paired devices if the button is clicked or if the variant currently holds nothing
@@ -99,7 +99,7 @@ void drawBTConnectionTab(WindowList& connections, WindowList& sdpWindows) {
     // Check paired devices list
     Overload visitor{
         [](std::monostate) { /* Nothing to do */ },
-        [needsSort, &connections, &sdpWindows](DeviceList& deviceList) {
+        [needsSort, &connections, &sdpWindows](std::vector<Device>& deviceList) {
             // Check if the device list is empty
             if (deviceList.empty()) {
                 ImGui::Text("No paired devices.");

@@ -36,8 +36,12 @@ class ServerWindow : public Window {
         Task<> recv(IOConsole& serverConsole, const Device& device, unsigned int size);
     };
 
+    inline static auto compDevices = [](const Device& d1, const Device& d2) {
+        return d1.address < d2.address || d1.port < d2.port;
+    };
+
     SocketPtr socket;
-    std::map<Device, Client, std::less<>> clients;
+    std::map<Device, Client, decltype(compDevices)> clients;
     bool isDgram;
 
     bool pendingIO = false;

@@ -5,8 +5,6 @@
 
 #include <cstdint>
 #include <string>
-#include <tuple>
-#include <vector>
 
 #include "enums.hpp"
 
@@ -16,11 +14,4 @@ struct Device {
     std::string name; // Device name for display
     std::string address; // Address (IP address for TCP / UDP, MAC address for Bluetooth)
     std::uint16_t port = 0; // Port (or PSM for L2CAP, channel for RFCOMM)
-
-    // For use with std::map
-    bool operator<(const Device& other) const {
-        return std::tie(address, port) < std::tie(other.address, other.port);
-    }
 };
-
-using DeviceList = std::vector<Device>;

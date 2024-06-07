@@ -37,13 +37,11 @@ namespace BTUtils {
         std::string desc; // Service description (if any)
     };
 
-    using SDPResultList = std::vector<SDPResult>;
-
     // Gets the Bluetooth devices that are paired to this computer.
     // The Device instances returned have no type set because the communication protocol to use with them is
     // indeterminate (the function doesn't know if L2CAP or RFCOMM should be used with each).
-    DeviceList getPaired();
+    std::vector<Device> getPaired();
 
     // Runs a Service Discovery Protocol (SDP) inquiry on a remote device.
-    SDPResultList sdpLookup(std::string_view addr, UUIDs::UUID128 uuid, bool flushCache);
+    std::vector<SDPResult> sdpLookup(std::string_view addr, UUIDs::UUID128 uuid, bool flushCache);
 }

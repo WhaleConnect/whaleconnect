@@ -18,7 +18,7 @@
 
 // Handles an SDP inquiry in a GUI window.
 class SDPWindow : public Window {
-    using AsyncSDPInquiry = std::future<BTUtils::SDPResultList>; // Results of an SDP search
+    using AsyncSDPInquiry = std::future<std::vector<BTUtils::SDPResult>>; // Results of an SDP search
 
     Device target; // Target to perform SDP inquiries on and connect to
 
@@ -41,12 +41,12 @@ class SDPWindow : public Window {
         AsyncSDPInquiry, // Future object corresponding to an in-progress inquiry
         std::system_error, // Error when the asynchronous thread couldn't be created
         System::SystemError, // Error that occurred during an in-progress inquiry
-        BTUtils::SDPResultList // The results of the inquiry when it has completed
+        std::vector<BTUtils::SDPResult> // The results of the inquiry when it has completed
         >
         sdpInquiry;
 
     // Draws the entries from an SDP lookup with buttons to connect to each in a tree format.
-    bool drawSDPList(const BTUtils::SDPResultList& list);
+    bool drawSDPList(const std::vector<BTUtils::SDPResult>& list);
 
     // Draws the options for connecting to a device with Bluetooth.
     void drawConnOptions(std::string_view info);
