@@ -36,7 +36,6 @@ void runSync(const Awaitable auto& fn, bool useRunLoop = false) {
         try {
             // Await the given coroutine
             co_await fn();
-            co_await Async::queueToMainThread();
         } catch (const std::exception&) {
             // Store thrown exceptions
             ptr = std::current_exception();
