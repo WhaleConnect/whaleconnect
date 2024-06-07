@@ -1,9 +1,11 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "os/async.hpp"
-#include "net/enums.hpp"
 #include "sockets/delegates/sockethandle.hpp"
+
+#include "net/enums.hpp"
+#include "os/async.hpp"
+
 
 template <auto Tag>
 void Delegates::SocketHandle<Tag>::closeImpl() {

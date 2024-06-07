@@ -1,10 +1,11 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "sockets/delegates/bidirectional.hpp"
+
 #include <WinSock2.h>
 
 #include "os/async.hpp"
-#include "sockets/delegates/bidirectional.hpp"
 #include "utils/task.hpp"
 
 template <auto Tag>

@@ -1,6 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "sockets/delegates/client.hpp"
+
 #include <functional>
 
 #include <bluetooth/bluetooth.h>
@@ -12,7 +14,6 @@
 #include "net/netutils.hpp"
 #include "os/async.hpp"
 #include "os/errcheck.hpp"
-#include "sockets/delegates/client.hpp"
 
 void startConnect(int s, sockaddr* addr, socklen_t len, Async::CompletionResult& result) {
     Async::submit(Async::Connect{ { s, &result }, addr, len });

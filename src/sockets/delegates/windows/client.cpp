@@ -1,6 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "sockets/delegates/client.hpp"
+
 #include <functional>
 #include <string>
 #include <utility>
@@ -13,7 +15,6 @@
 #include "net/netutils.hpp"
 #include "os/async.hpp"
 #include "os/errcheck.hpp"
-#include "sockets/delegates/client.hpp"
 #include "utils/strings.hpp"
 
 void startConnect(SOCKET s, sockaddr* addr, std::size_t len, Async::CompletionResult& result) {

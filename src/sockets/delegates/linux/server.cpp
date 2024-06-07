@@ -1,6 +1,8 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "sockets/delegates/server.hpp"
+
 #include <functional>
 #include <memory>
 #include <string>
@@ -16,7 +18,6 @@
 #include "net/netutils.hpp"
 #include "os/async.hpp"
 #include "os/errcheck.hpp"
-#include "sockets/delegates/server.hpp"
 #include "sockets/incomingsocket.hpp"
 #include "utils/strings.hpp"
 #include "utils/task.hpp"
@@ -113,7 +114,7 @@ ServerAddress Delegates::Server<SocketTag::BT>::startServer(const Device& server
     check(getsockname(*handle, reinterpret_cast<sockaddr*>(&serverAddr), &serverAddrLen));
 
     std::uint16_t port = isRFCOMM ? reinterpret_cast<sockaddr_rc*>(&serverAddr)->rc_channel
-                        : reinterpret_cast<sockaddr_l2*>(&serverAddr)->l2_psm;
+                                  : reinterpret_cast<sockaddr_l2*>(&serverAddr)->l2_psm;
 
     return { btohs(port), IPType::None };
 }

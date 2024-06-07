@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include "os/async.hpp"
 #include "sockets/delegates/sockethandle.hpp"
+
+#include "os/async.hpp"
 
 template <auto Tag>
 void Delegates::SocketHandle<Tag>::closeImpl() {
