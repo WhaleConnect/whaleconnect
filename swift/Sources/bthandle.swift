@@ -1,7 +1,7 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-import Async
+import BluetoothCpp
 import IOBluetooth
 
 enum Channel {
@@ -21,47 +21,47 @@ class BTHandleDelegate: IOBluetoothL2CAPChannelDelegate, IOBluetoothRFCOMMChanne
     var hash: UInt = 0
 
     func l2capChannelClosed(_: IOBluetoothL2CAPChannel!) {
-        Async.bluetoothClosed(hash)
+        BluetoothCpp.bluetoothClosed(hash)
     }
 
     func l2capChannelData(_: IOBluetoothL2CAPChannel!,
                           data dataPointer: UnsafeMutableRawPointer!,
                           length dataLength: Int)
     {
-        Async.bluetoothReadComplete(hash, dataPointer, dataLength)
+        BluetoothCpp.bluetoothReadComplete(hash, dataPointer, dataLength)
     }
 
     func l2capChannelOpenComplete(_: IOBluetoothL2CAPChannel!, status error: IOReturn) {
-        Async.bluetoothComplete(hash, .Send, error)
+        BluetoothCpp.bluetoothComplete(hash, .Send, error)
     }
 
     func l2capChannelWriteComplete(_: IOBluetoothL2CAPChannel!,
                                    refcon _: UnsafeMutableRawPointer!,
                                    status error: IOReturn)
     {
-        Async.bluetoothComplete(hash, .Send, error)
+        BluetoothCpp.bluetoothComplete(hash, .Send, error)
     }
 
     func rfcommChannelClosed(_: IOBluetoothRFCOMMChannel!) {
-        Async.bluetoothClosed(hash)
+        BluetoothCpp.bluetoothClosed(hash)
     }
 
     func rfcommChannelData(_: IOBluetoothRFCOMMChannel!,
                            data dataPointer: UnsafeMutableRawPointer!,
                            length dataLength: Int)
     {
-        Async.bluetoothReadComplete(hash, dataPointer, dataLength)
+        BluetoothCpp.bluetoothReadComplete(hash, dataPointer, dataLength)
     }
 
     func rfcommChannelOpenComplete(_: IOBluetoothRFCOMMChannel!, status error: IOReturn) {
-        Async.bluetoothComplete(hash, .Send, error)
+        BluetoothCpp.bluetoothComplete(hash, .Send, error)
     }
 
     func rfcommChannelWriteComplete(_: IOBluetoothRFCOMMChannel!,
                                     refcon _: UnsafeMutableRawPointer!,
                                     status error: IOReturn)
     {
-        Async.bluetoothComplete(hash, .Send, error)
+        BluetoothCpp.bluetoothComplete(hash, .Send, error)
     }
 }
 
@@ -72,7 +72,7 @@ public class BTHandle {
     init(channel: Channel) {
         self.channel = channel
         delegate.hash = UInt(bitPattern: ObjectIdentifier(self))
-        Async.clearBluetoothDataQueue(getHash())
+        BluetoothCpp.clearBluetoothDataQueue(getHash())
 
         switch channel {
             case let .l2cap(l2capChannel): l2capChannel.setDelegate(delegate)
@@ -87,8 +87,8 @@ public class BTHandle {
         let newHandle = BTHandle(channel: newChannel)
 
         withUnsafePointer(to: newHandle) {
-            let device = Async.Device(type: isL2CAP ? .L2CAP : .RFCOMM, name: name, address: addr, port: port)
-            Async.bluetoothAcceptComplete(getHash(), $0, device)
+            let device = BluetoothCpp.Device(type: isL2CAP ? .L2CAP : .RFCOMM, name: name, address: addr, port: port)
+            BluetoothCpp.bluetoothAcceptComplete(getHash(), $0, device)
         }
     }
 

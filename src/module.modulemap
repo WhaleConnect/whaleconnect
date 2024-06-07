@@ -1,4 +1,4 @@
-module Async {
+module BluetoothCpp {
     header "os/bluetooth.hpp"
     export *
 }
