@@ -16,7 +16,6 @@
 #include "gui/imguiext.hpp"
 #include "gui/menu.hpp"
 #include "net/enums.hpp"
-#include "os/async.hpp"
 #include "os/error.hpp"
 #include "sockets/delegates/delegates.hpp"
 #include "sockets/serversocket.hpp"
@@ -48,7 +47,6 @@ Task<> ServerWindow::Client::recv(IOConsole& serverConsole, const Device& device
     BooleanLock lock{ pendingRecv };
 
     auto recvResult = co_await socket->recv(size);
-    co_await Async::queueToMainThread();
 
     if (recvResult.closed) {
         serverConsole.addInfo(std::format("{} closed connection.", formatDevice(device)));
@@ -122,7 +120,6 @@ Task<> ServerWindow::accept() try {
     BooleanLock lock{ pendingIO };
 
     auto [device, clientSocket] = co_await socket->accept();
-    co_await Async::queueToMainThread();
 
     std::string message = device.name.empty()
         ? std::format("Accepted connection from {} on port {}.", device.address, device.port)
@@ -146,7 +143,6 @@ Task<> ServerWindow::recvDgram() try {
     BooleanLock lock{ pendingIO };
 
     auto [device, data] = co_await socket->recvFrom(console.getRecvSize());
-    co_await Async::queueToMainThread();
 
     auto [it, didEmplace] = clients.try_emplace(device, nullptr, colorIndex);
     if (didEmplace) nextColor(); // Advance colors if there is data received from a new client

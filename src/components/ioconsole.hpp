@@ -10,7 +10,6 @@
 
 #include "console.hpp"
 #include "os/error.hpp"
-#include "utils/task.hpp"
 
 // Manages a textbox and console with config options.
 class IOConsole : public Console {
@@ -37,5 +36,5 @@ public:
     }
 
     // Prints the details of a thrown exception.
-    Task<> errorHandler(System::SystemError error);
+    void errorHandler(System::SystemError error);
 };

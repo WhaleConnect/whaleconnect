@@ -17,17 +17,11 @@
 #include "gui/menu.hpp"
 #include "net/device.hpp"
 #include "net/enums.hpp"
-#include "os/async.hpp"
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
 #include "sockets/clientsockettls.hpp"
 #include "sockets/delegates/delegates.hpp"
 #include "utils/booleanlock.hpp"
-
-Task<> tlsErrorHandler(IOConsole& console, Botan::TLS::TLS_Exception error) {
-    co_await Async::queueToMainThread();
-    console.addError(error.what());
-}
 
 SocketPtr makeClientSocket(bool useTLS, ConnectionType type) {
     using enum ConnectionType;
@@ -61,23 +55,21 @@ Task<> ConnWindow::connect(Device device) try {
     // Connect the socket
     console.addInfo("Connecting...");
     co_await socket->connect(device);
-    co_await Async::queueToMainThread();
 
     console.addInfo("Connected.");
     connected = true;
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
 } catch (const Botan::TLS::TLS_Exception& error) {
-    tlsErrorHandler(console, error);
+    console.addError(error.what());
 }
 
 Task<> ConnWindow::sendHandler(std::string s) try {
     co_await socket->send(s);
-    co_await Async::queueToMainThread();
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
 } catch (const Botan::TLS::TLS_Exception& error) {
-    tlsErrorHandler(console, error);
+    console.addError(error.what());
 }
 
 Task<> ConnWindow::readHandler() try {
@@ -85,7 +77,6 @@ Task<> ConnWindow::readHandler() try {
     BooleanLock lock{ pendingRecv };
 
     auto [complete, closed, data, alert] = co_await socket->recv(console.getRecvSize());
-    co_await Async::queueToMainThread();
 
     if (complete) {
         if (closed) {
@@ -111,7 +102,7 @@ Task<> ConnWindow::readHandler() try {
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
 } catch (const Botan::TLS::TLS_Exception& error) {
-    tlsErrorHandler(console, error);
+    console.addError(error.what());
 }
 
 void ConnWindow::onBeforeUpdate() {
