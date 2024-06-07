@@ -3,14 +3,10 @@
 
 #include "async.hpp"
 
-#include <array>
-#include <atomic>
-#include <cstdint>
-#include <mutex>
-#include <thread>
 #include <variant>
 
 #include <liburing.h>
+#include <linux/time_types.h>
 #include <sys/socket.h>
 
 #include "errcheck.hpp"
@@ -56,91 +52,52 @@ void handleOperation(io_uring& ring, const Async::Operation& next) {
             io_uring_prep_cancel_fd(sqe, op.handle, IORING_ASYNC_CANCEL_ALL);
             io_uring_sqe_set_data(sqe, nullptr);
         },
-        [=](const Async::PipeRead& op) {
-            static char buf[2];
-            io_uring_prep_read(sqe, op.fd, buf, 2, 0);
-            io_uring_sqe_set_data64(sqe, 1);
-        },
     };
 
     std::visit(visitor, next);
 }
 
-Async::WorkerThread::WorkerThread(unsigned int, unsigned int queueEntries) {
-    check(io_uring_queue_init(queueEntries, &ring, 0), checkZero, useReturnCodeNeg);
+Async::EventLoop::EventLoop(unsigned int queueEntries) {
+    io_uring_params params{};
+    params.flags = IORING_SETUP_SINGLE_ISSUER;
 
-    // Initialized after io_uring
-    thread = std::thread{ &Async::WorkerThread::eventLoop, this };
-
-    std::array<int, 2> pipes;
-    check(pipe(pipes.data()));
-    readPipe = pipes[0];
-    writePipe = pipes[1];
-    push(PipeRead{ readPipe });
+    check(io_uring_queue_init_params(queueEntries, &ring, &params), checkZero, useReturnCodeNeg);
 }
 
-Async::WorkerThread::~WorkerThread() {
-    close(writePipe);
-    numOperations.fetch_add(1, std::memory_order_relaxed);
-    signalPending();
-
-    thread.join();
+Async::EventLoop::~EventLoop() {
     io_uring_queue_exit(&ring);
-    close(readPipe);
 }
 
-void Async::WorkerThread::processOperations() {
-    std::scoped_lock lock{ operationsMtx };
-    numOperations.fetch_add(operations.size(), std::memory_order_relaxed);
-    while (!operations.empty()) {
-        auto next = operations.front();
-        operations.pop();
-        handleOperation(ring, next);
+void Async::EventLoop::runOnce(bool wait) {
+    __kernel_timespec timeout{ 0, wait ? 200000000 : 0 };
+    io_uring_cqe* cqe = nullptr;
+
+    if (operations.empty()) {
+        if (numOperations == 0) return;
+
+        if (io_uring_wait_cqe_timeout(&ring, &cqe, &timeout) < 0) return;
+    } else {
+        // There are queued operations, process them
+        for (const auto& i : operations) handleOperation(ring, i);
+        numOperations += operations.size();
+        operations.clear();
+
+        // Submit to io_uring and wait for next CQE
+        if (io_uring_submit_and_wait_timeout(&ring, &cqe, 1, &timeout, nullptr) < 0) return;
     }
-}
 
-void Async::WorkerThread::eventLoop() {
-    while (true) {
-        io_uring_cqe* cqe;
+    if (!cqe) return;
 
-        bool expected = true;
-        if (operationsPending.compare_exchange_weak(expected, false, std::memory_order_relaxed)) {
-            // There are queued operations, process them
-            processOperations();
+    void* userData = io_uring_cqe_get_data(cqe);
+    io_uring_cqe_seen(&ring, cqe);
+    numOperations--;
 
-            // Submit to io_uring and wait for next CQE
-            if (io_uring_submit_and_wait(&ring, 1) != 0) continue;
-            if (io_uring_peek_cqe(&ring, &cqe) != 0) continue;
-        } else if (numOperations.load(std::memory_order_relaxed) == 0) {
-            // There are no queued operations and nothing pending in io_uring, thread is idle
-            operationsPending.wait(false, std::memory_order_relaxed);
-            continue;
-        } else if (io_uring_wait_cqe(&ring, &cqe) != 0) {
-            // There are no queued operations but there are operations pending in io_uring, wait for them
-            continue;
-        }
+    if (!userData) return;
 
-        numOperations.fetch_sub(1, std::memory_order_relaxed);
-        void* userData = io_uring_cqe_get_data(cqe);
-        io_uring_cqe_seen(&ring, cqe);
+    // Fill in completion result information
+    auto& result = *reinterpret_cast<CompletionResult*>(userData);
+    if (cqe->res < 0) result.error = -cqe->res;
+    else result.res = cqe->res;
 
-        if (userData == nullptr) continue;
-
-        // Check for interrupt
-        if (reinterpret_cast<std::uint64_t>(userData) == asyncInterrupt) {
-            if (cqe->res > 0) {
-                push(PipeRead{ readPipe });
-                continue;
-            }
-
-            break;
-        }
-
-        // Fill in completion result information
-        auto& result = *reinterpret_cast<CompletionResult*>(userData);
-        if (cqe->res < 0) result.error = -cqe->res;
-        else result.res = cqe->res;
-
-        result.coroHandle();
-    }
+    result.coroHandle();
 }

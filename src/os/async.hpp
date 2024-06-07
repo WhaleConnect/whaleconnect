@@ -4,36 +4,23 @@
 #pragma once
 
 #include <coroutine>
-#include <thread>
 #include <variant>
 
 #if OS_WINDOWS
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #elif OS_MACOS
-#include <atomic>
-#include <mutex>
-#include <queue>
 #include <unordered_map>
+#include <vector>
 
-#include <IOKit/IOReturn.h>
-#include <swiftToCxx/_SwiftCxxInteroperability.h>
 #include <sys/event.h>
 #include <unistd.h>
-
-#include "async.bluetooth.hpp"
-#include "errcheck.hpp"
-#include "net/device.hpp"
 #elif OS_LINUX
-#include <atomic>
-#include <mutex>
-#include <queue>
+#include <vector>
 
 #include <liburing.h>
 #include <sys/socket.h>
 #include <unistd.h>
-
-#include "errcheck.hpp"
 #endif
 
 #include "error.hpp"
@@ -149,91 +136,42 @@ namespace Async {
 
     struct Cancel : OperationBase {};
 
-#if OS_LINUX
-    struct PipeRead {
-        int fd;
-    };
+    using Operation = std::variant<Connect, Accept, Send, SendTo, Receive, ReceiveFrom, Shutdown, Close, Cancel>;
+
+#if OS_MACOS
+    using PendingEventsMap = std::unordered_map<std::uint64_t, Async::CompletionResult*>;
 #endif
 
-    using Operation = std::variant<Connect, Accept, Send, SendTo, Receive, ReceiveFrom, Shutdown, Close, Cancel
-#if OS_LINUX
-        ,
-        PipeRead
-#endif
-        >;
-
-    class WorkerThread {
-        static constexpr int asyncInterrupt = 1;
-
+    class EventLoop {
 #if OS_WINDOWS
         inline static HANDLE completionPort = nullptr; // IOCP handle
         inline static int runningThreads = 0;
-#else
-        std::queue<Operation> operations;
-        std::mutex operationsMtx;
-        std::atomic<std::size_t> numOperations = 0;
-        std::atomic_bool operationsPending = false;
-#if OS_MACOS
+#elif OS_MACOS
         int kq = -1;
-        int readPipe = -1;
-        int writePipe = -1;
-        std::unordered_map<std::uint64_t, CompletionResult*> pendingEvents;
-        std::mutex pendingMtx;
+        PendingEventsMap pendingEvents;
 #elif OS_LINUX
         io_uring ring;
-        int readPipe = -1;
-        int writePipe = -1;
-#endif
 #endif
 
-        std::thread thread;
-
-        void eventLoop();
+#if !OS_WINDOWS
+        std::vector<Operation> operations;
+        std::size_t numOperations = 0;
+#endif
 
     public:
-        WorkerThread(unsigned int numThreads, unsigned int queueEntries);
+        EventLoop(unsigned int queueEntries);
 
-        ~WorkerThread();
+        ~EventLoop();
+
+        void runOnce(bool wait = true);
 
 #if OS_WINDOWS
         static void push(const Operation& operation);
 
         static void add(SOCKET s);
 #else
-#if OS_MACOS
-        void cancel(std::uint64_t ident);
-
-        void handleOperation(std::vector<struct kevent>& events, const Async::Operation& next);
-
-        std::vector<struct kevent> processOperations();
-
-        bool submit();
-
-        void deletePending(const struct kevent& event);
-#elif OS_LINUX
-        void processOperations();
-#endif
-
-        void signalPending() {
-            operationsPending.store(true, std::memory_order_relaxed);
-            operationsPending.notify_one();
-        }
-
         void push(const Operation& operation) {
-            {
-                std::scoped_lock lock{ operationsMtx };
-                operations.push(operation);
-            }
-
-            signalPending();
-            if (size() > 0) {
-                check(write(writePipe, " ", 2));
-                numOperations.fetch_add(1, std::memory_order_relaxed);
-            }
-        }
-
-        std::size_t size() const {
-            return numOperations.load(std::memory_order_relaxed);
+            operations.push_back(operation);
         }
 #endif
     };
@@ -255,36 +193,16 @@ namespace Async {
 
     void submit(const Operation& op);
 
-    Task<> queueToMainThread();
+    Task<> queueToThread();
 
     void handleEvents();
 
 #if OS_WINDOWS
     inline void add(SOCKET s) {
-        WorkerThread::add(s);
+        EventLoop::add(s);
     }
 #elif OS_MACOS
-    struct BTAccept {
-        Device from;
-        BluetoothMacOS::BTHandle handle;
-
-        // TODO: Remove when Apple Clang supports P0960
-        BTAccept(const Device& from, BluetoothMacOS::BTHandle handle) : from(from), handle(handle) {}
-    };
-
     // Makes a socket nonblocking for use with kqueue.
     void prepSocket(int s);
-
-    // Creates a pending operation for a Bluetooth channel.
-    void submitIOBluetooth(swift::UInt id, IOType ioType, CompletionResult& result);
-
-    // Gets the first queued result of a Bluetooth read operation.
-    std::optional<std::string> getBluetoothReadResult(swift::UInt id);
-
-    // Gets the first queued result of a Bluetooth accept operation.
-    BTAccept getBluetoothAcceptResult(swift::UInt id);
-
-    // Cancels all pending operations on a Bluetooth channel.
-    void bluetoothCancel(swift::UInt id);
 #endif
 }

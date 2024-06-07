@@ -11,6 +11,8 @@
 #include "errcheck.hpp"
 #include "utils/overload.hpp"
 
+constexpr int asyncInterrupt = 1;
+
 LPFN_CONNECTEX loadConnectEx(SOCKET s) {
     static LPFN_CONNECTEX connectExPtr = nullptr;
 
