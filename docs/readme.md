@@ -24,20 +24,17 @@ NST and its build scripts are licensed under the [GPL v3+ license](../COPYING).
 
 ## Dependencies
 
-### Libraries
-
-- [BlueZ](https://github.com/bluez/bluez/tree/master/lib) (GNU GPL v2+ License)
-- [Botan](https://botan.randombit.net/) (Simplified BSD License)
-- [Catch2](https://github.com/catchorg/Catch2) (BSL 1.0 License)
-- [Dear ImGui](https://www.github.com/ocornut/imgui) (MIT License)
-- [GLFW](https://www.glfw.org/) (Zlib License)
-- [ImGuiTextSelect](https://github.com/AidanSun05/ImGuiTextSelect) (MIT License)
-- [libdbus](https://www.freedesktop.org/wiki/Software/dbus) (GNU GPL v2+ License)
-- [liburing](https://github.com/axboe/liburing) (GNU LGPL v2.1 and MIT Licenses)
-- [utfcpp](https://github.com/nemtrif/utfcpp) (BSL 1.0)
-- [ztd.out_ptr](https://github.com/soasis/out_ptr) (Apache-2.0 License)
-
-### Fonts
-
-- [Noto Sans Mono](https://fonts.google.com/noto/specimen/Noto+Sans+Mono) (SIL OFL 1.1 License)
-- [Remix Icon](https://remixicon.com/) (Apache-2.0 License)
+| Type | Name | License |
+| --- | --- | --- |
+| Library | [BlueZ](https://github.com/bluez/bluez/tree/master/lib) | GNU GPL v2+ |
+| Library | [Botan](https://botan.randombit.net/) | Simplified BSD |
+| Library | [Catch2](https://github.com/catchorg/Catch2) | BSL 1.0 |
+| Library | [Dear ImGui](https://www.github.com/ocornut/imgui) | MIT |
+| Library | [GLFW](https://github.com/glfw/glfw) | Zlib |
+| Library | [ImGuiTextSelect](https://github.com/AidanSun05/ImGuiTextSelect) | MIT |
+| Library | [libdbus](https://www.freedesktop.org/wiki/Software/dbus) | GNU GPL v2+ |
+| Library | [liburing](https://github.com/axboe/liburing) | GNU LGPL v2.1 and MIT |
+| Library | [utfcpp](https://github.com/nemtrif/utfcpp) | BSL 1.0 |
+| Library | [ztd.out_ptr](https://github.com/soasis/out_ptr) | Apache 2.0 |
+| Font | [Noto Sans Mono](https://fonts.google.com/noto/specimen/Noto+Sans+Mono) | SIL OFL 1.1 |
+| Font | [Remix Icon](https://remixicon.com/) | Apache 2.0 |
