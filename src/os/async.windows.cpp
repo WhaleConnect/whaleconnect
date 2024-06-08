@@ -38,8 +38,7 @@ LPFN_ACCEPTEX loadAcceptEx(SOCKET s) {
 }
 
 Async::EventLoop::EventLoop(unsigned int) {
-    runningThreads++;
-    if (runningThreads > 1) return;
+    if (runningThreads.fetch_add(1, std::memory_order_relaxed) > 0) return;
 
     // Start Winsock
     WSADATA wsaData{};
@@ -50,12 +49,10 @@ Async::EventLoop::EventLoop(unsigned int) {
 }
 
 Async::EventLoop::~EventLoop() {
-    runningThreads--;
-    if (runningThreads > 0) return;
-
-    CloseHandle(completionPort);
+    if (runningThreads.fetch_sub(1, std::memory_order_relaxed) > 1) return;
 
     // Cleanup Winsock
+    CloseHandle(completionPort);
     check(WSACleanup());
 }
 

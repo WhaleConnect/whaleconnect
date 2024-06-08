@@ -147,7 +147,7 @@ namespace Async {
     class EventLoop {
 #if OS_WINDOWS
         inline static HANDLE completionPort = nullptr; // IOCP handle
-        inline static int runningThreads = 0;
+        inline static std::atomic_int runningThreads = 0;
         inline static std::atomic_size_t numOperations = 0;
 #elif OS_MACOS
         int kq = -1;
