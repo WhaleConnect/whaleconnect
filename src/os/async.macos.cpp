@@ -42,11 +42,12 @@ Async::EventLoop::~EventLoop() {
 }
 
 void handleOperation(Async::PendingEventsMap& pendingEvents, std::vector<struct kevent>& events,
-    const Async::Operation& next) {
+    const Async::Operation& next, std::size_t& numOperations) {
     auto submit = [&](int id, std::int16_t filt, Async::CompletionResult* result) {
         const std::uint16_t flags = EV_ADD | EV_ONESHOT | EV_RECEIPT;
         events.push_back({ static_cast<unsigned long>(id), filt, flags, 0, 0, result });
         pendingEvents[getMapID(id, filt)] = result;
+        numOperations++;
     };
 
     Overload visitor{
@@ -63,7 +64,9 @@ void handleOperation(Async::PendingEventsMap& pendingEvents, std::vector<struct 
                 std::uint64_t mapID = getMapID(op.handle, filt);
                 if (!pendingEvents.contains(mapID)) continue;
 
+                // Cancelling means adding a kevent and removing a pending operation
                 events.push_back({ static_cast<std::uintptr_t>(op.handle), filt, EV_DELETE, 0, 0, nullptr });
+                numOperations--;
 
                 auto& result = *pendingEvents[mapID];
                 pendingEvents.erase(mapID);
@@ -82,8 +85,7 @@ void Async::EventLoop::runOnce(bool wait) {
     } else {
         std::vector<struct kevent> events;
 
-        for (const auto& i : operations) handleOperation(pendingEvents, events, i);
-        numOperations += operations.size();
+        for (const auto& i : operations) handleOperation(pendingEvents, events, i, numOperations);
         operations.clear();
 
         if (kevent(kq, events.data(), events.size(), events.data(), events.size(), nullptr) == 0) return;
