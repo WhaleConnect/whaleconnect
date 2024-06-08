@@ -7,6 +7,8 @@
 #include <variant>
 
 #if OS_WINDOWS
+#include <atomic>
+
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #elif OS_MACOS
@@ -146,6 +148,7 @@ namespace Async {
 #if OS_WINDOWS
         inline static HANDLE completionPort = nullptr; // IOCP handle
         inline static int runningThreads = 0;
+        inline static std::atomic_size_t numOperations = 0;
 #elif OS_MACOS
         int kq = -1;
         PendingEventsMap pendingEvents;

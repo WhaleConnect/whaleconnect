@@ -11,8 +11,6 @@
 #include "errcheck.hpp"
 #include "utils/overload.hpp"
 
-constexpr int asyncInterrupt = 1;
-
 LPFN_CONNECTEX loadConnectEx(SOCKET s) {
     static LPFN_CONNECTEX connectExPtr = nullptr;
 
@@ -67,25 +65,33 @@ void Async::EventLoop::push(const Operation& operation) {
             auto connectExPtr = loadConnectEx(op.handle);
             check(connectExPtr(op.handle, op.addr, static_cast<int>(op.addrLen), nullptr, 0, nullptr, op.result),
                 checkTrue);
+            numOperations.fetch_add(1, std::memory_order_relaxed);
         },
         [=](const Async::Accept& op) {
             constexpr DWORD addrSize = sizeof(sockaddr_storage) + 16;
             auto acceptExPtr = loadAcceptEx(op.handle);
             check(acceptExPtr(op.handle, op.clientSocket, op.buf, 0, addrSize, addrSize, nullptr, op.result),
                 checkTrue);
+            numOperations.fetch_add(1, std::memory_order_relaxed);
         },
-        [=](const Async::Send& op) { check(WSASend(op.handle, op.buf, 1, nullptr, 0, op.result, nullptr)); },
+        [=](const Async::Send& op) {
+            check(WSASend(op.handle, op.buf, 1, nullptr, 0, op.result, nullptr));
+            numOperations.fetch_add(1, std::memory_order_relaxed);
+        },
         [=](const Async::SendTo& op) {
             check(
                 WSASendTo(op.handle, op.buf, 1, nullptr, 0, op.addr, static_cast<int>(op.addrLen), op.result, nullptr));
+            numOperations.fetch_add(1, std::memory_order_relaxed);
         },
         [=](const Async::Receive& op) {
             DWORD flags = 0;
             check(WSARecv(op.handle, op.buf, 1, nullptr, &flags, op.result, nullptr));
+            numOperations.fetch_add(1, std::memory_order_relaxed);
         },
         [=](const Async::ReceiveFrom& op) {
             DWORD flags = 0;
             check(WSARecvFrom(op.handle, op.buf, 1, nullptr, &flags, op.addr, op.fromLen, op.result, nullptr));
+            numOperations.fetch_add(1, std::memory_order_relaxed);
         },
         [=](const Async::Shutdown& op) { shutdown(op.handle, SD_BOTH); },
         [=](const Async::Close& op) { closesocket(op.handle); },
@@ -99,20 +105,22 @@ void Async::EventLoop::add(SOCKET s) {
     check(CreateIoCompletionPort(reinterpret_cast<HANDLE>(s), completionPort, 0, 0), checkTrue);
 }
 
-void Async::EventLoop::runOnce(bool timeout) {
+void Async::EventLoop::runOnce(bool wait) {
+    if (numOperations.load(std::memory_order_relaxed) == 0) return;
+
     DWORD numBytes;
     ULONG_PTR completionKey;
     LPOVERLAPPED overlapped = nullptr;
 
     // Dequeue a completion packet from the system and check for the exit condition
-    DWORD timeoutVal = timeout ? 200 : 0;
-    BOOL ret = GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, timeoutVal);
-    if (completionKey == asyncInterrupt) return;
+    DWORD timeout = wait ? 200 : 0;
+    BOOL ret = GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, timeout);
 
     // Get the structure with completion data, passed through the overlapped pointer
     // No locking is needed to modify the structure's fields - the calling coroutine will be suspended at this
     // point so mutually-exclusive access is guaranteed.
-    if (overlapped == nullptr) return;
+    if (!overlapped) return;
+    numOperations.fetch_sub(1, std::memory_order_relaxed);
 
     auto& result = *static_cast<CompletionResult*>(overlapped);
     result.res = static_cast<int>(numBytes);
