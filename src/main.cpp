@@ -27,7 +27,8 @@ void mainLoop() {
 
     bool quit = false;
     while (!quit && AppCore::newFrame()) {
-        Async::handleEvents();
+        // Handle event loop without waiting, waiting is done by vsync
+        Async::handleEvents(false);
         Menu::drawMenuBar(quit, connections, servers);
 
         // Application windows

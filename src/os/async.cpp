@@ -145,6 +145,6 @@ Task<> Async::queueToThread() {
     co_await std::suspend_always{};
 }
 
-void Async::handleEvents() {
-    eventLoop->runOnce(false);
+void Async::handleEvents(bool wait) {
+    eventLoop->runOnce(wait);
 }

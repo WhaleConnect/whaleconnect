@@ -198,7 +198,7 @@ namespace Async {
 
     Task<> queueToThread();
 
-    void handleEvents();
+    void handleEvents(bool wait = true);
 
 #if OS_WINDOWS
     inline void add(SOCKET s) {
