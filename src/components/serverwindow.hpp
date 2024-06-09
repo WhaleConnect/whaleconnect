@@ -36,12 +36,15 @@ class ServerWindow : public Window {
         Task<> recv(IOConsole& serverConsole, const Device& device, unsigned int size);
     };
 
-    inline static auto compDevices = [](const Device& d1, const Device& d2) {
-        return d1.address < d2.address || d1.port < d2.port;
+    // Device comparator functor for std::map. Using a struct to avoid -Wsubobject-linkage on GCC.
+    struct CompDevices {
+        bool operator()(const Device& d1, const Device& d2) const {
+            return d1.address < d2.address || d1.port < d2.port;
+        }
     };
 
     SocketPtr socket;
-    std::map<Device, Client, decltype(compDevices)> clients;
+    std::map<Device, Client, CompDevices> clients;
     bool isDgram;
 
     bool pendingIO = false;
