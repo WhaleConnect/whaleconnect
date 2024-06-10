@@ -85,7 +85,8 @@ void Async::EventLoop::runOnce(bool wait) {
         operations.clear();
 
         // Submit pending events from queue
-        if (kevent(kq, events.data(), events.size(), events.data(), events.size(), nullptr) == 0) return;
+        timespec timeout{ 0, 0 };
+        if (kevent(kq, events.data(), events.size(), events.data(), events.size(), &timeout) == 0) return;
 
         for (const auto& i : events) {
             // Get events that set error status
