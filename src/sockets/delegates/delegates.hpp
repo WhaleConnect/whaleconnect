@@ -8,8 +8,6 @@
 #include <optional>
 #include <string>
 
-#include <botan/tls_alert.h>
-
 #include "net/enums.hpp"
 #include "net/device.hpp"
 #include "utils/task.hpp"
