@@ -57,7 +57,7 @@ void handleOperation(io_uring& ring, const Async::Operation& next) {
     std::visit(visitor, next);
 }
 
-Async::EventLoop::EventLoop(unsigned int queueEntries) {
+Async::EventLoop::EventLoop(unsigned int, unsigned int queueEntries) {
     io_uring_params params{};
     params.flags = IORING_SETUP_SINGLE_ISSUER;
 

@@ -42,7 +42,7 @@ LPFN_ACCEPTEX loadAcceptEx(SOCKET s) {
     return acceptExPtr;
 }
 
-Async::EventLoop::EventLoop(unsigned int) {
+Async::EventLoop::EventLoop(unsigned int numThreads, unsigned int) {
     if (runningThreads.fetch_add(1, std::memory_order_relaxed) > 0) return;
 
     // Start Winsock
@@ -50,7 +50,7 @@ Async::EventLoop::EventLoop(unsigned int) {
     check(WSAStartup(MAKEWORD(2, 2), &wsaData), checkTrue, useReturnCode); // MAKEWORD(2, 2) for Winsock 2.2
 
     // Initialize IOCP
-    completionPort = check(CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0), checkTrue);
+    completionPort = check(CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, numThreads), checkTrue);
 }
 
 Async::EventLoop::~EventLoop() {

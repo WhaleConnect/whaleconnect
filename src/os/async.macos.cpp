@@ -35,7 +35,7 @@ void Async::prepSocket(int s) {
     check(fcntl(s, F_SETFL, flags | O_NONBLOCK));
 }
 
-Async::EventLoop::EventLoop(unsigned int) : kq(check(kqueue())) {}
+Async::EventLoop::EventLoop(unsigned int, unsigned int) : kq(check(kqueue())) {}
 
 Async::EventLoop::~EventLoop() {
     close(kq);

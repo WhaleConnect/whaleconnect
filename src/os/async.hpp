@@ -156,7 +156,7 @@ namespace Async {
 #endif
 
     public:
-        EventLoop(unsigned int queueEntries);
+        EventLoop(unsigned int numThreads, unsigned int queueEntries);
 
         ~EventLoop();
 
