@@ -76,8 +76,16 @@ void WorkerThread::loop() {
 
     while (true) {
         bool expected = true;
-        if (!hasWork.compare_exchange_weak(expected, false, std::memory_order_relaxed))
-            hasWork.wait(false, std::memory_order_relaxed);
+        if (!hasWork.compare_exchange_weak(expected, false, std::memory_order_relaxed)) {
+            if (eventLoop->size() == 0) {
+                // Make thread idle to save CPU cycles
+                hasWork.wait(false, std::memory_order_relaxed);
+            } else {
+                // There are outstanding I/O events, check back periodically
+                using namespace std::literals;
+                std::this_thread::sleep_for(200ms);
+            }
+        }
 
         if (shouldStop.load(std::memory_order_relaxed)) break;
 

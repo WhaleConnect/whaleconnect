@@ -118,3 +118,7 @@ void Async::EventLoop::runOnce(bool wait) {
     pendingEvents.erase(getMapID(event.ident, event.filter));
     result.coroHandle();
 }
+
+std::size_t Async::EventLoop::size() {
+    return numOperations;
+}

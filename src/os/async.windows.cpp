@@ -129,6 +129,10 @@ void Async::EventLoop::runOnce(bool wait) {
     result.coroHandle();
 }
 
+std::size_t Async::EventLoop::size() {
+    return numOperations.load(std::memory_order_relaxed);
+}
+
 void Async::add(SOCKET s) {
     check(CreateIoCompletionPort(reinterpret_cast<HANDLE>(s), completionPort, 0, 0), checkTrue);
 }

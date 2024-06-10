@@ -162,6 +162,8 @@ namespace Async {
 
         void runOnce(bool wait = true);
 
+        std::size_t size();
+
 #if OS_WINDOWS
         static void push(const Operation& operation);
 #else

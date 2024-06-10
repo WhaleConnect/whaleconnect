@@ -101,3 +101,7 @@ void Async::EventLoop::runOnce(bool wait) {
 
     result.coroHandle();
 }
+
+std::size_t Async::EventLoop::size() {
+    return numOperations;
+}
