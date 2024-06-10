@@ -152,7 +152,7 @@ namespace Async {
 
 #if !OS_WINDOWS
         std::vector<Operation> operations;
-        std::size_t numOperations = 0;
+        std::size_t numOperations = 0; // Events that are being waited on (not events in the queue)
 #endif
 
     public:
@@ -160,8 +160,10 @@ namespace Async {
 
         ~EventLoop();
 
+        // Runs one iteration of this event loop.
         void runOnce(bool wait = true);
 
+        // Returns the number of I/O events that are being waited on.
         std::size_t size();
 
 #if OS_WINDOWS
@@ -186,15 +188,20 @@ namespace Async {
         co_return result;
     }
 
+    // Initializes the OS async APIs.
     void init(unsigned int numThreads, unsigned int queueEntries);
 
+    // Submits an I/O operation to the async event loop.
     void submit(const Operation& op);
 
+    // Submits work to a worker thread.
     Task<> queueToThread();
 
+    // Runs one iteration of the main thread's event loop with an optional timeout.
     void handleEvents(bool wait = true);
 
 #if OS_WINDOWS
+    // Adds a socket to IOCP.
     void add(SOCKET s);
 #elif OS_MACOS
     // Makes a socket nonblocking for use with kqueue.

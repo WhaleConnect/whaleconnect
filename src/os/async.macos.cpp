@@ -30,11 +30,6 @@ std::uint64_t getMapID(int s, std::int16_t filt) {
     return static_cast<std::uint64_t>(s) | filterBit;
 }
 
-void Async::prepSocket(int s) {
-    int flags = check(fcntl(s, F_GETFL, 0));
-    check(fcntl(s, F_SETFL, flags | O_NONBLOCK));
-}
-
 Async::EventLoop::EventLoop(unsigned int, unsigned int) : kq(check(kqueue())) {}
 
 Async::EventLoop::~EventLoop() {
@@ -44,6 +39,7 @@ Async::EventLoop::~EventLoop() {
 void handleOperation(Async::PendingEventsMap& pendingEvents, std::vector<struct kevent>& events,
     const Async::Operation& next, std::size_t& numOperations) {
     auto submit = [&](int id, std::int16_t filt, Async::CompletionResult* result) {
+        // Set EV_RECEIPT flag to get error status on kevent
         const std::uint16_t flags = EV_ADD | EV_ONESHOT | EV_RECEIPT;
         events.push_back({ static_cast<unsigned long>(id), filt, flags, 0, 0, result });
         pendingEvents[getMapID(id, filt)] = result;
@@ -88,11 +84,14 @@ void Async::EventLoop::runOnce(bool wait) {
         for (const auto& i : operations) handleOperation(pendingEvents, events, i, numOperations);
         operations.clear();
 
+        // Submit pending events from queue
         if (kevent(kq, events.data(), events.size(), events.data(), events.size(), nullptr) == 0) return;
 
         for (const auto& i : events) {
+            // Get events that set error status
             if (!(i.flags & EV_ERROR) || i.data == 0 || !i.udata) continue;
 
+            // Return error status to calling coroutine
             pendingEvents.erase(getMapID(i.ident, i.filter));
 
             auto& result = *static_cast<Async::CompletionResult*>(i.udata);
@@ -105,6 +104,7 @@ void Async::EventLoop::runOnce(bool wait) {
 
     timespec timeout{ 0, wait ? 200000000 : 0 };
 
+    // Wait for one event from kqueue
     if (kevent(kq, nullptr, 0, &event, 1, &timeout) <= 0) return;
     numOperations--;
 
@@ -121,4 +121,9 @@ void Async::EventLoop::runOnce(bool wait) {
 
 std::size_t Async::EventLoop::size() {
     return numOperations;
+}
+
+void Async::prepSocket(int s) {
+    int flags = check(fcntl(s, F_GETFL, 0));
+    check(fcntl(s, F_SETFL, flags | O_NONBLOCK));
 }

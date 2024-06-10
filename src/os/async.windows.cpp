@@ -16,6 +16,10 @@ HANDLE completionPort = nullptr; // IOCP handle
 std::atomic_int runningThreads = 0;
 std::atomic_size_t numOperations = 0;
 
+void incNumOperations() {
+    numOperations.fetch_add(1, std::memory_order_relaxed);
+}
+
 LPFN_CONNECTEX loadConnectEx(SOCKET s) {
     static LPFN_CONNECTEX connectExPtr = nullptr;
 
@@ -43,6 +47,7 @@ LPFN_ACCEPTEX loadAcceptEx(SOCKET s) {
 }
 
 Async::EventLoop::EventLoop(unsigned int numThreads, unsigned int) {
+    // Initialization and cleanup happen on the first thread that is initialized
     if (runningThreads.fetch_add(1, std::memory_order_relaxed) > 0) return;
 
     // Start Winsock
@@ -67,33 +72,33 @@ void Async::EventLoop::push(const Operation& operation) {
             auto connectExPtr = loadConnectEx(op.handle);
             check(connectExPtr(op.handle, op.addr, static_cast<int>(op.addrLen), nullptr, 0, nullptr, op.result),
                 checkTrue);
-            numOperations.fetch_add(1, std::memory_order_relaxed);
+            incNumOperations();
         },
         [=](const Async::Accept& op) {
             constexpr DWORD addrSize = sizeof(sockaddr_storage) + 16;
             auto acceptExPtr = loadAcceptEx(op.handle);
             check(acceptExPtr(op.handle, op.clientSocket, op.buf, 0, addrSize, addrSize, nullptr, op.result),
                 checkTrue);
-            numOperations.fetch_add(1, std::memory_order_relaxed);
+            incNumOperations();
         },
         [=](const Async::Send& op) {
             check(WSASend(op.handle, op.buf, 1, nullptr, 0, op.result, nullptr));
-            numOperations.fetch_add(1, std::memory_order_relaxed);
+            incNumOperations();
         },
         [=](const Async::SendTo& op) {
             check(
                 WSASendTo(op.handle, op.buf, 1, nullptr, 0, op.addr, static_cast<int>(op.addrLen), op.result, nullptr));
-            numOperations.fetch_add(1, std::memory_order_relaxed);
+            incNumOperations();
         },
         [=](const Async::Receive& op) {
             DWORD flags = 0;
             check(WSARecv(op.handle, op.buf, 1, nullptr, &flags, op.result, nullptr));
-            numOperations.fetch_add(1, std::memory_order_relaxed);
+            incNumOperations();
         },
         [=](const Async::ReceiveFrom& op) {
             DWORD flags = 0;
             check(WSARecvFrom(op.handle, op.buf, 1, nullptr, &flags, op.addr, op.fromLen, op.result, nullptr));
-            numOperations.fetch_add(1, std::memory_order_relaxed);
+            incNumOperations();
         },
         [=](const Async::Shutdown& op) { shutdown(op.handle, SD_BOTH); },
         [=](const Async::Close& op) { closesocket(op.handle); },
