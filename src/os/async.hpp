@@ -7,8 +7,6 @@
 #include <variant>
 
 #if OS_WINDOWS
-#include <atomic>
-
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #elif OS_MACOS
@@ -145,11 +143,7 @@ namespace Async {
 #endif
 
     class EventLoop {
-#if OS_WINDOWS
-        inline static HANDLE completionPort = nullptr; // IOCP handle
-        inline static std::atomic_int runningThreads = 0;
-        inline static std::atomic_size_t numOperations = 0;
-#elif OS_MACOS
+#if OS_MACOS
         int kq = -1;
         PendingEventsMap pendingEvents;
 #elif OS_LINUX
@@ -170,8 +164,6 @@ namespace Async {
 
 #if OS_WINDOWS
         static void push(const Operation& operation);
-
-        static void add(SOCKET s);
 #else
         void push(const Operation& operation) {
             operations.push_back(operation);
@@ -201,9 +193,7 @@ namespace Async {
     void handleEvents(bool wait = true);
 
 #if OS_WINDOWS
-    inline void add(SOCKET s) {
-        EventLoop::add(s);
-    }
+    void add(SOCKET s);
 #elif OS_MACOS
     // Makes a socket nonblocking for use with kqueue.
     void prepSocket(int s);

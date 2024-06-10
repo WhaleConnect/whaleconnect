@@ -3,6 +3,7 @@
 
 #include "async.hpp"
 
+#include <atomic>
 #include <variant>
 
 #include <WinSock2.h>
@@ -10,6 +11,10 @@
 
 #include "errcheck.hpp"
 #include "utils/overload.hpp"
+
+HANDLE completionPort = nullptr; // IOCP handle
+std::atomic_int runningThreads = 0;
+std::atomic_size_t numOperations = 0;
 
 LPFN_CONNECTEX loadConnectEx(SOCKET s) {
     static LPFN_CONNECTEX connectExPtr = nullptr;
@@ -98,10 +103,6 @@ void Async::EventLoop::push(const Operation& operation) {
     std::visit(visitor, operation);
 }
 
-void Async::EventLoop::add(SOCKET s) {
-    check(CreateIoCompletionPort(reinterpret_cast<HANDLE>(s), completionPort, 0, 0), checkTrue);
-}
-
 void Async::EventLoop::runOnce(bool wait) {
     if (numOperations.load(std::memory_order_relaxed) == 0) return;
 
@@ -126,4 +127,8 @@ void Async::EventLoop::runOnce(bool wait) {
     if (!ret) result.error = System::getLastError();
 
     result.coroHandle();
+}
+
+void Async::add(SOCKET s) {
+    check(CreateIoCompletionPort(reinterpret_cast<HANDLE>(s), completionPort, 0, 0), checkTrue);
 }
