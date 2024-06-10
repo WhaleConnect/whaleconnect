@@ -21,6 +21,8 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 - Updated the timestamps display in connection windows to reduce the number of computations per application frame.
 - Updated error reporting to be in terms of location in source files.
 - Updated the receive buffer length input to not take effect when the user is making modifications.
+- Updated the initialization of worker threads to better reflect hardware concurrency.
+  - The number of worker threads created is 1 less than the specified number to account for the main application thread which now also runs an I/O event loop.
 
 ### Bug Fixes
 
