@@ -2,28 +2,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <string>
-#include <thread>
 
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_templated.hpp>
 
 #include "helpers/helpers.hpp"
 #include "net/enums.hpp"
+#include "os/async.hpp"
 #include "os/error.hpp"
 #include "sockets/clientsocket.hpp"
 #include "utils/settingsparser.hpp"
 #include "utils/task.hpp"
-
-// Matcher to check if a SystemError corresponds to a cancellation error.
-struct CancellationMatcher : Catch::Matchers::MatcherGenericBase {
-    bool match(const System::SystemError& e) const {
-        return e.isCanceled();
-    }
-
-    std::string describe() const override {
-        return "Is a cancellation error";
-    }
-};
 
 TEST_CASE("Cancellation") {
     SettingsParser parser;
@@ -38,19 +26,23 @@ TEST_CASE("Cancellation") {
     // Connect
     runSync([&]() -> Task<> { co_await sock.connect({ ConnectionType::TCP, "", v4Addr, tcpPort }); });
 
-    // Create a separate thread to briefly wait, then cancel I/O while recv() is pending
-    std::thread cancelThread{ [&sock] {
+    bool running = true;
+    [&]() -> Task<> {
+        try {
+            co_await sock.recv(4);
+        } catch (const System::SystemError& e) {
+            CHECK(e.isCanceled());
+            running = false;
+        }
+    }();
+
+    int iterations = 0;
+    while (running) {
         using namespace std::literals;
 
-        std::this_thread::sleep_for(20ms);
-        sock.cancelIO();
-    } };
+        Async::handleEvents(false);
+        if (iterations == 5) sock.cancelIO();
 
-    // Start a receive operation
-    // It should be interrupted by the second thread and throw an exception
-    auto recvOperation = [&sock]() -> Task<> { co_await sock.recv(4); };
-
-    CHECK_THROWS_MATCHES(runSync(recvOperation), System::SystemError, CancellationMatcher{});
-
-    cancelThread.join();
+        iterations++;
+    }
 }
