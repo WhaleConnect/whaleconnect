@@ -15,7 +15,6 @@
 #include <swiftToCxx/_SwiftCxxInteroperability.h>
 
 #include "async.hpp"
-#include "net/device.hpp"
 #endif
 
 // The type of a Bluetooth I/O operation.
