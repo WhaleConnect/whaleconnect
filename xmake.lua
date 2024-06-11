@@ -78,7 +78,7 @@ target("swift")
 
     on_build("macosx", function(target)
         os.cd("$(scriptdir)/swift")
-        os.exec("swift build -c %s --build-path $(buildir)/swift", swiftBuildMode)
+        os.exec("swift build -c %s --build-path $(buildir)/swift --config-path $(buildir)/swift", swiftBuildMode)
     end)
 
 target("terminal-core")

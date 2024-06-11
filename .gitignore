@@ -3,7 +3,6 @@ desktop.ini
 .DS_Store
 
 # Build and cache
-.build/
 .cache/
 .xmake/
 build/
