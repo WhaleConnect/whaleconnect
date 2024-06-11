@@ -4,6 +4,7 @@
 #pragma once
 
 #include <coroutine>
+#include <functional>
 #include <variant>
 
 #if OS_WINDOWS
@@ -189,13 +190,17 @@ namespace Async {
     }
 
     // Initializes the OS async APIs.
-    void init(unsigned int numThreads, unsigned int queueEntries);
+    // Returns the total number of threads created, including the main thread.
+    unsigned int init(unsigned int numThreads, unsigned int queueEntries);
 
     // Submits an I/O operation to the async event loop.
     void submit(const Operation& op);
 
     // Submits work to a worker thread.
     Task<> queueToThread();
+
+    // Submits work to all worker threads.
+    void queueToAllThreads(std::function<void()> f);
 
     // Runs one iteration of the main thread's event loop with an optional timeout.
     void handleEvents(bool wait = true);

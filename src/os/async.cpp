@@ -6,6 +6,7 @@
 #include <atomic>
 #include <coroutine>
 #include <forward_list>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -113,7 +114,7 @@ using WorkerThreadPool = std::forward_list<WorkerThread>;
 WorkerThreadPool threads;
 std::optional<Async::EventLoop> eventLoop;
 
-void Async::init(unsigned int numThreads, unsigned int queueEntries) {
+unsigned int Async::init(unsigned int numThreads, unsigned int queueEntries) {
     // If 0 threads are specified, the number is chosen with hardware_concurrency.
     // If the number of supported threads cannot be determined, no worker threads are created.
     // The number of threads created is (desired number) - 1 since the main thread also runs an event loop.
@@ -122,6 +123,8 @@ void Async::init(unsigned int numThreads, unsigned int queueEntries) {
 
     if (realNumThreads > 1)
         for (unsigned int i = 0; i < realNumThreads - 1; i++) threads.emplace_front(queueEntries);
+
+    return realNumThreads;
 }
 
 void Async::submit(const Operation& op) {
@@ -166,6 +169,20 @@ Task<> Async::queueToThread() {
     // If no threads are idle, push to the one with the least amount of work for even work distribution
     least->push(result.coroHandle);
     co_await std::suspend_always{};
+}
+
+void Async::queueToAllThreads(std::function<void()> f) {
+    for (auto i = threads.begin(); i != threads.end(); i++) {
+        [=]() -> Task<> {
+            std::function<void()> tmp = f;
+            CompletionResult result;
+            co_await result;
+
+            i->push(result.coroHandle);
+            co_await std::suspend_always{};
+            tmp();
+        }();
+    }
 }
 
 void Async::handleEvents(bool wait) {
