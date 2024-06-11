@@ -66,7 +66,7 @@ add_defines(
 )
 
 local swiftBuildMode = is_mode("release") and "release" or "debug"
-local swiftBuildDir = format("$(scriptdir)/swift/.build/%s", swiftBuildMode)
+local swiftBuildDir = format("$(buildir)/swift/%s", swiftBuildMode)
 if is_plat("macosx") then
     local swiftLibDir = "/Library/Developer/CommandLineTools/usr/lib/swift"
     add_includedirs(swiftLibDir)
@@ -78,7 +78,7 @@ target("swift")
 
     on_build("macosx", function(target)
         os.cd("$(scriptdir)/swift")
-        os.exec("swift build -c %s", swiftBuildMode)
+        os.exec("swift build -c %s --build-path $(buildir)/swift", swiftBuildMode)
     end)
 
 target("terminal-core")
