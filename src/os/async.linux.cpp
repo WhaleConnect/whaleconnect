@@ -3,6 +3,7 @@
 
 #include "async.hpp"
 
+#include <cstring>
 #include <variant>
 
 #include <liburing.h>
@@ -58,7 +59,8 @@ void handleOperation(io_uring& ring, const Async::Operation& next) {
 }
 
 Async::EventLoop::EventLoop(unsigned int, unsigned int queueEntries) {
-    io_uring_params params{};
+    io_uring_params params;
+    std::memset(&params, 0, sizeof(params));
     params.flags = IORING_SETUP_SINGLE_ISSUER;
 
     check(io_uring_queue_init_params(queueEntries, &ring, &params), checkZero, useReturnCodeNeg);
