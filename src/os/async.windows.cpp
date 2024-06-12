@@ -102,7 +102,7 @@ void Async::EventLoop::push(const Operation& operation) {
         },
         [=](const Async::Shutdown& op) { shutdown(op.handle, SD_BOTH); },
         [=](const Async::Close& op) { closesocket(op.handle); },
-        [=](const Async::Cancel& op) { CancelIoEx(reinterpret_cast<HANDLE>(op.handle), nullptr); },
+        [=](const Async::Cancel& op) { CancelIo(reinterpret_cast<HANDLE>(op.handle)); },
     };
 
     std::visit(visitor, operation);
