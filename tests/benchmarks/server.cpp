@@ -16,32 +16,46 @@
 #include "sockets/serversocket.hpp"
 #include "utils/task.hpp"
 
-thread_local std::list<SocketPtr> clients;
+struct Client {
+    SocketPtr sock;
+    bool done;
 
-Task<> loop(SocketPtr& client) {
+    Client(SocketPtr&& sock, bool done) : sock(std::move(sock)), done(done) {}
+};
+
+thread_local std::list<Client> clients;
+
+Task<> loop(SocketPtr& ptr) {
     static const char* response = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Length: 4\r\nContent-Type: "
                                   "text/html\r\n\r\ntest\r\n\r\n";
 
     co_await Async::queueToThread();
-    SocketPtr& sock = clients.emplace_front(std::move(client));
+    Client& client = clients.emplace_front(std::move(ptr), false);
 
     while (true) {
         try {
-            auto result = co_await sock->recv(1024);
+            auto result = co_await client.sock->recv(1024);
 
-            if (result.closed) break;
+            if (result.closed) {
+                client.done = true;
+                break;
+            }
 
-            if (result.data.ends_with("\r\n\r\n")) co_await sock->send(response);
-        } catch (const System::SystemError& e) {
+            if (result.data.ends_with("\r\n\r\n")) co_await client.sock->send(response);
+        } catch (const System::SystemError&) {
+            client.done = true;
             break;
         }
     }
 }
 
-Task<> accept(const ServerSocket<SocketTag::IP>& sock, bool& pendingAccept) {
+Task<> accept(const ServerSocket<SocketTag::IP>& sock, bool& pendingAccept) try {
     auto [_, client] = co_await sock.accept();
     pendingAccept = false;
     co_await loop(client);
+} catch (const System::SystemError&) {
+    pendingAccept = false;
+    co_return;
 }
 
 void run() {
@@ -54,8 +68,16 @@ void run() {
     // Run for 10 seconds
     using namespace std::literals;
     const auto start = std::chrono::steady_clock::now();
-    while (std::chrono::steady_clock::now() - start < 10s) {
+    while (true) {
+        bool timeout = std::chrono::steady_clock::now() - start > 10s;
+        if (timeout) {
+            s.cancelIO();
+            s.close();
+        }
+
         Async::handleEvents();
+        if (timeout) break;
+
         if (!pendingAccept) {
             pendingAccept = true;
             accept(s, pendingAccept);
@@ -78,12 +100,23 @@ int main(int argc, char** argv) {
     run();
 
     // Cancel remaining work on all threads
-    std::latch threadWaiter{ realNumThreads - 1 };
-    Async::queueToAllThreads([&threadWaiter]() {
-        for (auto i = clients.begin(); i != clients.end(); i++) (*i)->cancelIO();
+    Async::queueToThreadEx({}, []() -> Task<bool> {
+        for (auto i = clients.begin(); i != clients.end(); i++) {
+            const Client& client = *i;
+            if (!client.done) client.sock->cancelIO();
+        }
+        co_return false;
+    });
 
-        clients.clear();
-        threadWaiter.count_down();
+    std::latch threadWaiter{ realNumThreads - 1 };
+    Async::queueToThreadEx({}, [&threadWaiter]() -> Task<bool> {
+        if (clients.empty()) {
+            threadWaiter.count_down();
+            co_return false;
+        }
+
+        std::erase_if(clients, [](const Client& client) { return client.done; });
+        co_return true;
     });
 
     threadWaiter.wait();
