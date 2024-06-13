@@ -5,6 +5,7 @@
 
 #include <coroutine>
 #include <functional>
+#include <thread>
 #include <variant>
 
 #if OS_WINDOWS
@@ -200,7 +201,7 @@ namespace Async {
     Task<> queueToThread();
 
     // Submits work to all worker threads.
-    void queueToAllThreads(std::function<void()> f);
+    void queueToThreadEx(std::thread::id id, std::function<Task<bool>()> f);
 
     // Runs one iteration of the main thread's event loop with an optional timeout.
     void handleEvents(bool wait = true);

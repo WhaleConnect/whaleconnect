@@ -115,6 +115,19 @@ using WorkerThreadPool = std::forward_list<WorkerThread>;
 WorkerThreadPool threads;
 std::optional<Async::EventLoop> eventLoop;
 
+Task<> queueFnToThread(WorkerThread& thread, std::function<Task<bool>()> f) {
+    Async::CompletionResult result;
+    co_await result;
+
+    // Copy the given function to preserve it when the coroutine is resumed
+    auto tmp = f;
+
+    thread.push(result.coroHandle);
+    co_await std::suspend_always{};
+
+    if (co_await tmp()) co_await queueFnToThread(thread, tmp);
+}
+
 unsigned int Async::init(unsigned int numThreads, unsigned int queueEntries) {
     // If 0 threads are specified, the number is chosen with hardware_concurrency.
     // If the number of supported threads cannot be determined, no worker threads are created.
@@ -172,18 +185,11 @@ Task<> Async::queueToThread() {
     co_await std::suspend_always{};
 }
 
-void Async::queueToAllThreads(std::function<void()> f) {
-    for (auto i = threads.begin(); i != threads.end(); i++) {
-        [=]() -> Task<> {
-            std::function<void()> tmp = f;
-            CompletionResult result;
-            co_await result;
+void Async::queueToThreadEx(std::thread::id id, std::function<Task<bool>()> f) {
+    bool allThreads = id == std::thread::id{};
 
-            i->push(result.coroHandle);
-            co_await std::suspend_always{};
-            tmp();
-        }();
-    }
+    for (auto i = threads.begin(); i != threads.end(); i++)
+        if (allThreads || i->getID() == id) queueFnToThread(*i, f);
 }
 
 void Async::handleEvents(bool wait) {
