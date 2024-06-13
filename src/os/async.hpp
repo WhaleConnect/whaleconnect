@@ -200,7 +200,9 @@ namespace Async {
     // Submits work to a worker thread.
     Task<> queueToThread();
 
-    // Submits work to all worker threads.
+    // Extended queueToThread that can be used to queue to a specific thread.
+    // If id == std::thread::id{} then the function is queued to all threads.
+    // If the function returns true, it is re-queued onto the thread.
     void queueToThreadEx(std::thread::id id, std::function<Task<bool>()> f);
 
     // Runs one iteration of the main thread's event loop with an optional timeout.
