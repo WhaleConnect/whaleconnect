@@ -82,7 +82,7 @@ void loadFont(GLFWwindow*, float scaleX, float scaleY) {
 
     // Load icons
     static const std::array<ImWchar, 3> iconRanges{ 0xE000, 0xF8FF, 0 };
-    static const auto iconFontFile = basePath / "RemixIcon.ttf";
+    static const auto iconFontFile = basePath / "remixicon.ttf";
 
     ImFontConfig config;
     config.SizePixels = Settings::Font::size * pixelRatio;

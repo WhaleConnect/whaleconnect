@@ -30,6 +30,7 @@ add_requires("botan", { configs = { modules = (function()
 end)() } })
 add_requires("imgui docking", { configs = { glfw = true, opengl3 = true, freetype = true } })
 add_requires("catch2", "glfw", "imguitextselect", "opengl", "out_ptr", "utfcpp")
+add_requires("noto-sans-mono", "remix-icon")
 
 add_packages("botan", "out_ptr")
 
@@ -124,7 +125,7 @@ target("terminal-core")
 target("terminal")
     add_packages("glfw")
     add_deps("terminal-core")
-    add_packages("glfw", "imgui", "imguitextselect", "opengl", "utfcpp")
+    add_packages("glfw", "imgui", "imguitextselect", "noto-sans-mono", "opengl", "remix-icon", "utfcpp")
 
     if is_plat("macosx") then
         add_deps("swift")
@@ -146,11 +147,12 @@ target("terminal")
         add_files("res/Info.plist")
     end
 
-    on_load(function (target)
+    after_load(function (target)
         -- Install font files and license next to executable
         -- Fonts are embedded in the Resources directory in the macOS bundle.
         local prefixdir = is_plat("macosx") and "" or "bin"
-        target:add("installfiles", format("%s/(*.ttf)", target:targetdir()), { prefixdir = prefixdir })
+        target:add("installfiles", os.getenv("NOTO_SANS_MONO_PATH"), { prefixdir = prefixdir })
+        target:add("installfiles", os.getenv("REMIX_ICON_PATH"), { prefixdir = prefixdir })
         target:add("installfiles", "COPYING")
     end)
 
