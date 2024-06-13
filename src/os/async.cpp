@@ -16,16 +16,17 @@
 #include "utils/task.hpp"
 
 class WorkerThread {
-    std::thread thread;
-    std::thread::id id;
-    std::atomic_bool shouldStop = false;
-    std::unique_ptr<Async::EventLoop> eventLoop;
     unsigned int queueEntries;
 
     std::vector<std::coroutine_handle<>> workQueue;
     std::mutex queueMutex;
     std::atomic_size_t numWork = 0;
     std::atomic_bool hasWork = false;
+    std::atomic_bool shouldStop = false;
+
+    std::unique_ptr<Async::EventLoop> eventLoop;
+    std::thread thread;
+    std::thread::id id;
 
     void loop();
 
@@ -37,7 +38,7 @@ class WorkerThread {
 
 public:
     WorkerThread(unsigned int queueEntries) :
-        thread(&WorkerThread::loop, this), id(thread.get_id()), queueEntries(queueEntries) {}
+        queueEntries(queueEntries), thread(&WorkerThread::loop, this), id(thread.get_id()) {}
 
     ~WorkerThread() {
         stop();
