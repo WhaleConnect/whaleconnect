@@ -3,6 +3,7 @@
 
 set_version("0.4.0", { build = "%Y%m%d%H%M" })
 add_repositories("additional-deps ./xmake")
+set_policy("package.requires_lock", true)
 set_license("GPL-3.0-or-later")
 
 add_rules("mode.debug", "mode.release")
