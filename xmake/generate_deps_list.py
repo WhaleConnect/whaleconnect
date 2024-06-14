@@ -8,7 +8,6 @@
 import json
 from pathlib import Path
 import re
-import urllib.request
 
 project_dir = Path(__file__).parent.parent
 xmake_file_path = project_dir / "xmake.lua"
@@ -50,14 +49,9 @@ for package in sorted(packages):
         print("Could not find information in lock file for:", package)
         continue
 
-    if package_info["online"]:
-        # Fetch xmake.lua from xmake-repo on GitHub
-        url = f"https://raw.githubusercontent.com/xmake-io/xmake-repo/dev/packages/{package[0]}/{package}/xmake.lua"
-        package_file = urllib.request.urlopen(url).read().decode("utf-8")
-    else:
-        # Local dependency, open xmake.lua from packages directory
-        with open(project_dir / "xmake" / "packages" / package[0] / package / "xmake.lua", "r") as f:
-            package_file = f.read()
+    with open(package_info["filepath"], "b+r") as f:
+        # Explicitly decode as UTF-8 since package files may contain Unicode
+        package_file = f.read().decode("utf-8")
 
     # Name
     if homepage_str := homepage_search.search(package_file):

@@ -10,13 +10,20 @@ all_packages = {}
 
 function record_packages(packages, os_key)
     for package, info in pairs(packages) do
-        local name = string.match(package, "^([%w_%-]+)")
+        local name = package:match("^([%w_%-]+)")
         if all_packages[name] == nil then
             local version = info["version"]
             local parsed_version = semver.is_valid(version) and semver.new(version):shortstr() or version
+
+            local online = info["repo"]["url"]:match("^https://")
+
+            local repo_root = online
+                and path.join(val("globaldir"), "repositories", "xmake-repo")
+                or path.join(val("projectdir"), "xmake")
+
             all_packages[name] = {
                 version = parsed_version,
-                online = string.match(info["repo"]["url"], "^https://") and true or false,
+                filepath = path.join(repo_root, "packages", name:sub(1, 1), name, "xmake.lua"),
                 os = {}
             }
         end
@@ -29,7 +36,7 @@ function main(...)
     package_info = io.load(path.join(os.projectdir(), "xmake-requires.lock"))
     for platform, packages in pairs(package_info) do
         if platform ~= "__meta__" then
-            local os = string.match(platform, "(.+)|")
+            local os = platform:match("(.+)|")
             local os_key = ""
             if os == "linux" then
                 os_key = "L"
