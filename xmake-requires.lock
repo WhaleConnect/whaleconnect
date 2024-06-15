@@ -1,4 +1,7 @@
 {
+    __meta__ = {
+        version = "1.0"
+    },
     ["linux|x86_64"] = {
         ["bluez#31fecfc4"] = {
             repo = {
@@ -344,7 +347,7 @@
         ["cmake#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "101dc3d144301331fc6e526d1085b795fe2a72ed",
+                commit = "9403c451750e9be9c67241dbeae2855b8637d69c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "3.29.2"
@@ -383,7 +386,7 @@
         ["ninja#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "101dc3d144301331fc6e526d1085b795fe2a72ed",
+                commit = "9403c451750e9be9c67241dbeae2855b8637d69c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "1.11.1"
@@ -397,7 +400,7 @@
         ["opengl#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "101dc3d144301331fc6e526d1085b795fe2a72ed",
+                commit = "9403c451750e9be9c67241dbeae2855b8637d69c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "latest"
@@ -421,7 +424,7 @@
         ["python 3.x#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "101dc3d144301331fc6e526d1085b795fe2a72ed",
+                commit = "9403c451750e9be9c67241dbeae2855b8637d69c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "3.12.3"
@@ -443,14 +446,11 @@
         ["zlib#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "101dc3d144301331fc6e526d1085b795fe2a72ed",
+                commit = "9403c451750e9be9c67241dbeae2855b8637d69c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "v1.3.1"
         }
-    },
-    __meta__ = {
-        version = "1.0"
     },
     ["windows|x64"] = {
         ["botan#d6ce37d7"] = {
