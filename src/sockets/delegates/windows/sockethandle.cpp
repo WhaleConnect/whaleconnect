@@ -9,15 +9,12 @@
 
 template <auto Tag>
 void Delegates::SocketHandle<Tag>::closeImpl() {
-    // shutdown(handle, SD_BOTH);
-    // closesocket(handle);
     Async::submit(Async::Shutdown{ { **this, nullptr } });
     Async::submit(Async::Close{ { **this, nullptr } });
 }
 
 template <auto Tag>
 void Delegates::SocketHandle<Tag>::cancelIO() {
-    // CancelIoEx(reinterpret_cast<HANDLE>(handle), nullptr);
     Async::submit(Async::Cancel{ { **this, nullptr } });
 }
 
