@@ -525,7 +525,7 @@
         ["opengl#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "04a519877e06d6e829b2ec03b238f258688df10a",
+                commit = "1598d93a9b6bb0a2d70dbf2713e531be4d93f35b",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "latest"
