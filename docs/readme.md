@@ -13,12 +13,6 @@ This software is currently in alpha. Feedback and feature requests are welcome.
 - [System Requirements](requirements.md)
 - [Testing](testing.md)
 
-## Development Branch
-
-The [`dev` branch](https://github.com/NSTerminal/terminal/tree/dev) is used for in-progress features. Updates can vary in maturity; the branch is not guaranteed to be stable.
-
-When a feature is merged into `main` it is ready for release.
-
 ## License
 
 NST and its build scripts are licensed under the [GPL v3+ license](../COPYING).
