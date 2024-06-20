@@ -35,18 +35,14 @@ Task<> loop(SocketPtr& ptr) {
     while (true) {
         try {
             auto result = co_await client.sock->recv(1024);
-
-            if (result.closed) {
-                client.done = true;
-                break;
-            }
+            if (result.closed) break;
 
             if (result.data.ends_with("\r\n\r\n")) co_await client.sock->send(response);
         } catch (const System::SystemError&) {
-            client.done = true;
             break;
         }
     }
+    client.done = true;
 }
 
 Task<> accept(const ServerSocket<SocketTag::IP>& sock, bool& pendingAccept) try {
@@ -55,7 +51,6 @@ Task<> accept(const ServerSocket<SocketTag::IP>& sock, bool& pendingAccept) try 
     co_await loop(client);
 } catch (const System::SystemError&) {
     pendingAccept = false;
-    co_return;
 }
 
 void run() {
@@ -101,10 +96,9 @@ int main(int argc, char** argv) {
 
     // Cancel remaining work on all threads
     Async::queueToThreadEx({}, []() -> Task<bool> {
-        for (auto i = clients.begin(); i != clients.end(); i++) {
-            const Client& client = *i;
-            if (!client.done) client.sock->cancelIO();
-        }
+        for (auto i = clients.begin(); i != clients.end(); i++)
+            if (!i->done) i->sock->cancelIO();
+
         co_return false;
     });
 
