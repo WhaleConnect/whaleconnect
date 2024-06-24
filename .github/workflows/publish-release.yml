@@ -1,0 +1,59 @@
+name: Publish release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-all-os.yml
+    with:
+      mode: release
+
+  publish-release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    needs: [build]
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download Linux release
+      uses: actions/download-artifact@v4
+      with:
+        name: terminal-linux
+        path: terminal-linux
+
+    - name: Download macOS release
+      uses: actions/download-artifact@v4
+      with:
+        name: terminal-macos
+        path: terminal-macos
+
+    - name: Download Windows release
+      uses: actions/download-artifact@v4
+      with:
+        name: terminal-windows
+        path: terminal-windows
+
+    - name: Compress releases
+      run: |
+        zip terminal-linux.zip terminal-linux/* -r -qq
+        zip terminal-macos.zip terminal-macos/* -r -qq
+        zip terminal-windows.zip terminal-windows/* -r -qq
+
+    - name: Get latest changes
+      run: python3 scripts/get_latest_changes.py
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      with:
+        body_path: changelog-latest.txt
+        files: |
+          terminal-linux.zip
+          terminal-macos.zip
+          terminal-windows.zip

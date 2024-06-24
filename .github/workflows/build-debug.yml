@@ -1,0 +1,13 @@
+name: Debug build
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+    branches:
+      - '**'
+jobs:
+  build:
+    uses: ./.github/workflows/build-all-os.yml
+    with:
+      mode: debug

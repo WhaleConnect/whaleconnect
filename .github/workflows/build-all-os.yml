@@ -1,0 +1,24 @@
+name: All OS build
+
+on:
+  workflow_call:
+    inputs:
+      mode:
+        type: string
+        required: true
+
+jobs:
+  build-linux:
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      mode: ${{ inputs.mode }}
+
+  build-macos:
+    uses: ./.github/workflows/build-macos.yml
+    with:
+      mode: ${{ inputs.mode }}
+
+  build-windows:
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      mode: ${{ inputs.mode }}

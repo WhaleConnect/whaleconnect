@@ -1,0 +1,75 @@
+name: macOS build
+
+on:
+  workflow_call:
+    inputs:
+      mode:
+        type: string
+        required: true
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+    - name: Setup Xcode
+      id: xcode
+      run: |
+        sudo xcodes select 15.4
+        echo "xcode_path=$(dirname $(dirname $(xcodes select 15.4 -p)))" >> $GITHUB_OUTPUT
+
+    - name: Get current date as package key
+      id: cache_key
+      run: echo "key=$(date +'%W')" >> $GITHUB_OUTPUT
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set xmake env
+      run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
+
+    - name: Setup xmake
+      uses: xmake-io/github-action-setup-xmake@v1
+      with:
+        xmake-version: '2.9.2'
+        actions-cache-folder: .xmake-cache-W${{ steps.cache_key.outputs.key }}
+
+    - name: Update xmake repository
+      run: xmake repo --update
+
+    - name: Retrieve dependencies hash
+      id: dep_hash
+      run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
+
+    - name: Retrieve cached xmake dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+        key: macOS-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
+
+    - name: Configure xmake
+      run: xmake f -m ${{ inputs.mode }} --ccache=n -y --xcode=${{ steps.xcode.outputs.xcode_path }}
+
+    - name: Build
+      run: |
+        xmake build swift
+        xmake
+
+    - name: Install
+      if: inputs.mode == 'release'
+      run: |
+        xmake i -o dist/terminal.app terminal
+        chmod +x dist/terminal.app/Contents/MacOS/terminal
+
+    - name: Create DMG
+      if: inputs.mode == 'release'
+      run: |
+        brew install create-dmg
+        create-dmg --volname terminal terminal.dmg dist
+
+    - name: Upload
+      if: inputs.mode == 'release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: terminal-macos
+        path: terminal.dmg

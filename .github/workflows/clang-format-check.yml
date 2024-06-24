@@ -1,0 +1,29 @@
+name: clang-format Check
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+
+jobs:
+  clang-format-check:
+    name: clang-format Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path:
+          - './src'
+          - './tests'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: clang-format Check
+      uses: DoozyX/clang-format-lint-action@v0.17
+      with:
+        source: ${{ matrix.path }}
+        clangFormatVersion: 16
