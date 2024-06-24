@@ -124,7 +124,6 @@ target("terminal-core")
     end
 
 target("terminal")
-    add_packages("glfw")
     add_deps("terminal-core")
     add_packages("glfw", "imgui", "imguitextselect", "noto-sans-mono", "opengl", "remix-icon", "utfcpp")
 
