@@ -85,7 +85,7 @@ target("swift")
 
 target("terminal-core")
     -- Project files
-    set_kind("static")
+    set_kind("object")
 
     if is_plat("macosx") then
         add_deps("swift")
