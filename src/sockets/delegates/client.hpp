@@ -5,7 +5,6 @@
 
 #include "delegates.hpp"
 #include "sockethandle.hpp"
-
 #include "net/device.hpp"
 #include "utils/task.hpp"
 

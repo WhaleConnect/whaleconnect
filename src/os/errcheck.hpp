@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <utility>
 #include <source_location>
+#include <utility>
 
 #include "os/error.hpp"
 
@@ -24,7 +24,8 @@ inline struct UseReturnCodeNeg { System::ErrorCode operator()(auto rc) { return 
 // Calls a system function, and throws an exception if its return code does not match a success value.
 // The success condition and thrown error code can be changed with predicate and projection functions.
 template <class T, class Pred = CheckNonError, class Proj = UseLastError>
-inline T check(const T& rc, Pred checkFn = {}, Proj transformFn = {}, System::ErrorType type = System::ErrorType::System,
+inline T check(const T& rc, Pred checkFn = {}, Proj transformFn = {},
+    System::ErrorType type = System::ErrorType::System,
     const std::source_location& location = std::source_location::current()) {
     System::ErrorCode code = transformFn(rc);
     return checkFn(rc) || !System::isFatal(code) ? rc : throw System::SystemError{ code, type, location };

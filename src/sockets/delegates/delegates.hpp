@@ -8,8 +8,8 @@
 #include <optional>
 #include <string>
 
-#include "net/enums.hpp"
 #include "net/device.hpp"
+#include "net/enums.hpp"
 #include "utils/task.hpp"
 
 class Socket;

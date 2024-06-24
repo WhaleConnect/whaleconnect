@@ -1,9 +1,9 @@
 // Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <cstring>
-
 #include "uuids.hpp"
+
+#include <cstring>
 
 UUIDs::UUID128 UUIDs::fromSegments(std::uint32_t d1, std::uint16_t d2, std::uint16_t d3, std::uint64_t d4) {
     UUIDs::UUID128 ret;

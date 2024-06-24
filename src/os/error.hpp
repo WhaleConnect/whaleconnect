@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include <source_location>
 #include <stdexcept>
 #include <string>
-#include <source_location>
 
 #if OS_WINDOWS
 #include <WinSock2.h>
@@ -42,7 +42,8 @@ namespace System {
         // Constructs an object representing a specific error.
         SystemError(ErrorCode code, ErrorType type,
             const std::source_location& location = std::source_location::current()) :
-            std::runtime_error(formatSystemError(code, type, location)), code(code), type(type) {}
+            std::runtime_error(formatSystemError(code, type, location)),
+            code(code), type(type) {}
 
         // Checks if this object represents a fatal error.
         explicit operator bool() const {

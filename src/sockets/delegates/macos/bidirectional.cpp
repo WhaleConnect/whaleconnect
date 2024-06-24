@@ -19,16 +19,18 @@
 
 template <>
 Task<> Delegates::Bidirectional<SocketTag::IP>::send(std::string data) {
-    co_await Async::run(
-        [this](Async::CompletionResult& result) { Async::submit(Async::Send{ { *handle, &result } }); });
+    co_await Async::run([this](Async::CompletionResult& result) {
+        Async::submit(Async::Send{ { *handle, &result } });
+    });
 
     check(::send(*handle, data.data(), data.size(), 0));
 }
 
 template <>
 Task<RecvResult> Delegates::Bidirectional<SocketTag::IP>::recv(std::size_t size) {
-    co_await Async::run(
-        [this](Async::CompletionResult& result) { Async::submit(Async::Receive{ { *handle, &result } }); });
+    co_await Async::run([this](Async::CompletionResult& result) {
+        Async::submit(Async::Receive{ { *handle, &result } });
+    });
 
     std::string data(size, 0);
     auto recvLen = check(::recv(*handle, data.data(), data.size(), 0));

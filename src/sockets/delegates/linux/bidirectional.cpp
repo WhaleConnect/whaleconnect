@@ -11,8 +11,9 @@
 
 template <auto Tag>
 Task<> Delegates::Bidirectional<Tag>::send(std::string data) {
-    co_await Async::run(
-        [this, &data](Async::CompletionResult& result) { Async::submit(Async::Send{ { *handle, &result }, data }); });
+    co_await Async::run([this, &data](Async::CompletionResult& result) {
+        Async::submit(Async::Send{ { *handle, &result }, data });
+    });
 }
 
 template <auto Tag>

@@ -4,7 +4,6 @@
 #pragma once
 
 #include "socket.hpp"
-
 #include "delegates/noops.hpp"
 #include "delegates/server.hpp"
 #include "delegates/sockethandle.hpp"

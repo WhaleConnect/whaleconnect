@@ -4,7 +4,6 @@
 #pragma once
 
 #include "socket.hpp"
-
 #include "delegates/noops.hpp"
 #include "delegates/secure/clienttls.hpp"
 

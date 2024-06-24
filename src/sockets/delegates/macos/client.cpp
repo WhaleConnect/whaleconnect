@@ -28,8 +28,9 @@ Task<> Delegates::Client<SocketTag::IP>::connect(Device device) {
 
         // Start connect
         check(::connect(*handle, result->ai_addr, result->ai_addrlen));
-        co_await Async::run(
-            [this](Async::CompletionResult& result) { Async::submit(Async::Connect{ { *handle, &result } }); });
+        co_await Async::run([this](Async::CompletionResult& result) {
+            Async::submit(Async::Connect{ { *handle, &result } });
+        });
     });
 }
 

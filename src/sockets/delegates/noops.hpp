@@ -7,7 +7,6 @@
 
 #include "delegates.hpp"
 #include "net/device.hpp"
-
 #include "sockets/socket.hpp" // IWYU pragma: keep
 #include "utils/task.hpp"
 

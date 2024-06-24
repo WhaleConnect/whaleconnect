@@ -8,9 +8,8 @@
 #include <utility>
 
 #include "delegates.hpp"
-#include "traits.hpp"
 #include "sockethandle.hpp"
-
+#include "traits.hpp"
 #include "net/device.hpp"
 #include "net/enums.hpp"
 #include "utils/task.hpp"

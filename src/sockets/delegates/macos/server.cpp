@@ -27,8 +27,9 @@ ServerAddress Delegates::Server<SocketTag::IP>::startServer(const Device& server
 
 template <>
 Task<AcceptResult> Delegates::Server<SocketTag::IP>::accept() {
-    co_await Async::run(
-        [this](Async::CompletionResult& result) { Async::submit(Async::Accept{ { *handle, &result } }); });
+    co_await Async::run([this](Async::CompletionResult& result) {
+        Async::submit(Async::Accept{ { *handle, &result } });
+    });
 
     sockaddr_storage client;
     auto clientAddr = reinterpret_cast<sockaddr*>(&client);
@@ -47,8 +48,9 @@ Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(std::size_t siz
     auto fromAddr = reinterpret_cast<sockaddr*>(&from);
     socklen_t addrSize = sizeof(from);
 
-    co_await Async::run(
-        [this](Async::CompletionResult& result) { Async::submit(Async::ReceiveFrom{ { *handle, &result } }); });
+    co_await Async::run([this](Async::CompletionResult& result) {
+        Async::submit(Async::ReceiveFrom{ { *handle, &result } });
+    });
 
     std::string data(size, 0);
     auto recvLen = check(recvfrom(*handle, data.data(), data.size(), 0, fromAddr, &addrSize));
@@ -62,8 +64,9 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
     auto addr = NetUtils::resolveAddr(device, false);
 
     co_await NetUtils::loopWithAddr(addr.get(), [this, &data](const AddrInfoType* resolveRes) -> Task<> {
-        co_await Async::run(
-            [this](Async::CompletionResult& result) { Async::submit(Async::SendTo{ { *handle, &result } }); });
+        co_await Async::run([this](Async::CompletionResult& result) {
+            Async::submit(Async::SendTo{ { *handle, &result } });
+        });
         check(sendto(*handle, data.data(), data.size(), 0, resolveRes->ai_addr, resolveRes->ai_addrlen));
     });
 }

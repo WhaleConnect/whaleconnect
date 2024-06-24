@@ -6,7 +6,6 @@
 #include "net/enums.hpp"
 #include "os/async.hpp"
 
-
 template <auto Tag>
 void Delegates::SocketHandle<Tag>::closeImpl() {
     Async::submit(Async::Shutdown{ { **this, nullptr } });
