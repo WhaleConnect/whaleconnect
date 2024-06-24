@@ -32,7 +32,7 @@ jobs:
       run: |
         xmake repo --update
         xmake l xmake/parse_lock_file.lua
-        python3 generate_deps_list.py
+        python3 scripts/generate_deps_list.py
 
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v5
