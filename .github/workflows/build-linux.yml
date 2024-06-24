@@ -33,7 +33,7 @@ jobs:
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
       with:
-        xmake-version: '2.9.2'
+        xmake-version: '2.9.3'
         actions-cache-folder: .xmake-cache-W${{ steps.cache_key.outputs.key }}
 
     - name: Update xmake repository
