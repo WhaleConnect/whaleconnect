@@ -11,6 +11,7 @@ set_defaultmode("debug")
 
 -- Avoid linking to system libraries - prevents dependency mismatches on different platforms and makes package self-contained
 add_requireconfs("*|opengl", { system = false })
+add_requireconfs("imgui.freetype", { system = false })
 
 add_requires("botan", { configs = { modules = (function()
     local certstoreSystem = "certstor_flatfile"
