@@ -23,7 +23,7 @@ This software is currently in beta. Feedback and feature requests are welcome.
 
 Additional features require:
 
-- **Network adapter** for IP-based communication
+- **Network adapter** for Internet-based communication
 - **Bluetooth adapter** for Bluetooth-based communication
 
 ## Software Requirements
