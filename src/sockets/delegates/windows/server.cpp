@@ -88,8 +88,7 @@ Task<DgramRecvResult> Delegates::Server<SocketTag::IP>::recvFrom(std::size_t siz
 
     std::string data(size, 0);
     auto recvResult = co_await Async::run([this, &data, fromPtr, &fromLen](Async::CompletionResult& result) {
-        WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-        Async::submit(Async::ReceiveFrom{ { *handle, &result }, &buf, fromPtr, &fromLen });
+        Async::submit(Async::ReceiveFrom{ { *handle, &result }, data, fromPtr, &fromLen });
     });
 
     data.resize(recvResult.res);
@@ -103,8 +102,7 @@ Task<> Delegates::Server<SocketTag::IP>::sendTo(Device device, std::string data)
 
     co_await NetUtils::loopWithAddr(addr.get(), [this, &data](const AddrInfoType* resolveRes) -> Task<> {
         co_await Async::run([this, resolveRes, &data](Async::CompletionResult& result) {
-            WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-            Async::submit(Async::SendTo{ { *handle, &result }, &buf, resolveRes->ai_addr,
+            Async::submit(Async::SendTo{ { *handle, &result }, data, resolveRes->ai_addr,
                 static_cast<socklen_t>(resolveRes->ai_addrlen) });
         });
     });

@@ -7,19 +7,17 @@
 #include <functional>
 #include <thread>
 #include <variant>
+#include <vector>
 
 #if OS_WINDOWS
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #elif OS_MACOS
 #include <unordered_map>
-#include <vector>
 
 #include <sys/event.h>
 #include <unistd.h>
 #elif OS_LINUX
-#include <vector>
-
 #include <liburing.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -47,6 +45,8 @@ namespace Async {
         int res = 0; // The result the operation (returned to caller, exact meaning depends on operation)
 
 #if OS_WINDOWS
+        std::thread::id thread = std::this_thread::get_id();
+
         CompletionResult() : OVERLAPPED{} {}
 #else
         CompletionResult() = default;
@@ -95,19 +95,13 @@ namespace Async {
     };
 
     struct Send : OperationBase {
-#if OS_WINDOWS
-        WSABUF* buf;
-#elif OS_LINUX
+#if !OS_MACOS
         std::string_view data;
 #endif
     };
 
     struct SendTo : OperationBase {
-#if OS_WINDOWS
-        WSABUF* buf;
-        sockaddr* addr;
-        socklen_t addrLen;
-#elif OS_LINUX
+#if !OS_MACOS
         std::string_view data;
         sockaddr* addr;
         socklen_t addrLen;
@@ -115,16 +109,14 @@ namespace Async {
     };
 
     struct Receive : OperationBase {
-#if OS_WINDOWS
-        WSABUF* buf;
-#elif OS_LINUX
+#if !OS_MACOS
         std::string& data;
 #endif
     };
 
     struct ReceiveFrom : OperationBase {
 #if OS_WINDOWS
-        WSABUF* buf;
+        std::string& data;
         sockaddr* addr;
         socklen_t* fromLen;
 #elif OS_LINUX
@@ -145,17 +137,17 @@ namespace Async {
 #endif
 
     class EventLoop {
-#if OS_MACOS
+#if OS_WINDOWS
+        std::thread::id thisId;
+#elif OS_MACOS
         int kq = -1;
         PendingEventsMap pendingEvents;
 #elif OS_LINUX
         io_uring ring;
 #endif
 
-#if !OS_WINDOWS
         std::vector<Operation> operations;
         std::size_t numOperations = 0; // Events that are being waited on (not events in the queue)
-#endif
 
     public:
         EventLoop(unsigned int numThreads, unsigned int queueEntries);
@@ -166,15 +158,13 @@ namespace Async {
         void runOnce(bool wait = true);
 
         // Returns the number of I/O events that are being waited on.
-        std::size_t size();
+        std::size_t size() {
+            return numOperations;
+        }
 
-#if OS_WINDOWS
-        static void push(const Operation& operation);
-#else
         void push(const Operation& operation) {
             operations.push_back(operation);
         }
-#endif
     };
 
     // Awaits an asynchronous operation and returns the result.

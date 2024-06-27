@@ -3,16 +3,16 @@
 
 #include "sockets/delegates/bidirectional.hpp"
 
-#include <WinSock2.h>
+#include <string>
 
+#include "net/enums.hpp"
 #include "os/async.hpp"
 #include "utils/task.hpp"
 
 template <auto Tag>
 Task<> Delegates::Bidirectional<Tag>::send(std::string data) {
     co_await Async::run([this, &data](Async::CompletionResult& result) {
-        WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-        Async::submit(Async::Send{ { *handle, &result }, &buf });
+        Async::submit(Async::Send{ { *handle, &result }, data });
     });
 }
 
@@ -21,8 +21,7 @@ Task<RecvResult> Delegates::Bidirectional<Tag>::recv(std::size_t size) {
     std::string data(size, 0);
 
     auto recvResult = co_await Async::run([this, &data](Async::CompletionResult& result) {
-        WSABUF buf{ static_cast<ULONG>(data.size()), data.data() };
-        Async::submit(Async::Receive{ { *handle, &result }, &buf });
+        Async::submit(Async::Receive{ { *handle, &result }, data });
     });
 
     // Check for disconnects

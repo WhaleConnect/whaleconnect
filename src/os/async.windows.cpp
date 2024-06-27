@@ -3,127 +3,161 @@
 
 #include "async.hpp"
 
-#include <atomic>
+#include <mutex>
+#include <thread>
+#include <unordered_map>
 #include <variant>
+#include <vector>
 
 #include <WinSock2.h>
 #include <MSWSock.h>
 
 #include "errcheck.hpp"
+#include "net/enums.hpp"
+#include "sockets/delegates/sockethandle.hpp"
 #include "utils/overload.hpp"
 
+// IOCP does not guarantee an event submitted on one thread will be resumed on that thread.
+// Threads will often need to resubmit events to each other.
+struct Resubmit {
+    std::vector<std::coroutine_handle<>> handles;
+    std::mutex m;
+};
+
+std::unordered_map<std::thread::id, Resubmit> resubmits;
+
 HANDLE completionPort = nullptr; // IOCP handle
-std::atomic_int runningThreads = 0;
-std::atomic_size_t numOperations = 0;
+int runningThreads = 0;
+std::mutex runningMutex;
 
-void incNumOperations() {
-    numOperations.fetch_add(1, std::memory_order_relaxed);
+LPFN_CONNECTEX connectExPtr = nullptr;
+LPFN_ACCEPTEX acceptExPtr = nullptr;
+
+void loadConnectEx(SOCKET s) {
+    // Load the ConnectEx function
+    GUID guid = WSAID_CONNECTEX;
+    DWORD numBytes = 0;
+    check(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &connectExPtr, sizeof(connectExPtr),
+        &numBytes, nullptr, nullptr));
 }
 
-LPFN_CONNECTEX loadConnectEx(SOCKET s) {
-    static LPFN_CONNECTEX connectExPtr = nullptr;
-
-    if (!connectExPtr) {
-        // Load the ConnectEx function
-        GUID guid = WSAID_CONNECTEX;
-        DWORD numBytes = 0;
-        check(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &connectExPtr, sizeof(connectExPtr),
-            &numBytes, nullptr, nullptr));
-    }
-    return connectExPtr;
+void loadAcceptEx(SOCKET s) {
+    // Load the AcceptEx function
+    GUID guid = WSAID_ACCEPTEX;
+    DWORD numBytes = 0;
+    check(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &acceptExPtr, sizeof(acceptExPtr),
+        &numBytes, nullptr, nullptr));
 }
 
-LPFN_ACCEPTEX loadAcceptEx(SOCKET s) {
-    static LPFN_ACCEPTEX acceptExPtr = nullptr;
-
-    if (!acceptExPtr) {
-        // Load the AcceptEx function
-        GUID guid = WSAID_ACCEPTEX;
-        DWORD numBytes = 0;
-        check(WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &acceptExPtr, sizeof(acceptExPtr),
-            &numBytes, nullptr, nullptr));
-    }
-    return acceptExPtr;
-}
-
-Async::EventLoop::EventLoop(unsigned int numThreads, unsigned int) {
-    // Initialization and cleanup happen on the first thread that is initialized
-    if (runningThreads.fetch_add(1, std::memory_order_relaxed) > 0) return;
-
-    // Start Winsock
-    WSADATA wsaData{};
-    check(WSAStartup(MAKEWORD(2, 2), &wsaData), checkTrue, useReturnCode); // MAKEWORD(2, 2) for Winsock 2.2
-
-    // Initialize IOCP
-    completionPort = check(CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, numThreads), checkTrue);
-}
-
-Async::EventLoop::~EventLoop() {
-    if (runningThreads.fetch_sub(1, std::memory_order_relaxed) > 1) return;
-
-    // Cleanup Winsock
-    CloseHandle(completionPort);
-    check(WSACleanup());
-}
-
-void Async::EventLoop::push(const Operation& operation) {
+void handleOperation(const Async::Operation& operation) {
     Overload visitor{
         [=](const Async::Connect& op) {
-            auto connectExPtr = loadConnectEx(op.handle);
             check(connectExPtr(op.handle, op.addr, static_cast<int>(op.addrLen), nullptr, 0, nullptr, op.result),
                 checkTrue);
-            incNumOperations();
         },
         [=](const Async::Accept& op) {
             constexpr DWORD addrSize = sizeof(sockaddr_storage) + 16;
-            auto acceptExPtr = loadAcceptEx(op.handle);
             check(acceptExPtr(op.handle, op.clientSocket, op.buf, 0, addrSize, addrSize, nullptr, op.result),
                 checkTrue);
-            incNumOperations();
         },
         [=](const Async::Send& op) {
-            check(WSASend(op.handle, op.buf, 1, nullptr, 0, op.result, nullptr));
-            incNumOperations();
+            // Safe to use const_cast since WSASend/WSASendTo do not modify the buffer.
+            WSABUF buf{ static_cast<ULONG>(op.data.size()), const_cast<char*>(op.data.data()) };
+            check(WSASend(op.handle, &buf, 1, nullptr, 0, op.result, nullptr));
         },
         [=](const Async::SendTo& op) {
-            check(
-                WSASendTo(op.handle, op.buf, 1, nullptr, 0, op.addr, static_cast<int>(op.addrLen), op.result, nullptr));
-            incNumOperations();
+            WSABUF buf{ static_cast<ULONG>(op.data.size()), const_cast<char*>(op.data.data()) };
+            check(WSASendTo(op.handle, &buf, 1, nullptr, 0, op.addr, static_cast<int>(op.addrLen), op.result, nullptr));
         },
         [=](const Async::Receive& op) {
             DWORD flags = 0;
-            check(WSARecv(op.handle, op.buf, 1, nullptr, &flags, op.result, nullptr));
-            incNumOperations();
+            WSABUF buf{ static_cast<ULONG>(op.data.size()), op.data.data() };
+            check(WSARecv(op.handle, &buf, 1, nullptr, &flags, op.result, nullptr));
         },
         [=](const Async::ReceiveFrom& op) {
             DWORD flags = 0;
-            check(WSARecvFrom(op.handle, op.buf, 1, nullptr, &flags, op.addr, op.fromLen, op.result, nullptr));
-            incNumOperations();
+            WSABUF buf{ static_cast<ULONG>(op.data.size()), op.data.data() };
+            check(WSARecvFrom(op.handle, &buf, 1, nullptr, &flags, op.addr, op.fromLen, op.result, nullptr));
         },
         [=](const Async::Shutdown& op) { shutdown(op.handle, SD_BOTH); },
         [=](const Async::Close& op) { closesocket(op.handle); },
         [=](const Async::Cancel& op) { CancelIo(reinterpret_cast<HANDLE>(op.handle)); },
     };
 
-    std::visit(visitor, operation);
+    try {
+        std::visit(visitor, operation);
+    } catch (const System::SystemError& e) {
+        Async::CompletionResult* result;
+        std::visit([&](auto&& op) { result = op.result; }, operation);
+
+        result->error = e.code;
+        result->coroHandle();
+    }
+}
+
+Async::EventLoop::EventLoop(unsigned int numThreads, unsigned int) : thisId(std::this_thread::get_id()) {
+    std::scoped_lock lock{ runningMutex };
+
+    // Initialization and cleanup happen on the first thread that is initialized
+    if (runningThreads == 0) {
+        // Start Winsock
+        WSADATA wsaData{};
+        check(WSAStartup(MAKEWORD(2, 2), &wsaData), checkTrue, useReturnCode); // MAKEWORD(2, 2) for Winsock 2.2
+
+        // Initialize IOCP
+        completionPort = check(CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, numThreads), checkTrue);
+
+        Delegates::SocketHandle<SocketTag::IP> tmp{ socket(AF_INET, SOCK_STREAM, 0) };
+        loadConnectEx(*tmp);
+        loadAcceptEx(*tmp);
+    }
+
+    runningThreads++;
+    resubmits.try_emplace(thisId);
+}
+
+Async::EventLoop::~EventLoop() {
+    std::scoped_lock lock{ runningMutex };
+
+    runningThreads--;
+    if (runningThreads == 0) {
+        // Cleanup Winsock
+        CloseHandle(completionPort);
+        check(WSACleanup());
+    }
 }
 
 void Async::EventLoop::runOnce(bool wait) {
-    if (numOperations.load(std::memory_order_relaxed) == 0) return;
+    // Check for submits from other threads
+    std::vector<std::coroutine_handle<>> tmp;
+    {
+        Resubmit& pendingSubmits = resubmits.at(thisId);
+        std::scoped_lock lock{ pendingSubmits.m };
+        std::swap(tmp, pendingSubmits.handles);
+    }
+
+    numOperations -= tmp.size();
+    for (auto i : tmp) i();
+
+    if (!operations.empty()) {
+        for (const auto& i : operations) handleOperation(i);
+        numOperations += operations.size();
+        operations.clear();
+    }
 
     DWORD numBytes;
     ULONG_PTR completionKey;
     LPOVERLAPPED overlapped = nullptr;
 
     // Dequeue a completion packet from the system and check for the exit condition
-    DWORD timeout = wait ? 200 : 0;
+    // Shorter timeout than on other platforms - threads need to handle events that are not from IOCP.
+    DWORD timeout = wait ? 20 : 0;
     BOOL ret = GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, timeout);
 
     // Get the structure with completion data, passed through the overlapped pointer
     // No locking is needed to modify the structure's fields - the calling coroutine will be suspended at this
     // point so mutually-exclusive access is guaranteed.
     if (!overlapped) return;
-    numOperations.fetch_sub(1, std::memory_order_relaxed);
 
     auto& result = *static_cast<CompletionResult*>(overlapped);
     result.res = static_cast<int>(numBytes);
@@ -131,11 +165,16 @@ void Async::EventLoop::runOnce(bool wait) {
     // Pass any failure back to the calling coroutine
     if (!ret) result.error = System::getLastError();
 
-    result.coroHandle();
-}
-
-std::size_t Async::EventLoop::size() {
-    return numOperations.load(std::memory_order_relaxed);
+    if (result.thread == thisId) {
+        // This is the thread that started the operation
+        numOperations--;
+        result.coroHandle();
+    } else {
+        // Queue the event to the thread that started it
+        Resubmit& r = resubmits.at(result.thread);
+        std::scoped_lock lock{ r.m };
+        r.handles.push_back(result.coroHandle);
+    }
 }
 
 void Async::add(SOCKET s) {

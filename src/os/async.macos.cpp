@@ -120,10 +120,6 @@ void Async::EventLoop::runOnce(bool wait) {
     result.coroHandle();
 }
 
-std::size_t Async::EventLoop::size() {
-    return numOperations;
-}
-
 void Async::prepSocket(int s) {
     int flags = check(fcntl(s, F_GETFL, 0));
     check(fcntl(s, F_SETFL, flags | O_NONBLOCK));
