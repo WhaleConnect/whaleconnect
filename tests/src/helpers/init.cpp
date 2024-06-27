@@ -13,6 +13,10 @@ struct InitListener : Catch::EventListenerBase {
     void testRunStarting(const Catch::TestRunInfo&) override {
         Async::init(1, 128);
     }
+
+    void testRunEnded(const Catch::TestRunStats&) override {
+        Async::cleanup();
+    }
 };
 
 CATCH_REGISTER_LISTENER(InitListener)

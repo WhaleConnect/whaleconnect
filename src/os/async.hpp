@@ -194,6 +194,9 @@ namespace Async {
     // Returns the total number of threads created, including the main thread.
     unsigned int init(unsigned int numThreads, unsigned int queueEntries);
 
+    // Explicit cleanup is needed for guaranteed object destruction order.
+    void cleanup();
+
     // Submits an I/O operation to the async event loop.
     void submit(const Operation& op);
 

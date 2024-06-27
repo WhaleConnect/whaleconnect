@@ -75,5 +75,6 @@ int main(int, char**)
     mainLoop();
 
     AppCore::cleanup();
+    Async::cleanup();
     return 0;
 }

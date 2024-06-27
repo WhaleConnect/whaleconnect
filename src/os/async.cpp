@@ -141,6 +141,10 @@ unsigned int Async::init(unsigned int numThreads, unsigned int queueEntries) {
     return realNumThreads;
 }
 
+void Async::cleanup() {
+    threads.clear();
+}
+
 void Async::submit(const Operation& op) {
     std::thread::id currentThread = std::this_thread::get_id();
 

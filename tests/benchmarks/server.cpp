@@ -114,4 +114,5 @@ int main(int argc, char** argv) {
     });
 
     threadWaiter.wait();
+    Async::cleanup();
 }
