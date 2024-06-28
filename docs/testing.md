@@ -8,7 +8,7 @@ To build the unit tests, execute `xmake build socket-tests` in the root of the r
 
 ## Test Server
 
-A Python server script is located in /tests/scripts. It should be invoked with `-t [type]`, where `[type]` is the type of the server: `TCP`, `UDP`, `RFCOMM`, or `L2CAP`.
+A Python server script is located in `/tests/scripts`. It should be invoked with `-t [type]`, where `[type]` is the type of the server: `TCP`, `UDP`, `RFCOMM`, or `L2CAP`.
 
 Multiple instances of the script may be run simultaneously so e.g., both a TCP server and UDP server can be available during testing.
 
@@ -32,7 +32,7 @@ Both the C++ tests and the Python server load configuration information from the
 
 ## Benchmarking
 
-A small HTTP server is located in `tests/benchmarks`. It responds to clients with the following response:
+A small HTTP server is located in `/tests/benchmarks`. It responds to clients with the following response:
 
 ```text
 HTTP/1.1 200 OK
