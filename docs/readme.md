@@ -2,8 +2,6 @@
 
 **Network Socket Terminal** (NST) is an application for Internet and Bluetooth communication for Windows, Linux, and macOS.
 
-This software is currently in beta. Feedback and feature requests are welcome.
-
 ![Screenshot](img/screenshot.png)
 
 ## Documentation Links
