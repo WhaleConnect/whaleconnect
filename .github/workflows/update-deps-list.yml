@@ -2,6 +2,8 @@ name: Update dependencies list
 
 on:
   push:
+    paths-ignore:
+      - 'docs/**'
     branches:
       - main
 
