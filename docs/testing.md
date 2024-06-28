@@ -4,6 +4,8 @@ NST's tests are located in the [tests directory](/tests). Certain tests are desi
 
 Due to the nature of the tests (external script is required; actual hardware may be required), these tests are not run in GitHub Actions.
 
+To build the unit tests, execute `xmake build socket-tests` in the root of the repository. The unit tests use the [Catch2](https://github.com/catchorg/Catch2) testing framework (see its [command-line usage](https://github.com/catchorg/Catch2/blob/devel/docs/command-line.md)).
+
 ## Test Server
 
 A Python server script is located in /tests/scripts. It should be invoked with `-t [type]`, where `[type]` is the type of the server: `TCP`, `UDP`, `RFCOMM`, or `L2CAP`.
