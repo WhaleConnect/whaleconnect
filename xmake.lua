@@ -38,7 +38,7 @@ add_packages("botan", "out_ptr")
 
 if is_plat("windows") then
     -- Use MSVC Unicode character set and prevent clashing macros
-    add_defines("UNICODE", "_UNICODE", "NOMINMAX")
+    add_defines("UNICODE", "_UNICODE", "NOMINMAX", "_CRT_SECURE_NO_WARNINGS")
 elseif is_plat("linux") then
     add_requires("liburing", "bluez")
     add_requires("dbus", { configs = { system_bus_address = "unix:path=/run/dbus/system_bus_socket" } })
@@ -51,7 +51,7 @@ set_encodings("utf-8")
 
 -- Warnings
 set_warnings("allextra")
-add_cxxflags("-Wno-missing-field-initializers", { tools = { "gcc", "clang" } })
+add_cxxflags("-Wno-missing-field-initializers", { tools = { "gcc", "gxx", "clang", "clangxx" } })
 
 add_cxxflags("clang::-fexperimental-library")
 add_ldflags("clangxx::-fexperimental-library")
