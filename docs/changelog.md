@@ -2,6 +2,12 @@
 
 This document tracks the changes between Network Socket Terminal versions. Dates are written in the MM/DD/YYYY format.
 
+## v1.0.0 (Unreleased)
+
+### Improvements
+
+- Improved thread safety on Windows.
+
 ## 0.4.0-beta (06/25/2024)
 
 ### Additions
