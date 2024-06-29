@@ -9,6 +9,7 @@
 - [Building from Source](building.md)
 - [Dependencies](dependencies.md)
 - [Testing](testing.md)
+- [Usage](usage.md)
 
 ## Features
 
