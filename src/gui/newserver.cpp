@@ -46,8 +46,9 @@ void drawNewServerWindow(WindowList& servers, bool& open) {
     ImGuiExt::radioButton("RFCOMM", serverInfo.type, RFCOMM);
     ImGuiExt::radioButton("L2CAP", serverInfo.type, L2CAP);
 
-    if (ImGui::Button("Create Server") && !servers.add<ServerWindow>("", serverInfo))
-        ImGuiExt::addNotification("This server already exists.", NotificationType::Warning);
+    // Cannot check the result of add since server titles are generated dynamically.
+    if (ImGui::Button("Create Server"))
+        servers.add<ServerWindow>("", serverInfo);
 
     ImGui::End();
 }

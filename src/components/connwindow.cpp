@@ -21,7 +21,6 @@
 #include "sockets/clientsocket.hpp"
 #include "sockets/clientsockettls.hpp"
 #include "sockets/delegates/delegates.hpp"
-#include "utils/booleanlock.hpp"
 
 SocketPtr makeClientSocket(bool useTLS, ConnectionType type) {
     using enum ConnectionType;
@@ -74,7 +73,7 @@ Task<> ConnWindow::sendHandler(std::string s) try {
 
 Task<> ConnWindow::readHandler() try {
     if (!connected || pendingRecv) co_return;
-    BooleanLock lock{ pendingRecv };
+    pendingRecv = true;
 
     auto [complete, closed, data, alert] = co_await socket->recv(console.getRecvSize());
 
@@ -99,6 +98,7 @@ Task<> ConnWindow::readHandler() try {
             console.addMessage(alert->desc, desc, color);
         }
     }
+    pendingRecv = false;
 } catch (const System::SystemError& error) {
     console.errorHandler(error);
 } catch (const Botan::TLS::TLS_Exception& error) {
