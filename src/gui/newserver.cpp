@@ -47,8 +47,7 @@ void drawNewServerWindow(WindowList& servers, bool& open) {
     ImGuiExt::radioButton("L2CAP", serverInfo.type, L2CAP);
 
     // Cannot check the result of add since server titles are generated dynamically.
-    if (ImGui::Button("Create Server"))
-        servers.add<ServerWindow>("", serverInfo);
+    if (ImGui::Button("Create Server")) servers.add<ServerWindow>("", serverInfo);
 
     ImGui::End();
 }
