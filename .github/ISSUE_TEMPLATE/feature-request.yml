@@ -1,0 +1,32 @@
+name: Feature Request
+description: Suggest a new feature.
+labels: ['enhancement']
+body:
+- type: markdown
+  attributes:
+    value: |
+      We encourage using GitHub Issues as a centralized place for community engagement. Please complete the following before submitting your issue:
+
+      - Read the [contributing guidelines](https://github.com/NSTerminal/terminal/blob/main/docs/CONTRIBUTING.md).
+      - Search for [past issues](https://github.com/NSTerminal/terminal/issues?q=) to check for similar discussions.
+
+      Thank you for taking the time to complete these steps and fill out this issue form.
+
+- type: textarea
+  attributes:
+    label: Motivation
+    description: A description of how this feature would be useful and what problems it solves.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Feature Proposal
+    description: A description of the feature and how it works. Include designs or expected behavior if necessary.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Possible Alternatives
+    description: Anything you have already tried and how current solutions may not be viable.

@@ -1,0 +1,39 @@
+name: Bug Report
+description: File a bug report.
+labels: ['bug']
+body:
+- type: markdown
+  attributes:
+    value: |
+      We encourage using GitHub Issues as a centralized place for community engagement. Please complete the following before submitting your issue:
+
+      - Read the [contributing guidelines](https://github.com/NSTerminal/terminal/blob/main/docs/CONTRIBUTING.md).
+      - Search for [past issues](https://github.com/NSTerminal/terminal/issues?q=) to check for similar discussions.
+
+      Thank you for taking the time to complete these steps and fill out this issue form.
+
+- type: textarea
+  attributes:
+    label: NST Build Info
+    description: Go to "Help > About" in NST, click Copy, and paste it here.
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: Operating System and Architecture
+    description: What OS and architecture are you using? Include (if applicable) - Windows OS version and edition (Settings > System > About), macOS version (Apple menu > About this Mac), Linux distro and kernel version (lsb_release, uname -a).
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Bug Description
+    description: A concise and detailed description of the current behavior and what you expected. Include screenshots/screen recordings to aid in your description.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Environment/Settings Configuration
+    description: Any setup that you believe could influence this behavior.
