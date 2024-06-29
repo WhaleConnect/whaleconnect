@@ -1,7 +1,7 @@
 -- Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
-set_version("0.4.0", { build = "%Y%m%d%H%M" })
+set_version("1.0.0", { build = "%Y%m%d%H%M" })
 add_repositories("additional-deps ./xmake")
 set_policy("package.requires_lock", true)
 set_license("GPL-3.0-or-later")
