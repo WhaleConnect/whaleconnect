@@ -79,6 +79,7 @@ void Console::drawTimestamps() {
     ImVec2 size{ ImGui::CalcTextSize("0").x * 12, height };
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, style.WindowPadding.y });
     ImGui::BeginChild("timestamps", size, ImGuiChildFlags_AlwaysUseWindowPadding, flags);
 
     // Display visible timestamps
@@ -91,6 +92,7 @@ void Console::drawTimestamps() {
     clipper.End();
 
     ImGui::EndChild();
+    ImGui::PopStyleVar();
     ImGui::SameLine(0, 0);
 }
 
