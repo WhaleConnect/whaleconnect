@@ -55,7 +55,7 @@ void drawNewConnectionWindow(bool& open, WindowList& connections, WindowList& sd
     if (!open) return;
 
     using namespace ImGuiExt::Literals;
-    ImGui::SetNextWindowSize(40_fh * 11_fh, ImGuiCond_Appearing);
+    ImGui::SetNextWindowSize(40_fh * 12_fh, ImGuiCond_Appearing);
 
     if (ImGui::Begin("New Connection", &open) && ImGui::BeginTabBar("ConnectionTypes")) {
         drawIPConnectionTab(connections);
