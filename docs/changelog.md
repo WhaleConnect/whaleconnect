@@ -7,6 +7,8 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 ### Improvements
 
 - Improved thread safety on Windows.
+- Prevented a scrollbar from occasionally showing in the "New Connection > Internet Protocol" tab.
+- Prevented the last digit in the timestamp display from getting clipped.
 
 ## 0.4.0-beta (06/25/2024)
 
