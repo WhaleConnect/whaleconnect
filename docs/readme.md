@@ -10,6 +10,32 @@
 - [Dependencies](dependencies.md)
 - [Testing](testing.md)
 
+## Features
+
+- Parallel connections
+  - Create and manage multiple connections at the same time
+  - Uses operating system features for efficiency and scalability
+- Low resource usage: see system requirements
+- Wide protocol support
+  - TCP and UDP over IPv4 and IPv6
+  - L2CAP and RFCOMM over Bluetooth
+  - TLS 1.2 and 1.3 for TCP clients
+- Clients
+  - Create outgoing connections to other devices
+  - DNS lookup for IP connections
+  - Service Discovery Protocol (SDP) inquiries for Bluetooth connections
+  - Create Bluetooth connections to devices paired to the computer
+- Servers
+  - Accept incoming connections from other devices
+  - Options to view data sent from all clients and individual clients
+  - Selections for clients to send data to or have connections closed
+- Data view options
+  - Timestamps
+  - UTF-8 encoded hexadecimal
+  - Logs of sent data
+- Multiline textbox to send data
+  - Select line ending: CR, LF, or both
+
 ## Minimum Hardware Requirements
 
 - **Architecture:** amd64, arm64
