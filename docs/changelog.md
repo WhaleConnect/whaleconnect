@@ -2,7 +2,9 @@
 
 This document tracks the changes between WhaleConnect versions. Dates are written in the MM/DD/YYYY format.
 
-## 1.0.0 (Unreleased)
+## 1.0.0 (06/30/2024)
+
+This project was rebranded to WhaleConnect in this release.
 
 ### Improvements
 
