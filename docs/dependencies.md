@@ -1,4 +1,4 @@
-# Network Socket Terminal Dependencies
+# WhaleConnect Dependencies
 
 This information was generated with data from xmake-repo.
 

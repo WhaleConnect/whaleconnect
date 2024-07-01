@@ -58,18 +58,18 @@ jobs:
     - name: Install
       if: inputs.mode == 'release'
       run: |
-        xmake i -o dist/terminal.app terminal
-        chmod +x dist/terminal.app/Contents/MacOS/terminal
+        xmake i -o dist/WhaleConnect.app WhaleConnect
+        chmod +x dist/WhaleConnect.app/Contents/MacOS/WhaleConnect
 
     - name: Create DMG
       if: inputs.mode == 'release'
       run: |
         brew install create-dmg
-        create-dmg --volname terminal terminal.dmg dist
+        create-dmg --volname WhaleConnect WhaleConnect.dmg dist
 
     - name: Upload
       if: inputs.mode == 'release'
       uses: actions/upload-artifact@v4
       with:
-        name: terminal-macos
-        path: terminal.dmg
+        name: WhaleConnect-macos
+        path: WhaleConnect.dmg

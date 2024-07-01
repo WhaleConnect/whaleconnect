@@ -355,7 +355,7 @@
         ["freetype#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "52e84d5aa56cf9e3ce66f167fe82df586461c0a9",
+                commit = "9403c451750e9be9c67241dbeae2855b8637d69c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "2.13.1"
@@ -372,7 +372,7 @@
             branch = "docking",
             repo = {
                 branch = "master",
-                commit = "ecf7f2e3beba0428fe941306d400d488e1a890ba",
+                commit = "9403c451750e9be9c67241dbeae2855b8637d69c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "docking"

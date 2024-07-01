@@ -1,6 +1,6 @@
-# Building Network Socket Terminal
+# Building WhaleConnect
 
-To build NST from source code, you will need [xmake](https://xmake.io) and an up-to-date compiler (see below).
+To build WhaleConnect from source code, you will need [xmake](https://xmake.io) and an up-to-date compiler (see below).
 
 All commands are run in the repository root.
 
@@ -21,7 +21,7 @@ The arguments below are passed to `xmake f`/`xmake config` to configure the buil
 > [!NOTE]
 > You should set all of your desired options in one config command. An invocation overwrites previously set configuration options.
 
-When configuring for the first time, xmake will ask you to install libraries needed by NST. Enter `y` to continue and install them.
+When configuring for the first time, xmake will ask you to install libraries needed by WhaleConnect. Enter `y` to continue and install them.
 
 If you are using the xmake VSCode extension, these arguments can be saved in the `xmake.additionalConfigArguments` setting.
 
@@ -52,10 +52,10 @@ xmake run         # Run app
 
 ## Packaging
 
-Creating a distributable package for NST is done with `xmake i`/`xmake install`:
+Creating a distributable package for WhaleConnect is done with `xmake i`/`xmake install`:
 
 ```shell
-xmake i -o /path/to/package terminal
+xmake i -o /path/to/package WhaleConnect
 ```
 
 This command must be run after a successful compilation. xmake will copy files such as the built executable and all required shared libraries and download third-party licenses into the specified output directory.

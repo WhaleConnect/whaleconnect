@@ -1,4 +1,4 @@
-// Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
+// Copyright 2021-2024 Aidan Sun and the WhaleConnect contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "about.hpp"
@@ -35,7 +35,7 @@ void drawAboutWindow(bool& open) {
     static bool copy = false;
     if (copy) ImGui::LogToClipboard();
 
-    ImGui::Text("Network Socket Terminal");
+    ImGui::Text("WhaleConnect");
     ImGui::Text("Cross-platform network communication software");
 
     ImGui::SeparatorText("Version/Build");
@@ -66,8 +66,8 @@ void drawLinksWindow(bool& open) {
         return;
     }
 
-    drawLink("Repository", "github.com/NSTerminal/terminal");
-    drawLink("Changelog", "github.com/NSTerminal/terminal/blob/main/docs/changelog.md");
+    drawLink("Repository", "github.com/WhaleConnect/whaleconnect");
+    drawLink("Changelog", "github.com/WhaleConnect/whaleconnect/blob/main/docs/changelog.md");
 
     ImGui::End();
 }

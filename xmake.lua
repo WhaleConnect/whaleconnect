@@ -1,4 +1,4 @@
--- Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
+-- Copyright 2021-2024 Aidan Sun and the WhaleConnect contributors
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 set_version("1.0.0", { build = "%Y%m%d%H%M" })
@@ -84,7 +84,7 @@ target("swift")
         os.exec("swift build -c %s --build-path $(buildir)/swift --config-path $(buildir)/swift", swiftBuildMode)
     end)
 
-target("terminal-core")
+target("core")
     -- Project files
     set_kind("object")
 
@@ -124,8 +124,8 @@ target("terminal-core")
         )
     end
 
-target("terminal")
-    add_deps("terminal-core")
+target("WhaleConnect")
+    add_deps("core")
     add_packages("glfw", "imgui", "imguitextselect", "noto-sans-mono", "opengl", "remix-icon", "utfcpp")
 
     if is_plat("macosx") then
@@ -142,10 +142,11 @@ target("terminal")
     -- Add platform rules
     if is_plat("windows") then
         add_rules("win.sdk.application")
-        add_files("res/app.rc")
+        add_configfiles("res/app.rc.in")
     elseif is_plat("macosx") then
         add_rules("xcode.application")
-        add_files("res/Info.plist")
+        add_configfiles("res/Info.plist.in")
+        add_installfiles("res/icons/app.icns")
     end
 
     after_load(function (target)
@@ -155,6 +156,14 @@ target("terminal")
         target:add("installfiles", os.getenv("NOTO_SANS_MONO_PATH"), { prefixdir = prefixdir })
         target:add("installfiles", os.getenv("REMIX_ICON_PATH"), { prefixdir = prefixdir })
         target:add("installfiles", "COPYING")
+    end)
+
+    on_config(function (target)
+        if is_plat("windows") then
+            target:add("files", "$(buildir)/app.rc")
+        elseif is_plat("macosx") then
+            target:add("files", "$(buildir)/Info.plist")
+        end
     end)
 
     -- Download font files next to executable on pre-build
@@ -170,7 +179,7 @@ target("socket-tests")
     set_default(false)
 
     add_packages("catch2")
-    add_deps("terminal-core")
+    add_deps("core")
     add_files("tests/src/**.cpp")
 
      -- Path to settings file
@@ -179,5 +188,5 @@ target("socket-tests")
 target("benchmark-server")
     set_default(false)
 
-    add_deps("terminal-core")
+    add_deps("core")
     add_files("tests/benchmarks/server.cpp")

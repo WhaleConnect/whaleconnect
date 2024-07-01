@@ -1,4 +1,4 @@
-# This file defines the formatting style for Network Socket Terminal.
+# This file defines the formatting style for WhaleConnect.
 # Minimum clang-format version required: 16
 
 ColumnLimit: 120

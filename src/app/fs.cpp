@@ -1,4 +1,4 @@
-// Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
+// Copyright 2021-2024 Aidan Sun and the WhaleConnect contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <stdexcept>
@@ -74,7 +74,7 @@ fs::path AppFS::getSettingsPath() {
 #endif
 #endif
 
-    auto path = dataPath / "NSTerminal" / "terminal";
+    auto path = dataPath / "WhaleConnect";
     if (!std::filesystem::exists(path)) std::filesystem::create_directories(path);
     return path;
 }

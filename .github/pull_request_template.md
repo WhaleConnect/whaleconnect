@@ -1,6 +1,6 @@
 Before submitting your Pull Request, please complete the following:
 
-- Read the [contributing guidelines](https://github.com/NSTerminal/terminal/blob/main/docs/CONTRIBUTING.md).
+- Read the [contributing guidelines](https://github.com/WhaleConnect/whaleconnect/blob/main/docs/CONTRIBUTING.md).
 - Delete this template prior to your submission.
 
 ---

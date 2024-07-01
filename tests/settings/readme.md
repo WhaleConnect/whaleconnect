@@ -1,6 +1,6 @@
 # Test Settings Directory
 
-This directory should contain the settings file for NST's tests, which is excluded from version control.
+This directory should contain the settings file for WhaleConnect's tests, which is excluded from version control.
 
 ## File Format
 

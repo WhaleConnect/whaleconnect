@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "terminal",
+    name: "WhaleConnect",
     products: [
         .library(name: "BluetoothMacOS", type: .static, targets: ["BluetoothMacOS"]),
         .library(name: "GUIMacOS", type: .static, targets: ["GUIMacOS"]),

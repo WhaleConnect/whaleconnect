@@ -1,20 +1,20 @@
-# Network Socket Terminal Contributing Guidelines
+# WhaleConnect Contributing Guidelines
 
-Thank you for contributing to Network Socket Terminal. Please review these contribution guidelines and be mindful of the [code of conduct](https://github.com/NSTerminal/.github/blob/main/CODE_OF_CONDUCT.md) in your contributions.
+Thank you for contributing to WhaleConnect. Please review these contribution guidelines and be mindful of the [code of conduct](https://github.com/WhaleConnect/.github/blob/main/CODE_OF_CONDUCT.md) in your contributions.
 
 ## Opening Issues
 
 We encourage using GitHub Issues as a centralized place for community engagement. Feel free to submit bug reports, feature requests, or questions, but please follow these steps before doing so:
 
 - Ensure your issue has not already been submitted.
-  - You can search by [issue label](https://github.com/NSTerminal/terminal/labels) to effectively find related information.
+  - You can search by [issue label](https://github.com/WhaleConnect/whaleconnect/labels) to effectively find related information.
   - Be sure to include closed issues in your search in case your issue has already been resolved.
 - Ensure you have filled out the correct issue template.
 - Provide a clear description of your issue in the title.
 
 ### Bug Reports
 
-- If you have found a security concern, **please do not submit it in GitHub Issues.** Instead, refer to the project's [security policy](https://github.com/NSTerminal/.github/blob/main/SECURITY.md).
+- If you have found a security concern, **please do not submit it in GitHub Issues.** Instead, refer to the project's [security policy](https://github.com/WhaleConnect/.github/blob/main/SECURITY.md).
 - Make sure your environment is officially supported ([System Requirements](readme.md#minimum-hardware-requirements)).
   - Currently supported OS+architecture combinations are: Windows+x64, Linux+x64, macOS+ARM64.
 - Check if the bug still exists on the main branch.
@@ -46,7 +46,7 @@ We accept code contributions through GitHub Pull Requests. Please follow these g
   - The code should compile cleanly with no warnings (other than those explicitly silenced in `xmake.lua`).
 - Ensure your patch passes the [test cases](testing.md).
 
-Network Socket Terminal uses the following tools for formatting:
+WhaleConnect uses the following tools for formatting:
 
 - **EditorConfig:** Basic file format standards (UTF-8, indentation character, trailing newline, etc.)
 - **Clang Format:** Formatting for C++ code.
@@ -54,4 +54,4 @@ Network Socket Terminal uses the following tools for formatting:
 
 GitHub Actions is set up to check the formatting of C++ files using Clang Format.
 
-By submitting a code contribution to Network Socket Terminal, you agree to have your contribution become part of the repository and be distributed under the project's [license](../COPYING).
+By submitting a code contribution to WhaleConnect, you agree to have your contribution become part of the repository and be distributed under the project's [license](../COPYING).

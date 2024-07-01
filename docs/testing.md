@@ -1,6 +1,6 @@
-# Testing Network Socket Terminal
+# Testing WhaleConnect
 
-NST's tests are located in the [tests directory](/tests). Certain tests are designed to test socket I/O functionality, so a server and/or remote device is required to run them.
+WhaleConnect's tests are located in the [tests directory](/tests). Certain tests are designed to test socket I/O functionality, so a server and/or remote device is required to run them.
 
 Due to the nature of the tests (external script is required; actual hardware may be required), these tests are not run in GitHub Actions.
 
@@ -43,6 +43,6 @@ Content-Type: text/html
 test
 ```
 
-This server can be used to assess the performance of NST's core system code through its throughput measurement. It can be built with `xmake build benchmark-server`.
+This server can be used to assess the performance of WhaleConnect's core system code through its throughput measurement. It can be built with `xmake build benchmark-server`.
 
 This server accepts an optional command-line argument: the size of the thread pool. If unspecified, it uses the maximum number of supported threads on the CPU. When started, the server prints the TCP port it is listening on.

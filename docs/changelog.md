@@ -1,6 +1,6 @@
-# Network Socket Terminal Changelog
+# WhaleConnect Changelog
 
-This document tracks the changes between Network Socket Terminal versions. Dates are written in the MM/DD/YYYY format.
+This document tracks the changes between WhaleConnect versions. Dates are written in the MM/DD/YYYY format.
 
 ## 1.0.0 (Unreleased)
 
@@ -128,4 +128,4 @@ This document tracks the changes between Network Socket Terminal versions. Dates
 
 ## 0.1.0-alpha (10/05/2022)
 
-Initial release of Network Socket Terminal.
+Initial release of WhaleConnect.

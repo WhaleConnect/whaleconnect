@@ -1,4 +1,4 @@
-// Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
+// Copyright 2021-2024 Aidan Sun and the WhaleConnect contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #undef GLFW_INCLUDE_NONE
@@ -152,7 +152,7 @@ bool AppCore::init() {
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     // Create window
-    window = glfwCreateWindow(1280, 720, "Network Socket Terminal", nullptr, nullptr);
+    window = glfwCreateWindow(1280, 720, "WhaleConnect", nullptr, nullptr);
     if (!window) return false;
 
     glfwSetWindowContentScaleCallback(window, loadFont);

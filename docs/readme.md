@@ -1,6 +1,8 @@
-# Network Socket Terminal
+# WhaleConnect
 
-**Network Socket Terminal** (NST) is an application for Internet and Bluetooth communication for Windows, Linux, and macOS.
+![Banner](img/banner.png)
+
+**WhaleConnect** is an application for Internet and Bluetooth communication for Windows, Linux, and macOS.
 
 ![Screenshot](img/screenshot.png)
 
@@ -61,25 +63,25 @@ Additional features require:
 ### About Operating Systems
 
 - The Linux kernel 5.19 is required because of `io_uring_prep_cancel_fd` and `IORING_ASYNC_CANCEL_ALL` usage. The distribution does not matter.
-- NST has not been tested on older versions of Windows and macOS than those above. While they may work, compatibility is not guaranteed.
+- WhaleConnect has not been tested on older versions of Windows and macOS than those above. While they may work, compatibility is not guaranteed.
 
 ## Installation
 
-To install NST, follow these steps:
+To install WhaleConnect, follow these steps:
 
-1. Go to the [releases page](https://github.com/NSTerminal/terminal/releases) for this repository.
+1. Go to the [releases page](https://github.com/WhaleConnect/whaleconnect/releases) for this repository.
 2. Under the latest version (displayed first on the page), download the ZIP file for your operating system (the files are displayed under "Assets").
 3. Extract the downloaded ZIP file.
-4. Run NST as shown below.
+4. Run WhaleConnect as shown below.
 
-- **On Windows:** Run `bin/terminal.exe`.
-- **On Linux:** Run `bin/terminal`.
-- **On macOS:** You should have a `.dmg` file after extracting the ZIP. Copy `terminal.app` out of the DMG, then run `terminal.app`.
+- **On Windows:** Run `bin/WhaleConnect.exe`.
+- **On Linux:** Run `bin/WhaleConnect`.
+- **On macOS:** You should have a `.dmg` file after extracting the ZIP. Copy `WhaleConnect.app` out of the DMG, then run `WhaleConnect.app`.
 
-All executables are unsigned, so you may see warnings from your operating system if you run them. On macOS, if you see a message that says "terminal is damaged and can't be opened", run the following command, then reopen the application:
+All executables are unsigned, so you may see warnings from your operating system if you run them. On macOS, if you see a message that says "WhaleConnect is damaged and can't be opened", run the following command, then reopen the application:
 
 ```shell
-xattr -c path/to/terminal.app
+xattr -c path/to/WhaleConnect.app
 ```
 
 > [!NOTE]
@@ -87,4 +89,10 @@ xattr -c path/to/terminal.app
 
 ## License
 
-NST and its build scripts are licensed under the [GPL v3+ license](../COPYING).
+WhaleConnect and its build scripts are licensed under the [GPL v3+ license](../COPYING).
+
+## About the Name
+
+With their complex songs and vocalizations, whales are among the best animal communicators. They can also be found in every ocean.
+
+This project was previously called "Network Socket Terminal" until the 1.0.0 release.

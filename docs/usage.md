@@ -1,10 +1,10 @@
-# Using Network Socket Terminal
+# Using WhaleConnect
 
-This document explains how to use Network Socket Terminal. For a full list of features, see the [readme](readme.md).
+This document explains how to use WhaleConnect. For a full list of features, see the [readme](readme.md).
 
 ## Reference: Port Ranges
 
-Port ranges for the protocols that NST support are listed below.
+Port ranges for the protocols that WhaleConnect support are listed below.
 
 - **TCP/UDP:** 0-1023 reserved, 1024-65535 dynamically assigned
 - **RFCOMM:** 1-30 dynamically assigned
@@ -15,7 +15,7 @@ Port ranges for the protocols that NST support are listed below.
 
 ## Window Design
 
-NST contains many smaller windows inside its main application window. For an example of this, see the screenshot in the readme. This design allows you to easily manage multiple connections without switching between application windows or screens. Each client connection has its own window. Servers have two windows that are docked together by default (more on docking later): the data display and a list of clients.
+WhaleConnect contains many smaller windows inside its main application window. For an example of this, see the screenshot in the readme. This design allows you to easily manage multiple connections without switching between application windows or screens. Each client connection has its own window. Servers have two windows that are docked together by default (more on docking later): the data display and a list of clients.
 
 ## Window Management
 
@@ -34,7 +34,7 @@ A window can be docked to another by dragging its title bar, then dropping it on
 
 ## Creating a Client Connection
 
-NST starts up with the "New Connection" window visible. This is the window used to create client connections.
+WhaleConnect starts up with the "New Connection" window visible. This is the window used to create client connections.
 
 > [!TIP]
 > If you close this window, you can reopen it by going to "View > New Connection" in the menu bar.
@@ -45,7 +45,7 @@ NST starts up with the "New Connection" window visible. This is the window used 
 
 Select the "Internet Protocol" tab in the window, then follow these steps:
 
-- Enter the address of the server in the "Address" textbox. This can be an IP address (e.g., `192.168.0.160` or `::1`) or a hostname (e.g., `localhost` or `aidansun.com`). DNS lookup will be performed for you by NST.
+- Enter the address of the server in the "Address" textbox. This can be an IP address (e.g., `192.168.0.160` or `::1`) or a hostname (e.g., `localhost` or `aidansun.com`). DNS lookup will be performed for you by WhaleConnect.
 - Enter the port number of the server.
 - Select the protocol (TCP or UDP) and if you want to use Transport Layer Security (TLS).
 - Click "Connect".
@@ -57,7 +57,7 @@ Select the "Internet Protocol" tab in the window, then follow these steps:
 Select the "Bluetooth" tab in the window, then click "Connect" next to the device you want to connect to. This will open a new window. You have two options to connect to the device: through SDP or manually.
 
 > [!IMPORTANT]
-> This list of devices is populated from your computer's paired devices: you must first pair a device before connecting to it in NST.
+> This list of devices is populated from your computer's paired devices: you must first pair a device before connecting to it in WhaleConnect.
 
 #### Service Discovery Protocol (SDP)
 
@@ -104,7 +104,7 @@ If you are unable to find your desired server through SDP, you can enter the con
 
 ![Client window](img/client-window.png)
 
-Regardless of how you create the client connection, NST will create a new window that manages the connection. You will use this window to send and receive data with the server. Received data will appear in the console output. Any errors will also be reported here.
+Regardless of how you create the client connection, WhaleConnect will create a new window that manages the connection. You will use this window to send and receive data with the server. Received data will appear in the console output. Any errors will also be reported here.
 
 To send data to the server, type into the textbox at the top of the window and press ENTER. You can insert a new line with CTRL-ENTER (Windows and Linux) or CMD-ENTER (macOS). You can select the line ending with the dropdown in the bottom right: newline (`\n`), carriage return (`\r`), or both (`\r\n`).
 
@@ -112,7 +112,7 @@ Clicking the "Options..." button opens the menu shown. The options are:
 
 - **Autoscroll:** If the window scrolls automatically to display new text that is received.
 - **Show timestamps:** If lines are shown with the time at which they are received. Timestamps contain hour, minute, second, and millisecond data.
-- **Show hexadecimal:** If data is shown as UTF-8 encoded hexadecimal. This does not apply to messages that originate from NST itself (such as errors).
+- **Show hexadecimal:** If data is shown as UTF-8 encoded hexadecimal. This does not apply to messages that originate from WhaleConnect itself (such as errors).
 - **Send echoing:** If sent data is displayed with a "[SENT]" prefix in the console.
 - **Clear textbox on send:** If the textbox is cleared each time you send data. You will find this option useful if you need to repeatedly send data that is the same or similar.
 - **Add final line ending:** If the selected line ending is automatically sent at the end of the data you input without having to insert a new line manually.
@@ -169,9 +169,9 @@ The settings window can be opened in two different ways:
 
 Below is a description of some of the options:
 
-**Glyph ranges:** A list of Unicode ranges that is used to load characters from the font. For example, you can select different Unicode planes, parts of planes, or individual characters. Including more characters in this option will allow NST to display those characters, but it will cause more memory usage and a higher startup time to load the characters. Depending on the characters you want to load, you may need to load a different font that supports them.
+**Glyph ranges:** A list of Unicode ranges that is used to load characters from the font. For example, you can select different Unicode planes, parts of planes, or individual characters. Including more characters in this option will allow WhaleConnect to display those characters, but it will cause more memory usage and a higher startup time to load the characters. Depending on the characters you want to load, you may need to load a different font that supports them.
 
-**Number of worker threads:** The number of threads NST will use to manage communication. More threads give more opportunities to handle communication in parallel, but too many can degrade performance. A recommended maximum is the number of threads your CPU has. This is the auto-detected number.
+**Number of worker threads:** The number of threads WhaleConnect will use to manage communication. More threads give more opportunities to handle communication in parallel, but too many can degrade performance. A recommended maximum is the number of threads your CPU has. This is the auto-detected number.
 
 **io_uring queue entries:** The number of queue entries that io_uring (the I/O backend on Linux) is set up with. This number can only be a power of 2. Generally, you should increase this number if you expect to handle lots of I/O.
 
@@ -181,7 +181,7 @@ Below is a description of some of the options:
 
 ![Notifications](img/notifications.png)
 
-Some messages in NST are presented through a notification system. Notifications are displayed in the bottom right corner of the main application window. Newer notifications are displayed on top. Some notifications are temporary and will have a bar at the bottom indicating the remaining time they are displayed for. Notifications will also be available in the menu located in the top left corner of the application window:
+Some messages in WhaleConnect are presented through a notification system. Notifications are displayed in the bottom right corner of the main application window. Newer notifications are displayed on top. Some notifications are temporary and will have a bar at the bottom indicating the remaining time they are displayed for. Notifications will also be available in the menu located in the top left corner of the application window:
 
 ![Notifications menu](img/notifications-menu.png)
 
@@ -193,7 +193,7 @@ The first button at the top of this menu will dismiss all notifications. The sec
 
 ### HTTP Client
 
-NST's TCP client capabilities can be used to fetch a resource from a web server:
+WhaleConnect's TCP client capabilities can be used to fetch a resource from a web server:
 
 - Enter the domain name or IP address of the website you want to connect to.
 - If you want to use HTTPS, enter 443 for the port and check the "Use TLS" checkbox.
@@ -223,14 +223,14 @@ The screenshot below is the result of fetching the howsmyssl.com API. The "Show 
 
 ### Internet of Things (IoT)
 
-NST's general-purpose design makes it useful in IoT and home automation projects, especially when multiple smart devices are involved (such as lights or humidity sensors in different rooms).
+WhaleConnect's general-purpose design makes it useful in IoT and home automation projects, especially when multiple smart devices are involved (such as lights or humidity sensors in different rooms).
 
 You can create a smart light by using a wireless-enabled microcontroller (such as an ESP32 or Arduino with an Ethernet shield) and connecting it to a light, using appropriate hardware such as relays if necessary. A hypothetical smart light responds to the following commands:
 
 - `light=on` turns the light on.
 - `light=off` turns the light off.
 
-This example also assumes there is a computer running a TCP server through NST, and its IP address and port are known to the smart light. The logic for this light would be similar to the following:
+This example also assumes there is a computer running a TCP server through WhaleConnect, and its IP address and port are known to the smart light. The logic for this light would be similar to the following:
 
 1. Connect to the TCP server.
 2. Wait for data to be sent from the server.
@@ -239,6 +239,6 @@ This example also assumes there is a computer running a TCP server through NST, 
 5. Otherwise, ignore the data.
 6. Repeat from step 2.
 
-With NST acting as the server, multiple lights can be connected and controlled from the same centralized interface. For example, you can select which lights to control by choosing the clients that receive data from the server and issuing the appropriate commands.
+With WhaleConnect acting as the server, multiple lights can be connected and controlled from the same centralized interface. For example, you can select which lights to control by choosing the clients that receive data from the server and issuing the appropriate commands.
 
-This solution can be expanded to more devices that connect to this server, such as sensors in each room that periodically send out their measurements to the server. This allows a single server running in NST to become a complete smart home management system.
+This solution can be expanded to more devices that connect to this server, such as sensors in each room that periodically send out their measurements to the server. This allows a single server running in WhaleConnect to become a complete smart home management system.

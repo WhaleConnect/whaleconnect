@@ -50,11 +50,11 @@ jobs:
 
     - name: Install
       if: inputs.mode == 'release'
-      run: xmake i -o dist terminal
+      run: xmake i -o dist WhaleConnect
 
     - name: Upload
       if: inputs.mode == 'release'
       uses: actions/upload-artifact@v4
       with:
-        name: terminal-windows
+        name: WhaleConnect-windows
         path: dist

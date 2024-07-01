@@ -1,4 +1,4 @@
-# Copyright 2021-2024 Aidan Sun and the Network Socket Terminal contributors
+# Copyright 2021-2024 Aidan Sun and the WhaleConnect contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # This script generates the list of dependencies (docs/dependencies.md).
@@ -31,7 +31,7 @@ license_search = re.compile(r"set_license\(\"(.+)\"\)")
 homepage_search = re.compile(r"set_homepage\(\"(.+)\"\)")
 description_search = re.compile(r"set_description\(\"(.+)\"\)")
 
-out_text = """# Network Socket Terminal Dependencies
+out_text = """# WhaleConnect Dependencies
 
 This information was generated with data from xmake-repo.
 

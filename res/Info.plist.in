@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>NSHighResolutionCapable</key>
+    <true />
+    <key>CFBundleIconFile</key>
+    <string>app</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.aidansun.whaleconnect</string>
+    <key>CFBundleName</key>
+    <string>WhaleConnect</string>
+    <key>CFBundleDisplayName</key>
+    <string>WhaleConnect</string>
+    <key>CFBundleVersion</key>
+    <string>${VERSION}</string>
+    <key>CFBundleShortVersionString</key>
+    <string>${VERSION}</string>
+    <key>CFBundleExecutable</key>
+    <string>WhaleConnect</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>11.0.0</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright 2021-2024 Aidan Sun and the WhaleConnect contributors</string>
+  </dict>
+</plist>
