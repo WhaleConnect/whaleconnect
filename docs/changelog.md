@@ -2,6 +2,12 @@
 
 This document tracks the changes between WhaleConnect versions. Dates are written in the MM/DD/YYYY format.
 
+## 1.1.0 (Unreleased)
+
+### Bug Fixes
+
+- Fixed an occasional crash occurring on macOS when a client connection with pending I/O was closed.
+
 ## 1.0.0 (06/30/2024)
 
 This project was rebranded to WhaleConnect in this release.
