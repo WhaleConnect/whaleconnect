@@ -8,6 +8,7 @@ This document tracks the changes between WhaleConnect versions. Dates are writte
 
 - Fixed an occasional crash occurring on macOS when a client connection with pending I/O was closed.
 - Fixed an infinite connection loop in TLS clients if the server disconnected without sending data.
+- Fixed a crash on macOS when using Bluetooth features.
 
 ## 1.0.0 (06/30/2024)
 
