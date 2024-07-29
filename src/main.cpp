@@ -21,9 +21,9 @@
 void mainLoop() {
     // These variables must be in a separate scope from the resource instances, so these can be destructed before
     // cleanup
-    WindowList connections; // List of open windows
-    WindowList sdpWindows; // List of windows for creating Bluetooth connections
-    WindowList servers; // List of servers
+    WindowList connections; // Open windows
+    WindowList sdpWindows; // Windows for creating Bluetooth connections
+    WindowList servers; // Servers
 
     bool quit = false;
     while (!quit && AppCore::newFrame()) {
