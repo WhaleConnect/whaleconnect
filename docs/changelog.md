@@ -2,13 +2,14 @@
 
 This document tracks the changes between WhaleConnect versions. Dates are written in the MM/DD/YYYY format.
 
-## 1.1.0 (Unreleased)
+## 1.0.1 (07/29/2024)
 
 ### Bug Fixes
 
 - Fixed an occasional crash occurring on macOS when a client connection with pending I/O was closed.
 - Fixed an infinite connection loop in TLS clients if the server disconnected without sending data.
 - Fixed a crash on macOS when using Bluetooth features.
+- Updated the minimum version of macOS to 13.3.
 
 ## 1.0.0 (06/30/2024)
 
