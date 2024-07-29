@@ -55,7 +55,7 @@ Additional features require:
 
 ## Software Requirements
 
-- **Operating system:** Windows 10, macOS Big Sur (11), Linux kernel 5.19 or higher
+- **Operating system:** Windows 10, macOS Ventura 13.3, Linux kernel 5.19 or higher
 - **OpenGL:** 3.0 or higher
 - **Windows only:** Microsoft Visual C++ 2015-2022 Redistributable
 - **Recommended:** Updated drivers for your graphics card; network and Bluetooth adapter

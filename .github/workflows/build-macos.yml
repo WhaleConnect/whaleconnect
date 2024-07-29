@@ -42,7 +42,7 @@ jobs:
         key: macOS-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
 
     - name: Configure xmake
-      run: xmake f -m ${{ inputs.mode }} --ccache=n -y
+      run: xmake f -m ${{ inputs.mode }} --ccache=n -y --target_minver=13.3
 
     - name: Build
       run: |
