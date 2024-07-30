@@ -41,12 +41,14 @@
 
 ## Minimum Hardware Requirements
 
-- **Architecture:** amd64, arm64
+- **Architecture:** amd64 (Windows, Linux), arm64 (macOS)
 - **Free memory:** 256 MB
 - **Free disk space:** 32 MB
 - **Display resolution:** 1280x720
 
 32-bit processors are not supported.
+
+Only Apple Silicon (e.g., M1) CPUs are supported with macOS.
 
 Additional features require:
 
