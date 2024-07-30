@@ -29,7 +29,7 @@ body:
 - type: input
   attributes:
     label: CPU Architecture
-    description: WhaleConnect supports specific OS and CPU architecture combinations, listed in the readme. If you are using a custom build for an unsupported combination, indicate so here - though we may not be able to fully provide support in these cases.
+    description: What is your CPU architecture? WhaleConnect supports specific OS and architecture combinations, listed in the readme. If you have a custom build for an unsupported combination, indicate that as well - though we may not be able to fully provide support in these cases.
   validations:
     required: true
 
