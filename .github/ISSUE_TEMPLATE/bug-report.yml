@@ -21,8 +21,15 @@ body:
 
 - type: input
   attributes:
-    label: Operating System and Architecture
-    description: What OS and architecture are you using? Include (if applicable) - Windows OS version and edition (Settings > System > About), macOS version (Apple menu > About this Mac), Linux distro and kernel version (lsb_release, uname -a).
+    label: Operating System
+    description: What OS are you using? Include (if applicable) - Windows OS version and edition (Settings > System > About), macOS version (Apple menu > About this Mac), Linux distro and kernel version (lsb_release, uname -a).
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: CPU Architecture
+    description: WhaleConnect supports specific OS and CPU architecture combinations, listed in the readme. If you are using a custom build for an unsupported combination, indicate so here - though we may not be able to fully provide support in these cases.
   validations:
     required: true
 
