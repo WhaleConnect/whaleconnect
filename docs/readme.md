@@ -41,12 +41,14 @@
 
 ## Minimum Hardware Requirements
 
-- **Architecture:** amd64, arm64
+- **Architecture:** amd64 (Windows, Linux), arm64 (macOS)
 - **Free memory:** 256 MB
 - **Free disk space:** 32 MB
 - **Display resolution:** 1280x720
 
 32-bit processors are not supported.
+
+Only Apple Silicon (e.g., M1) CPUs are supported with macOS.
 
 Additional features require:
 
@@ -55,7 +57,7 @@ Additional features require:
 
 ## Software Requirements
 
-- **Operating system:** Windows 10, macOS Big Sur (11), Linux kernel 5.19 or higher
+- **Operating system:** Windows 10, macOS Ventura 13.3, Linux kernel 5.19 or higher
 - **OpenGL:** 3.0 or higher
 - **Windows only:** Microsoft Visual C++ 2015-2022 Redistributable
 - **Recommended:** Updated drivers for your graphics card; network and Bluetooth adapter

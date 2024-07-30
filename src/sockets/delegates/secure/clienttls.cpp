@@ -89,7 +89,8 @@ Task<> Delegates::ClientTLS::connect(Device device) {
     do {
         // Client initiates handshake to server; send before receiving
         co_await sendQueued();
-        co_await recvBase(1024);
+        bool closed = co_await recvBase(1024);
+        if (closed) break;
     } while (!channel->is_active() && !channel->is_closed());
 }
 

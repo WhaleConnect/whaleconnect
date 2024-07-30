@@ -97,7 +97,9 @@ void Async::EventLoop::runOnce(bool wait) {
 
             auto& result = *static_cast<Async::CompletionResult*>(i.udata);
             result.error = i.data;
-            result.coroHandle();
+
+            // Needs done check since results may have previously errored out from cancel operations
+            if (!result.coroHandle.done()) result.coroHandle();
         }
     }
 

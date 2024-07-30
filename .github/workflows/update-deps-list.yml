@@ -4,6 +4,11 @@ on:
   push:
     paths-ignore:
       - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/pull_request_template.md'
+      - '.github/workflows/build-debug.yml'
+      - '.github/workflows/clang-format-check.yml'
+      - '.github/workflows/publish-release.yml'
     branches:
       - main
 
