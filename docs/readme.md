@@ -46,14 +46,16 @@
 - **Free disk space:** 32 MB
 - **Display resolution:** 1280x720
 
-32-bit processors are not supported.
-
-Only Apple Silicon (e.g., M1) CPUs are supported with macOS.
-
 Additional features require:
 
 - **Network adapter** for Internet-based communication
 - **Bluetooth adapter** for Bluetooth-based communication
+
+### About CPUs
+
+- 32-bit processors are not supported.
+- Only Apple Silicon (e.g., M1) CPUs are supported with macOS.
+- You may get WhaleConnect running on an unsupported CPU by building from source, though we provide no guarantees of compatibility and may not be able to provide full support for any issues.
 
 ## Software Requirements
 
