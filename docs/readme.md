@@ -13,6 +13,18 @@
 - [Testing](testing.md)
 - [Usage](usage.md)
 
+## Design
+
+WhaleConnect is designed to address limitations of existing network communication tools, which have low scalability over the number of connections and limited interoperability with other technologies. The user interface is supported by a custom I/O backend that uses asynchronous APIs native to the application's target operating systems:
+
+- **Windows:** Input/output completion ports (IOCP)
+- **macOS:** kqueue and IOBluetooth
+- **Linux:** io_uring
+
+This allows for efficient communication over parallel connections to other computers and devices. WhaleConnect also supports various common communication protocols on top of this framework, enabling interoperability with a wide range of network-enabled systems and platforms, and security is offered through Transport Layer Security (TLS) protocol support.
+
+WhaleConnect aims to be a general-purpose communication tool that can be used by researchers, developers, and hobbyists in a wide variety of industries, such as the Internet of Things (IoT).
+
 ## Features
 
 - Parallel connections
