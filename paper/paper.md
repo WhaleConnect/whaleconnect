@@ -32,9 +32,9 @@ All functionality is exposed through a graphical user interface (GUI), offering 
 
 # Architecture
 
-WhaleConnect uses multithreading in conjunction with high-performance kernel functions - IOCP [@IO_Completion_Ports] on Windows; kqueue [@kqueue] and IOBluetooth [@IOBluetooth] on macOS; and io_uring via liburing [@Axboe_liburing_library_for] on Linux - to fully benefit from computer hardware and offer a high degree of scalability when managing multiple connections at once. In addition, it uses coroutines, introduced in the C++ 2020 standard [@Coroutines_Cpp20], to efficiently manage concurrent connections within each thread. An architecture diagram displaying the interactions between threads, the operating system's kernel, and the user interface is shown below.
+WhaleConnect uses multithreading in conjunction with high-performance kernel functions - IOCP [@IO_Completion_Ports] on Windows; kqueue [@kqueue] and IOBluetooth [@IOBluetooth] on macOS; and io_uring via liburing [@Axboe_liburing_library_for] on Linux - to fully benefit from computer hardware and offer a high degree of scalability when managing multiple connections at once. In addition, it uses coroutines, introduced in the C++ 2020 standard [@Coroutines_Cpp20], to efficiently manage concurrent connections within each thread. \autoref{FIG:Architecture} presents an architecture diagram displaying the interactions between threads, the operating system's kernel, and the user interface.
 
-![Architecture diagram of WhaleConnect](architecture.png)
+![Architecture diagram of WhaleConnect \label{FIG:Architecture}](architecture.png)
 
 # Acknowledgements
 
