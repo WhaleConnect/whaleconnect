@@ -13,6 +13,18 @@
 - [Testing](testing.md)
 - [Usage](usage.md)
 
+## Design
+
+WhaleConnect is designed to address limitations of existing network communication tools, which have low scalability over the number of connections and limited interoperability with other technologies. The user interface is supported by a custom I/O backend that uses asynchronous APIs native to the application's target operating systems:
+
+- **Windows:** Input/output completion ports (IOCP)
+- **macOS:** kqueue and IOBluetooth
+- **Linux:** io_uring
+
+This allows for efficient communication over parallel connections to other computers and devices. WhaleConnect also supports various common communication protocols on top of this framework, enabling interoperability with a wide range of network-enabled systems and platforms, and security is offered through Transport Layer Security (TLS) protocol support.
+
+WhaleConnect aims to be a general-purpose communication tool that can be used by researchers, developers, and hobbyists in a wide variety of industries, such as the Internet of Things (IoT).
+
 ## Features
 
 - Parallel connections
@@ -46,14 +58,16 @@
 - **Free disk space:** 32 MB
 - **Display resolution:** 1280x720
 
-32-bit processors are not supported.
-
-Only Apple Silicon (e.g., M1) CPUs are supported with macOS.
-
 Additional features require:
 
 - **Network adapter** for Internet-based communication
 - **Bluetooth adapter** for Bluetooth-based communication
+
+### About CPUs
+
+- 32-bit processors are not supported.
+- Only Apple Silicon (e.g., M1) CPUs are supported with macOS.
+- You may get WhaleConnect running on an unsupported CPU by building from source, though we provide no guarantees of compatibility and may not be able to provide full support for any issues.
 
 ## Software Requirements
 

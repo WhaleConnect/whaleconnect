@@ -83,7 +83,7 @@ Services are organized as tree nodes, and they can be expanded to reveal informa
 
 For more information on UUIDs and profile descriptors, see the [Bluetooth assigned numbers](https://www.bluetooth.com/specifications/assigned-numbers/).
 
-In the example above, an SDP inquiry has been run on an ESP32 microcontroller. It advertises a single service, "ESP32SPP", that supports L2CAP and RFCOMM. It uses SPP 1.2 and accepts clients on port 1.
+In the example above, an SDP inquiry has been run on an ESP32 microcontroller. It advertises a single service, "ESP32SPP", which supports L2CAP and RFCOMM. It uses SPP 1.2 and accepts clients on port 1.
 
 When you click the "Connect..." button, you will have the option to select either L2CAP or RFCOMM to connect to the device.
 
@@ -106,7 +106,7 @@ If you are unable to find your desired server through SDP, you can enter the con
 
 Regardless of how you create the client connection, WhaleConnect will create a new window that manages the connection. You will use this window to send and receive data with the server. Received data will appear in the console output. Any errors will also be reported here.
 
-To send data to the server, type into the textbox at the top of the window and press ENTER. You can insert a new line with CTRL-ENTER (Windows and Linux) or CMD-ENTER (macOS). You can select the line ending with the dropdown in the bottom right: newline (`\n`), carriage return (`\r`), or both (`\r\n`).
+To send data to the server, type into the textbox at the top of the window and press [ENTER]. You can insert a new line with [CTRL-ENTER] (Windows and Linux) or [CMD-ENTER] (macOS). You can select the line ending with the dropdown in the bottom right: newline (`\n`), carriage return (`\r`), or both (`\r\n`).
 
 Clicking the "Options..." button opens the menu shown. The options are:
 
@@ -165,7 +165,7 @@ This window consists only of a console output, and the textbox and send options 
 The settings window can be opened in two different ways:
 
 - By going to "File > Settings" in the menu bar
-- By using CTRL-, (Windows, Linux) or CMD-, (macOS)
+- By using [CTRL-,] (Windows, Linux) or [CMD-,] (macOS)
 
 Below is a description of some of the options:
 
@@ -215,7 +215,7 @@ Connection: close
 > [!NOTE]
 > Remember to add two trailing newlines at the end of your request, which are required by the HTTP standard.
 
-Send the data to the server with the ENTER key. The server's response will appear in the console output.
+Send the data to the server with the [ENTER] key. The server's response will appear in the console output.
 
 The screenshot below is the result of fetching the howsmyssl.com API. The "Show timestamps" option has also been enabled.
 
@@ -242,3 +242,42 @@ This example also assumes there is a computer running a TCP server through Whale
 With WhaleConnect acting as the server, multiple lights can be connected and controlled from the same centralized interface. For example, you can select which lights to control by choosing the clients that receive data from the server and issuing the appropriate commands.
 
 This solution can be expanded to more devices that connect to this server, such as sensors in each room that periodically send out their measurements to the server. This allows a single server running in WhaleConnect to become a complete smart home management system.
+
+### Communication Between Computers
+
+Data transfer between two computers can be performed with WhaleConnect, with one functioning as a server and the other as a client. This can be used for file and message sharing.
+
+This example uses communication over TCP on port 8000 with IPv4. If you have a firewall on your server device, ensure it is configured to allow traffic through this port.
+
+To configure the server:
+
+1. Find the IP address of your server by running a command such as `ipconfig`, `ifconfig`, or `ip a`. Example output of `ipconfig` on Windows:
+
+    ```
+    ...
+    Wireless LAN adapter Wi-Fi:
+    ...
+    IPv4 Address. . . . . . . . . . . : 192.168.0.166
+    ...
+    ```
+
+2. In WhaleConnect, go to "View > New Server".
+3. In the "New Server" window, click the "IPv4" button. The address should autofill to `0.0.0.0`. Enter `8000` for the port, select "TCP", and click "Create Server".
+4. A window for the server should appear. If the server creation is successful, it will indicate the port and protocol on which the server is listening.
+
+To configure the client on another computer:
+
+1. In WhaleConnect, go to "View > New Connection".
+2. Select the "Internet Protocol" tab in the "New Connection" window.
+3. Enter the IP address of the server which you found above and `8000` for the port, then select "TCP" and click "Connect".
+4. A window for the client should appear.
+
+If the client connects successfully, the server window will indicate the IP address of the client. Once the client and server are connected, the setup is ready to transfer data. Both the client and server windows have text boxes to send data to the other end of the connection, and both windows will update with new data and messages as they are received.
+
+This setup can also be expanded to multiple clients. On another computer, you can perform the client configuration steps again, which will result in two clients connected to the same server.
+
+The screenshots below show the results of this setup with a server and a client.
+
+![Server example](img/example-server.png)
+
+![Client example](img/example-client.png)
