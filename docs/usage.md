@@ -251,7 +251,16 @@ This example uses communication over TCP on port 8000 with IPv4. If you have a f
 
 To configure the server:
 
-1. Find the IP address of your server by running a command such as `ipconfig`, `ifconfig`, or `ip a`.
+1. Find the IP address of your server by running a command such as `ipconfig`, `ifconfig`, or `ip a`. Example output of `ipconfig` on Windows:
+
+    ```
+    ...
+    Wireless LAN adapter Wi-Fi:
+    ...
+    IPv4 Address. . . . . . . . . . . : 192.168.0.166
+    ...
+    ```
+
 2. In WhaleConnect, go to "View > New Server".
 3. In the "New Server" window, click the "IPv4" button. The address should autofill to `0.0.0.0`. Enter `8000` for the port, select "TCP", and click "Create Server".
 4. A window for the server should appear. If the server creation is successful, it will indicate the port and protocol on which the server is listening.
@@ -266,3 +275,9 @@ To configure the client on another computer:
 If the client connects successfully, the server window will indicate the IP address of the client. Once the client and server are connected, the setup is ready to transfer data. Both the client and server windows have text boxes to send data to the other end of the connection, and both windows will update with new data and messages as they are received.
 
 This setup can also be expanded to multiple clients. On another computer, you can perform the client configuration steps again, which will result in two clients connected to the same server.
+
+The screenshots below show the results of this setup with a server and a client.
+
+![Server example](img/example-server.png)
+
+![Client example](img/example-client.png)
