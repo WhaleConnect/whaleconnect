@@ -6,7 +6,6 @@
 #include <imgui.h>
 
 #include "imguiext.hpp"
-#include "notifications.hpp"
 #include "components/serverwindow.hpp"
 #include "net/device.hpp"
 #include "net/enums.hpp"
