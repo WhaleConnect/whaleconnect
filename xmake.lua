@@ -30,7 +30,7 @@ add_requires("botan", { configs = { modules = (function()
         certstoreSystem
     }
 end)() } })
-add_requires("imgui docking", { configs = { glfw = true, opengl3 = true, freetype = true } })
+add_requires("imgui v1.91.0-docking", { configs = { glfw = true, opengl3 = true, freetype = true } })
 add_requires("catch2", "glfw", "imguitextselect", "opengl", "out_ptr", "utfcpp")
 add_requires("noto-sans-mono", "remix-icon")
 

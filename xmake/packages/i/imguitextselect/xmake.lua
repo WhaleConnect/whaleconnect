@@ -9,7 +9,7 @@ package("imguitextselect")
     add_versions("1.0.0", "198184dc562a868e748606e1b88c708491f04762413ddcb2d2a251a1cba38a43")
 
     -- Config to match WhaleConnect
-    add_deps("imgui docking", { configs = { glfw = true, opengl3 = true, freetype = true } })
+    add_deps("imgui v1.91.0-docking", { configs = { glfw = true, opengl3 = true, freetype = true } })
     add_deps("utfcpp")
 
     on_install(function (package)
