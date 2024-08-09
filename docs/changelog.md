@@ -7,6 +7,7 @@ This document tracks the changes between WhaleConnect versions. Dates are writte
 ### Improvements
 
 - Removed the L2CAP protocol selection on Windows, where it is unsupported.
+- Updated the Links window to have clickable links instead of copyable text.
 
 ## 1.0.1 (07/29/2024)
 
