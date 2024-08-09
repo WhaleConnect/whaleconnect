@@ -6,7 +6,6 @@
 #include <imgui.h>
 
 #include "imguiext.hpp"
-#include "notifications.hpp"
 #include "components/serverwindow.hpp"
 #include "net/device.hpp"
 #include "net/enums.hpp"
@@ -44,7 +43,7 @@ void drawNewServerWindow(WindowList& servers, bool& open) {
     ImGuiExt::radioButton("TCP", serverInfo.type, TCP);
     ImGuiExt::radioButton("UDP", serverInfo.type, UDP);
     ImGuiExt::radioButton("RFCOMM", serverInfo.type, RFCOMM);
-    ImGuiExt::radioButton("L2CAP", serverInfo.type, L2CAP);
+    if constexpr (!OS_WINDOWS) ImGuiExt::radioButton("L2CAP", serverInfo.type, L2CAP);
 
     // Cannot check the result of add since server titles are generated dynamically.
     if (ImGui::Button("Create Server")) servers.add<ServerWindow>("", serverInfo);

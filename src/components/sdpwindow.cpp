@@ -75,7 +75,7 @@ void SDPWindow::drawConnOptions(std::string_view info) {
 
     // Connection type selection
     ImGuiExt::radioButton("RFCOMM", connType, RFCOMM);
-    ImGuiExt::radioButton("L2CAP", connType, L2CAP);
+    if constexpr (!OS_WINDOWS) ImGuiExt::radioButton("L2CAP", connType, L2CAP);
 
     // Connect button
     ImGui::Spacing();

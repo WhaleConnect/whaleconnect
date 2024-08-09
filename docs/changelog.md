@@ -2,6 +2,12 @@
 
 This document tracks the changes between WhaleConnect versions. Dates are written in the MM/DD/YYYY format.
 
+## 1.0.2 (Unreleased)
+
+### Improvements
+
+- Removed the L2CAP protocol selection on Windows, where it is unsupported.
+
 ## 1.0.1 (07/29/2024)
 
 ### Bug Fixes
