@@ -11,13 +11,13 @@
             },
             version = "5.70"
         },
-        ["botan#dd1b2085"] = {
+        ["botan#cdf4ff01"] = {
             repo = {
                 branch = "master",
-                commit = "a5e98dbb129971e21eef7e451846026690367c10",
+                commit = "99082b66e5e67126bf0e24704d1f212ce106d071",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
-            version = "3.4.0"
+            version = "3.5.0"
         },
         ["ca-certificates#31fecfc4"] = {
             repo = {
@@ -75,20 +75,20 @@
             },
             version = "3.4"
         },
-        ["imgui docking#8ff1f880"] = {
-            branch = "docking",
-            repo = {
-                branch = "master",
-                commit = "a5e98dbb129971e21eef7e451846026690367c10",
-                url = "https://gitlab.com/tboox/xmake-repo.git"
-            },
-            version = "docking"
-        },
         ["imguitextselect#31fecfc4"] = {
             repo = {
                 url = "./xmake"
             },
             version = "1.1.1"
+        },
+        ["imgui v1.91.0-docking#8ff1f880"] = {
+            branch = "v1.91.0-docking",
+            repo = {
+                branch = "master",
+                commit = "99082b66e5e67126bf0e24704d1f212ce106d071",
+                url = "https://gitlab.com/tboox/xmake-repo.git"
+            },
+            version = "v1.91.0-docking"
         },
         ["libffi#f26e00a1"] = {
             repo = {
@@ -219,7 +219,7 @@
         ["opengl#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "a5e98dbb129971e21eef7e451846026690367c10",
+                commit = "99082b66e5e67126bf0e24704d1f212ce106d071",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "1.2"
@@ -368,6 +368,12 @@
             },
             version = "3.4"
         },
+        ["imguitextselect#31fecfc4"] = {
+            repo = {
+                url = "./xmake"
+            },
+            version = "1.1.1"
+        },
         ["imgui v1.91.0-docking#8ff1f880"] = {
             repo = {
                 branch = "master",
@@ -375,12 +381,6 @@
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "v1.91.0-docking"
-        },
-        ["imguitextselect#31fecfc4"] = {
-            repo = {
-                url = "./xmake"
-            },
-            version = "1.1.1"
         },
         ["ninja#31fecfc4"] = {
             repo = {
@@ -451,6 +451,9 @@
             version = "v1.3.1"
         }
     },
+    __meta__ = {
+        version = "1.0"
+    },
     ["windows|x64"] = {
         ["botan#d6ce37d7"] = {
             repo = {
@@ -492,6 +495,12 @@
             },
             version = "3.4"
         },
+        ["imguitextselect#31fecfc4"] = {
+            repo = {
+                url = "./xmake"
+            },
+            version = "1.1.1"
+        },
         ["imgui v1.91.0-docking#8ff1f880"] = {
             repo = {
                 branch = "master",
@@ -499,12 +508,6 @@
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "v1.91.0-docking"
-        },
-        ["imguitextselect#31fecfc4"] = {
-            repo = {
-                url = "./xmake"
-            },
-            version = "1.1.1"
         },
         ["ninja#31fecfc4"] = {
             repo = {
