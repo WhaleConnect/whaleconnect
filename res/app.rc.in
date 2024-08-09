@@ -3,10 +3,10 @@
 
 #include "winuser.h"
 
-1 RT_MANIFEST "../res/app.manifest"
+1 RT_MANIFEST "${RESDIR}/app.manifest"
 
-IDI_APPICON ICON "../res/icons/app.ico"
-GLFW_ICON ICON DISCARDABLE "../res/icons/app.ico"
+IDI_APPICON ICON "${RESDIR}/icons/app.ico"
+GLFW_ICON ICON DISCARDABLE "${RESDIR}/icons/app.ico"
 
 1 VERSIONINFO
  FILEVERSION ${VERSION_MAJOR},${VERSION_MINOR},${VERSION_ALTER},0

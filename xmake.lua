@@ -137,6 +137,7 @@ target("WhaleConnect")
     -- GUI code and main entry point
     add_files("src/app/*.cpp", "src/components/*.cpp", "src/gui/*.cpp", "src/main.cpp")
     add_configfiles("src/app/config.hpp.in")
+    set_configvar("RESDIR", string.format("%s/res", string.gsub(os.scriptdir(), "\\", "/")))
     add_includedirs("$(buildir)")
 
     -- Add platform rules
