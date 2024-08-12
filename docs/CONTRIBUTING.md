@@ -2,9 +2,9 @@
 
 Thank you for contributing to WhaleConnect. Please review these contribution guidelines and be mindful of the [code of conduct](https://github.com/WhaleConnect/.github/blob/main/CODE_OF_CONDUCT.md) in your contributions.
 
-## Opening Issues
+## Opening Issues and Discussions
 
-We encourage using GitHub Issues as a centralized place for community engagement. Feel free to submit bug reports, feature requests, or questions, but please follow these steps before doing so:
+We encourage using GitHub as a centralized place for community engagement. Feel free to submit bug reports, feature requests, or questions, but please follow these steps before doing so:
 
 - Ensure your issue has not already been submitted.
   - You can search by [issue label](https://github.com/WhaleConnect/whaleconnect/labels) to effectively find related information.
@@ -12,22 +12,22 @@ We encourage using GitHub Issues as a centralized place for community engagement
 - Ensure you have filled out the correct issue template.
 - Provide a clear description of your issue in the title.
 
-### Bug Reports
+### Bug Reports (GitHub Issues)
 
-- If you have found a security concern, **please do not submit it in GitHub Issues.** Instead, refer to the project's [security policy](https://github.com/WhaleConnect/.github/blob/main/SECURITY.md).
+- If you have found a security concern, **please do not submit it in GitHub Issues or Discussions.** Instead, refer to the project's [security policy](https://github.com/WhaleConnect/.github/blob/main/SECURITY.md).
 - Make sure your environment is officially supported ([System Requirements](readme.md#minimum-hardware-requirements)).
   - Currently supported OS+architecture combinations are: Windows+x64, Linux+x64, macOS+ARM64.
 - Check if the bug still exists on the main branch.
 - Provide a clear, reproducible example with sufficient detail. This includes all steps necessary to reproduce the bug and any environment/settings configuration that might be related to the behavior.
 - Include relevant screenshots, video captures, or data output to explain the bug.
 
-### Feature Requests
+### Feature Requests (GitHub Issues)
 
 - Clearly explain the proposed feature and how it can be useful.
 - Include user interface designs or other mockups if you think they will help in your explanation.
 - If you are willing to, feel free to write your own code, open a pull request, and mention it in your issue. We always welcome external contributions.
 
-### Questions
+### Questions (GitHub Discussions)
 
 - Clearly explain what you want to accomplish using the software and if it is suitable for your desired task.
   - Be mindful of the [XY Problem](https://xyproblem.info/) and make sure you describe your *original* goals and expectations. This will help us answer your question more easily.

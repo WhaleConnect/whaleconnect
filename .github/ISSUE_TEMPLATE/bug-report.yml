@@ -5,7 +5,7 @@ body:
 - type: markdown
   attributes:
     value: |
-      We encourage using GitHub Issues as a centralized place for community engagement. Please complete the following before submitting your issue:
+      We encourage using GitHub as a centralized place for community engagement. Please complete the following before submitting your issue:
 
       - Read the [contributing guidelines](https://github.com/WhaleConnect/whaleconnect/blob/main/docs/CONTRIBUTING.md).
       - Search for [past issues](https://github.com/WhaleConnect/whaleconnect/issues?q=) to check for similar discussions.
