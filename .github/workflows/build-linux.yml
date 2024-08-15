@@ -33,7 +33,7 @@ jobs:
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
       with:
-        xmake-version: '2.9.3'
+        xmake-version: '2.9.4'
         actions-cache-folder: .xmake-cache-W${{ steps.cache_key.outputs.key }}
 
     - name: Update xmake repository
@@ -50,7 +50,7 @@ jobs:
         key: Linux-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
 
     - name: Configure xmake
-      run: xmake f -m ${{ inputs.mode }} --ccache=n --ldflags="-Wl,-rpath,\$ORIGIN/../lib" -y
+      run: xmake f -m ${{ inputs.mode }} --ccache=n -y
 
     - name: Build
       run: xmake

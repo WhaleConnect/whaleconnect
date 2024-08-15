@@ -148,6 +148,8 @@ target("WhaleConnect")
         add_rules("xcode.application")
         add_configfiles("res/Info.plist.in")
         add_installfiles("res/icons/app.icns")
+    elseif is_plat("linux") then
+        add_rpathdirs("$ORIGIN/../lib", { installonly = true })
     end
 
     after_load(function (target)
