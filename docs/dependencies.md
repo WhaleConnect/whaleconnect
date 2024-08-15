@@ -12,7 +12,7 @@ OS keys: L = Linux, M = macOS, W = Windows
 | [dbus](https://www.freedesktop.org/wiki/Software/dbus/) | 1.14.8 | L | MIT | D-Bus is a message bus system, a simple way for applications to talk to one another. |
 | [glfw](https://www.glfw.org/) | 3.4.0 | L M W | zlib | GLFW is an Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan application development. |
 | [imgui](https://github.com/ocornut/imgui) | 1.91.0 | L M W | MIT | Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies |
-| [imguitextselect](https://github.com/AidanSun05/ImGuiTextSelect) | 1.1.1 | L M W | MIT | Text selection implementation for Dear ImGui |
+| [imguitextselect](https://github.com/AidanSun05/ImGuiTextSelect) | 1.1.2 | L M W | MIT | Text selection implementation for Dear ImGui |
 | [liburing](https://github.com/axboe/liburing) | 2.6.0 | L | Unknown | liburing provides helpers to setup and teardown io_uring instances |
 | [noto-sans-mono](https://github.com/notofonts/notofonts.github.io) | 2.14.0 | L M W | OFL-1.1 | Noto Sans Mono font |
 | [opengl](https://opengl.org/) | 1.2.0 | L M W | Unknown | OpenGL - The Industry Standard for High Performance Graphics |
