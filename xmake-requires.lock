@@ -75,12 +75,6 @@
             },
             version = "3.4"
         },
-        ["imguitextselect#31fecfc4"] = {
-            repo = {
-                url = "./xmake"
-            },
-            version = "1.1.1"
-        },
         ["imgui v1.91.0-docking#8ff1f880"] = {
             branch = "v1.91.0-docking",
             repo = {
@@ -89,6 +83,12 @@
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "v1.91.0-docking"
+        },
+        ["imguitextselect#31fecfc4"] = {
+            repo = {
+                url = "./xmake"
+            },
+            version = "1.1.1"
         },
         ["libffi#f26e00a1"] = {
             repo = {
@@ -368,12 +368,6 @@
             },
             version = "3.4"
         },
-        ["imguitextselect#31fecfc4"] = {
-            repo = {
-                url = "./xmake"
-            },
-            version = "1.1.1"
-        },
         ["imgui v1.91.0-docking#8ff1f880"] = {
             repo = {
                 branch = "master",
@@ -381,6 +375,12 @@
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "v1.91.0-docking"
+        },
+        ["imguitextselect#31fecfc4"] = {
+            repo = {
+                url = "./xmake"
+            },
+            version = "1.1.1"
         },
         ["ninja#31fecfc4"] = {
             repo = {
@@ -451,9 +451,6 @@
             version = "v1.3.1"
         }
     },
-    __meta__ = {
-        version = "1.0"
-    },
     ["windows|x64"] = {
         ["botan#d6ce37d7"] = {
             repo = {
@@ -495,12 +492,6 @@
             },
             version = "3.4"
         },
-        ["imguitextselect#31fecfc4"] = {
-            repo = {
-                url = "./xmake"
-            },
-            version = "1.1.1"
-        },
         ["imgui v1.91.0-docking#8ff1f880"] = {
             repo = {
                 branch = "master",
@@ -508,6 +499,12 @@
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "v1.91.0-docking"
+        },
+        ["imguitextselect#31fecfc4"] = {
+            repo = {
+                url = "./xmake"
+            },
+            version = "1.1.1"
         },
         ["ninja#31fecfc4"] = {
             repo = {

@@ -1,13 +1,13 @@
 -- Copyright 2021-2024 Aidan Sun and the WhaleConnect contributors
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
-function download_licenses(installdir)
+function downloadLicenses(installdir)
     print("Downloading licenses...")
 
     -- Licenses are installed to Resources in macOS bundle
-    local target_dir = is_plat("macosx") and path.join(installdir, "Contents", "Resources") or installdir
+    local targetDir = is_plat("macosx") and path.join(installdir, "Contents", "Resources") or installdir
 
-    local license_files = {
+    local licenseFiles = {
         -- Libraries
         ["bluez"] = { "https://raw.githubusercontent.com/bluez/bluez/master/LICENSES/preferred/GPL-2.0" },
         ["botan"] = { "https://raw.githubusercontent.com/randombit/botan/master/license.txt" },
@@ -30,28 +30,28 @@ function download_licenses(installdir)
     }
 
     local http = import("net.http")
-    for name, urls in pairs(license_files) do
+    for name, urls in pairs(licenseFiles) do
         for _, url in ipairs(urls) do
             local filename = path.filename(url)
-            local target_path = path.join(target_dir, "3rdparty", name, filename)
+            local targetPath = path.join(targetDir, "3rdparty", name, filename)
 
-            if not os.isfile(target_path) then
-                print("- %s -> %s", url, target_path)
-                http.download(url, target_path)
+            if not os.isfile(targetPath) then
+                print("- %s -> %s", url, targetPath)
+                http.download(url, targetPath)
             end
         end
     end
 end
 
-function download_fonts(targetdir)
-    local font_path = path.join(targetdir, "NotoSansMono-Regular.ttf")
-    local icon_font_path = path.join(targetdir, "remixicon.ttf")
+function downloadFonts(targetdir)
+    local fontPath = path.join(targetdir, "NotoSansMono-Regular.ttf")
+    local iconFontPath = path.join(targetdir, "remixicon.ttf")
 
-    if not os.isfile(font_path) then
-        os.ln(os.getenv("NOTO_SANS_MONO_PATH"), font_path)
+    if not os.isfile(fontPath) then
+        os.ln(os.getenv("NOTO_SANS_MONO_PATH"), fontPath)
     end
 
-    if not os.isfile(icon_font_path) then
-        os.ln(os.getenv("REMIX_ICON_PATH"), icon_font_path)
+    if not os.isfile(iconFontPath) then
+        os.ln(os.getenv("REMIX_ICON_PATH"), iconFontPath)
     end
 end

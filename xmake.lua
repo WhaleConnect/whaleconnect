@@ -169,11 +169,11 @@ target("WhaleConnect")
 
     -- Download font files next to executable on pre-build
     before_build(function (target)
-        import("xmake.download").download_fonts(target:targetdir())
+        import("xmake.download").downloadFonts(target:targetdir())
     end)
 
     after_install(function (target)
-        import("xmake.download").download_licenses(target:installdir())
+        import("xmake.download").downloadLicenses(target:installdir())
     end)
 
 target("socket-tests")

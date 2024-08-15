@@ -6,49 +6,53 @@
 import("core.base.json")
 import("core.base.semver")
 
-all_packages = {}
+allPackages = {}
 
-function record_packages(packages, os_key)
+function recordPackages(packages, osKey)
     for package, info in pairs(packages) do
         local name = package:match("^([%w_%-]+)")
-        if all_packages[name] == nil then
+        if allPackages[name] == nil then
             local version = info["version"]
-            local parsed_version = semver.is_valid(version) and semver.new(version):shortstr() or version
+            local parsedVersion = semver.is_valid(version) and semver.new(version):shortstr() or version
 
             local online = info["repo"]["url"]:match("^https://")
 
-            local repo_root = online
+            local repoRoot = online
                 and path.join(val("globaldir"), "repositories", "xmake-repo")
                 or path.join(val("projectdir"), "xmake")
 
-            all_packages[name] = {
-                version = parsed_version,
-                filepath = path.join(repo_root, "packages", name:sub(1, 1), name, "xmake.lua"),
+            allPackages[name] = {
+                filepath = path.join(repoRoot, "packages", name:sub(1, 1), name, "xmake.lua"),
                 os = {}
             }
+
+            local prevVersion = allPackages[name]["version"]
+            if prevVersion == nil or (semver.is_valid(prevVersion) and semver.compare(parsedVersion, prevVersion) == 1) then
+                allPackages[name]["version"] = parsedVersion
+            end
         end
 
-        table.insert(all_packages[name]["os"], os_key)
+        table.insert(allPackages[name]["os"], osKey)
     end
 end
 
 function main(...)
-    package_info = io.load(path.join(os.projectdir(), "xmake-requires.lock"))
-    for platform, packages in pairs(package_info) do
+    pkgInfo = io.load(path.join(os.projectdir(), "xmake-requires.lock"))
+    for platform, packages in pairs(pkgInfo) do
         if platform ~= "__meta__" then
             local os = platform:match("(.+)|")
-            local os_key = ""
+            local osKey = ""
             if os == "linux" then
-                os_key = "L"
+                osKey = "L"
             elseif os == "macosx" then
-                os_key = "M"
+                osKey = "M"
             elseif os == "windows" then
-                os_key = "W"
+                osKey = "W"
             end
 
-            record_packages(packages, os_key)
+            recordPackages(packages, osKey)
         end
     end
 
-    json.savefile(path.join(os.projectdir(), "build", "packages.json"), all_packages)
+    json.savefile(path.join(os.projectdir(), "build", "packages.json"), allPackages)
 end
