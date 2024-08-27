@@ -2,6 +2,9 @@
 
 ![Banner](img/banner.png)
 
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.06964/status.svg)](https://doi.org/10.21105/joss.06964)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13328366.svg)](https://doi.org/10.5281/zenodo.13328366)
+
 **WhaleConnect** is an application for Internet and Bluetooth communication for Windows, Linux, and macOS.
 
 ![Screenshot](img/screenshot.png)

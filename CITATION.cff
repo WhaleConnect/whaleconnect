@@ -1,0 +1,28 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Sun
+  given-names: Aidan
+  orcid: "https://orcid.org/0009-0000-6282-2497"
+doi: 10.5281/zenodo.13328366
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Sun
+    given-names: Aidan
+    orcid: "https://orcid.org/0009-0000-6282-2497"
+  date-published: 2024-08-27
+  doi: 10.21105/joss.06964
+  issn: 2475-9066
+  issue: 100
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 6964
+  title: "WhaleConnect: A General-Purpose, Cross-Platform Network
+    Communication Application"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.06964"
+  volume: 9
+title: "WhaleConnect: A General-Purpose, Cross-Platform Network
+  Communication Application"
