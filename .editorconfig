@@ -9,6 +9,6 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 indent_size = 4
 
-# Config and manifest files
-[*.{manifest,plist,clang-format,ini,yml}]
+# Config, manifest, and documentation files
+[*.{manifest,plist,clang-format,ini,yml,md}]
 indent_size = 2
