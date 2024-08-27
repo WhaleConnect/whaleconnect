@@ -110,6 +110,25 @@ xattr -c path/to/WhaleConnect.app
 
 WhaleConnect and its build scripts are licensed under the [GPL v3+ license](../COPYING).
 
+## Citation
+
+If you use WhaleConnect, please cite our paper:
+
+```text
+@article{WhaleConnect2024,
+  author = {Sun, Aidan},
+  doi = {10.21105/joss.06964},
+  journal = {Journal of Open Source Software},
+  month = aug,
+  number = {100},
+  pages = {6964},
+  title = {{WhaleConnect: A General-Purpose, Cross-Platform Network Communication Application}},
+  url = {https://joss.theoj.org/papers/10.21105/joss.06964},
+  volume = {9},
+  year = {2024}
+}
+```
+
 ## About the Name
 
 With their complex songs and vocalizations, whales are among the best animal communicators. They can also be found in every ocean.
