@@ -503,7 +503,9 @@
         },
         ["imguitextselect#31fecfc4"] = {
             repo = {
-                url = "./xmake"
+                branch = "master",
+                commit = "33b79698a413f9875618c078e2e553bb2ef7cdc1",
+                url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "1.1.2"
         },
@@ -532,7 +534,7 @@
         ["out_ptr#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "52e84d5aa56cf9e3ce66f167fe82df586461c0a9",
+                commit = "bb88236cafae6245f0e6c39e44432f9f9174e818",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "2022.10.07"
