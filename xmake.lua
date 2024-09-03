@@ -30,9 +30,12 @@ add_requires("botan", { configs = { modules = (function()
         certstoreSystem
     }
 end)() } })
-add_requires("imgui v1.91.0-docking", { configs = { glfw = true, opengl3 = true, freetype = true } })
-add_requires("catch2", "glfw", "imguitextselect", "opengl", "out_ptr", "utfcpp")
-add_requires("noto-sans-mono", "remix-icon")
+
+local imgui_version = "v1.91.0-docking"
+local imgui_configs = { glfw = true, opengl3 = true, freetype = true }
+add_requires(("imgui %s"):format(imgui_version), { configs = imgui_configs })
+add_requires("catch2", "glfw", "imguitextselect", "opengl", "out_ptr", "utfcpp", "noto-sans-mono", "remix-icon")
+add_requireconfs("imguitextselect.imgui", { override = true, version = imgui_version, configs = imgui_configs })
 
 add_packages("botan", "out_ptr")
 
