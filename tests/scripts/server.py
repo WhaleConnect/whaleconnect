@@ -61,7 +61,7 @@ match args.transport:
 
 
 # Handles I/O for a TCP server.
-def server_loop_tcp(s: socket.socket):
+def server_loop_tcp(s: socket.socket) -> None:
     # Wait for new client connections
     conn, addr = s.accept()
     peer_addr = addr[0]
@@ -89,7 +89,7 @@ def server_loop_tcp(s: socket.socket):
 
 
 # Handles I/O for a UDP server.
-def server_loop_udp(s: socket.socket):
+def server_loop_udp(s: socket.socket) -> None:
     data, addr = s.recvfrom(1024)
     if data:
         print(f"Received: {data} (from {addr[0]})")
