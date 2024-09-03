@@ -5,31 +5,10 @@
 # The package data file must be generated before running this script:
 #   xmake l parse_lock_file.lua
 
-import json
-from pathlib import Path
-import re
+import xmake_utils
 
-project_dir = Path(__file__).parent.parent
-xmake_file_path = project_dir / "xmake.lua"
-lock_json = project_dir / "build" / "packages.json"
-
-# Parse the project xmake.lua to get packages which are explicitly required
-packages = set([])
-with open(xmake_file_path, "r") as f:
-    package_search = re.compile(r"add_packages\((.+)\)")
-    for line in f.readlines():
-        if packages_str := package_search.search(line):
-            args = packages_str.group(1).split(",")
-            for arg in args:
-                packages.add(arg.split("\"")[1])
-
-# Read lock file JSON
-with open(lock_json, "r") as f:
-    lock_info = json.load(f)
-
-license_search = re.compile(r"set_license\(\"(.+)\"\)")
-homepage_search = re.compile(r"set_homepage\(\"(.+)\"\)")
-description_search = re.compile(r"set_description\(\"(.+)\"\)")
+packages = xmake_utils.get_referenced_packages()
+lock_info = xmake_utils.read_lock_file()
 
 out_text = """# WhaleConnect Dependencies
 
@@ -54,8 +33,8 @@ for package in sorted(packages):
         package_file = f.read().decode("utf-8")
 
     # Name
-    if homepage_str := homepage_search.search(package_file):
-        out_line.append(f"[{package}]({homepage_str.group(1)})")
+    if homepage_str := xmake_utils.find_homepage(package_file):
+        out_line.append(f"[{package}]({homepage_str})")
     else:
         out_line.append(package)
 
@@ -66,18 +45,18 @@ for package in sorted(packages):
     out_line.append(" ".join(sorted(package_info["os"])))
 
     # License
-    if license_str := license_search.search(package_file):
-        out_line.append(license_str.group(1))
+    if license_str := xmake_utils.find_license(package_file):
+        out_line.append(license_str)
     else:
         out_line.append("Unknown")
 
     # Description
-    if description_str := description_search.search(package_file):
-        out_line.append(description_str.group(1))
+    if description_str := xmake_utils.find_description(package_file):
+        out_line.append(description_str)
     else:
         out_line.append("None")
 
     out_text += "| " + " | ".join(out_line) + " |\n"
 
-with open(project_dir / "docs" / "dependencies.md", "w") as f:
+with open(xmake_utils.PROJECT_DIR / "docs" / "dependencies.md", "w") as f:
     f.write(out_text)
