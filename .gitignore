@@ -6,6 +6,7 @@ desktop.ini
 .cache/
 .xmake/
 build/
+__pycache__/
 
 # IDE directories
 .vscode/
