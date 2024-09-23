@@ -21,7 +21,7 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>LSMinimumSystemVersion</key>
-    <string>13.3.0</string>
+    <string>14.0.0</string>
     <key>NSBluetoothAlwaysUsageDescription</key>
     <string>This app contains functions that require access to Bluetooth.</string>
     <key>NSHumanReadableCopyright</key>

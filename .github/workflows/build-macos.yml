@@ -12,6 +12,12 @@ jobs:
     runs-on: macos-latest
 
     steps:
+    - name: Setup Xcode
+      id: xcode
+      run: |
+        sudo xcodes select 16.0
+        echo "xcode_path=$(dirname $(dirname $(xcodes select 16.0 -p)))" >> $GITHUB_OUTPUT
+
     - name: Get current date as package key
       id: cache_key
       run: echo "key=$(date +'%W')" >> $GITHUB_OUTPUT
@@ -42,7 +48,7 @@ jobs:
         key: macOS-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
 
     - name: Configure xmake
-      run: xmake f -m ${{ inputs.mode }} --ccache=n -y --target_minver=14.0
+      run: xmake f -m ${{ inputs.mode }} --ccache=n -y --target_minver=14.0 --xcode=${{ steps.xcode.outputs.xcode_path }}
 
     - name: Build
       run: |
