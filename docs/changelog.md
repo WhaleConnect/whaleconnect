@@ -2,6 +2,12 @@
 
 This document tracks the changes between WhaleConnect versions. Dates are written in the MM/DD/YYYY format.
 
+## Unreleased
+
+### Removals
+
+- Removed support for macOS 13.
+
 ## 1.0.2 (08/15/2024)
 
 ### Improvements
