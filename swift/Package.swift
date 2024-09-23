@@ -3,6 +3,9 @@ import PackageDescription
 
 let package = Package(
     name: "WhaleConnect",
+    platforms: [
+        .macOS(.v14)
+    ],
     products: [
         .library(name: "BluetoothMacOS", type: .static, targets: ["BluetoothMacOS"]),
         .library(name: "GUIMacOS", type: .static, targets: ["GUIMacOS"]),
