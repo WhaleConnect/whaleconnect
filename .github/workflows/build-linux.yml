@@ -13,6 +13,7 @@ jobs:
     env:
       CC: /usr/bin/gcc-14
       CXX: /usr/bin/g++-14
+      XMAKE_GLOBALDIR: ${{ github.workspace }}/xmake-global
 
     steps:
     - name: Install dependencies
@@ -26,9 +27,6 @@ jobs:
 
     - name: Checkout repository
       uses: actions/checkout@v4
-
-    - name: Set xmake env
-      run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
 
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1

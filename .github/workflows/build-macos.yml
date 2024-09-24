@@ -10,6 +10,8 @@ on:
 jobs:
   build-macos:
     runs-on: macos-latest
+    env:
+      XMAKE_GLOBALDIR: ${{ github.workspace }}/xmake-global
 
     steps:
     - name: Setup Xcode
@@ -24,9 +26,6 @@ jobs:
 
     - name: Checkout repository
       uses: actions/checkout@v4
-
-    - name: Set xmake env
-      run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
 
     - name: Setup xmake
       uses: xmake-io/github-action-setup-xmake@v1
