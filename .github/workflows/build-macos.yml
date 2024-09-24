@@ -11,14 +11,15 @@ jobs:
   build-macos:
     runs-on: macos-latest
     env:
+      XCODE_VERSION: "16.0"
       XMAKE_GLOBALDIR: ${{ github.workspace }}/xmake-global
 
     steps:
     - name: Setup Xcode
       id: xcode
       run: |
-        sudo xcodes select 16.0
-        echo "xcode_path=$(dirname $(dirname $(xcodes select 16.0 -p)))" >> $GITHUB_OUTPUT
+        sudo xcodes select ${{ env.XCODE_VERSION }}
+        echo "xcode_path=$(dirname $(dirname $(xcodes select ${{ env.XCODE_VERSION }} -p)))" >> $GITHUB_OUTPUT
 
     - name: Get current date as package key
       id: cache_key
