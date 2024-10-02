@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "WhaleConnect",
     platforms: [
-        .macOS(.v14)
+        .macOS(.v14),
     ],
     products: [
         .library(name: "BluetoothMacOS", type: .static, targets: ["BluetoothMacOS"]),
@@ -14,24 +14,24 @@ let package = Package(
         .target(
             name: "BluetoothMacOS",
             dependencies: [],
-            path: "./Sources",
-            exclude: ["gui.swift"],
-            sources: ["bthandle.swift", "btutils.swift"],
+            path: "./Sources/bluetooth",
+            cxxSettings: [
+                .define("NO_EXPOSE_INTERNAL"),
+            ],
             swiftSettings: [
                 .interoperabilityMode(.Cxx),
-                .unsafeFlags(["-I", "../src", "-Xcc", "-std=c++2b", "-Xcc", "-DNO_EXPOSE_INTERNAL"]),
+                .unsafeFlags(["-I", "../src"]),
             ]
         ),
         .target(
             name: "GUIMacOS",
             dependencies: [],
-            path: "./Sources",
-            exclude: ["bthandle.swift", "btutils.swift"],
-            sources: ["gui.swift"],
+            path: "./Sources/gui",
             swiftSettings: [
                 .interoperabilityMode(.Cxx),
-                .unsafeFlags(["-I", "../src", "-Xcc", "-std=c++2b"]),
+                .unsafeFlags(["-I", "../src"]),
             ]
         ),
-    ]
+    ],
+    cxxLanguageStandard: .cxx2b
 )

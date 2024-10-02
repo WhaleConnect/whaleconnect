@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import BluetoothCpp
+import Foundation
 import IOBluetooth
 
 enum Channel {

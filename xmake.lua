@@ -71,31 +71,32 @@ add_defines(
     "NO_UNIQUE_ADDRESS=" .. (is_plat("windows") and "[[msvc::no_unique_address]]" or "[[no_unique_address]]")
 )
 
-local swiftBuildMode = is_mode("release") and "release" or "debug"
-local swiftBuildDir = format("$(buildir)/swift/%s", swiftBuildMode)
-if is_plat("macosx") then
-    local swiftLibDir = "/Library/Developer/CommandLineTools/usr/lib/swift"
-    add_includedirs(swiftLibDir)
-    add_linkdirs(swiftBuildDir, path.join(swiftLibDir, "macosx"))
-end
-
 target("swift")
     set_kind("phony")
 
     on_build("macosx", function(target)
+        local buildMode = import("xmake.swift_settings").getSwiftBuildMode()
         os.cd("$(scriptdir)/swift")
-        os.exec("swift build -c %s --build-path $(buildir)/swift --config-path $(buildir)/swift", swiftBuildMode)
+        os.exec("swift build -c %s --build-path $(buildir)/swift --config-path $(buildir)/swift", buildMode)
+    end)
+
+rule("swift-deps")
+    on_load("macosx", function(target)
+        local buildDir, libDir, linkDir = import("xmake.swift_settings").getSwiftSettings()
+
+        target:add("includedirs",
+            libDir,
+            path.join(buildDir, "GUIMacOS.build"),
+            path.join(buildDir, "BluetoothMacOS.build"))
+        target:add("linkdirs", buildDir, linkDir)
+        target:add("links", "BluetoothMacOS", "GUIMacOS")
     end)
 
 target("core")
     -- Project files
     set_kind("object")
-
-    if is_plat("macosx") then
-        add_deps("swift")
-        add_includedirs(path.join(swiftBuildDir, "BluetoothMacOS.build"), { public = true })
-        add_links("BluetoothMacOS")
-    end
+    add_deps("swift")
+    add_rules("swift-deps")
 
     add_files(
         "src/net/netutils.cpp",
@@ -128,14 +129,9 @@ target("core")
     end
 
 target("WhaleConnect")
-    add_deps("core")
+    add_deps("core", "swift")
+    add_rules("swift-deps")
     add_packages("glfw", "imgui", "imguitextselect", "noto-sans-mono", "opengl", "remix-icon", "utfcpp")
-
-    if is_plat("macosx") then
-        add_deps("swift")
-        add_includedirs(path.join(swiftBuildDir, "GUIMacOS.build"))
-        add_links("GUIMacOS")
-    end
 
     -- GUI code and main entry point
     add_files("src/app/*.cpp", "src/components/*.cpp", "src/gui/*.cpp", "src/main.cpp")
@@ -186,6 +182,7 @@ target("socket-tests")
 
     add_packages("catch2")
     add_deps("core")
+    add_rules("swift-deps")
     add_files("tests/src/**.cpp")
 
      -- Path to settings file
@@ -195,4 +192,5 @@ target("benchmark-server")
     set_default(false)
 
     add_deps("core")
+    add_rules("swift-deps")
     add_files("tests/benchmarks/server.cpp")
