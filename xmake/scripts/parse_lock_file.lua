@@ -1,12 +1,12 @@
 -- Copyright 2021-2024 Aidan Sun and the WhaleConnect contributors
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
--- This script parses the xrepo lock file and transforms it into a JSON file that can be used by Python.
+-- This script parses the xrepo lock file and transforms it into a JSON file.
 
 import("core.base.json")
 import("core.base.semver")
 
-allPackages = {}
+local allPackages = {}
 
 function recordPackages(packages, osKey)
     for package, info in pairs(packages) do
@@ -36,8 +36,29 @@ function recordPackages(packages, osKey)
     end
 end
 
+function recordReferencedPackages()
+    local xmakeFilePath = path.join(os.projectdir(), "xmake.lua")
+    local packages = {}
+
+    local lines = io.lines(xmakeFilePath)
+    for line in lines do
+        local package = line:match("add_packages%((.+)%)")
+        if package then
+            local args = package:split(",")
+            for _, arg in ipairs(args) do
+                local name = arg:split("\"", { plain = true, strict = true })[2]
+                packages[#packages + 1] = name
+            end
+        end
+    end
+
+    packages = table.unique(packages)
+    table.sort(packages)
+    return packages
+end
+
 function main(...)
-    pkgInfo = io.load(path.join(os.projectdir(), "xmake-requires.lock"))
+    local pkgInfo = io.load(path.join(os.projectdir(), "xmake-requires.lock"))
     for platform, packages in pairs(pkgInfo) do
         if platform ~= "__meta__" then
             local os = platform:match("(.+)|")
@@ -54,5 +75,10 @@ function main(...)
         end
     end
 
-    json.savefile(path.join(os.projectdir(), "build", "packages.json"), allPackages)
+    for _, packageInfo in pairs(allPackages) do
+        table.sort(packageInfo["os"])
+    end
+
+    io.save(path.join(os.projectdir(), "build", "packages.txt"), allPackages)
+    io.save(path.join(os.projectdir(), "build", "referenced.txt"), recordReferencedPackages())
 end

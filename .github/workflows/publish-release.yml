@@ -47,7 +47,7 @@ jobs:
         zip WhaleConnect-windows.zip WhaleConnect-windows/* -r -qq
 
     - name: Get latest changes
-      run: python3 scripts/get_latest_changes.py
+      run: xmake l xmake/scripts/get_latest_changes.lua
 
     - name: Release
       uses: softprops/action-gh-release@v2

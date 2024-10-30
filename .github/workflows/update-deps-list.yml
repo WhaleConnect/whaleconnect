@@ -38,8 +38,8 @@ jobs:
     - name: Update dependencies list
       run: |
         xmake repo --update
-        xmake l xmake/parse_lock_file.lua
-        python3 scripts/generate_deps_list.py
+        xmake l xmake/scripts/parse_lock_file.lua
+        xmake l xmake/scripts/generate_deps_list.lua
 
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v5
