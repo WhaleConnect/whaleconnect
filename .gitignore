@@ -13,3 +13,6 @@ build/
 
 # Test settings
 tests/settings/settings.ini
+
+# clangd configuration
+.clangd
