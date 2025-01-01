@@ -466,7 +466,7 @@
         ["catch2#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "a570ea921ff3bd2976b34af910976a51fcef8cce",
+                commit = "bdb35b2bf29f252971aa6e5bdd61e469f2952e4c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "v3.7.1"

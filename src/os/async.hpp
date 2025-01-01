@@ -1,4 +1,4 @@
-// Copyright 2021-2024 Aidan Sun and the WhaleConnect contributors
+// Copyright 2021-2025 Aidan Sun and the WhaleConnect contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #pragma once
@@ -45,7 +45,7 @@ namespace Async {
         int res = 0; // The result the operation (returned to caller, exact meaning depends on operation)
 
 #if OS_WINDOWS
-        std::thread::id thread = std::this_thread::get_id();
+        std::size_t thread = 0;
 
         CompletionResult() : OVERLAPPED{} {}
 #else
@@ -138,7 +138,7 @@ namespace Async {
 
     class EventLoop {
 #if OS_WINDOWS
-        std::thread::id thisId;
+        std::size_t thisId;
 #elif OS_MACOS
         int kq = -1;
         PendingEventsMap pendingEvents;

@@ -1,11 +1,10 @@
-// Copyright 2021-2024 Aidan Sun and the WhaleConnect contributors
+// Copyright 2021-2025 Aidan Sun and the WhaleConnect contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "async.hpp"
 
+#include <atomic>
 #include <mutex>
-#include <thread>
-#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -22,9 +21,10 @@
 struct Resubmit {
     std::vector<std::coroutine_handle<>> handles;
     std::mutex m;
+    std::atomic_bool hasHandles = false;
 };
 
-std::unordered_map<std::thread::id, Resubmit> resubmits;
+std::vector<Resubmit> resubmits;
 
 HANDLE completionPort = nullptr; // IOCP handle
 int runningThreads = 0;
@@ -49,7 +49,7 @@ void loadAcceptEx(SOCKET s) {
         &numBytes, nullptr, nullptr));
 }
 
-void handleOperation(const Async::Operation& operation) {
+void handleOperation(const Async::Operation& operation, std::size_t thread) {
     Overload visitor{
         [=](const Async::Connect& op) {
             check(connectExPtr(op.handle, op.addr, static_cast<int>(op.addrLen), nullptr, 0, nullptr, op.result),
@@ -84,6 +84,12 @@ void handleOperation(const Async::Operation& operation) {
         [=](const Async::Cancel& op) { CancelIo(reinterpret_cast<HANDLE>(op.handle)); },
     };
 
+    std::visit(
+        [thread](const auto& op) {
+            if (op.result) op.result->thread = thread;
+        },
+        operation);
+
     try {
         std::visit(visitor, operation);
     } catch (const System::SystemError& e) {
@@ -95,7 +101,7 @@ void handleOperation(const Async::Operation& operation) {
     }
 }
 
-Async::EventLoop::EventLoop(unsigned int numThreads, unsigned int) : thisId(std::this_thread::get_id()) {
+Async::EventLoop::EventLoop(unsigned int numThreads, unsigned int) {
     std::scoped_lock lock{ runningMutex };
 
     // Initialization and cleanup happen on the first thread that is initialized
@@ -112,8 +118,12 @@ Async::EventLoop::EventLoop(unsigned int numThreads, unsigned int) : thisId(std:
         loadAcceptEx(*tmp);
     }
 
+    thisId = runningThreads;
     runningThreads++;
-    resubmits.try_emplace(thisId);
+    if (resubmits.empty()) {
+        std::vector<Resubmit> tmp(numThreads);
+        resubmits = std::move(tmp);
+    }
 }
 
 Async::EventLoop::~EventLoop() {
@@ -129,18 +139,21 @@ Async::EventLoop::~EventLoop() {
 
 void Async::EventLoop::runOnce(bool wait) {
     // Check for submits from other threads
-    std::vector<std::coroutine_handle<>> tmp;
-    {
-        Resubmit& pendingSubmits = resubmits.at(thisId);
-        std::scoped_lock lock{ pendingSubmits.m };
-        std::swap(tmp, pendingSubmits.handles);
+    Resubmit& pendingSubmits = resubmits[thisId];
+    bool expected = true;
+    if (pendingSubmits.hasHandles.compare_exchange_weak(expected, false, std::memory_order_relaxed)) {
+        std::vector<std::coroutine_handle<>> tmp;
+        {
+            std::scoped_lock lock{ pendingSubmits.m };
+            std::swap(tmp, pendingSubmits.handles);
+        }
+
+        numOperations -= tmp.size();
+        for (auto i : tmp) i();
     }
 
-    numOperations -= tmp.size();
-    for (auto i : tmp) i();
-
     if (!operations.empty()) {
-        for (const auto& i : operations) handleOperation(i);
+        for (const auto& i : operations) handleOperation(i, thisId);
         numOperations += operations.size();
         operations.clear();
     }
@@ -151,7 +164,7 @@ void Async::EventLoop::runOnce(bool wait) {
 
     // Dequeue a completion packet from the system and check for the exit condition
     // Shorter timeout than on other platforms - threads need to handle events that are not from IOCP.
-    DWORD timeout = wait ? 20 : 0;
+    DWORD timeout = wait ? 10 : 0;
     BOOL ret = GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, timeout);
 
     // Get the structure with completion data, passed through the overlapped pointer
@@ -171,9 +184,10 @@ void Async::EventLoop::runOnce(bool wait) {
         result.coroHandle();
     } else {
         // Queue the event to the thread that started it
-        Resubmit& r = resubmits.at(result.thread);
+        Resubmit& r = resubmits[result.thread];
         std::scoped_lock lock{ r.m };
         r.handles.push_back(result.coroHandle);
+        r.hasHandles.store(true, std::memory_order_relaxed);
     }
 }
 

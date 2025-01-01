@@ -1,4 +1,4 @@
--- Copyright 2021-2024 Aidan Sun and the WhaleConnect contributors
+-- Copyright 2021-2025 Aidan Sun and the WhaleConnect contributors
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 set_version("1.0.2", { build = "%Y%m%d%H%M" })

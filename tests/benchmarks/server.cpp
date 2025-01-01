@@ -1,4 +1,4 @@
-// Copyright 2021-2024 Aidan Sun and the WhaleConnect contributors
+// Copyright 2021-2025 Aidan Sun and the WhaleConnect contributors
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <charconv>
@@ -55,7 +55,7 @@ Task<> accept(const ServerSocket<SocketTag::IP>& sock, bool& pendingAccept) try 
 
 void run() {
     const ServerSocket<SocketTag::IP> s;
-    const std::uint16_t port = s.startServer({ ConnectionType::TCP, "", "0.0.0.0", 0 }).port;
+    const std::uint16_t port = s.startServer({ ConnectionType::TCP, "", "0.0.0.0", 3000 }).port;
     std::cout << "port = " << port << "\n";
 
     bool pendingAccept = false;
@@ -64,7 +64,7 @@ void run() {
     using namespace std::literals;
     const auto start = std::chrono::steady_clock::now();
     while (true) {
-        bool timeout = std::chrono::steady_clock::now() - start > 10s;
+        bool timeout = std::chrono::steady_clock::now() - start > 20s;
         if (timeout) {
             s.cancelIO();
             s.close();
