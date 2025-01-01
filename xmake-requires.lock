@@ -30,7 +30,7 @@
         ["catch2#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "2428770f614701c48b6d77004931c9b6977e69d7",
+                commit = "99082b66e5e67126bf0e24704d1f212ce106d071",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "v3.7.1"
@@ -75,21 +75,22 @@
             },
             version = "3.4"
         },
-        ["imgui v1.91.0-docking#8ff1f880"] = {
+        ["imgui v1.91.6-docking#8ff1f880"] = {
+            branch = "v1.91.6-docking",
             repo = {
                 branch = "master",
-                commit = "a5e98dbb129971e21eef7e451846026690367c10",
+                commit = "bdb35b2bf29f252971aa6e5bdd61e469f2952e4c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
-            version = "v1.91.0-docking"
+            version = "v1.91.6-docking"
         },
         ["imguitextselect#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "99082b66e5e67126bf0e24704d1f212ce106d071",
+                commit = "bdb35b2bf29f252971aa6e5bdd61e469f2952e4c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
-            version = "1.1.2"
+            version = "1.1.3"
         },
         ["libffi#f26e00a1"] = {
             repo = {
@@ -110,10 +111,10 @@
         ["liburing#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "2428770f614701c48b6d77004931c9b6977e69d7",
+                commit = "bdb35b2bf29f252971aa6e5bdd61e469f2952e4c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
-            version = "2.7"
+            version = "2.8"
         },
         ["libx11#31fecfc4"] = {
             repo = {
@@ -220,7 +221,7 @@
         ["opengl#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "2428770f614701c48b6d77004931c9b6977e69d7",
+                commit = "99082b66e5e67126bf0e24704d1f212ce106d071",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "1.2"
@@ -266,10 +267,10 @@
         ["utfcpp#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "a5e98dbb129971e21eef7e451846026690367c10",
+                commit = "bdb35b2bf29f252971aa6e5bdd61e469f2952e4c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
-            version = "v4.0.5"
+            version = "v4.0.6"
         },
         ["util-macros#31fecfc4"] = {
             repo = {
