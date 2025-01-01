@@ -31,7 +31,7 @@ add_requires("botan", { configs = { modules = (function()
     }
 end)() } })
 
-local imgui_version = "v1.91.0-docking"
+local imgui_version = "v1.91.6-docking"
 local imgui_configs = { glfw = true, opengl3 = true, freetype = true }
 add_requires(("imgui %s"):format(imgui_version), { configs = imgui_configs })
 add_requires("catch2", "glfw", "imguitextselect", "opengl", "out_ptr", "utfcpp", "noto-sans-mono", "remix-icon")
