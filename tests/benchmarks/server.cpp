@@ -64,7 +64,7 @@ void run() {
     using namespace std::literals;
     const auto start = std::chrono::steady_clock::now();
     while (true) {
-        bool timeout = std::chrono::steady_clock::now() - start > 20s;
+        bool timeout = std::chrono::steady_clock::now() - start > 10s;
         if (timeout) {
             s.cancelIO();
             s.close();
