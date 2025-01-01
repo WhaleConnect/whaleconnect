@@ -369,21 +369,21 @@
             },
             version = "3.4"
         },
-        ["imgui v1.91.0-docking#8ff1f880"] = {
+        ["imgui v1.91.6-docking#8ff1f880"] = {
             repo = {
                 branch = "master",
-                commit = "d79da8c7fb34031a2ed570cc1e7803273ad7064f",
+                commit = "63d263d90dafbe16087232702bd983ab401447dd",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
-            version = "v1.91.0-docking"
+            version = "v1.91.6-docking"
         },
         ["imguitextselect#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "2428770f614701c48b6d77004931c9b6977e69d7",
+                commit = "63d263d90dafbe16087232702bd983ab401447dd",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
-            version = "1.1.2"
+            version = "1.1.3"
         },
         ["ninja#31fecfc4"] = {
             repo = {
@@ -407,7 +407,7 @@
             },
             version = "latest"
         },
-        ["openssl >=1.1.1-a#31fecfc4"] = {
+        ["openssl#31fecfc4"] = {
             repo = {
                 branch = "master",
                 commit = "9403c451750e9be9c67241dbeae2855b8637d69c",
@@ -429,7 +429,7 @@
                 commit = "bdb35b2bf29f252971aa6e5bdd61e469f2952e4c",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
-            version = "3.12.3"
+            version = "3.9.6"
         },
         ["remix-icon#31fecfc4"] = {
             repo = {
@@ -440,10 +440,10 @@
         ["utfcpp#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "2565721b35dce693aa479d50326dae9715faa578",
+                commit = "63d263d90dafbe16087232702bd983ab401447dd",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
-            version = "v4.0.5"
+            version = "v4.0.6"
         },
         ["zlib#31fecfc4"] = {
             repo = {
