@@ -495,18 +495,18 @@
             },
             version = "3.4"
         },
-        ["imgui v1.91.0-docking#8ff1f880"] = {
+        ["imgui v1.91.6-docking#8ff1f880"] = {
             repo = {
                 branch = "master",
-                commit = "2565721b35dce693aa479d50326dae9715faa578",
+                commit = "63d263d90dafbe16087232702bd983ab401447dd",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
-            version = "v1.91.0-docking"
+            version = "v1.91.6-docking"
         },
         ["imguitextselect#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "9371d7eec4bc5006fd34af1d92588d58f4640c22",
+                commit = "63d263d90dafbe16087232702bd983ab401447dd",
                 url = "https://github.com/xmake-io/xmake-repo.git"
             },
             version = "1.1.3"
