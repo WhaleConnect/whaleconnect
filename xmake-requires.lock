@@ -87,7 +87,7 @@
         ["imguitextselect#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "bdb35b2bf29f252971aa6e5bdd61e469f2952e4c",
+                commit = "63d263d90dafbe16087232702bd983ab401447dd",
                 url = "https://gitlab.com/tboox/xmake-repo.git"
             },
             version = "1.1.3"
