@@ -11,6 +11,7 @@
 
 ## Documentation Links
 
+- [Benchmarks](benchmarks.md)
 - [Building from Source](building.md)
 - [Dependencies](dependencies.md)
 - [Testing](testing.md)
