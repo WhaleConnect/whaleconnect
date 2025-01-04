@@ -164,7 +164,7 @@ void Async::EventLoop::runOnce(bool wait) {
 
     // Dequeue a completion packet from the system and check for the exit condition
     // Shorter timeout than on other platforms - threads need to handle events that are not from IOCP.
-    DWORD timeout = wait ? 10 : 0;
+    DWORD timeout = wait ? 20 : 0;
     BOOL ret = GetQueuedCompletionStatus(completionPort, &numBytes, &completionKey, &overlapped, timeout);
 
     // Get the structure with completion data, passed through the overlapped pointer
