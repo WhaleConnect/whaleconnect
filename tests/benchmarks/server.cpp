@@ -55,7 +55,7 @@ Task<> accept(const ServerSocket<SocketTag::IP>& sock, bool& pendingAccept) try 
 
 void run() {
     const ServerSocket<SocketTag::IP> s;
-    const std::uint16_t port = s.startServer({ ConnectionType::TCP, "", "0.0.0.0", 3000 }).port;
+    const std::uint16_t port = s.startServer({ ConnectionType::TCP, "", "0.0.0.0", 0 }).port;
     std::cout << "port = " << port << "\n";
 
     bool pendingAccept = false;
