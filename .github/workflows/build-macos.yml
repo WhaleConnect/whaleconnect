@@ -11,7 +11,7 @@ jobs:
   build-macos:
     runs-on: macos-latest
     env:
-      XCODE_VERSION: "16.0"
+      XCODE_VERSION: "16.1"
       XMAKE_GLOBALDIR: ${{ github.workspace }}/xmake-global
 
     steps:
