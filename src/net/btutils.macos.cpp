@@ -23,8 +23,7 @@ std::vector<Device> BTUtils::getPaired() {
     auto list = BluetoothMacOS::getPairedDevices();
     std::vector<Device> ret;
 
-    // TODO: Replace with emplace_back when Apple Clange supports P0960
-    for (const auto& i : list) ret.push_back({ ConnectionType::None, i.getName(), i.getAddress(), 0 });
+    for (const auto& i : list) ret.emplace_back(ConnectionType::None, i.getName(), i.getAddress(), 0);
     return ret;
 }
 

@@ -52,9 +52,8 @@ void Console::add(std::string_view s, const ImVec4& color, bool canUseHex, std::
     auto hoverTextOpt = hoverText.empty() ? std::nullopt : std::optional<std::string>{ hoverText };
 
     // Determine if text goes on a new line
-    // TODO: Replace with emplace_back when Apple Clange supports P0960
     if (items.empty() || items.back().text.ends_with('\n') || !colorsEqual(items.back().color, color))
-        items.push_back({ canUseHex, "", "", color, getTimestamp(), hoverTextOpt });
+        items.emplace_back(canUseHex, "", "", color, getTimestamp(), hoverTextOpt);
 
     // Add text, fix invalid UTF-8 if necessary
     utf8::replace_invalid(s.begin(), s.end(), std::back_inserter(items.back().text));

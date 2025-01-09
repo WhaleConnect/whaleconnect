@@ -41,9 +41,6 @@ namespace AsyncBT {
     struct BTAccept {
         Device from;
         BluetoothMacOS::BTHandle handle;
-
-        // TODO: Remove when Apple Clang supports P0960
-        BTAccept(const Device& from, BluetoothMacOS::BTHandle handle) : from(from), handle(handle) {}
     };
 
     // Creates a pending operation for a Bluetooth channel.
