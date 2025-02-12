@@ -4,6 +4,7 @@
 #include "async.hpp"
 
 #include <atomic>
+#include <chrono>
 #include <coroutine>
 #include <forward_list>
 #include <functional>
