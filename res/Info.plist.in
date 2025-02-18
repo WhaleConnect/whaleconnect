@@ -26,5 +26,9 @@
     <string>This app contains functions that require access to Bluetooth.</string>
     <key>NSHumanReadableCopyright</key>
     <string>Copyright 2021-2025 Aidan Sun and the WhaleConnect contributors</string>
+    <key>CFBundleSupportedPlatforms</key>
+    <array>
+      <string>MacOSX</string>
+    </array>
   </dict>
 </plist>
