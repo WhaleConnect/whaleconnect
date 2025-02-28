@@ -4,6 +4,10 @@ This document tracks the changes between WhaleConnect versions. Dates are writte
 
 ## Unreleased
 
+### Improvements
+
+- Marked the macOS bundle as supporting macOS only.
+
 ### Removals
 
 - Removed support for macOS 13.
