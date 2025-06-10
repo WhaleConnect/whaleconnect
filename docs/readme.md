@@ -1,5 +1,8 @@
 # WhaleConnect
 
+> [!NOTE]
+> *This project is considered complete and stable. It has been archived as no further maintenance is planned. (Archived on 2025-06-10)*
+
 ![Banner](img/banner.png)
 
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.06964/status.svg)](https://doi.org/10.21105/joss.06964)
